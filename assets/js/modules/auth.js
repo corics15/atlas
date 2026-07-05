@@ -13,12 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (result.success) {
       Atlas.toast.success(result.message);
-      // const answer = await Atlas.dialog.confirm(
-      //   'Atlas',
-      //   'Continue login?'
-      // );
+      setTimeout(() => {
+        window.location.href = result.data.redirect;
+      }, 1000);
 
-      // console.log(answer.isConfirmed);
     } else {
       Atlas.toast.error(result.message);
     }

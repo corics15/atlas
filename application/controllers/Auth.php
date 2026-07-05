@@ -37,7 +37,9 @@ class Auth extends MY_Controller
       'logged_in'  => TRUE
     ]);
 
-    return $this->jsonResponse(true, 'Login successful.');
+    return $this->jsonResponse(true, 'Login successful.', [
+      'redirect' => base_url(),
+    ]);
   }
 
   public function logout()
