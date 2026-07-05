@@ -17,4 +17,18 @@ class MY_Controller extends CI_Controller
     $this->data['content'] = $view;
     $this->load->view('layouts/master', $this->data);
   }
+
+  protected function jsonResponse($success, $message = '', $data = [])
+  {
+    $response = [
+      'success' => $success,
+      'message' => $message,
+      'data'    => $data
+    ];
+
+    $this->output
+        ->set_content_type('application/json')
+        ->set_output(json_encode($response));
+  }
+
 }
