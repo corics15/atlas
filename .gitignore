@@ -1,0 +1,28 @@
+# CodeIgniter
+application/cache/*
+!application/cache/index.html
+
+application/logs/*
+!application/logs/index.html
+
+# Uploads
+uploads/*
+
+# XAMPP
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Composer
+vendor/
+
+# Node
+node_modules/
+
+# Environment
+.env
+
+# Misc
+*.log
