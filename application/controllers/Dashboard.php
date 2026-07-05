@@ -6,8 +6,5 @@ class Dashboard extends MY_Controller
   public function index()
   {
     $this->render('dashboard/index');
-    echo '<pre>';
-    print_r($this->session->userdata());
-    echo '</pre>';
   }
 }

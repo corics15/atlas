@@ -39,4 +39,10 @@ class Auth extends MY_Controller
 
     return $this->jsonResponse(true, 'Login successful.');
   }
+
+  public function logout()
+  {
+    $this->session->sess_destroy();
+    redirect('auth');
+  }
 }

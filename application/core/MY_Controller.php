@@ -10,6 +10,9 @@ class MY_Controller extends CI_Controller
     parent::__construct();
     $this->config->load('atlas');
     $this->data['app'] = $this->config->item('atlas');
+    if ($this->router->fetch_class() != 'auth') {
+      $this->requireLogin();
+    }
   }
 
   protected function render($view)
@@ -29,6 +32,14 @@ class MY_Controller extends CI_Controller
     $this->output
         ->set_content_type('application/json')
         ->set_output(json_encode($response));
+  }
+
+  protected function requireLogin()
+  {
+    if (!$this->session->userdata('logged_in')) {
+      redirect('auth');
+      exit;
+    }
   }
 
 }
