@@ -1,30 +1,41 @@
             <thead>
               <tr>
-                <th width="80">ID</th>
+                <th width="40" class="text-center">
+                  <div class="custom-checkbox custom-control ml-2 mt-1">
+                    <input type="checkbox" class="custom-control-input" id="chkSelectAllUsers">
+                    <label class="custom-control-label" for="chkSelectAllUsers"></label>
+                  </div>
+                </th>
                 <th>Username</th>
                 <th>Name</th>
                 <th width="120">Status</th>
-                <th width="120">Action</th>
               </tr>
             </thead>
             <tbody>
               <?php if (!empty($users)) : ?>
               <?php foreach ($users as $user) : ?>
               <tr>
-                <td><?= $user->id; ?></td>
+                <td class="text-center">
+                  <div class="custom-checkbox custom-control ml-2 mt-1">
+                    <input type="checkbox" class="custom-control-input chkUser" id="chkUser<?= $user->id; ?>" value="<?= $user->id; ?>">
+                    <label class="custom-control-label" for="chkUser<?= $user->id; ?>"></label>
+                  </div>
+                </td>
                 <td><?= htmlspecialchars($user->username); ?></td>
                 <td><?= htmlspecialchars($user->first_name . ' ' . $user->last_name); ?></td>
                 <td>
                   <?= $user->is_active ? 'Active' : 'Inactive'; ?>
                 </td>
+                <?php if (false) : ?>
                 <td>
                   <button class="btn btn-sm btn-primary btnEditUser" data-id="<?= $user->id; ?>"><i class="fas fa-edit"></i></button>
                 </td>
+                <?php endif ?>
               </tr>
               <?php endforeach; ?>
               <?php else : ?>
               <tr>
-                <td colspan="5" class="text-center">
+                <td colspan="4" class="text-center">
                   No records found.
                 </td>
               </tr>

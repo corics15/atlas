@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  const btnNewUser = document.getElementById('btnNew');
+  const btnNewUser = document.getElementById('btnNewUser');
+  const btnEditUser = document.getElementById('btnEditUser');
   const formUser = document.getElementById('frmUser');
 
   const txtUsername = document.getElementById('txtUsername');
@@ -8,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const txtLastName = document.getElementById('txtLastName');
 
   const hidUserId = document.getElementById('hidUserId');
-  const lblUserTitle = document.getElementById('lblUserTitle');
 
   btnNewUser.addEventListener('click', () => {
     formUser.reset();
@@ -40,33 +40,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.querySelectorAll('.btnEditUser')
-    .forEach(button => {
-      button.addEventListener('click', async () => {
+  btnEditUser.addEventListener('click', async () => {
+    const id = getSelectedUserId();
+    if (!id) {
+      return;
+    }
+    const result = await Atlas.ajax.get('users/get/' + id);
+    if (!result.success) {
+      Atlas.toast.error(result.message);
+      return;
+    }
 
-        const id = button.dataset.id;
-        const result = await Atlas.ajax.get(
-          'users/get/' + id
-        );
+    formUser.reset();
+    hidUserId.value = result.data.id;
 
-        if (!result.success) {
-          Atlas.toast.error(result.message);
-          return;
-        }
+    txtUsername.value = result.data.username;
+    txtFirstName.value = result.data.first_name;
+    txtLastName.value = result.data.last_name;
 
-        frmUser.reset();
-
-        txtUsername.value = result.data.username;
-        txtFirstName.value = result.data.first_name;
-        txtLastName.value = result.data.last_name;
-
-        hidUserId.value = result.data.id;
-        Atlas.modal.open({
-          id: 'mdlUser',
-          title: 'Edit User'
-        });
-      });
-
+    Atlas.modal.open({
+      id: 'mdlUser',
+      title: 'Edit User'
     });
+  });
 
 });
+
+function getSelectedUserId() {
+  const checked = document.querySelectorAll('.chkUser:checked');
+  if (checked.length === 0) {
+    Atlas.toast.warning('Please select a user.');
+    return null;
+  }
+
+  if (checked.length > 1) {
+    Atlas.toast.warning('Please select only one user.');
+    return null;
+  }
+  return checked[0].value;
+}

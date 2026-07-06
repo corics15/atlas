@@ -3,7 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $config['atlas'] = [
   'app_name'      => 'Atlas Framework',
-  'app_version'   => '0.3.1',
+  'app_version'   => '0.3.2',
   'company_name'  => 'One Distribution',
   'company_short' => 'ONE-D',
   'developer'     => 'Atlas Framework',

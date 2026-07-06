@@ -15,7 +15,7 @@ class Users extends MY_Controller
   {
     $this->setPage(
       'Users', [
-        'id'   => 'btnNew',
+        'id'   => 'btnNewUser',
         'icon' => 'fas fa-plus',
         'text' => 'New User',
       ]

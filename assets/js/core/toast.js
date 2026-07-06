@@ -16,6 +16,17 @@ class AtlasToast {
     });
   }
 
+  warning(message) {
+    Swal.fire({
+      icon: 'warning',
+      text: message,
+      theme: 'bootstrap-4-dark',
+      toast: true,
+      position: 'top-end',
+      timer: 2500
+    });
+  }
+
 }
 
 window.Atlas = window.Atlas || {};
