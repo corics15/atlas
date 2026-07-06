@@ -58,4 +58,13 @@ class User_model extends MY_Model
 
     return $this->db->count_all_results('m_users') > 0;
   }
+
+  public function deactivate($id)
+  {
+    return $this->db
+        ->where('id', $id)
+        ->update('m_users', [
+            'is_active' => FALSE
+        ]);
+  }
 }

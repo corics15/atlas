@@ -1,16 +1,17 @@
 class AtlasDialog {
 
   async confirm(title, text) {
-
-    return await Swal.fire({
+    const result = await Swal.fire({
       title,
       text,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Yes',
-      cancelButtonText: 'No'
+      cancelButtonText: 'No',
+      theme: 'bootstrap-4-dark'
     });
 
+    return result.isConfirmed;
   }
 
 }

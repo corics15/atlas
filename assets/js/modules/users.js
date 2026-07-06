@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const hidUserId = document.getElementById('hidUserId');
 
+  const btnDeactivateUser = document.getElementById('btnDeactivateUser');
+
+  const chkSelectAllUsers = document.getElementById('chkSelectAllUsers');
+
   btnNewUser.addEventListener('click', () => {
     formUser.reset();
     hidUserId.value = '';
@@ -61,6 +65,50 @@ document.addEventListener('DOMContentLoaded', () => {
     Atlas.modal.open({
       id: 'mdlUser',
       title: 'Edit User'
+    });
+  });
+
+  btnDeactivateUser.addEventListener('click', async () => {
+    const id = getSelectedUserId();
+
+    if (!id) {
+      return;
+    }
+
+    const confirmed = await Atlas.dialog.confirm(
+      'Deactivate User',
+      'Are you sure you want to deactivate the selected user?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const result = await Atlas.ajax.post(
+      'users/deactivate/' + id
+    );
+
+    if (result.success) {
+      Atlas.toast.success(result.message);
+      setTimeout(() => {
+        location.reload();
+      }, 500);
+    } else {
+      Atlas.toast.error(result.message);
+    }
+  });
+
+  chkSelectAllUsers.addEventListener('change', () => {
+    document.querySelectorAll('.chkUser').forEach(chk => {
+      chk.checked = chkSelectAllUsers.checked;
+    });
+  });
+
+  document.querySelectorAll('.chkUser').forEach(chk => {
+    chk.addEventListener('change', () => {
+      const total = document.querySelectorAll('.chkUser').length;
+      const checked = document.querySelectorAll('.chkUser:checked').length;
+      chkSelectAllUsers.checked = (total === checked);
     });
   });
 

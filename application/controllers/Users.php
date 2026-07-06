@@ -117,4 +117,21 @@ class Users extends MY_Controller
         $user
     );
   }
+
+  public function deactivate($id)
+  {
+    if (!$this->User_model->get($id)) {
+      return $this->jsonResponse(
+        false,
+        'User not found.'
+      );
+    }
+
+    $this->User_model->deactivate($id);
+
+    return $this->jsonResponse(
+      true,
+      'User deactivated successfully.'
+    );
+  }
 }
