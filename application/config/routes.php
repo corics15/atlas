@@ -54,3 +54,4 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
 $route['users/save'] = 'users/save';
+$route['users/get/(:num)'] = 'users/get/$1';

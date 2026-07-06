@@ -3,9 +3,8 @@
 
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">
-          New User
-        </h5>
+        <h5 class="modal-title"></h5>
+
         <button type="button"
           class="close"
           data-dismiss="modal">
@@ -14,6 +13,8 @@
       </div>
 
       <form id="frmUser">
+        <input type="hidden" id="hidUserId" name="id">
+
         <div class="modal-body">
           <div class="form-group">
             <label>Username</label>

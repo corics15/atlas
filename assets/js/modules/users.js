@@ -3,32 +3,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnNewUser = document.getElementById('btnNew');
   const formUser = document.getElementById('frmUser');
 
+  const txtUsername = document.getElementById('txtUsername');
+  const txtFirstName = document.getElementById('txtFirstName');
+  const txtLastName = document.getElementById('txtLastName');
+
+  const hidUserId = document.getElementById('hidUserId');
+  const lblUserTitle = document.getElementById('lblUserTitle');
+
   btnNewUser.addEventListener('click', () => {
     formUser.reset();
-    Atlas.modal.open('mdlUser');
+    hidUserId.value = '';
+    // lblUserTitle.textContent = 'New User';
+
+    Atlas.validation.clear();
+    // Atlas.modal.open('mdlUser');
+    Atlas.modal.open({
+      id: 'mdlUser',
+      title: 'New User'
+    });
   });
-
-  // formUser.addEventListener('submit', async (e) => {
-  //   e.preventDefault()
-  //   const formData = new FormData(formUser);
-
-  //   Atlas.validation.clear();
-  //   Atlas.loader.show();
-
-  //   const result = await Atlas.ajax.post('users/save', formData);
-
-  //   Atlas.loader.hide();
-
-  //   if (result.success) {
-  //     Atlas.toast.success(result.message);
-  //     Atlas.modal.close('mdlUser');
-  //     setTimeout(() => {
-  //       window.location.reload();
-  //     }, 500);
-  //   } else {
-  //     Atlas.validation.show(result.data.errors)
-  //   }
-  // });
 
   formUser.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -48,5 +41,37 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  document.querySelectorAll('.btnEditUser')
+    .forEach(button => {
+      button.addEventListener('click', async () => {
+
+        const id = button.dataset.id;
+        const result = await Atlas.ajax.get(
+          'users/get/' + id
+        );
+
+        if (!result.success) {
+          Atlas.toast.error(result.message);
+          return;
+        }
+
+        frmUser.reset();
+
+        txtUsername.value = result.data.username;
+        txtFirstName.value = result.data.first_name;
+        txtLastName.value = result.data.last_name;
+
+        hidUserId.value = result.data.id;
+        // lblUserTitle.textContent = 'Edit User';
+
+        // Atlas.modal.open('mdlUser');
+        Atlas.modal.open({
+          id: 'mdlUser',
+          title: 'Edit User'
+        });
+      });
+
+    });
 
 });

@@ -18,10 +18,7 @@
                   <?= $user->is_active ? 'Active' : 'Inactive'; ?>
                 </td>
                 <td>
-                  <button
-                    class="btn btn-sm btn-primary">
-                  Edit
-                  </button>
+                  <button class="btn btn-sm btn-primary btnEditUser" data-id="<?= $user->id; ?>"><i class="fas fa-edit"></i></button>
                 </td>
               </tr>
               <?php endforeach; ?>

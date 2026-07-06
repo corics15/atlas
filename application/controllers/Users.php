@@ -81,4 +81,22 @@ class Users extends MY_Controller
         'User saved successfully.'
     );
   }
+
+  public function get($id)
+  {
+    $user = $this->User_model->get($id);
+
+    if (!$user) {
+        return $this->jsonResponse(
+            false,
+            'User not found.'
+        );
+    }
+
+    return $this->jsonResponse(
+        true,
+        '',
+        $user
+    );
+  }
 }
