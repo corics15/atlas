@@ -11,8 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const hidUserId = document.getElementById('hidUserId');
 
   const btnDeactivateUser = document.getElementById('btnDeactivateUser');
+  const btnActivateUser = document.getElementById('btnActivateUser');
+  const btnRefreshUsers = document.getElementById('btnRefreshUsers');
 
   const chkSelectAllUsers = document.getElementById('chkSelectAllUsers');
+
+  updateToolbarState();
 
   btnNewUser.addEventListener('click', () => {
     formUser.reset();
@@ -98,6 +102,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  btnActivateUser.addEventListener('click', async () => {
+    const id = getSelectedUserId();
+
+    if (!id) {
+      return;
+    }
+
+    const confirmed = await Atlas.dialog.confirm(
+      'Activate User',
+      'Are you sure you want to activate the selected user?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const result = await Atlas.ajax.post(
+      'users/activate/' + id
+    );
+
+    if (result.success) {
+      Atlas.toast.success(result.message);
+      setTimeout(() => {
+        location.reload();
+      }, 500);
+    } else {
+      Atlas.toast.error(result.message);
+    }
+  });
+
   chkSelectAllUsers.addEventListener('change', () => {
     document.querySelectorAll('.chkUser').forEach(chk => {
       chk.checked = chkSelectAllUsers.checked;
@@ -109,12 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const total = document.querySelectorAll('.chkUser').length;
       const checked = document.querySelectorAll('.chkUser:checked').length;
       chkSelectAllUsers.checked = (total === checked);
+      updateToolbarState();
     });
+    updateToolbarState();
   });
 
 });
 
-function getSelectedUserId() {
+const getSelectedUserId = () => {
   const checked = document.querySelectorAll('.chkUser:checked');
   if (checked.length === 0) {
     Atlas.toast.warning('Please select a user.');
@@ -126,4 +162,11 @@ function getSelectedUserId() {
     return null;
   }
   return checked[0].value;
+}
+
+const updateToolbarState = () => {
+  const checked = document.querySelectorAll('.chkUser:checked').length;
+  btnEditUser.disabled = (checked !== 1);
+  btnActivateUser.disabled = (checked !== 1);
+  btnDeactivateUser.disabled = (checked !== 1);
 }

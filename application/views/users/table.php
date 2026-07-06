@@ -8,7 +8,7 @@
                 </th>
                 <th>Username</th>
                 <th>Name</th>
-                <th width="120">Status</th>
+                <th width="120" class="text-center">Active</th>
               </tr>
             </thead>
             <tbody>
@@ -23,14 +23,9 @@
                 </td>
                 <td><?= htmlspecialchars($user->username); ?></td>
                 <td><?= htmlspecialchars($user->first_name . ' ' . $user->last_name); ?></td>
-                <td>
-                  <?= $user->is_active ? 'Active' : 'Inactive'; ?>
+                <td class="text-center">
+                  <?= $user->is_active == 't' ? '<i class="fas fa-check text-success"></i>' : ''; ?>
                 </td>
-                <?php if (false) : ?>
-                <td>
-                  <button class="btn btn-sm btn-primary btnEditUser" data-id="<?= $user->id; ?>"><i class="fas fa-edit"></i></button>
-                </td>
-                <?php endif ?>
               </tr>
               <?php endforeach; ?>
               <?php else : ?>

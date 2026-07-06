@@ -67,4 +67,13 @@ class User_model extends MY_Model
             'is_active' => FALSE
         ]);
   }
+
+  public function activate($id)
+  {
+    return $this->db
+        ->where('id', $id)
+        ->update('m_users', [
+            'is_active' => TRUE
+        ]);
+  }
 }
