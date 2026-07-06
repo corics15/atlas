@@ -61,10 +61,11 @@ class Users extends MY_Controller
     );
 
     if (!$this->form_validation->run()) {
-      return $this->jsonResponse(
-        false,
-        validation_errors()
-      );
+      return $this->validationResponse([
+          'username',
+          'first_name',
+          'last_name'
+      ]);
     }
     $data = [
       'username'   => trim($this->input->post('username')),

@@ -53,4 +53,24 @@ class MY_Controller extends CI_Controller
     $this->data['pageButton'] = $button;
   }
 
+  protected function validationResponse()
+  {
+    $errors = [];
+
+    foreach ($_POST as $field => $value) {
+      $error = form_error($field);
+      if (!empty($error)) {
+        $errors[$field] = strip_tags($error);
+      }
+    }
+
+    return $this->jsonResponse(
+      false,
+      'Please correct the highlighted fields.',
+      [
+        'errors' => $errors
+      ]
+    );
+  }
+
 }
