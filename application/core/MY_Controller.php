@@ -4,13 +4,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class MY_Controller extends CI_Controller
 {
   protected $data = [];
+  protected $requiresAuth = true;
+  protected $pageScript = '';
 
   public function __construct()
   {
     parent::__construct();
     $this->config->load('atlas');
     $this->data['app'] = $this->config->item('atlas');
-    if ($this->router->fetch_class() != 'auth') {
+
+    if ($this->requiresAuth) {
       $this->requireLogin();
     }
   }
@@ -18,6 +21,8 @@ class MY_Controller extends CI_Controller
   protected function render($view)
   {
     $this->data['content'] = $view;
+    $this->data['pageScript'] = $this->pageScript;
+
     $this->load->view('layouts/master', $this->data);
   }
 
@@ -40,6 +45,12 @@ class MY_Controller extends CI_Controller
       redirect('auth');
       exit;
     }
+  }
+
+  protected function setPage($title, $button = [])
+  {
+    $this->data['pageTitle'] = $title;
+    $this->data['pageButton'] = $button;
   }
 
 }

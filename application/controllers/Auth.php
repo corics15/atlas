@@ -3,6 +3,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Auth extends MY_Controller
 {
+  protected $requiresAuth = false;
+
   public function __construct()
   {
     parent::__construct();

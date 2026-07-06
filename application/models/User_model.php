@@ -11,4 +11,17 @@ class User_model extends MY_Model
             ->get('m_users')
             ->row();
   }
+
+  public function insert($data)
+  {
+      return $this->db->insert('m_users', $data);
+  }
+
+  public function getAll()
+  {
+      return $this->db
+          ->order_by('id', 'DESC')
+          ->get('m_users')
+          ->result();
+  }
 }

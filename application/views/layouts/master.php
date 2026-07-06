@@ -32,6 +32,11 @@
       <?php $this->load->view('partials/footer'); ?>
     </div>
 
+    <script>
+      window.Atlas = window.Atlas || {};
+      Atlas.config = { baseUrl: "<?= base_url(); ?>" };
+    </script>
+
     <?php $this->load->view('partials/scripts'); ?>
 
   </body>
