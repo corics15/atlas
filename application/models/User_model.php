@@ -40,4 +40,22 @@ class User_model extends MY_Model
         ->get('m_users')
         ->row();
   }
+
+  public function update($id, $data)
+  {
+    return $this->db
+        ->where('id', $id)
+        ->update('m_users', $data);
+  }
+
+  public function usernameExists($username, $excludeId = 0)
+  {
+    $this->db->where('username', $username);
+
+    if ($excludeId > 0) {
+      $this->db->where('id <>', $excludeId);
+    }
+
+    return $this->db->count_all_results('m_users') > 0;
+  }
 }

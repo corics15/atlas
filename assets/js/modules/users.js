@@ -13,10 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
   btnNewUser.addEventListener('click', () => {
     formUser.reset();
     hidUserId.value = '';
-    // lblUserTitle.textContent = 'New User';
 
     Atlas.validation.clear();
-    // Atlas.modal.open('mdlUser');
     Atlas.modal.open({
       id: 'mdlUser',
       title: 'New User'
@@ -63,9 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
         txtLastName.value = result.data.last_name;
 
         hidUserId.value = result.data.id;
-        // lblUserTitle.textContent = 'Edit User';
-
-        // Atlas.modal.open('mdlUser');
         Atlas.modal.open({
           id: 'mdlUser',
           title: 'Edit User'

@@ -37,10 +37,20 @@ class Users extends MY_Controller
 
   public function save()
   {
+    $id = (int) $this->input->post('id');
+
+    $username = trim($this->input->post('username'));
+    if ($this->User_model->usernameExists($username, $id)) {
+      return $this->jsonResponse(
+        false,
+        'Username already exists.'
+      );
+    }
+
     $this->form_validation->set_rules(
       'username',
       'Username',
-      'required|min_length[5]|trim|is_unique[m_users.username]',
+      'required|min_length[5]|trim',
       array(
         'required'   => 'The %s field is mandatory.',
         'min_length' => 'The %s must be at least 5 characters long.',
@@ -73,6 +83,14 @@ class Users extends MY_Controller
       'last_name'  => trim($this->input->post('last_name')),
       'password'   => password_hash('password123', PASSWORD_DEFAULT)
     ];
+
+    if ($id > 0) {
+      $this->User_model->update($id, $data);
+      return $this->jsonResponse(
+        true,
+        'User updated successfully.'
+      );
+    }
 
     $this->User_model->insert($data);
 
