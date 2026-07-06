@@ -7,6 +7,7 @@
         <div class="row mb-3">
 
           <div class="col-md-4">
+            <?php if (false) : ?>
             <form>
               <div class="row mb-3">
                 <div class="col-auto">
@@ -26,6 +27,8 @@
                 </div>
               </div>
             </form>
+            <?php endif ?>
+            <?php $this->load->view('partials/search_toolbar'); ?>
           </div>
 
         </div>
