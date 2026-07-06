@@ -20,18 +20,21 @@
             <input type="text"
               id="txtUsername" name="username"
               class="form-control">
+              <small id="errUsername" class="text-danger d-block"></small>
           </div>
           <div class="form-group">
             <label>First Name</label>
             <input type="text"
               id="txtFirstName" name="first_name"
               class="form-control">
+              <small id="errFirstName" class="text-danger d-block"></small>
           </div>
           <div class="form-group">
             <label>Last Name</label>
             <input type="text"
               id="txtLastName" name="last_name"
               class="form-control">
+              <small id="errLastName" class="text-danger d-block"></small>
           </div>
         </div>
 

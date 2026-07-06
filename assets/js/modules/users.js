@@ -8,26 +8,45 @@ document.addEventListener('DOMContentLoaded', () => {
     Atlas.modal.open('mdlUser');
   });
 
+  // formUser.addEventListener('submit', async (e) => {
+  //   e.preventDefault()
+  //   const formData = new FormData(formUser);
+
+  //   Atlas.validation.clear();
+  //   Atlas.loader.show();
+
+  //   const result = await Atlas.ajax.post('users/save', formData);
+
+  //   Atlas.loader.hide();
+
+  //   if (result.success) {
+  //     Atlas.toast.success(result.message);
+  //     Atlas.modal.close('mdlUser');
+  //     setTimeout(() => {
+  //       window.location.reload();
+  //     }, 500);
+  //   } else {
+  //     Atlas.validation.show(result.data.errors)
+  //   }
+  // });
+
   formUser.addEventListener('submit', async (e) => {
-    e.preventDefault()
-    const formData = new FormData(formUser);
+    e.preventDefault();
 
-    Atlas.loader.show();
-
-    const result = await Atlas.ajax.post('users/save', formData);
-
-    Atlas.loader.hide();
-
-    if (result.success) {
-      Atlas.toast.success(result.message);
-      Atlas.modal.close('mdlUser');
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    } else {
-      console.log(result.data.errors);
-      Atlas.toast.error(result.message);
-    }
+    await Atlas.form.submit({
+      form: formUser,
+      url: 'users/save',
+      onSuccess: (result) => {
+        Atlas.modal.close('mdlUser');
+        Atlas.toast.success(result.message);
+        setTimeout(() => {
+          location.reload();
+        }, 500);
+      },
+      onError: (result) => {
+        console.log(result);
+      }
+    });
   });
 
 });

@@ -44,7 +44,7 @@ class Users extends MY_Controller
       array(
         'required'   => 'The %s field is mandatory.',
         'min_length' => 'The %s must be at least 5 characters long.',
-        'is_unique'  => 'This %s has already been registered or already exists.'
+        'is_unique'  => 'This %s already exists.'
       )
     );
 

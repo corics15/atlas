@@ -8,6 +8,8 @@
 <script src="<?= atlas_asset('assets/js/core/loader.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/dialog.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/modal.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/validation.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/form.js'); ?>"></script>
 
 <?php if (!empty($pageScript)) : ?>
   <script src="<?= atlas_asset('assets/js/modules/' . $pageScript . '.js'); ?>"></script>
