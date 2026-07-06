@@ -22,7 +22,10 @@ class Users extends MY_Controller
     );
     $this->pageScript = 'users';
 
-    $this->data['users'] = $this->User_model->getAll();
+    $keyword = trim($this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+    $this->data['users'] = $this->User_model->getAll($keyword);
+
     $this->render('users/index');
   }
 

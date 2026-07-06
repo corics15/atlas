@@ -5,18 +5,29 @@
     <div class="card">
       <div class="card-body">
         <div class="row mb-3">
+
           <div class="col-md-4">
-            <input type="text"
-              id="txtSearch"
-              class="form-control"
-              placeholder="Search...">
+            <form>
+              <div class="row mb-3">
+                <div class="col-auto">
+                  <input
+                    type="text"
+                    name="keyword"
+                    value="<?= htmlspecialchars($keyword ?? ''); ?>"
+                    class="form-control"
+                    placeholder="Search...">
+                </div>
+                <div class="col-auto">
+                  <button
+                    type="submit"
+                    class="btn btn-secondary btn-block">
+                  Search
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
-          <div class="col-md-2">
-            <button id="btnSearch"
-              class="btn btn-secondary btn-block">
-            Search
-            </button>
-          </div>
+
         </div>
         <div class="table-responsive">
           <table class="table table-sm table-bordered table-hover">

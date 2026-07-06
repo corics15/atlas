@@ -17,8 +17,18 @@ class User_model extends MY_Model
       return $this->db->insert('m_users', $data);
   }
 
-  public function getAll()
+  public function getAll($keyword = '')
   {
+      if (!empty($keyword)) {
+
+          $this->db->group_start()
+              ->like('username', $keyword)
+              ->or_like('first_name', $keyword)
+              ->or_like('last_name', $keyword)
+          ->group_end();
+
+      }
+
       return $this->db
           ->order_by('id', 'DESC')
           ->get('m_users')
