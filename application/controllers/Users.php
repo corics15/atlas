@@ -13,8 +13,7 @@ class Users extends MY_Controller
   public function index()
   {
     $this->setPage(
-      'Users',
-      [
+      'Users', [
         'id'   => 'btnNew',
         'icon' => 'fas fa-plus',
         'text' => 'New User',
@@ -25,6 +24,12 @@ class Users extends MY_Controller
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $this->data['users'] = $this->User_model->getAll($keyword);
+
+    $this->data['tableContent'] = $this->load->view(
+      'users/table',
+      $this->data,
+      TRUE
+    );
 
     $this->render('users/index');
   }
