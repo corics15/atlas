@@ -9,8 +9,8 @@
 
     <title><?= $app['app_name']; ?></title>
 
-    <link rel="stylesheet" href="<?= base_url('assets/adminlte/plugins/fontawesome-free/css/all.min.css'); ?>">
-    <link rel="stylesheet" href="<?= base_url('assets/adminlte/dist/css/adminlte.min.css'); ?>">
+    <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/plugins/fontawesome-free/css/all.min.css'); ?>">
+    <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/dist/css/adminlte.min.css'); ?>">
 
     <link rel="shortcut icon" href="<?= $app['shortcut_ico'] ?>" type="image/x-icon">
   </head>

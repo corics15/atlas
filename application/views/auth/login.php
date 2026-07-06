@@ -9,10 +9,10 @@
 
   <title>Login</title>
 
-  <link rel="stylesheet" href="<?= base_url('assets/adminlte/plugins/fontawesome-free/css/all.min.css'); ?>">
-  <link rel="stylesheet" href="<?= base_url('assets/adminlte/dist/css/adminlte.min.css'); ?>">
-  <link rel="stylesheet" href="<?= base_url('assets/css/app.css'); ?>">
-  <link rel="shortcut icon" href="<?= base_url('assets/images/favicon.ico') ?>" type="image/x-icon">
+  <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/plugins/fontawesome-free/css/all.min.css'); ?>">
+  <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/dist/css/adminlte.min.css'); ?>">
+  <link rel="stylesheet" href="<?= atlas_asset('assets/css/app.css'); ?>">
+  <link rel="shortcut icon" href="<?= atlas_asset('assets/images/favicon.ico') ?>" type="image/x-icon">
 
 </head>
 
@@ -53,11 +53,11 @@
   <script src="<?= base_url('assets/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js'); ?>"></script>
   <script src="<?= base_url('assets/adminlte/dist/js/adminlte.min.js'); ?>"></script>
   <script src="<?= base_url('assets/plugins/sweetalert2/sweetalert2.all.min.js'); ?>"></script>
-  <script src="<?= base_url('assets/js/core/ajax.js'); ?>"></script>
-  <script src="<?= base_url('assets/js/core/toast.js'); ?>"></script>
-  <script src="<?= base_url('assets/js/core/loader.js'); ?>"></script>
-  <script src="<?= base_url('assets/js/core/dialog.js'); ?>"></script>
-  <script src="<?= base_url('assets/js/modules/auth.js'); ?>"></script>
+  <script src="<?= atlas_asset('assets/js/core/ajax.js'); ?>"></script>
+  <script src="<?= atlas_asset('assets/js/core/toast.js'); ?>"></script>
+  <script src="<?= atlas_asset('assets/js/core/loader.js'); ?>"></script>
+  <script src="<?= atlas_asset('assets/js/core/dialog.js'); ?>"></script>
+  <script src="<?= atlas_asset('assets/js/modules/auth.js'); ?>"></script>
 
 </body>
 </html>

@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       Atlas.modal.close('mdlUser');
+      console.log(111)
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } else {
       Atlas.toast.error(result.message);
     }
