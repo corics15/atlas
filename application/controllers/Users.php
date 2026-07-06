@@ -151,4 +151,21 @@ class Users extends MY_Controller
       'User activated successfully.'
     );
   }
+
+  public function resetPassword($id)
+  {
+      if (!$this->User_model->get($id)) {
+        return $this->jsonResponse(
+          false,
+          'User not found.'
+        );
+      }
+
+      $this->User_model->resetPassword($id);
+
+      return $this->jsonResponse(
+        true,
+        'Password has been reset successfully.'
+      );
+  }
 }

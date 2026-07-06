@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnDeactivateUser = document.getElementById('btnDeactivateUser');
   const btnActivateUser = document.getElementById('btnActivateUser');
   const btnRefreshUsers = document.getElementById('btnRefreshUsers');
+  const btnResetPassword = document.getElementById('btnResetPassword');
 
   const chkSelectAllUsers = document.getElementById('chkSelectAllUsers');
 
@@ -132,6 +133,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  btnResetPassword.addEventListener('click', async () => {
+    const id = getSelectedUserId();
+
+    if (!id) {
+      return;
+    }
+
+    const confirmed = await Atlas.dialog.confirm(
+      'Reset Password',
+      'Reset this user\'s password to the default password?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    Atlas.loader.show();
+
+    const result = await Atlas.ajax.post(
+      'users/reset-password/' + id
+    );
+
+    Atlas.loader.hide();
+
+    if (result.success) {
+      Atlas.toast.success(result.message);
+    } else {
+      Atlas.toast.error(result.message);
+    }
+  });
+
   chkSelectAllUsers.addEventListener('change', () => {
     document.querySelectorAll('.chkUser').forEach(chk => {
       chk.checked = chkSelectAllUsers.checked;
@@ -167,6 +199,7 @@ const getSelectedUserId = () => {
 const updateToolbarState = () => {
   const checked = document.querySelectorAll('.chkUser:checked').length;
   btnEditUser.disabled = (checked !== 1);
+  btnResetPassword.disabled = (checked !== 1);
   btnActivateUser.disabled = (checked !== 1);
   btnDeactivateUser.disabled = (checked !== 1);
 }

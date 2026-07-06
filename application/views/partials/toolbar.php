@@ -16,6 +16,13 @@
       </button>
 
       <button
+          id="btnResetPassword"
+          class="dropdown-item">
+          <i class="fas fa-key"></i>
+          Reset Password
+      </button>
+
+      <button
         id="btnActivateUser"
         class="dropdown-item">
         <i class="fas fa-check-circle text-success"></i>

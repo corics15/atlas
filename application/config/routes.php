@@ -57,3 +57,4 @@ $route['users/save'] = 'users/save';
 $route['users/get/(:num)'] = 'users/get/$1';
 $route['users/deactivate/(:num)'] = 'users/deactivate/$1';
 $route['users/activate/(:num)'] = 'users/activate/$1';
+$route['users/reset-password/(:num)'] = 'users/resetPassword/$1';

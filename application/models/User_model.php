@@ -76,4 +76,13 @@ class User_model extends MY_Model
             'is_active' => TRUE
         ]);
   }
+
+  public function resetPassword($id)
+  {
+    return $this->db
+        ->where('id', $id)
+        ->update('m_users', [
+            'password' => password_hash('password123', PASSWORD_DEFAULT)
+        ]);
+  }
 }
