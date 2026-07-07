@@ -2,7 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const btnNewUser = document.getElementById('btnNewUser');
   const btnEditUser = document.getElementById('btnEditUser');
-  const formUser = document.getElementById('frmUser');
+  const btnSaveUser = document.getElementById('btnSaveUser');
+  const frmUser = document.getElementById('frmUser');
 
   const txtUsername = document.getElementById('txtUsername');
   const txtFirstName = document.getElementById('txtFirstName');
@@ -20,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateToolbarState();
 
   btnNewUser.addEventListener('click', () => {
-    formUser.reset();
+    frmUser.reset();
     hidUserId.value = '';
 
     Atlas.validation.clear();
@@ -30,18 +31,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  formUser.addEventListener('submit', async (e) => {
+  frmUser.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     await Atlas.form.submit({
-      form: formUser,
+      form: frmUser,
       url: 'users/save',
       onSuccess: (result) => {
+        frmUser.reset();
+        hidUserId.value = '';
+        Atlas.validation.clear();
+
         Atlas.modal.close('mdlUser');
         Atlas.toast.success(result.message);
         setTimeout(() => {
           location.reload();
-        }, 500);
+        }, 1500);
       },
       onError: (result) => {
         console.log(result);
@@ -60,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    formUser.reset();
+    frmUser.reset();
     hidUserId.value = result.data.id;
 
     txtUsername.value = result.data.username;
@@ -180,26 +185,29 @@ document.addEventListener('DOMContentLoaded', () => {
     updateToolbarState();
   });
 
+  btnRefreshUsers.addEventListener('click', () => {
+    location.reload();
+  });
+
+  function getSelectedUserId() {
+    const checked = document.querySelectorAll('.chkUser:checked');
+    if (checked.length === 0) {
+      Atlas.toast.warning('Please select a user.');
+      return null;
+    }
+
+    if (checked.length > 1) {
+      Atlas.toast.warning('Please select only one user.');
+      return null;
+    }
+    return checked[0].value;
+  }
+
+  function updateToolbarState() {
+    const checked = document.querySelectorAll('.chkUser:checked').length;
+    btnEditUser.disabled = (checked !== 1);
+    btnResetPassword.disabled = (checked !== 1);
+    btnActivateUser.disabled = (checked !== 1);
+    btnDeactivateUser.disabled = (checked !== 1);
+  }
 });
-
-const getSelectedUserId = () => {
-  const checked = document.querySelectorAll('.chkUser:checked');
-  if (checked.length === 0) {
-    Atlas.toast.warning('Please select a user.');
-    return null;
-  }
-
-  if (checked.length > 1) {
-    Atlas.toast.warning('Please select only one user.');
-    return null;
-  }
-  return checked[0].value;
-}
-
-const updateToolbarState = () => {
-  const checked = document.querySelectorAll('.chkUser:checked').length;
-  btnEditUser.disabled = (checked !== 1);
-  btnResetPassword.disabled = (checked !== 1);
-  btnActivateUser.disabled = (checked !== 1);
-  btnDeactivateUser.disabled = (checked !== 1);
-}

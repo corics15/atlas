@@ -32,6 +32,34 @@ class Users extends MY_Controller
       TRUE
     );
 
+    $this->data['toolbar'] = [
+        'edit' => [
+            'id' => 'btnEditUser',
+            'text' => 'Edit',
+            'icon' => 'fas fa-edit'
+        ],
+        'resetPassword' => [
+            'id' => 'btnResetPassword',
+            'text' => 'Reset Password',
+            'icon' => 'fas fa-key'
+        ],
+        'activate' => [
+            'id' => 'btnActivateUser',
+            'text' => 'Activate',
+            'icon' => 'fas fa-check-circle text-success'
+        ],
+        'deactivate' => [
+            'id' => 'btnDeactivateUser',
+            'text' => 'Deactivate',
+            'icon' => 'fas fa-ban'
+        ],
+        'refresh' => [
+            'id' => 'btnRefreshUsers',
+            'text' => 'Refresh',
+            'icon' => 'fas fa-sync'
+        ]
+    ];
+
     $this->render('users/index');
   }
 
@@ -77,27 +105,38 @@ class Users extends MY_Controller
           'last_name'
       ]);
     }
+
     $data = [
       'username'   => trim($this->input->post('username')),
       'first_name' => trim($this->input->post('first_name')),
       'last_name'  => trim($this->input->post('last_name')),
-      'password'   => password_hash('password123', PASSWORD_DEFAULT)
     ];
 
-    if ($id > 0) {
+    if (empty($id)) {
+      $data['password'] = password_hash(
+        config_item('atlas')['default_password'],
+        PASSWORD_DEFAULT
+      );
+      $data['created_by'] = $this->session->userdata('user_id');
+      $data['created_on'] = date('Y-m-d H:i:s');
+
+      $this->User_model->insert($data);
+
+      return $this->jsonResponse(
+        true,
+        'User saved successfully.'
+      );
+
+    } else {
+      $data['updated_by'] = $this->session->userdata('user_id');
+      $data['updated_on'] = date('Y-m-d H:i:s');
+
       $this->User_model->update($id, $data);
       return $this->jsonResponse(
         true,
         'User updated successfully.'
       );
     }
-
-    $this->User_model->insert($data);
-
-    return $this->jsonResponse(
-        true,
-        'User saved successfully.'
-    );
   }
 
   public function get($id)

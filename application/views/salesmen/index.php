@@ -23,4 +23,4 @@
   </div>
 </section>
 
-<?php $this->load->view('users/modal'); ?>
+<?php $this->load->view('salesmen/modal'); ?>

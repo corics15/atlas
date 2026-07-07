@@ -9,40 +9,42 @@
 
     <div class="dropdown-menu dropdown-menu-right">
       <button
-        id="btnEditUser"
+        id="<?= $toolbar['edit']['id']; ?>"
         class="dropdown-item">
-      <i class="fas fa-edit"></i>
-      Edit
+      <i class="<?= $toolbar['edit']['icon']; ?>"></i>
+      <?= $toolbar['edit']['text']; ?>
       </button>
 
+      <?php if (!empty($toolbar['resetPassword'])) : ?>
       <button
-          id="btnResetPassword"
+          id="<?= $toolbar['resetPassword']['id']; ?>"
           class="dropdown-item">
-          <i class="fas fa-key"></i>
-          Reset Password
+          <i class="<?= $toolbar['resetPassword']['icon']; ?>"></i>
+          <?= $toolbar['resetPassword']['text']; ?>
+      </button>
+      <?php endif ?>
+
+      <button
+        id="<?= $toolbar['activate']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['activate']['icon']; ?>"></i>
+        <?= $toolbar['activate']['text']; ?>
       </button>
 
       <button
-        id="btnActivateUser"
+        id="<?= $toolbar['deactivate']['id']; ?>"
         class="dropdown-item">
-        <i class="fas fa-check-circle text-success"></i>
-        Activate
-      </button>
-
-      <button
-        id="btnDeactivateUser"
-        class="dropdown-item">
-      <i class="fas fa-ban"></i>
-      Deactivate
+      <i class="<?= $toolbar['deactivate']['icon']; ?>"></i>
+      <?= $toolbar['deactivate']['text']; ?>
       </button>
 
       <div class="dropdown-divider"></div>
 
       <button
-        id="btnRefreshUsers"
+        id="<?= $toolbar['refresh']['id']; ?>"
         class="dropdown-item">
-      <i class="fas fa-sync"></i>
-      Refresh
+      <i class="<?= $toolbar['refresh']['icon']; ?>"></i>
+      <?= $toolbar['refresh']['text']; ?>
       </button>
     </div>
   </div>

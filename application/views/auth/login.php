@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/plugins/fontawesome-free/css/all.min.css'); ?>">
   <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/dist/css/adminlte.min.css'); ?>">
   <link rel="stylesheet" href="<?= atlas_asset('assets/css/app.css'); ?>">
-  <link rel="shortcut icon" href="<?= atlas_asset('assets/images/favicon.ico') ?>" type="image/x-icon">
+  <link rel="shortcut icon" href="<?= atlas_asset($app['shortcut_ico']) ?>" type="image/x-icon">
 
 </head>
 
@@ -26,16 +26,16 @@
         <hr>
         <form id="frmLogin">
           <input type="text"
-                class="form-control mb-3"
+                class="form-control form-control-sm mb-3"
                 name="username"
                 placeholder="Username">
 
           <input type="password"
-                class="form-control mb-3"
+                class="form-control form-control-sm mb-3"
                 name="password"
                 placeholder="Password">
 
-          <button type="submit" class="btn btn-primary btn-block">
+          <button type="submit" class="btn btn-sm btn-primary btn-block">
               Login
           </button>
         </form>

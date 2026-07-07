@@ -14,5 +14,11 @@ class AtlasAjax {
   }
 }
 
+// const inputs = document.querySelectorAll('input');
+// inputs.forEach(input => {
+//   input.setAttribute('autocomplete', 'off');
+// });
+
+
 window.Atlas = window.Atlas || {};
 window.Atlas.ajax = new AtlasAjax();

@@ -1,4 +1,4 @@
-<div class="modal fade" id="mdlUser" tabindex="-1">
+<div class="modal fade" id="mdlSalesman" tabindex="-1">
   <div class="modal-dialog modal-lg">
 
     <div class="modal-content">
@@ -12,16 +12,16 @@
         </button>
       </div>
 
-      <form id="frmUser">
-        <input type="hidden" id="hidUserId" name="id">
+      <form id="frmSalesman">
+        <input type="hidden" id="hidSalesmanId" name="id">
 
         <div class="modal-body">
           <div class="form-group">
-            <label>Username</label>
+            <label>Code</label>
             <input type="text"
-              id="txtUsername" name="username"
+              id="txtSalesmanCode" name="salesman_code"
               class="form-control form-control-sm">
-              <small id="errUsername" class="text-danger d-block"></small>
+              <small id="errSalesmanCode" class="text-danger d-block"></small>
           </div>
           <div class="form-group">
             <label>First Name</label>
@@ -37,12 +37,19 @@
               class="form-control form-control-sm">
               <small id="errLastName" class="text-danger d-block"></small>
           </div>
+          <div class="form-group">
+            <label>Contact #</label>
+            <input type="text"
+              id="txtContactNo" name="contact_no"
+              class="form-control form-control-sm">
+              <small id="errContactNo" class="text-danger d-block"></small>
+          </div>
         </div>
 
         <div class="modal-footer">
           <button
             type="submit"
-            id="btnSaveUser"
+            id="btnSaveSalesman"
             class="btn btn-sm btn-primary">
           Save
           </button>

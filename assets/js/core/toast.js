@@ -4,7 +4,11 @@ class AtlasToast {
     Swal.fire({
       icon: 'success',
       title: 'Success',
-      text: message
+      text: message,
+      theme: 'bootstrap-4-dark',
+      toast: true,
+      position: 'top-end',
+      timer: 3000
     });
   }
 
@@ -12,7 +16,11 @@ class AtlasToast {
     Swal.fire({
       icon: 'error',
       title: 'Error',
-      text: message
+      text: message,
+      theme: 'bootstrap-4-dark',
+      toast: true,
+      position: 'top-end',
+      timer: 3000
     });
   }
 
@@ -23,7 +31,7 @@ class AtlasToast {
       theme: 'bootstrap-4-dark',
       toast: true,
       position: 'top-end',
-      timer: 2500
+      timer: 3000
     });
   }
 

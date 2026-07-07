@@ -13,19 +13,22 @@
     <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/dist/css/adminlte.min.css'); ?>">
     <link rel="stylesheet" href="<?= atlas_asset('assets/css/bootstrap-4.css'); ?>">
 
-    <link rel="shortcut icon" href="<?= $app['shortcut_ico'] ?>" type="image/x-icon">
+    <link rel="shortcut icon" href="<?= atlas_asset($app['shortcut_ico']) ?>" type="image/x-icon">
   </head>
 
   <body class="hold-transition sidebar-mini layout-fixed">
 
     <div class="wrapper">
+
       <?php $this->load->view('partials/navbar'); ?>
       <?php $this->load->view('partials/sidebar'); ?>
 
       <div class="content-wrapper">
         <section class="content pt-3">
           <div class="container-fluid">
+
             <?php $this->load->view($content); ?>
+
           </div>
         </section>
       </div>
