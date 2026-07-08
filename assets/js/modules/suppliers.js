@@ -177,12 +177,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const checked = document.querySelectorAll('.chkSupplier:checked');
 
     if (checked.length === 0) {
-      Atlas.toast.warning('Please select a Supplier.');
+      Atlas.toast.warning('Please select a supplier.');
       return null;
     }
 
     if (checked.length > 1) {
-      Atlas.toast.warning('Please select only one Supplier.');
+      Atlas.toast.warning('Please select only one supplier.');
       return null;
     }
 

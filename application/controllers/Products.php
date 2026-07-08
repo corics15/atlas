@@ -1,78 +1,77 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Suppliers extends MY_Controller
+class Products extends MY_Controller
 {
   public function __construct()
   {
     parent::__construct();
-    $this->load->model('Supplier_model');
+    $this->load->model('Product_model');
     $this->load->library('form_validation');
   }
-
   public function index()
   {
     $this->setPage(
-      'Suppliers',
+      'Products',
       [
-        'id'   => 'btnNewSupplier',
+        'id'   => 'btnNewProduct',
         'icon' => 'fas fa-plus',
-        'text' => 'New Supplier',
+        'text' => 'New Product',
       ]
     );
 
-    $this->pageScript = 'suppliers';
+    $this->pageScript = 'products';
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
-    $this->data['suppliers'] = $this->Supplier_model->getAll($keyword);
+    $this->data['products'] = $this->Product_model->getAll($keyword);
 
     $this->data['tableContent'] = $this->load->view(
-        'suppliers/table',
+        'products/table',
         $this->data,
         TRUE
     );
 
     $this->data['toolbar'] = [
       'edit' => [
-          'id' => 'btnEditSupplier',
+          'id' => 'btnEditProduct',
           'text' => 'Edit',
           'icon' => 'fas fa-edit'
       ],
       'activate' => [
-          'id' => 'btnActivateSupplier',
+          'id' => 'btnActivateProduct',
           'text' => 'Activate',
           'icon' => 'fas fa-check-circle'
       ],
       'deactivate' => [
-          'id' => 'btnDeactivateSupplier',
+          'id' => 'btnDeactivateProduct',
           'text' => 'Deactivate',
           'icon' => 'fas fa-ban'
       ],
       'refresh' => [
-          'id' => 'btnRefreshSupplier',
+          'id' => 'btnRefreshProduct',
           'text' => 'Refresh',
           'icon' => 'fas fa-sync'
       ]
     ];
 
-    $this->render('suppliers/index');
+    $this->render('products/index');
   }
 
   public function get($id)
   {
-      $supplier = $this->Supplier_model->get($id);
+      $product = $this->Product_model->get($id);
 
-      if (!$supplier) {
+      if (!$product) {
           return $this->jsonResponse(
             false,
-            'Supplier not found.'
+            'Product not found.'
           );
       }
 
       return $this->jsonResponse(
           true,
           '',
-          $supplier
+          $product
       );
   }
 
@@ -80,18 +79,18 @@ class Suppliers extends MY_Controller
   {
     $postData = $this->input->post();
     $id = (int) $postData['id'];
-    $supplierName = trim($postData['supplier_name']);
+    // $supplierName = trim($postData['supplier_name']);
 
-    if ($this->Supplier_model->supplierNameExists($supplierName, $id)) {
-      return $this->jsonResponse(
-        false,
-        'Supplier already exists.'
-      );
-    }
+    // if ($this->Product_model->productCodeExists($productCode, $id)) {
+    //   return $this->jsonResponse(
+    //     false,
+    //     'Product already exists.'
+    //   );
+    // }
 
     $this->form_validation->set_rules(
-      'supplier_name',
-      'Supplier Name',
+      'description',
+      'Description',
       'required|trim',
       [
         'required' => 'The %s field is mandatory.'
@@ -103,13 +102,13 @@ class Suppliers extends MY_Controller
     }
 
     $data = [
-      'supplier_name' => trim($postData['supplier_name']),
-      'contact_person' => trim($postData['contact_person']) <> '' ? strtoupper(trim($postData['contact_person'])) : NULL,
-      'mobile_no' => trim($postData['mobile_no']) <> '' ? trim($postData['mobile_no']) : NULL,
-      'telephone_no' => trim($postData['telephone_no']) <> '' ? trim($postData['telephone_no']) : NULL,
-      'email_address' => trim($postData['email_address']) <> '' ? trim($postData['email_address']) : NULL,
-      'address' => trim($postData['address']) <> '' ? strtoupper(trim($postData['address'])) : NULL,
-      'tin_no' => trim($postData['tin_no']) <> '' ? trim($postData['tin_no']) : NULL,
+      // 'product_code' => trim($postData['product_code']),
+      'supplier_id' => trim($postData['supplier_id']),
+      'barcode' => trim($postData['barcode']),
+      'description' => trim($postData['description']) <> '' ? strtoupper(trim($postData['description'])) : NULL,
+      'uom' => trim($postData['uom']) <> '' ? trim($postData['uom']) : NULL,
+      'cost' => $postData['cost'],
+      'srp' => $postData['srp'],
     ];
 
     if (empty($id)) {
@@ -120,26 +119,26 @@ class Suppliers extends MY_Controller
       $data['updated_on'] = date('Y-m-d H:i:s');
     }
 
-    $this->Supplier_model->save($data, $id);
+    $this->Product_model->save($data, $id);
 
     return $this->jsonResponse(
       true,
       empty($id)
-          ? 'Supplier saved successfully.'
-          : 'Supplier updated successfully.'
+          ? 'Product saved successfully.'
+          : 'Product updated successfully.'
     );
   }
 
   public function activate($id)
   {
-    if (!$this->Supplier_model->get($id)) {
+    if (!$this->Product_model->get($id)) {
       return $this->jsonResponse(
         false,
-        'Supplier not found.'
+        'Product not found.'
       );
     }
 
-    $this->Supplier_model->activate($id);
+    $this->Product_model->activate($id);
 
     return $this->jsonResponse(
       true,
@@ -149,18 +148,19 @@ class Suppliers extends MY_Controller
 
   public function deactivate($id)
   {
-    if (!$this->Supplier_model->get($id)) {
+    if (!$this->Product_model->get($id)) {
       return $this->jsonResponse(
         false,
-        'Supplier not found.'
+        'Product not found.'
       );
     }
 
-    $this->Supplier_model->deactivate($id);
+    $this->Product_model->deactivate($id);
 
     return $this->jsonResponse(
       true,
-      'Supplier deactivated successfully.'
+      'Product deactivated successfully.'
     );
   }
+
 }

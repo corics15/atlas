@@ -15,7 +15,7 @@
     <th>Supplier</th>
     <th>Contact Person</th>
     <th>Contact #</th>
-    <th width="120" class="text-center">Active</th>
+    <th class="text-center">Active</th>
   </tr>
 </thead>
 <tbody>

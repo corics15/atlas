@@ -14,7 +14,7 @@
     </th>
     <th>Code</th>
     <th>Salesman</th>
-    <th width="120" class="text-center">Active</th>
+    <th class="text-center">Active</th>
   </tr>
 </thead>
 <tbody>

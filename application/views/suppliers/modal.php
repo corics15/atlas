@@ -38,7 +38,7 @@
               <small id="errMobileNo" class="text-danger d-block"></small>
           </div>
           <div class="form-group">
-            <label>Contact #</label>
+            <label>Tel #</label>
             <input type="text"
               id="txtTelephoneNo" name="telephone_no"
               class="form-control form-control-sm">

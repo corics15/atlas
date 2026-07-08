@@ -69,3 +69,8 @@ $route['suppliers/get/(:num)'] = 'suppliers/get/$1';
 $route['suppliers/save'] = 'suppliers/save';
 $route['suppliers/activate/(:num)'] = 'suppliers/activate/$1';
 $route['suppliers/deactivate/(:num)'] = 'suppliers/deactivate/$1';
+
+$route['products/get/(:num)'] = 'products/get/$1';
+$route['products/save'] = 'products/save';
+$route['products/activate/(:num)'] = 'products/activate/$1';
+$route['products/deactivate/(:num)'] = 'products/deactivate/$1';
