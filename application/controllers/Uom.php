@@ -1,84 +1,78 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Products extends MY_Controller
+class Uom extends MY_Controller
 {
   public function __construct()
   {
     parent::__construct();
-    $this->load->model('Product_model');
-    $this->load->model('Supplier_model');
     $this->load->model('Uom_model');
-
     $this->load->library('form_validation');
   }
 
   public function index()
   {
     $this->setPage(
-      'Products',
+      'UOM (Unit of Measurement)',
       [
-        'id'   => 'btnNewProduct',
+        'id'   => 'btnNewUom',
         'icon' => 'fas fa-plus',
-        'text' => 'New Product',
+        'text' => 'New UOM',
       ]
     );
 
-    $this->pageScript = 'products';
+    $this->pageScript = 'uom';
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
-    $this->data['products'] = $this->Product_model->getAll($keyword);
+    $this->data['uoms'] = $this->Uom_model->getAll($keyword);
 
     $this->data['tableContent'] = $this->load->view(
-        'products/table',
+        'uom/table',
         $this->data,
         TRUE
     );
 
     $this->data['toolbar'] = [
       'edit' => [
-          'id' => 'btnEditProduct',
+          'id' => 'btnEditUom',
           'text' => 'Edit',
           'icon' => 'fas fa-edit'
       ],
       'activate' => [
-          'id' => 'btnActivateProduct',
+          'id' => 'btnActivateUom',
           'text' => 'Activate',
           'icon' => 'fas fa-check-circle'
       ],
       'deactivate' => [
-          'id' => 'btnDeactivateProduct',
+          'id' => 'btnDeactivateUom',
           'text' => 'Deactivate',
           'icon' => 'fas fa-ban'
       ],
       'refresh' => [
-          'id' => 'btnRefreshProduct',
+          'id' => 'btnRefreshUom',
           'text' => 'Refresh',
           'icon' => 'fas fa-sync'
       ]
     ];
 
-    $this->data['suppliers'] = $this->Supplier_model->getDropdown();
-    $this->data['uoms'] = $this->Uom_model->getDropdown();
-
-    $this->render('products/index');
+    $this->render('uom/index');
   }
 
   public function get($id)
   {
-      $product = $this->Product_model->get($id);
+      $uom = $this->Uom_model->get($id);
 
-      if (!$product) {
+      if (!$uom) {
           return $this->jsonResponse(
             false,
-            'Product not found.'
+            'UOM not found.'
           );
       }
 
       return $this->jsonResponse(
           true,
           '',
-          $product
+          $uom
       );
   }
 
@@ -86,10 +80,17 @@ class Products extends MY_Controller
   {
     $postData = $this->input->post();
     $id = (int) $postData['id'];
+    $uom = trim($postData['uom']);
+
+    if ($this->Uom_model->uomExists($uom, $id)) {
+      return $this->validationResponse([
+        'uom' => 'This UOM already exists.'
+      ]);
+    }
 
     $this->form_validation->set_rules(
-      'description',
-      'Description',
+      'uom',
+      'UOM',
       'required|trim',
       [
         'required' => 'The %s field is mandatory.'
@@ -101,12 +102,7 @@ class Products extends MY_Controller
     }
 
     $data = [
-      'supplier_id' => trim($postData['supplier_id']),
-      'barcode' => trim($postData['barcode']),
-      'description' => trim($postData['description']) <> '' ? strtoupper(trim($postData['description'])) : NULL,
-      'uom_id' => $postData['uom_id'],
-      'cost' => $postData['cost'],
-      'srp' => $postData['srp'],
+      'uom' => strtoupper(trim($postData['uom'])),
     ];
 
     if (empty($id)) {
@@ -117,48 +113,47 @@ class Products extends MY_Controller
       $data['updated_on'] = date('Y-m-d H:i:s');
     }
 
-    $this->Product_model->save($data, $id);
+    $this->Uom_model->save($data, $id);
 
     return $this->jsonResponse(
       true,
       empty($id)
-          ? 'Product saved successfully.'
-          : 'Product updated successfully.'
+          ? 'UOM saved successfully.'
+          : 'UOM updated successfully.'
     );
   }
 
   public function activate($id)
   {
-    if (!$this->Product_model->get($id)) {
+    if (!$this->Uom_model->get($id)) {
       return $this->jsonResponse(
         false,
-        'Product not found.'
+        'UOM not found.'
       );
     }
 
-    $this->Product_model->activate($id);
+    $this->Uom_model->activate($id);
 
     return $this->jsonResponse(
       true,
-      'Supplier activated successfully.'
+      'UOM activated successfully.'
     );
   }
 
   public function deactivate($id)
   {
-    if (!$this->Product_model->get($id)) {
+    if (!$this->Uom_model->get($id)) {
       return $this->jsonResponse(
         false,
-        'Product not found.'
+        'UOM not found.'
       );
     }
 
-    $this->Product_model->deactivate($id);
+    $this->Uom_model->deactivate($id);
 
     return $this->jsonResponse(
       true,
-      'Product deactivated successfully.'
+      'UOM deactivated successfully.'
     );
   }
-
 }

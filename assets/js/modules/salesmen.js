@@ -46,9 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
           location.reload();
         }, 1500);
       },
-      onError: (result) => {
-        console.log(result);
-      }
+      onError: (result) => { }
     });
   });
 

@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/plugins/fontawesome-free/css/all.min.css'); ?>">
     <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/dist/css/adminlte.min.css'); ?>">
     <link rel="stylesheet" href="<?= atlas_asset('assets/css/bootstrap-4.css'); ?>">
+    <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/plugins/select2/css/select2.min.css'); ?>">
+    <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css'); ?>">
+    <link rel="stylesheet" href="<?= atlas_asset('assets/css/app.css'); ?>">
 
     <link rel="shortcut icon" href="<?= atlas_asset($app['shortcut_ico']) ?>" type="image/x-icon">
   </head>

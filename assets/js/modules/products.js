@@ -2,18 +2,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const btnNewProduct = document.getElementById('btnNewProduct');
   const btnEditProduct = document.getElementById('btnEditProduct');
-  // const btnSaveProduct = document.getElementById('btnSaveProduct');
   const btnActivateProduct = document.getElementById('btnActivateProduct');
   const btnDeactivateProduct = document.getElementById('btnDeactivateProduct');
   const btnRefreshProduct = document.getElementById('btnRefreshProduct');
 
   const frmProduct = document.getElementById('frmProduct');
 
-  // const txtProductCode = document.getElementById('txtProductCode');
   const txtBarcode = document.getElementById('txtBarcode');
   const txtDescription = document.getElementById('txtDescription');
   const selSupplier = document.getElementById('selSupplier');
-  const txtUOM = document.getElementById('txtUOM');
+  const selUom = document.getElementById('selUom');
   const txtCost = document.getElementById('txtCost');
   const txtSRP = document.getElementById('txtSRP');
 
@@ -21,6 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const chkSelectAllProduct = document.getElementById('chkSelectAllProduct');
 
   updateToolbarState();
+
+  Atlas.select.init('#selSupplier', '#mdlProduct');
+  Atlas.select.init('#selUom', '#mdlProduct');
 
   btnNewProduct.addEventListener('click', () => {
     frmProduct.reset();
@@ -75,13 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     hidProductId.value = result.data.id;
 
-    // txtProductCode.value = result.data.product_code;
     txtBarcode.value = result.data.barcode;
     txtDescription.value = result.data.description;
     selSupplier.value = result.data.supplier_id;
-    txtUOM.value = result.data.uom;
+    selUom.value = result.data.uom;
     txtCost.value = result.data.cost;
     txtSRP.value = result.data.srp;
+
+    $('#selSupplier')
+      .val(result.data.supplier_id)
+      .trigger('change');
 
     Atlas.validation.clear();
 

@@ -12,7 +12,7 @@
         </label>
       </div>
     </th>
-    <th class="text-center">Supplier</th>
+    <th>Supplier</th>
     <th class="text-center">Barcode</th>
     <th>Description</th>
     <th class="text-center">UOM</th>
@@ -39,7 +39,7 @@
         </label>
       </div>
     </td>
-    <td><?= htmlspecialchars($product->supplier_id); ?></td>
+    <td><?= htmlspecialchars($product->supplier_name); ?></td>
     <td class="text-center">
       <?= htmlspecialchars($product->barcode); ?>
     </td>

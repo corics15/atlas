@@ -82,12 +82,14 @@ class Suppliers extends MY_Controller
     $id = (int) $postData['id'];
     $supplierName = trim($postData['supplier_name']);
 
+    if (false) :
     if ($this->Supplier_model->supplierNameExists($supplierName, $id)) {
       return $this->jsonResponse(
         false,
         'Supplier already exists.'
       );
     }
+    endif;
 
     $this->form_validation->set_rules(
       'supplier_name',
@@ -103,7 +105,7 @@ class Suppliers extends MY_Controller
     }
 
     $data = [
-      'supplier_name' => trim($postData['supplier_name']),
+      'supplier_name' => strtoupper(trim($postData['supplier_name'])),
       'contact_person' => trim($postData['contact_person']) <> '' ? strtoupper(trim($postData['contact_person'])) : NULL,
       'mobile_no' => trim($postData['mobile_no']) <> '' ? trim($postData['mobile_no']) : NULL,
       'telephone_no' => trim($postData['telephone_no']) <> '' ? trim($postData['telephone_no']) : NULL,

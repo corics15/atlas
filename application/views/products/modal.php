@@ -17,15 +17,22 @@
 
         <div class="modal-body">
           <div class="form-group">
-            <label>Supplier</label>
-            <input type="text"
-              id="selSupplier" name="supplier_id"
-              class="form-control form-control-sm">
-              <small id="errSupplier" class="text-danger d-block"></small>
+            <label for="selSupplier">Supplier</label>
+            <select
+              id="selSupplier"
+              name="supplier_id"
+              class="">
+              <option value="">Select Supplier</option>
+              <?php foreach ($suppliers as $supplier): ?>
+                <option value="<?= $supplier->id; ?>">
+                  <?= htmlspecialchars($supplier->supplier_name); ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
           </div>
 
           <div class="form-group">
-            <label>Barcode</label>
+            <label for="txtBarcode">Barcode</label>
             <input type="text"
               id="txtBarcode" name="barcode"
               class="form-control form-control-sm">
@@ -33,23 +40,30 @@
           </div>
 
           <div class="form-group">
-            <label>Description</label>
+            <label for="txtDescription">Description</label>
             <input type="text"
               id="txtDescription" name="description"
-              class="form-control form-control-sm">
+              class="form-control form-control-sm uppercase">
               <small id="errDescription" class="text-danger d-block"></small>
           </div>
 
           <div class="form-group">
-            <label>UOM</label>
-            <input type="text"
-              id="txtUOM" name="uom"
-              class="form-control form-control-sm">
-              <small id="errUOM" class="text-danger d-block"></small>
+            <label for="selUom">UOM</label>
+              <select
+                id="selUom"
+                name="uom_id"
+                class="custom-select">
+                <option value="">Select UOM</option>
+                <?php foreach ($uoms as $uom): ?>
+                  <option value="<?= $uom->id; ?>">
+                    <?= htmlspecialchars($uom->uom); ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
           </div>
 
           <div class="form-group">
-            <label>Cost</label>
+            <label for="txtCost">Cost</label>
             <input type="text"
               id="txtCost" name="cost"
               class="form-control form-control-sm">
@@ -57,7 +71,7 @@
           </div>
 
           <div class="form-group">
-            <label>SRP</label>
+            <label for="txtSRP">SRP</label>
             <input type="text"
               id="txtSRP" name="srp"
               class="form-control form-control-sm">

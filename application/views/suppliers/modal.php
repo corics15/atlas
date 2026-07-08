@@ -20,14 +20,14 @@
             <label>Supplier</label>
             <input type="text"
               id="txtSupplierName" name="supplier_name"
-              class="form-control form-control-sm">
+              class="form-control form-control-sm uppercase">
               <small id="errSupplierName" class="text-danger d-block"></small>
           </div>
           <div class="form-group">
             <label>Contact Person</label>
             <input type="text"
               id="txtContactPerson" name="contact_person"
-              class="form-control form-control-sm">
+              class="form-control form-control-sm uppercase">
               <small id="errContactPerson" class="text-danger d-block"></small>
           </div>
           <div class="form-group">
@@ -55,7 +55,7 @@
             <label>Address</label>
             <input type="text"
               id="txtAddress" name="address"
-              class="form-control form-control-sm">
+              class="form-control form-control-sm uppercase">
               <small id="errAddress" class="text-danger d-block"></small>
           </div>
           <div class="form-group">

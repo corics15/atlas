@@ -92,7 +92,7 @@ class Salesmen extends MY_Controller
     }
 
     $data = [
-      'code' => trim($postData['salesman_code']),
+      'code' => strtoupper(trim($postData['salesman_code'])),
       'first_name' => strtoupper(trim($postData['first_name'])),
       'last_name' => strtoupper(trim($postData['last_name'])),
       'mobile_no' => trim($postData['contact_no']) <> '' ? trim($postData['contact_no']) : NULL,

@@ -74,3 +74,8 @@ $route['products/get/(:num)'] = 'products/get/$1';
 $route['products/save'] = 'products/save';
 $route['products/activate/(:num)'] = 'products/activate/$1';
 $route['products/deactivate/(:num)'] = 'products/deactivate/$1';
+
+$route['uom/get/(:num)'] = 'uom/get/$1';
+$route['uom/save'] = 'uom/save';
+$route['uom/activate/(:num)'] = 'uom/activate/$1';
+$route['uom/deactivate/(:num)'] = 'uom/deactivate/$1';

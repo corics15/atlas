@@ -3,25 +3,22 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Product_model extends CI_Model
 {
-public function getAll($keyword = '')
-{
-  if (!empty($keyword)) {
-    $escaped = $this->db->escape_like_str($keyword);
+  public function getAll($keyword = '')
+  {
+    if (!empty($keyword)) {
+      $escaped = $this->db->escape_like_str($keyword);
 
-    $this->db->group_start()
-        ->where("description ILIKE '%{$escaped}%'")
-        ->or_where("barcode ILIKE '%{$escaped}%'")
-        // ->or_where("mobile_no ILIKE '%{$escaped}%'")
-        // ->or_where("telephone_no ILIKE '%{$escaped}%'")
-        // ->or_where("email_address ILIKE '%{$escaped}%'")
-    ->group_end();
+      $this->db->group_start()
+          ->where("description ILIKE '%{$escaped}%'")
+          ->or_where("barcode ILIKE '%{$escaped}%'")
+      ->group_end();
+    }
+
+    return $this->db
+        ->order_by('description ASC')
+        ->get('v_products')
+        ->result();
   }
-
-  return $this->db
-      ->order_by('description ASC')
-      ->get('m_products')
-      ->result();
-}
 
   public function get($id)
   {
@@ -59,14 +56,4 @@ public function getAll($keyword = '')
           'is_active' => FALSE
         ]);
   }
-
-  // public function productCodeExists($productCode, $id)
-  // {
-  //     $this->db->where('supplier_name', $supplierName);
-  //     if (!empty($excludeId)) {
-  //         $this->db->where('id <>', $excludeId);
-  //     }
-
-  //     return $this->db->count_all_results('m_products') > 0;
-  // }
 }

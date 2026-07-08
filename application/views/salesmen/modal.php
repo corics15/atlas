@@ -23,20 +23,23 @@
               class="form-control form-control-sm">
               <small id="errSalesmanCode" class="text-danger d-block"></small>
           </div>
+
           <div class="form-group">
             <label>First Name</label>
             <input type="text"
               id="txtFirstName" name="first_name"
-              class="form-control form-control-sm">
+              class="form-control form-control-sm uppercase">
               <small id="errFirstName" class="text-danger d-block"></small>
           </div>
+
           <div class="form-group">
             <label>Last Name</label>
             <input type="text"
               id="txtLastName" name="last_name"
-              class="form-control form-control-sm">
+              class="form-control form-control-sm uppercase">
               <small id="errLastName" class="text-danger d-block"></small>
           </div>
+
           <div class="form-group">
             <label>Contact #</label>
             <input type="text"

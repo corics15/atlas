@@ -3,25 +3,25 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Supplier_model extends CI_Model
 {
-public function getAll($keyword = '')
-{
-  if (!empty($keyword)) {
-    $escaped = $this->db->escape_like_str($keyword);
+  public function getAll($keyword = '')
+  {
+    if (!empty($keyword)) {
+      $escaped = $this->db->escape_like_str($keyword);
 
-    $this->db->group_start()
-        ->where("supplier_name ILIKE '%{$escaped}%'")
-        ->or_where("contact_person ILIKE '%{$escaped}%'")
-        ->or_where("mobile_no ILIKE '%{$escaped}%'")
-        ->or_where("telephone_no ILIKE '%{$escaped}%'")
-        ->or_where("email_address ILIKE '%{$escaped}%'")
-    ->group_end();
+      $this->db->group_start()
+          ->where("supplier_name ILIKE '%{$escaped}%'")
+          ->or_where("contact_person ILIKE '%{$escaped}%'")
+          ->or_where("mobile_no ILIKE '%{$escaped}%'")
+          ->or_where("telephone_no ILIKE '%{$escaped}%'")
+          ->or_where("email_address ILIKE '%{$escaped}%'")
+      ->group_end();
+    }
+
+    return $this->db
+        ->order_by('supplier_name ASC')
+        ->get('m_suppliers')
+        ->result();
   }
-
-  return $this->db
-      ->order_by('supplier_name ASC')
-      ->get('m_suppliers')
-      ->result();
-}
 
   public function get($id)
   {
@@ -60,6 +60,7 @@ public function getAll($keyword = '')
         ]);
   }
 
+  /*** allow multiple entries for suppliers, not used */
   public function supplierNameExists($supplierName, $excludeId = null)
   {
       $this->db->where('supplier_name', $supplierName);
@@ -68,5 +69,14 @@ public function getAll($keyword = '')
       }
 
       return $this->db->count_all_results('m_suppliers') > 0;
+  }
+
+  public function getDropdown()
+  {
+    $this->db->select('id, supplier_name');
+    $this->db->where('is_active', TRUE);
+    $this->db->order_by('supplier_name', 'ASC');
+
+    return $this->db->get('m_suppliers')->result();
   }
 }

@@ -53,7 +53,7 @@ class MY_Controller extends CI_Controller
     $this->data['pageButton'] = $button;
   }
 
-  protected function validationResponse()
+  protected function validationResponse($customErrors = [])
   {
     $errors = [];
 
@@ -64,6 +64,7 @@ class MY_Controller extends CI_Controller
       }
     }
 
+    $errors = array_merge($errors, $customErrors);
     return $this->jsonResponse(
       false,
       'Please correct the highlighted fields.',
@@ -72,5 +73,4 @@ class MY_Controller extends CI_Controller
       ]
     );
   }
-
 }
