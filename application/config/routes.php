@@ -58,8 +58,14 @@ $route['users/get/(:num)'] = 'users/get/$1';
 $route['users/deactivate/(:num)'] = 'users/deactivate/$1';
 $route['users/activate/(:num)'] = 'users/activate/$1';
 $route['users/reset-password/(:num)'] = 'users/resetPassword/$1';
+
 $route['salesmen'] = 'salesmen';
 $route['salesmen/save'] = 'salesmen/save';
 $route['salesmen/get/(:num)'] = 'salesmen/get/$1';
 $route['salesmen/activate/(:num)']   = 'salesmen/activate/$1';
 $route['salesmen/deactivate/(:num)'] = 'salesmen/deactivate/$1';
+
+$route['suppliers/get/(:num)'] = 'suppliers/get/$1';
+$route['suppliers/save'] = 'suppliers/save';
+$route['suppliers/activate/(:num)'] = 'suppliers/activate/$1';
+$route['suppliers/deactivate/(:num)'] = 'suppliers/deactivate/$1';

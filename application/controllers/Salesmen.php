@@ -5,9 +5,9 @@ class Salesmen extends MY_Controller
 {
   public function __construct()
   {
-      parent::__construct();
-      $this->load->model('Salesman_model');
-      $this->load->library('form_validation');
+    parent::__construct();
+    $this->load->model('Salesman_model');
+    $this->load->library('form_validation');
   }
 
   public function index()
@@ -22,7 +22,6 @@ class Salesmen extends MY_Controller
     );
 
     $this->pageScript = 'salesmen';
-
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $this->data['salesmen'] = $this->Salesman_model->getAll($keyword);
@@ -60,6 +59,7 @@ class Salesmen extends MY_Controller
 
   public function save()
   {
+    $postData = $this->input->post();
     $this->form_validation->set_rules(
       'salesman_code',
       'Code',
@@ -82,8 +82,8 @@ class Salesmen extends MY_Controller
       return $this->validationResponse();
     }
 
-    $id = $this->input->post('id');
-    $code = trim($this->input->post('salesman_code'));
+    $id = $postData['id'];
+    $code = trim($postData['salesman_code']);
 
     if ($this->Salesman_model->codeExists($code, $id)) {
       return $this->validationResponse([
@@ -92,10 +92,10 @@ class Salesmen extends MY_Controller
     }
 
     $data = [
-      'code' => trim($this->input->post('salesman_code')),
-      'first_name' => trim($this->input->post('first_name')),
-      'last_name' => trim($this->input->post('last_name')),
-      'mobile_no' => trim($this->input->post('contact_no'))
+      'code' => trim($postData['salesman_code']),
+      'first_name' => strtoupper(trim($postData['first_name'])),
+      'last_name' => strtoupper(trim($postData['last_name'])),
+      'mobile_no' => trim($postData['contact_no']) <> '' ? trim($postData['contact_no']) : NULL,
     ];
 
     if (empty($id)) {

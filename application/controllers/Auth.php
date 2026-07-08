@@ -13,7 +13,7 @@ class Auth extends MY_Controller
 
   public function index()
   {
-    $this->load->view('auth/login');
+    $this->load->view('auth/login', $this->data);
   }
 
   public function login()

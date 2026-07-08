@@ -65,9 +65,9 @@ class Users extends MY_Controller
 
   public function save()
   {
-    $id = (int) $this->input->post('id');
-
-    $username = trim($this->input->post('username'));
+    $postData = $this->input->post();
+    $id = (int) $postData['id'];
+    $username = trim($postData['username']);
     if ($this->User_model->usernameExists($username, $id)) {
       return $this->jsonResponse(
         false,
@@ -107,9 +107,9 @@ class Users extends MY_Controller
     }
 
     $data = [
-      'username'   => trim($this->input->post('username')),
-      'first_name' => trim($this->input->post('first_name')),
-      'last_name'  => trim($this->input->post('last_name')),
+      'username'   => trim($postData['username']),
+      'first_name' => strtoupper(trim($postData['first_name'])),
+      'last_name'  => strtoupper(trim($postData['last_name'])),
     ];
 
     if (empty($id)) {

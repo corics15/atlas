@@ -20,10 +20,12 @@ class User_model extends MY_Model
   public function getAll($keyword = '')
   {
     if (!empty($keyword)) {
+      $escaped = $this->db->escape_like_str($keyword);
+
       $this->db->group_start()
-          ->like('username', $keyword)
-          ->or_like('first_name', $keyword)
-          ->or_like('last_name', $keyword)
+          ->where("username ILIKE '%{$escaped}%'")
+          ->or_where("first_name ILIKE '%{$escaped}%'")
+          ->or_where("last_name ILIKE '%{$escaped}%'")
       ->group_end();
     }
 

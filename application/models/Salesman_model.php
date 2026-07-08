@@ -6,13 +6,13 @@ class Salesman_model extends CI_Model
   public function getAll($keyword = '')
   {
     if (!empty($keyword)) {
-      $this->db->group_start();
+      $escaped = $this->db->escape_like_str($keyword);
 
-      $this->db->like('code', $keyword);
-      $this->db->or_like('first_name', $keyword);
-      $this->db->or_like('last_name', $keyword);
-
-      $this->db->group_end();
+      $this->db->group_start()
+          ->where("code ILIKE '%{$escaped}%'")
+          ->or_where("first_name ILIKE '%{$escaped}%'")
+          ->or_where("last_name ILIKE '%{$escaped}%'")
+      ->group_end();
     }
 
     return $this->db
@@ -20,6 +20,14 @@ class Salesman_model extends CI_Model
         ->order_by('first_name')
         ->get('m_salesmen')
         ->result();
+  }
+
+  public function get($id)
+  {
+    return $this->db
+        ->where('id', $id)
+        ->get('m_salesmen')
+        ->row();
   }
 
   public function save($data, $id = null)
@@ -31,14 +39,6 @@ class Salesman_model extends CI_Model
     return $this->db
         ->where('id', $id)
         ->update('m_salesmen', $data);
-  }
-
-  public function get($id)
-  {
-    return $this->db
-        ->where('id', $id)
-        ->get('m_salesmen')
-        ->row();
   }
 
   public function codeExists($code, $excludeId = null)
