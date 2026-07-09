@@ -1,14 +1,11 @@
-<div class="modal fade" id="mdlSupplier" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-
+<div class="modal fade" id="mdlSupplier" tabindex="-1" aria-labelledby="mdlSupplierLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title"></h5>
 
-        <button type="button"
-          class="close"
-          data-dismiss="modal">
-        <span>&times;</span>
+      <div class="modal-header">
+        <h5 class="modal-title" id="mdlSupplierLabel">Supplier Information</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
         </button>
       </div>
 
@@ -16,68 +13,67 @@
         <input type="hidden" id="hidSupplierId" name="id">
 
         <div class="modal-body">
-          <div class="form-group">
-            <label>Supplier</label>
-            <input type="text"
-              id="txtSupplierName" name="supplier_name"
-              class="form-control form-control-sm uppercase">
-              <small id="errSupplierName" class="text-danger d-block"></small>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="txtSupplierName">Supplier</label>
+              <input type="text" id="txtSupplierName" name="supplier_name"
+                     class="form-control form-control-sm text-uppercase" placeholder="Enter supplier name">
+              <small id="errSupplierName" class="text-danger"></small>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="txtContactPerson">Contact Person</label>
+              <input type="text" id="txtContactPerson" name="contact_person"
+                     class="form-control form-control-sm text-uppercase" placeholder="Enter contact person">
+              <small id="errContactPerson" class="text-danger"></small>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Contact Person</label>
-            <input type="text"
-              id="txtContactPerson" name="contact_person"
-              class="form-control form-control-sm uppercase">
-              <small id="errContactPerson" class="text-danger d-block"></small>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="txtMobileNo">Mobile #</label>
+              <input type="text" id="txtMobileNo" name="mobile_no"
+                     class="form-control form-control-sm" placeholder="09XX-XXX-XXXX">
+              <small id="errMobileNo" class="text-danger"></small>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="txtTelephoneNo">Tel #</label>
+              <input type="text" id="txtTelephoneNo" name="telephone_no"
+                     class="form-control form-control-sm" placeholder="(XXX) XXX-XXXX">
+              <small id="errTelephoneNo" class="text-danger"></small>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Mobile #</label>
-            <input type="text"
-              id="txtMobileNo" name="mobile_no"
-              class="form-control form-control-sm">
-              <small id="errMobileNo" class="text-danger d-block"></small>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="txtEmailAddress">Email</label>
+              <input type="text" id="txtEmailAddress" name="email_address"
+                     class="form-control form-control-sm" placeholder="example@domain.com">
+              <small id="errEmailAddress" class="text-danger"></small>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="txtAddress">Address</label>
+              <input type="text" id="txtAddress" name="address"
+                     class="form-control form-control-sm text-uppercase" placeholder="Enter address">
+              <small id="errAddress" class="text-danger"></small>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Tel #</label>
-            <input type="text"
-              id="txtTelephoneNo" name="telephone_no"
-              class="form-control form-control-sm">
-              <small id="errTelephoneNo" class="text-danger d-block"></small>
-          </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input type="text"
-              id="txtEmailAddress" name="email_address"
-              class="form-control form-control-sm">
-              <small id="errContactNo" class="text-danger d-block"></small>
-          </div>
-          <div class="form-group">
-            <label>Address</label>
-            <input type="text"
-              id="txtAddress" name="address"
-              class="form-control form-control-sm uppercase">
-              <small id="errAddress" class="text-danger d-block"></small>
-          </div>
-          <div class="form-group">
-            <label>TIN</label>
-            <input type="text"
-              id="txtTinNo" name="tin_no"
-              class="form-control form-control-sm">
-              <small id="errTinNo" class="text-danger d-block"></small>
+
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="txtTinNo">TIN</label>
+              <input type="text" id="txtTinNo" name="tin_no"
+                     class="form-control form-control-sm" placeholder="Enter TIN">
+              <small id="errTinNo" class="text-danger"></small>
+            </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button
-            type="submit"
-            id="btnSaveSalesman"
-            class="btn btn-sm btn-primary">
-          Save
-          </button>
+          <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" id="btnSaveSalesman" class="btn btn-sm btn-primary">Save Supplier</button>
         </div>
       </form>
 
     </div>
-
   </div>
 </div>

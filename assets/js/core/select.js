@@ -11,6 +11,13 @@ class AtlasSelect {
       ...options
     });
   }
+
+  onChange(selector, callback) {
+    $(selector).on('change', function () {
+      const option = this.options[this.selectedIndex];
+      callback(option, this);
+    });
+  }
 }
 
 window.Atlas = window.Atlas || {};

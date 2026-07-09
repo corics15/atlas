@@ -165,4 +165,13 @@ class Salesmen extends MY_Controller
       'Salesman deactivated successfully.'
     );
   }
+
+  public function getDropdown()
+  {
+    // $this->db->select('id, customer_name, salesman_id');
+    $this->db->where('is_active', TRUE);
+    $this->db->order_by('last_name');
+
+    return $this->db->get('m_salesmen')->result();
+  }
 }

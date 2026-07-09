@@ -10,7 +10,6 @@ class Customer_model extends CI_Model
 
       $this->db->group_start()
           ->where("customer_name ILIKE '%{$escaped}%'")
-          // ->or_where("barcode ILIKE '%{$escaped}%'")
       ->group_end();
     }
 
@@ -55,5 +54,14 @@ class Customer_model extends CI_Model
         ->update('m_customers', [
           'is_active' => FALSE
         ]);
+  }
+
+  public function getDropdown()
+  {
+    $this->db->select('id, customer_name, salesman_id, terms, credit_limit');
+    $this->db->where('is_active', TRUE);
+    $this->db->order_by('customer_name');
+
+    return $this->db->get('v_customers')->result();
   }
 }
