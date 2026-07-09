@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Product_model extends CI_Model
+class Customer_model extends CI_Model
 {
   public function getAll($keyword = '')
   {
@@ -9,14 +9,14 @@ class Product_model extends CI_Model
       $escaped = $this->db->escape_like_str($keyword);
 
       $this->db->group_start()
-          ->where("description ILIKE '%{$escaped}%'")
-          ->or_where("barcode ILIKE '%{$escaped}%'")
+          ->where("customer_name ILIKE '%{$escaped}%'")
+          // ->or_where("barcode ILIKE '%{$escaped}%'")
       ->group_end();
     }
 
     return $this->db
-        ->order_by('description ASC')
-        ->get('v_products')
+        ->order_by('customer_name ASC')
+        ->get('v_customers')
         ->result();
   }
 
@@ -24,26 +24,26 @@ class Product_model extends CI_Model
   {
     return $this->db
         ->where('id', $id)
-        ->get('v_products')
+        ->get('v_customers')
         ->row();
   }
 
   public function save($data, $id = null)
   {
     if (empty($id)) {
-      return $this->db->insert('m_products', $data);
+      return $this->db->insert('m_customers', $data);
     }
 
     return $this->db
         ->where('id', $id)
-        ->update('m_products', $data);
+        ->update('m_customers', $data);
   }
 
   public function activate($id)
   {
     return $this->db
         ->where('id', $id)
-        ->update('m_products', [
+        ->update('m_customers', [
           'is_active' => TRUE
         ]);
   }
@@ -52,7 +52,7 @@ class Product_model extends CI_Model
   {
     return $this->db
         ->where('id', $id)
-        ->update('m_products', [
+        ->update('m_customers', [
           'is_active' => FALSE
         ]);
   }

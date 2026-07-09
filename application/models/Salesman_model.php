@@ -68,4 +68,14 @@ class Salesman_model extends CI_Model
 
     return $this->db->count_all_results('m_salesmen') > 0;
   }
+
+  public function getDropdown()
+  {
+    $this->db->select('id, code, first_name, last_name');
+    $this->db->where('is_active', TRUE);
+    $this->db->order_by('last_name');
+    $this->db->order_by('first_name');
+
+    return $this->db->get('m_salesmen')->result();
+  }
 }

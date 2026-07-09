@@ -5,7 +5,7 @@
     <div class="card">
       <div class="card-body">
 
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="align-items-md-end align-items-start d-flex flex-column flex-md-row justify-content-between">
 
           <?php $this->load->view('partials/search_toolbar'); ?>
           <?php $this->load->view('partials/toolbar'); ?>

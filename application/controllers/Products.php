@@ -140,7 +140,7 @@ class Products extends MY_Controller
 
     return $this->jsonResponse(
       true,
-      'Supplier activated successfully.'
+      'Product activated successfully.'
     );
   }
 

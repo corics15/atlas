@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnEditProduct.addEventListener('click', async () => {
-    const id = getSelectedSupplierId();
+    const id = getSelectedProductId();
 
     if (!id) {
       return;
@@ -78,14 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     txtBarcode.value = result.data.barcode;
     txtDescription.value = result.data.description;
-    selSupplier.value = result.data.supplier_id;
-    selUom.value = result.data.uom;
     txtCost.value = result.data.cost;
     txtSRP.value = result.data.srp;
 
-    $('#selSupplier')
-      .val(result.data.supplier_id)
-      .trigger('change');
+    $('#selSupplier').val(result.data.supplier_id).trigger('change');
+    $('#selUom').val(result.data.uom_id).trigger('change');
 
     Atlas.validation.clear();
 
@@ -96,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnActivateProduct.addEventListener('click', async () => {
-    const id = getSelectedSupplierId();
+    const id = getSelectedProductId();
 
     if (!id) {
       return;
@@ -126,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnDeactivateProduct.addEventListener('click', async () => {
-    const id = getSelectedSupplierId();
+    const id = getSelectedProductId();
 
     if (!id) {
       return;
@@ -177,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     location.reload();
   });
 
-  function getSelectedSupplierId() {
+  function getSelectedProductId() {
     const checked = document.querySelectorAll('.chkProduct:checked');
 
     if (checked.length === 0) {

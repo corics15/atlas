@@ -52,7 +52,7 @@
               <select
                 id="selUom"
                 name="uom_id"
-                class="custom-select">
+                class="">
                 <option value="">Select UOM</option>
                 <?php foreach ($uoms as $uom): ?>
                   <option value="<?= $uom->id; ?>">
