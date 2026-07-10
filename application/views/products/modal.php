@@ -56,13 +56,13 @@
           <div class="form-row">
             <div class="form-group col-md-6">
               <label for="txtCost">Cost</label>
-              <input type="number" id="txtCost" name="cost"
+              <input type="number" id="txtCost" name="cost" step="any"
                      class="form-control form-control-sm" placeholder="Enter cost">
               <small id="errCost" class="text-danger"></small>
             </div>
             <div class="form-group col-md-6">
               <label for="txtSRP">SRP</label>
-              <input type="number" id="txtSRP" name="srp"
+              <input type="number" id="txtSRP" name="srp" step="any"
                      class="form-control form-control-sm" placeholder="Enter SRP">
               <small id="errSRP" class="text-danger"></small>
             </div>

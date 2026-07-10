@@ -1,11 +1,17 @@
 class AtlasSelect {
 
-  init(selector, modal = null) {
+  init(control, modal = null) {
     const options = {};
+    const element =
+      typeof control === 'string'
+        ? $(control)
+        : $(control);
+
     if (modal) {
       options.dropdownParent = $(modal);
     }
-    $(selector).select2({
+
+    $(control).select2({
       theme: 'bootstrap4',
       width: '100%',
       ...options
@@ -13,7 +19,7 @@ class AtlasSelect {
   }
 
   onChange(selector, callback) {
-    $(selector).on('change', function () {
+    $(document).on('change', selector, function () {
       const option = this.options[this.selectedIndex];
       callback(option, this);
     });

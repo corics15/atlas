@@ -13,6 +13,7 @@
 <script src="<?= atlas_asset('assets/js/core/form.js'); ?>"></script>
 
 <script src="<?= atlas_asset('assets/js/core/select.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/product-finder.js'); ?>"></script>
 
 <?php if (!empty($pageScript)) : ?>
   <script src="<?= atlas_asset('assets/js/modules/' . $pageScript . '.js'); ?>"></script>

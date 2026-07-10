@@ -9,6 +9,7 @@ class Purchase_orders extends MY_Controller
 
     $this->load->model('Customer_model');
     $this->load->model('Salesman_model');
+    $this->load->model('Product_model');
 
     $this->load->library('form_validation');
   }
@@ -28,6 +29,7 @@ class Purchase_orders extends MY_Controller
 
     $this->data['customers'] = $this->Customer_model->getDropdown();
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
+    $this->data['products'] = $this->Product_model->getDropdown();
 
     $this->render('purchase_orders/index');
   }

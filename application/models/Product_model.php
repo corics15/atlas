@@ -56,4 +56,49 @@ class Product_model extends CI_Model
           'is_active' => FALSE
         ]);
   }
+
+  public function getDropdown()
+  {
+    $this->db->select('id,
+                      barcode,
+                      description,
+                      uom,
+                      srp,
+                      supplier_name');
+
+    $this->db->where('is_active', TRUE);
+    $this->db->order_by('description');
+
+    return $this->db
+        ->get('v_products')
+        ->result();
+  }
+
+  public function getFinder()
+  {
+    $this->db->select("
+        id,
+        barcode,
+        supplier_name,
+        description,
+        uom,
+        srp
+    ");
+
+    $this->db->where('is_active', TRUE);
+    $this->db->order_by('description');
+
+    return $this->db
+        ->get('v_products')
+        ->result();
+  }
+
+  public function getByBarcode($barcode)
+  {
+    return $this->db
+        ->where('barcode', trim($barcode))
+        ->where('is_active', TRUE)
+        ->get('v_products')
+        ->row();
+  }
 }

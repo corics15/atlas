@@ -101,12 +101,49 @@ body.login-page.swal2-height-auto {
   font-weight: 500;
 }
 
+.table .thead-orange th {
+  color: #745c0c;
+  background-color: #fff7d7;
+  border-color: #ffe577;
+  font-weight: 500;
+}
+
 .table .thead-light th {
   font-weight: 500;
 }
 
 .card-title {
   color: darkgoldenrod;
+}
+
+.po-supplier,
+.po-description {
+  max-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#tblProductFinder tr {
+  cursor: pointer;
+}
+
+#tblProductFinder tr:hover {
+  background: #f8f9fa;
+}
+
+.font-sm,
+#tblPurchaseOrderDetails input,
+#tblPurchaseOrderDetails td {
+  font-size: small !important;
+}
+
+.font-smr {
+  font-size: smaller !important;
+}
+
+.pointer {
+  cursor: pointer;
 }
 
 /** checkboxes */
@@ -285,7 +322,7 @@ label {
 
 .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
   height: 100% !important;
-  top: 0;
+  top: -3px;
 }
 
 .select2-container--bootstrap4 .select2-results__option {

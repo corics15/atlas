@@ -44,6 +44,7 @@
       Atlas.config = { baseUrl: "<?= base_url(); ?>" };
     </script>
 
+    <?php $this->load->view('partials/modals/product_finder'); ?>
     <?php $this->load->view('partials/scripts'); ?>
 
   </body>

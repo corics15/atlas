@@ -1,4 +1,4 @@
-<thead class="thead-gold">
+<thead class="thead-orange">
   <tr>
     <th width="40" class="text-center">
       <div class="custom-checkbox custom-control ml-2 mt-1">
