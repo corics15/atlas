@@ -10,6 +10,7 @@ class Purchase_orders extends MY_Controller
     $this->load->model('Customer_model');
     $this->load->model('Salesman_model');
     $this->load->model('Product_model');
+    $this->load->model('Purchase_order_model');
 
     $this->load->library('form_validation');
   }
@@ -31,6 +32,110 @@ class Purchase_orders extends MY_Controller
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['products'] = $this->Product_model->getDropdown();
 
+    $this->data['purchaseOrderId'] = (int) $this->input->get('id');
+
     $this->render('purchase_orders/index');
+  }
+
+  public function save()
+  {
+    $payload = json_decode($this->input->raw_input_stream);
+    $result = $this->Purchase_order_model->save($payload);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data'] ?? null,
+    );
+  }
+
+  public function update()
+  {
+    $payload = json_decode($this->input->raw_input_stream);
+
+    $result = $this->Purchase_order_model->update($payload);
+
+    return $this->jsonResponse(
+        $result['success'],
+        $result['message'],
+        $result['data'] ?? null
+    );
+  }
+
+  public function get($id)
+  {
+    $data = $this->Purchase_order_model->get($id);
+
+    return $this->jsonResponse(
+      true,
+      '',
+      $data
+    );
+  }
+
+  public function list()
+  {
+    $this->setPage(
+      'Purchase Order List',
+      [
+        'id'   => 'btnNewPurchaseOrder',
+        'icon' => 'fa fa-plus',
+        'text' => 'New Purchase Order',
+      ]
+    );
+
+    $this->data['statuses'] = [
+      'OPEN',
+      'CLOSED',
+      'CANCELLED'
+    ];
+
+    $this->pageScript = 'purchase_order_list';
+
+    $filters = [
+      'date_from' => trim($this->input->get('date_from')),
+      'date_to' => trim($this->input->get('date_to')),
+      'customer_id' => trim($this->input->get('customer_id')),
+      'status' => trim($this->input->get('status')),
+    ];
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['customers'] = $this->Customer_model->getDropdown();
+    $this->data['purchaseOrders'] = $this->Purchase_order_model->getAll($filters);
+    $this->data['recordCount'] = count($this->data['purchaseOrders']);
+    $this->data['tableContent'] = $this->load->view(
+      'purchase_orders/table',
+      $this->data,
+      TRUE
+    );
+
+    $this->data['toolbar'] = [
+      'edit' => [
+        'id'   => 'btnEditPurchaseOrder',
+        'text' => 'Edit',
+        'icon' => 'fas fa-edit'
+      ],
+      'print' => [
+        'id'   => 'btnPrintPurchaseOrder',
+        'text' => 'Print',
+        'icon' => 'fas fa-print'
+      ],
+      'cancel' => [
+        'id'   => 'btnCancelPurchaseOrder',
+        'text' => 'Cancel',
+        'icon' => 'fas fa-ban'
+      ],
+      'refresh' => [
+        'id'   => 'btnRefreshPurchaseOrder',
+        'text' => 'Refresh',
+        'icon' => 'fas fa-sync'
+      ]
+    ];
+
+    $this->render('purchase_orders/list');
   }
 }

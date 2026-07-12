@@ -12,7 +12,7 @@
       </div>
       <div class="form-group col-md-3">
         <label for="txtPODate">Date</label>
-        <input type="date" id="txtPODate" class="form-control form-control-sm">
+        <input type="date" id="txtPODate" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
       </div>
     </div>
 
@@ -71,7 +71,7 @@
       <thead class="thead-light">
         <tr>
           <th width="170">Scan/Input Barcode</th>
-          <th width="140">Supplier</th>
+          <th width="150">Supplier</th>
           <th>Product Description</th>
           <th width="70">UOM</th>
           <th width="70" class="text-right">Qty</th>
@@ -103,7 +103,7 @@
               <input
                 type="number" step="any"
                 class="form-control form-control-sm text-right po-qty"
-                value="1">
+                value="">
             </td>
             <td>
               <input
@@ -138,7 +138,7 @@
       <div class="col-md-3">
         <table class="table table-sm mb-3">
           <tr>
-            <th>Total</th>
+            <td class="po-total-text">Total</td>
             <td id="lblTotal" class="text-right">0.00</td>
           </tr>
         </table>
@@ -147,3 +147,7 @@
     </div>
   </div>
 </div>
+
+<script>
+  window.purchaseOrderId = <?= (int) ($purchaseOrderId ?? 0); ?>;
+</script>

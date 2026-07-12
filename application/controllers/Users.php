@@ -25,6 +25,7 @@ class Users extends MY_Controller
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $this->data['users'] = $this->User_model->getAll($keyword);
+    $this->data['recordCount'] = count($this->data['users']);
 
     $this->data['tableContent'] = $this->load->view(
       'users/table',

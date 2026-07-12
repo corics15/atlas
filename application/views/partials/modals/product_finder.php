@@ -1,5 +1,5 @@
 <div class="modal fade" id="mdlProductFinder" tabindex="-1" role="dialog" aria-labelledby="productFinderLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
     <div class="modal-content">
 
        <?php /*** header */ ?>
@@ -17,7 +17,7 @@
         <div class="form-group">
           <label for="searchInput">Search</label>
           <div class="input-group">
-            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Enter keyword...">
+            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Enter product name or barcode">
             <div class="input-group-append">
               <button class="btn btn-sm btn-outline-secondary" type="button"><i class="fas fa-search"></i></button>
             </div>
@@ -25,7 +25,8 @@
         </div>
 
         <?php /*** table */ ?>
-        <div class="table-responsive">
+        <div id="pfRecordCount" class="small text-muted mb-2"></div>
+        <div class="table-responsive table-scroll">
           <table class="table table-bordered table-sm">
             <thead class="thead-orange">
               <tr>
@@ -47,7 +48,11 @@
       </div>
 
       <?php /*** footer */ ?>
-      <div class="modal-footer">
+      <div class="d-flex justify-content-between modal-footer">
+        <div class="font-smr text-muted">
+          Press <i class="fa fa-arrow-up"></i> or <i class="fa fa-arrow-down"></i> to navigate.
+          Press "Enter" to confirm or "Esc" to cancel.
+        </div>
         <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
       </div>
 

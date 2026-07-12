@@ -25,6 +25,7 @@ class Salesmen extends MY_Controller
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $this->data['salesmen'] = $this->Salesman_model->getAll($keyword);
+    $this->data['recordCount'] = count($this->data['salesmen']);
     $this->data['tableContent'] = $this->load->view(
       'salesmen/table',
       $this->data,

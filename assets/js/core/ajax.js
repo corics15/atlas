@@ -1,24 +1,40 @@
 class AtlasAjax {
+
   async post(url, data = {}) {
-    const response = await fetch(Atlas.config.baseUrl + url, {
+    const options = {
       method: 'POST',
-      body: data
-    });
+      headers: {
+        'Accept': 'application/json'
+      }
+    };
+
+    if (data instanceof FormData) {
+      options.body = data;
+    } else {
+      options.headers['Content-Type'] = 'application/json';
+      options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(
+      Atlas.config.baseUrl + url,
+      options
+    );
 
     return await response.json();
   }
 
   async get(url) {
-    const response = await fetch(Atlas.config.baseUrl + url);
+    const response = await fetch(
+      Atlas.config.baseUrl + url,
+      {
+        headers: {
+          'Accept': 'application/json'
+        }
+      }
+    );
     return await response.json();
   }
 }
-
-// const inputs = document.querySelectorAll('input');
-// inputs.forEach(input => {
-//   input.setAttribute('autocomplete', 'off');
-// });
-
 
 window.Atlas = window.Atlas || {};
 window.Atlas.ajax = new AtlasAjax();

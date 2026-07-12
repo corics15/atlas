@@ -12,7 +12,9 @@
 
         </div>
 
-        <div class="table-responsive">
+        <?php $this->load->view('partials/record_count'); ?>
+
+        <div class="table-responsive table-scroll">
           <table class="table table-sm table-bordered table-hover">
             <?php $this->load->view('partials/table'); ?>
           </table>

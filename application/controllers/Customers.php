@@ -27,6 +27,7 @@ class Customers extends MY_Controller
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $this->data['customers'] = $this->Customer_model->getAll($keyword);
+    $this->data['recordCount'] = count($this->data['customers']);
 
     $this->data['tableContent'] = $this->load->view(
         'customers/table',
@@ -64,20 +65,20 @@ class Customers extends MY_Controller
 
   public function get($id)
   {
-      $customer = $this->Customer_model->get($id);
+    $customer = $this->Customer_model->get($id);
 
-      if (!$customer) {
-          return $this->jsonResponse(
-            false,
-            'Customer not found.'
-          );
-      }
-
+    if (!$customer) {
       return $this->jsonResponse(
-          true,
-          '',
-          $customer
+        false,
+        'Customer not found.'
       );
+    }
+
+    return $this->jsonResponse(
+      true,
+      '',
+      $customer
+    );
   }
 
   public function save()

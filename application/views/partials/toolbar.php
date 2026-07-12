@@ -24,19 +24,41 @@
       </button>
       <?php endif ?>
 
+      <?php if (!empty($toolbar['activate'])) : ?>
       <button
         id="<?= $toolbar['activate']['id']; ?>"
         class="dropdown-item">
         <i class="<?= $toolbar['activate']['icon']; ?>"></i>
         <?= $toolbar['activate']['text']; ?>
       </button>
+      <?php endif ?>
 
+      <?php if (!empty($toolbar['deactivate'])) : ?>
       <button
         id="<?= $toolbar['deactivate']['id']; ?>"
         class="dropdown-item">
       <i class="<?= $toolbar['deactivate']['icon']; ?>"></i>
       <?= $toolbar['deactivate']['text']; ?>
       </button>
+      <?php endif ?>
+
+      <?php if (!empty($toolbar['print'])) : ?>
+      <button
+        id="<?= $toolbar['print']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['print']['icon']; ?>"></i>
+        <?= $toolbar['print']['text']; ?>
+      </button>
+      <?php endif ?>
+
+      <?php if (!empty($toolbar['cancel'])) : ?>
+      <button
+        id="<?= $toolbar['cancel']['id']; ?>"
+        class="dropdown-item">
+      <i class="<?= $toolbar['cancel']['icon']; ?>"></i>
+      <?= $toolbar['cancel']['text']; ?>
+      </button>
+      <?php endif ?>
 
       <div class="dropdown-divider"></div>
 

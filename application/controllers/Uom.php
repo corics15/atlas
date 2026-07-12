@@ -25,6 +25,7 @@ class Uom extends MY_Controller
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $this->data['uoms'] = $this->Uom_model->getAll($keyword);
+    $this->data['recordCount'] = count($this->data['uoms']);
 
     $this->data['tableContent'] = $this->load->view(
         'uom/table',

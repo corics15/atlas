@@ -25,6 +25,7 @@ class Suppliers extends MY_Controller
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $this->data['suppliers'] = $this->Supplier_model->getAll($keyword);
+    $this->data['recordCount'] = count($this->data['suppliers']);
 
     $this->data['tableContent'] = $this->load->view(
         'suppliers/table',

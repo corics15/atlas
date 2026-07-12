@@ -8,6 +8,7 @@ class Product_finder extends MY_Controller
     parent::__construct();
 
     $this->load->model('Product_model');
+    $this->load->model('Product_finder_model');
   }
 
   public function list()
@@ -34,6 +35,21 @@ class Product_finder extends MY_Controller
       true,
       '',
       $product
+    );
+  }
+
+  public function search()
+  {
+    $keyword = trim(
+      $this->input->get('q')
+    );
+
+    $result = $this->Product_finder_model->search($keyword);
+
+    return $this->jsonResponse(
+      true,
+      '',
+      $result
     );
   }
 }

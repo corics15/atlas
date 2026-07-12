@@ -28,6 +28,7 @@ class Products extends MY_Controller
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $this->data['products'] = $this->Product_model->getAll($keyword);
+    $this->data['recordCount'] = count($this->data['products']);
 
     $this->data['tableContent'] = $this->load->view(
         'products/table',

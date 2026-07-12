@@ -1,0 +1,376 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Purchase_order_model extends CI_Model
+{
+  public function save($po)
+  {
+    $this->validate($po);
+
+    $this->db->trans_begin();
+
+    try {
+      $header = $this->insertHeader($po);
+      $this->insertDetails(
+        $header['id'],
+        $po->details
+      );
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => true,
+        'message' => 'Purchase Order saved successfully.',
+        'data' => [
+          'purchase_order_id' => $header['id'],
+          'po_no' => $header['po_no']
+        ]
+      ];
+
+
+    } catch (Exception $e) {
+        $this->db->trans_rollback();
+        return [
+          'success' => false,
+          'message' => $e->getMessage(),
+          'data' => null,
+        ];
+    }
+  }
+
+  public function update($po)
+  {
+    $this->validate($po);
+    $this->db->trans_begin();
+
+    try {
+      $this->updateHeader($po);
+      $this->replaceDetails(
+        $po->id,
+        $po->details
+      );
+      $this->db->trans_commit();
+
+      return [
+        'success' => true,
+        'message' => 'Purchase Order updated successfully.',
+        'data' => [
+          'purchase_order_id' => $po->id,
+          'po_no' => $po->po_no
+        ]
+      ];
+
+    } catch (Exception $e) {
+      $this->db->trans_rollback();
+
+      return [
+          'success' => false,
+          'message' => $e->getMessage(),
+          'data' => null
+      ];
+    }
+  }
+
+  public function generatePONumber()
+  {
+    // Temporary implementation
+    return 'PO-' . date('YmdHis');
+  }
+
+  public function get($id)
+  {
+    $header = $this->db
+        ->select("
+          p.*,
+          c.credit_limit
+        ")
+        ->from('t_purchase_orders p')
+        ->join('m_customers c', 'c.id = p.customer_id')
+        ->where('p.id', $id)
+        ->get()
+        ->row();
+
+    if (!$header) {
+      throw new Exception('Purchase Order not found.');
+    }
+
+    $details = $this->db
+        ->select("
+            d.product_id,
+            p.barcode,
+            s.supplier_name,
+            p.description,
+            u.uom,
+            d.qty,
+            d.price,
+            d.discount
+        ")
+        ->from('t_purchase_order_details d')
+        ->join('m_products p', 'p.id = d.product_id')
+        ->join('m_suppliers s', 's.id = p.supplier_id')
+        ->join('m_uom u', 'u.id = p.uom_id')
+        ->where('purchase_order_id', $id)
+        ->order_by('d.id')
+        ->get()
+        ->result();
+
+    return [
+      'header' => $header,
+      'details' => $details
+    ];
+  }
+
+  public function getAll($filters = [])
+  {
+    $this->db
+        ->select("p.id, p.po_no, p.po_date, c.customer_name, CONCAT(s.first_name,' ',s.last_name) AS salesman, p.status, COALESCE(SUM((d.qty * d.price) - d.discount), 0) AS total")
+        ->from('t_purchase_orders p')
+        ->join(
+            'm_customers c',
+            'c.id = p.customer_id'
+        )
+        ->join(
+            'm_salesmen s',
+            's.id = p.salesman_id'
+        )
+        ->join(
+            't_purchase_order_details d',
+            'd.purchase_order_id = p.id',
+            'left'
+        );
+
+    if (!empty($filters['date_from'])) {
+      $this->db->where(
+        'p.po_date >=',
+        $filters['date_from']
+      );
+    }
+
+    if (!empty($filters['date_to'])) {
+      $this->db->where(
+        'p.po_date <=',
+        $filters['date_to']
+      );
+    }
+
+    if (!empty($filters['customer_id'])) {
+      $this->db->where(
+        'p.customer_id',
+        $filters['customer_id']
+      );
+    }
+
+    if (!empty($filters['status'])) {
+      $this->db->where(
+        'p.status',
+        $filters['status']
+      );
+    }
+
+    return $this->db
+        ->group_by("
+            p.id,
+            p.po_no,
+            p.po_date,
+            c.customer_name,
+            s.first_name,
+            s.last_name,
+            p.status
+        ")
+        ->order_by(
+            'p.po_date DESC,
+            p.id DESC'
+        )
+        ->get()
+        ->result();
+  }
+
+  private function insertHeader($po)
+  {
+    $poNo = $this->generatePONumber();
+    $remarks = trim($po->remarks) <> '' ? strtoupper(trim($po->remarks)) : NULL;
+
+    $sql = "INSERT INTO t_purchase_orders
+              (
+                po_no,
+                po_date,
+                customer_id,
+                salesman_id,
+                terms,
+                remarks,
+                entered_by,
+                entered_on
+              )
+              VALUES
+              (
+                ?,?,?,?,?,?,?,
+                CURRENT_TIMESTAMP
+              )
+              RETURNING id
+    ";
+
+    $query = $this->db->query(
+      $sql,
+      [
+        $poNo,
+        $po->po_date,
+        $po->customer_id,
+        $po->salesman_id,
+        $po->terms,
+        $remarks,
+        $this->session->userdata('user_id')
+      ]
+    );
+
+    if (!$query || $query->num_rows() === 0) {
+      throw new Exception(
+        'Unable to save Purchase Order header.'
+      );
+    }
+    $row = $query->row();
+
+    return [
+      'id' => $row->id,
+      'po_no' => $poNo,
+    ];
+  }
+
+  private function insertDetails($purchaseOrderId, $details)
+  {
+    $sql = "INSERT INTO t_purchase_order_details
+              (
+                purchase_order_id,
+                product_id,
+                qty,
+                price,
+                discount,
+                entered_by,
+                entered_on
+              )
+              VALUES
+              (
+                ?,?,?,?,?,?,
+                CURRENT_TIMESTAMP
+              )
+    ";
+
+    foreach ($details as $detail) {
+      $this->db->query(
+        $sql,
+        [
+          $purchaseOrderId,
+          $detail->product_id,
+          $detail->qty,
+          $detail->price,
+          $detail->discount,
+          $this->session->userdata('user_id'),
+        ]
+      );
+
+      if ($this->db->affected_rows() == 0) {
+        throw new Exception(
+          'Unable to save Purchase Order detail.'
+        );
+      }
+    }
+  }
+
+  private function validate($po)
+  {
+    if (empty($po->customer_id)) {
+      throw new Exception(
+        'Please select a customer.'
+      );
+    }
+
+    if (empty($po->salesman_id)) {
+      throw new Exception(
+        'Please select a salesman.'
+      );
+    }
+
+    if (count($po->details) === 0) {
+      throw new Exception(
+        'Please add at least one product.'
+      );
+    }
+
+    foreach ($po->details as $index => $detail) {
+      if (empty($detail->product_id)) {
+        throw new Exception(
+          'Product is required on row '.($index + 1).'.'
+        );
+      }
+
+      if ($detail->qty <= 0) {
+        throw new Exception(
+          'Invalid quantity on row '.($index + 1).'.'
+        );
+      }
+
+      if ($detail->price < 0) {
+        throw new Exception(
+          'Invalid price on row '.($index + 1).'.'
+        );
+      }
+
+      if ($detail->discount < 0) {
+        throw new Exception(
+          'Invalid discount on row '.($index + 1).'.'
+        );
+      }
+    }
+  }
+
+  private function updateHeader($po)
+  {
+    $sql = "UPDATE t_purchase_orders
+              SET
+                po_date = ?,
+                customer_id = ?,
+                salesman_id = ?,
+                terms = ?,
+                remarks = ?,
+                updated_by = ?,
+                updated_on = CURRENT_TIMESTAMP
+              WHERE id = ?
+            ";
+
+    $remarks = trim($po->remarks) <> '' ? strtoupper(trim($po->remarks)) : NULL;
+    $this->db->query(
+      $sql,
+      [
+        $po->po_date,
+        $po->customer_id,
+        $po->salesman_id,
+        $po->terms,
+        $remarks,
+        $this->session->userdata('user_id'),
+        $po->id
+      ]
+    );
+
+    if ($this->db->error()['code']) {
+        throw new Exception('Unable to update Purchase Order header.');
+    }
+  }
+
+  private function replaceDetails($purchaseOrderId, $details)
+  {
+    if (empty($details)) {
+      throw new Exception(
+        'Purchase Order must contain at least one product.'
+      );
+    }
+
+    $this->db->query("DELETE FROM t_purchase_order_details
+                      WHERE purchase_order_id = ?",
+                      [$purchaseOrderId]
+                    );
+
+    $this->insertDetails(
+      $purchaseOrderId,
+      $details
+    );
+  }
+}
