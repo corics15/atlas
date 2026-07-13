@@ -5,21 +5,25 @@ class Supplier_model extends CI_Model
 {
   public function getAll($keyword = '')
   {
+    $this->db->select('s.*, t.terms_name');
+    $this->db->from('m_suppliers s');
+    $this->db->join('m_terms t', 't.id = s.terms_id', 'left');
+
     if (!empty($keyword)) {
       $escaped = $this->db->escape_like_str($keyword);
 
       $this->db->group_start()
-          ->where("supplier_name ILIKE '%{$escaped}%'")
-          ->or_where("contact_person ILIKE '%{$escaped}%'")
-          ->or_where("mobile_no ILIKE '%{$escaped}%'")
-          ->or_where("telephone_no ILIKE '%{$escaped}%'")
-          ->or_where("email_address ILIKE '%{$escaped}%'")
+          ->where("s.supplier_name ILIKE '%{$escaped}%'")
+          ->or_where("s.contact_person ILIKE '%{$escaped}%'")
+          ->or_where("s.mobile_no ILIKE '%{$escaped}%'")
+          ->or_where("s.telephone_no ILIKE '%{$escaped}%'")
+          ->or_where("s.email_address ILIKE '%{$escaped}%'")
       ->group_end();
     }
 
     return $this->db
-        ->order_by('supplier_name ASC')
-        ->get('m_suppliers')
+        ->order_by('s.supplier_name', 'ASC')
+        ->get()
         ->result();
   }
 
@@ -60,20 +64,9 @@ class Supplier_model extends CI_Model
         ]);
   }
 
-  /*** allow multiple entries for suppliers, not used */
-  public function supplierNameExists($supplierName, $excludeId = null)
-  {
-      $this->db->where('supplier_name', $supplierName);
-      if (!empty($excludeId)) {
-          $this->db->where('id <>', $excludeId);
-      }
-
-      return $this->db->count_all_results('m_suppliers') > 0;
-  }
-
   public function getDropdown()
   {
-    $this->db->select('id, supplier_name');
+    $this->db->select('id, supplier_name, terms_id');
     $this->db->where('is_active', TRUE);
     $this->db->order_by('supplier_name', 'ASC');
 

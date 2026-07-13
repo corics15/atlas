@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
     frmUom.reset();
 
     hidUomId.value = result.data.id;
-
     txtUom.value = result.data.uom;
 
     Atlas.validation.clear();
@@ -157,27 +156,27 @@ document.addEventListener('DOMContentLoaded', () => {
   btnRefreshUom.addEventListener('click', () => {
     location.reload();
   });
-
-  function getSelectedUomId() {
-    const checked = document.querySelectorAll('.chkUom:checked');
-
-    if (checked.length === 0) {
-      Atlas.toast.warning('Please select a UOM.');
-      return null;
-    }
-
-    if (checked.length > 1) {
-      Atlas.toast.warning('Please select only one UOM.');
-      return null;
-    }
-
-    return checked[0].value;
-  }
-
-  function updateToolbarState() {
-    const checked = document.querySelectorAll('.chkUom:checked').length;
-    btnEditUom.disabled = (checked !== 1);
-    btnActivateUom.disabled = (checked !== 1);
-    btnDeactivateUom.disabled = (checked !== 1);
-  }
 });
+
+const getSelectedUomId = () => {
+  const checked = document.querySelectorAll('.chkUom:checked');
+
+  if (checked.length === 0) {
+    Atlas.toast.warning('Please select a UOM.');
+    return null;
+  }
+
+  if (checked.length > 1) {
+    Atlas.toast.warning('Please select only one UOM.');
+    return null;
+  }
+
+  return checked[0].value;
+}
+
+const updateToolbarState = () => {
+  const checked = document.querySelectorAll('.chkUom:checked').length;
+  btnEditUom.disabled = (checked !== 1);
+  btnActivateUom.disabled = (checked !== 1);
+  btnDeactivateUom.disabled = (checked !== 1);
+}

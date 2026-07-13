@@ -20,25 +20,26 @@
     </div>
 
     <div style="min-width:280px; flex:1;">
-      <label>Customer</label>
+      <label for="selSupplierFilter">Supplier</label>
       <select
-        id="selCustomerFilter"
-        name="customer_id"
-        class="form-control form-control-sm">
-        <option value="">All Customers</option>
-        <?php foreach ($customers as $customer): ?>
+        id="selSupplierFilter"
+        name="supplier_id"
+        class="form-control form-control-sm custom-select">
+        <option value="">All Suppliers</option>
+        <?php foreach ($suppliers as $supplier): ?>
           <option
-            value="<?= $customer->id; ?>"
-            <?= ($customer_id == $customer->id) ? 'selected' : ''; ?>>
-            <?= htmlspecialchars($customer->customer_name); ?>
+            value="<?= $supplier->id; ?>"
+            <?= ($supplier_id == $supplier->id) ? 'selected' : ''; ?>>
+            <?= htmlspecialchars($supplier->supplier_name); ?>
           </option>
         <?php endforeach; ?>
       </select>
     </div>
 
     <div style="min-width:150px;">
-      <label>Status</label>
+      <label for="selSupplierStatus">Status</label>
       <select
+        id="selSupplierStatus"
         name="status"
         class="form-control form-control-sm custom-select">
         <option value="">All</option>

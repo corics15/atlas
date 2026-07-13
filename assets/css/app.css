@@ -117,7 +117,8 @@ body.login-page.swal2-height-auto {
 }
 
 .po-supplier,
-.po-description {
+.po-description,
+td.supplier-address {
   max-width: 0;
   white-space: nowrap;
   overflow: hidden;

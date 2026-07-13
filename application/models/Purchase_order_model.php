@@ -100,10 +100,12 @@ class Purchase_order_model extends CI_Model
     $header = $this->db
         ->select("
           p.*,
-          c.credit_limit
+          s.supplier_name,
+          t.terms_name
         ")
         ->from('t_purchase_orders p')
-        ->join('m_customers c', 'c.id = p.customer_id')
+        ->join('m_suppliers s', 's.id = p.supplier_id')
+        ->join('m_terms t', 't.id = s.terms_id', 'left')
         ->where('p.id', $id)
         ->get()
         ->row();
@@ -141,20 +143,16 @@ class Purchase_order_model extends CI_Model
   public function getAll($filters = [])
   {
     $this->db
-        ->select("p.id, p.po_no, p.po_date, c.customer_name, CONCAT(s.first_name,' ',s.last_name) AS salesman, p.status, COALESCE(SUM((d.qty * d.price) - d.discount), 0) AS total")
+        ->select("p.id, p.po_no, p.po_date, s.supplier_name, p.status, COALESCE(SUM((d.qty * d.price) - d.discount), 0) AS total")
         ->from('t_purchase_orders p')
         ->join(
-            'm_customers c',
-            'c.id = p.customer_id'
+          'm_suppliers s',
+          's.id = p.supplier_id'
         )
         ->join(
-            'm_salesmen s',
-            's.id = p.salesman_id'
-        )
-        ->join(
-            't_purchase_order_details d',
-            'd.purchase_order_id = p.id',
-            'left'
+          't_purchase_order_details d',
+          'd.purchase_order_id = p.id',
+          'left'
         );
 
     if (!empty($filters['date_from'])) {
@@ -171,10 +169,10 @@ class Purchase_order_model extends CI_Model
       );
     }
 
-    if (!empty($filters['customer_id'])) {
+    if (!empty($filters['supplier_id'])) {
       $this->db->where(
-        'p.customer_id',
-        $filters['customer_id']
+        'p.supplier_id',
+        $filters['supplier_id']
       );
     }
 
@@ -190,9 +188,7 @@ class Purchase_order_model extends CI_Model
             p.id,
             p.po_no,
             p.po_date,
-            c.customer_name,
-            s.first_name,
-            s.last_name,
+            s.supplier_name,
             p.status
         ")
         ->order_by(
@@ -344,16 +340,15 @@ class Purchase_order_model extends CI_Model
               (
                 po_no,
                 po_date,
-                customer_id,
-                salesman_id,
-                terms,
+                supplier_id,
+                terms_id,
                 remarks,
                 entered_by,
                 entered_on
               )
               VALUES
               (
-                ?,?,?,?,?,?,?,
+                ?,?,?,?,?,?,
                 CURRENT_TIMESTAMP
               )
               RETURNING id
@@ -364,9 +359,8 @@ class Purchase_order_model extends CI_Model
       [
         $poNo,
         $po->po_date,
-        $po->customer_id,
-        $po->salesman_id,
-        $po->terms,
+        $po->supplier_id,
+        $po->terms_id,
         $remarks,
         $this->session->userdata('user_id')
       ]
@@ -427,21 +421,21 @@ class Purchase_order_model extends CI_Model
 
   private function validate($po)
   {
-    if (empty($po->customer_id)) {
+    if (empty($po->supplier_id)) {
       throw new Exception(
-        'Please select a customer.'
-      );
-    }
-
-    if (empty($po->salesman_id)) {
-      throw new Exception(
-        'Please select a salesman.'
+        'Please select a supplier.'
       );
     }
 
     if (count($po->details) === 0) {
       throw new Exception(
         'Please add at least one product.'
+      );
+    }
+
+    if (empty($po->terms_id)) {
+      throw new Exception(
+        'Please select payment terms.'
       );
     }
 
@@ -477,8 +471,7 @@ class Purchase_order_model extends CI_Model
     $sql = "UPDATE t_purchase_orders
               SET
                 po_date = ?,
-                customer_id = ?,
-                salesman_id = ?,
+                supplier_id = ?,
                 terms = ?,
                 remarks = ?,
                 updated_by = ?,
@@ -491,9 +484,8 @@ class Purchase_order_model extends CI_Model
       $sql,
       [
         $po->po_date,
-        $po->customer_id,
-        $po->salesman_id,
-        $po->terms,
+        $po->supplier_id,
+        $po->terms_id,
         $remarks,
         $this->session->userdata('user_id'),
         $po->id
@@ -501,7 +493,7 @@ class Purchase_order_model extends CI_Model
     );
 
     if ($this->db->error()['code']) {
-        throw new Exception('Unable to update Purchase Order header.');
+      throw new Exception('Unable to update Purchase Order header.');
     }
   }
 

@@ -13,8 +13,12 @@
       </div>
     </th>
     <th>Supplier</th>
+    <th>Terms</th>
     <th>Contact Person</th>
     <th>Contact No.</th>
+    <th class="text-center">Email</th>
+    <th>Address</th>
+    <th>TIN</th>
     <th class="text-center">Active</th>
   </tr>
 </thead>
@@ -36,6 +40,7 @@
       </div>
     </td>
     <td><?= htmlspecialchars($supplier->supplier_name); ?></td>
+    <td><?= htmlspecialchars($supplier->terms_name); ?></td>
     <td>
       <?= htmlspecialchars($supplier->contact_person); ?>
     </td>
@@ -57,6 +62,9 @@
         }
       ?>
     </td>
+    <td class="text-center"><?= htmlspecialchars($supplier->email_address) ?></td>
+    <td class="supplier-address"><?= htmlspecialchars($supplier->address) ?></td>
+    <td><?= htmlspecialchars($supplier->tin_no) ?></td>
     <td class="text-center">
       <?= $supplier->is_active == 't' ? '<i class="fas fa-check text-success"></i>' : ''; ?>
     </td>

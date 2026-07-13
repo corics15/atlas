@@ -7,10 +7,10 @@ class Purchase_orders extends MY_Controller
   {
     parent::__construct();
 
-    $this->load->model('Customer_model');
-    $this->load->model('Salesman_model');
+    $this->load->model('Supplier_model');
     $this->load->model('Product_model');
     $this->load->model('Purchase_order_model');
+    $this->load->model('Term_model');
 
     $this->load->library('form_validation');
   }
@@ -28,9 +28,9 @@ class Purchase_orders extends MY_Controller
 
     $this->pageScript = 'purchase_orders';
 
-    $this->data['customers'] = $this->Customer_model->getDropdown();
-    $this->data['salesmen'] = $this->Salesman_model->getDropdown();
+    $this->data['suppliers'] = $this->Supplier_model->getDropdown();
     $this->data['products'] = $this->Product_model->getDropdown();
+    $this->data['terms'] = $this->Term_model->getDropdown();
 
     $this->data['purchaseOrderId'] = (int) $this->input->get('id');
 
@@ -95,7 +95,7 @@ class Purchase_orders extends MY_Controller
     $filters = [
       'date_from' => trim($this->input->get('date_from')),
       'date_to' => trim($this->input->get('date_to')),
-      'customer_id' => trim($this->input->get('customer_id')),
+      'supplier_id' => trim($this->input->get('supplier_id')),
       'status' => trim($this->input->get('status')),
     ];
 
@@ -104,8 +104,8 @@ class Purchase_orders extends MY_Controller
       $filters
     );
 
-    $this->data['customers'] = $this->Customer_model->getDropdown();
     $this->data['purchaseOrders'] = $this->Purchase_order_model->getAll($filters);
+    $this->data['suppliers'] = $this->Supplier_model->getDropdown();
     $this->data['recordCount'] = count($this->data['purchaseOrders']);
     $this->data['tableContent'] = $this->load->view(
       'purchase_orders/table',

@@ -14,8 +14,7 @@
     </th>
     <th>PO No.</th>
     <th class="text-center">Date</th>
-    <th>Customer</th>
-    <th>Salesman</th>
+    <th>Supplier</th>
     <th class="text-right">
       Total
     </th>
@@ -45,8 +44,7 @@
       </td>
       <td><?= htmlspecialchars($po->po_no) ?></td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($po->po_date))) ?></td>
-      <td><?= htmlspecialchars($po->customer_name) ?></td>
-      <td><?= htmlspecialchars($po->salesman) ?></td>
+      <td><?= htmlspecialchars($po->supplier_name) ?></td>
       <td class="text-right">
         <?= number_format($po->total,2) ?>
       </td>

@@ -1,12 +1,13 @@
 const txtPONo = document.getElementById('txtPONo');
 const txtPODate = document.getElementById('txtPODate');
-const txtTerms = document.getElementById('txtTerms');
+// const txtTerms = document.getElementById('txtTerms');
+const selTerms = document.getElementById('selTerms');
 const txtRemarks = document.getElementById('txtRemarks');
 const txtCreditLimit = document.getElementById('txtCreditLimit');
 const lblTotal = document.getElementById('lblTotal');
 const tblPurchaseOrderDetails = document.getElementById('tblPurchaseOrderDetails');
 
-const selCustomer = document.getElementById('selCustomer');
+const selSupplier = document.getElementById('selSupplier');
 const btnSavePurchaseOrder = document.getElementById('btnSavePurchaseOrder');
 
 let isEditMode = false;
@@ -16,17 +17,11 @@ let isLoading = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-  Atlas.select.init('#selCustomer');
-  Atlas.select.init('#selSalesman');
+  Atlas.select.init('#selSupplier');
+  Atlas.select.init('#selTerms');
 
-  Atlas.select.onChange('#selCustomer', (option) => {
-    const salesmanId = option.dataset.salesmanId;
-
-    $('#selSalesman').val(salesmanId).trigger('change');
-
-    txtTerms.value = option.dataset.terms ?? '';
-    txtCreditLimit.value = option.dataset.creditLimit;
-
+  Atlas.select.onChange('#selSupplier', (option) => {
+    $('#selTerms').val(option.dataset.termsId).trigger('change');
     markDirty();
   });
 
@@ -152,9 +147,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         id: purchaseOrderId,
         po_no: txtPONo.value,
         po_date: txtPODate.value,
-        customer_id: selCustomer.value,
-        salesman_id: selSalesman.value,
-        terms: txtTerms.value,
+        supplier_id: selSupplier.value,
+        terms_id: Number(selTerms.value),
         remarks: txtRemarks.value,
         total_amount: Number(lblTotal.textContent),
         details: []
@@ -326,12 +320,9 @@ const resetPurchaseOrder = async () => {
   txtPONo.value = '';
   txtPODate.valueAsDate = new Date();
 
-  $('#selCustomer').val('').trigger('change');
-  $('#selSalesman').val('').trigger('change');
+  $('#selSupplier').val('').trigger('change');
 
-  txtTerms.value = '';
   txtRemarks.value = '';
-  txtCreditLimit.value = '';
   lblTotal.textContent = '0.00';
 
   const tbody = document.getElementById(
@@ -344,15 +335,9 @@ const resetPurchaseOrder = async () => {
 
 const validatePurchaseOrder = () => {
 
-  if (!selCustomer.value) {
-    Atlas.toast.warning('Please select a customer.');
-    $('#selCustomer').select2('open');
-    return false;
-  }
-
-  if (!selSalesman.value) {
-    Atlas.toast.warning('Please select a salesman.');
-    $('#selSalesman').select2('open');
+  if (!selSupplier.value) {
+    Atlas.toast.warning('Please select a supplier.');
+    $('#selSupplier').select2('open');
     return false;
   }
 
@@ -424,13 +409,10 @@ const populateHeader = (header) => {
   txtPONo.value = header.po_no;
   txtPODate.value = header.po_date;
 
-  $('#selCustomer').val(header.customer_id).trigger('change');
+  $('#selSupplier').val(header.supplier_id).trigger('change');
 
-  $('#selSalesman').val(header.salesman_id).trigger('change');
-
-  txtTerms.value = header.terms ?? '';
+  $('#selTerms').val(header.terms_id).trigger('change');
   txtRemarks.value = header.remarks ?? '';
-  txtCreditLimit.value = header.credit_limit ?? '';
 }
 
 const enableEditMode = (header) => {

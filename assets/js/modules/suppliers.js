@@ -20,10 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const hidSupplierId = document.getElementById('hidSupplierId');
   const chkSelectAllSupplier = document.getElementById('chkSelectAllSupplier');
 
+  Atlas.select.init('#selTerms', '#mdlSupplier');
+
   updateToolbarState();
 
   btnNewSupplier.addEventListener('click', () => {
     frmSupplier.reset();
+    $('#selTerms').val('').trigger('change');
 
     Atlas.validation.clear();
     Atlas.modal.open({
@@ -82,6 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
     txtEmailAddress.value = result.data.email_address;
     txtAddress.value = result.data.address;
     txtTinNo.value = result.data.tin_no;
+
+    $('#selTerms').val(result.data.terms_id).trigger('change');
 
     Atlas.validation.clear();
 
@@ -172,27 +177,27 @@ document.addEventListener('DOMContentLoaded', () => {
   btnRefreshSupplier.addEventListener('click', () => {
     location.reload();
   });
-
-  function getSelectedSupplierId() {
-    const checked = document.querySelectorAll('.chkSupplier:checked');
-
-    if (checked.length === 0) {
-      Atlas.toast.warning('Please select a supplier.');
-      return null;
-    }
-
-    if (checked.length > 1) {
-      Atlas.toast.warning('Please select only one supplier.');
-      return null;
-    }
-
-    return checked[0].value;
-  }
-
-  function updateToolbarState() {
-    const checked = document.querySelectorAll('.chkSupplier:checked').length;
-    btnEditSupplier.disabled = (checked !== 1);
-    btnActivateSupplier.disabled = (checked !== 1);
-    btnDeactivateSupplier.disabled = (checked !== 1);
-  }
 });
+
+const getSelectedSupplierId = () => {
+  const checked = document.querySelectorAll('.chkSupplier:checked');
+
+  if (checked.length === 0) {
+    Atlas.toast.warning('Please select a supplier.');
+    return null;
+  }
+
+  if (checked.length > 1) {
+    Atlas.toast.warning('Please select only one supplier.');
+    return null;
+  }
+
+  return checked[0].value;
+}
+
+const updateToolbarState = () => {
+  const checked = document.querySelectorAll('.chkSupplier:checked').length;
+  btnEditSupplier.disabled = (checked !== 1);
+  btnActivateSupplier.disabled = (checked !== 1);
+  btnDeactivateSupplier.disabled = (checked !== 1);
+}

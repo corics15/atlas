@@ -7,6 +7,7 @@ class Suppliers extends MY_Controller
   {
     parent::__construct();
     $this->load->model('Supplier_model');
+    $this->load->model('Term_model');
     $this->load->library('form_validation');
   }
 
@@ -26,6 +27,7 @@ class Suppliers extends MY_Controller
     $this->data['keyword'] = $keyword;
     $this->data['suppliers'] = $this->Supplier_model->getAll($keyword);
     $this->data['recordCount'] = count($this->data['suppliers']);
+    $this->data['terms'] = $this->Term_model->getDropdown();
 
     $this->data['tableContent'] = $this->load->view(
         'suppliers/table',
@@ -35,24 +37,24 @@ class Suppliers extends MY_Controller
 
     $this->data['toolbar'] = [
       'edit' => [
-          'id' => 'btnEditSupplier',
-          'text' => 'Edit',
-          'icon' => 'fas fa-edit'
+        'id' => 'btnEditSupplier',
+        'text' => 'Edit',
+        'icon' => 'fas fa-edit'
       ],
       'activate' => [
-          'id' => 'btnActivateSupplier',
-          'text' => 'Activate',
-          'icon' => 'fas fa-check-circle'
+        'id' => 'btnActivateSupplier',
+        'text' => 'Activate',
+        'icon' => 'fas fa-check-circle'
       ],
       'deactivate' => [
-          'id' => 'btnDeactivateSupplier',
-          'text' => 'Deactivate',
-          'icon' => 'fas fa-ban'
+        'id' => 'btnDeactivateSupplier',
+        'text' => 'Deactivate',
+        'icon' => 'fas fa-ban'
       ],
       'refresh' => [
-          'id' => 'btnRefreshSupplier',
-          'text' => 'Refresh',
-          'icon' => 'fas fa-sync'
+        'id' => 'btnRefreshSupplier',
+        'text' => 'Refresh',
+        'icon' => 'fas fa-sync'
       ]
     ];
 
@@ -83,15 +85,6 @@ class Suppliers extends MY_Controller
     $id = (int) $postData['id'];
     $supplierName = trim($postData['supplier_name']);
 
-    if (false) :
-    if ($this->Supplier_model->supplierNameExists($supplierName, $id)) {
-      return $this->jsonResponse(
-        false,
-        'Supplier already exists.'
-      );
-    }
-    endif;
-
     $this->form_validation->set_rules(
       'supplier_name',
       'Supplier Name',
@@ -113,6 +106,7 @@ class Suppliers extends MY_Controller
       'email_address' => trim($postData['email_address']) <> '' ? trim($postData['email_address']) : NULL,
       'address' => trim($postData['address']) <> '' ? strtoupper(trim($postData['address'])) : NULL,
       'tin_no' => trim($postData['tin_no']) <> '' ? trim($postData['tin_no']) : NULL,
+      'terms_id' => $postData['terms_id'] <> '' ? $postData['terms_id'] : NULL,
     ];
 
     if (empty($id)) {

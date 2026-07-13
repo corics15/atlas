@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateToolbarState();
 
-  Atlas.select.init('#selCustomerFilter');
+  Atlas.select.init('#selSupplierFilter');
 
   /*** new purchase order */
   btnNewPurchaseOrder.addEventListener('click', () => {
