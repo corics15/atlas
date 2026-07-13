@@ -6,15 +6,15 @@ const txtCreditLimit = document.getElementById('txtCreditLimit');
 const lblTotal = document.getElementById('lblTotal');
 const tblPurchaseOrderDetails = document.getElementById('tblPurchaseOrderDetails');
 
+const selCustomer = document.getElementById('selCustomer');
+const btnSavePurchaseOrder = document.getElementById('btnSavePurchaseOrder');
+
 let isEditMode = false;
 let purchaseOrderId = null;
 let isDirty = false;
 let isLoading = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
-
-  const selCustomer = document.getElementById('selCustomer');
-  const btnSavePurchaseOrder = document.getElementById('btnSavePurchaseOrder');
 
   Atlas.select.init('#selCustomer');
   Atlas.select.init('#selSalesman');
@@ -414,10 +414,7 @@ const loadPurchaseOrder = async (id) => {
   populateDetails(result.data.details);
   calculateGrandTotal();
 
-  enableEditMode(
-    result.data.header.id,
-    result.data.header.po_no
-  );
+  enableEditMode(result.data.header);
 
   isLoading = false;
   isDirty = false;
@@ -436,12 +433,16 @@ const populateHeader = (header) => {
   txtCreditLimit.value = header.credit_limit ?? '';
 }
 
-const enableEditMode = (id, poNo) => {
+const enableEditMode = (header) => {
   isEditMode = true;
-  purchaseOrderId = id;
+  purchaseOrderId = header.id;
 
-  btnSavePurchaseOrder.innerHTML = 'Save Changes';
-  txtPONo.value = poNo;
+  btnSavePurchaseOrder.innerHTML =
+    header.status === 'OPEN'
+      ? 'Save Changes'
+      : 'Read Only';
+  btnSavePurchaseOrder.disabled = header.status !== 'OPEN';
+  txtPONo.value = header.po_no;
 }
 
 const populateDetails = (details) => {

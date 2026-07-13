@@ -138,4 +138,24 @@ class Purchase_orders extends MY_Controller
 
     $this->render('purchase_orders/list');
   }
+
+  public function cancel()
+  {
+    $ids = $this->input->post('ids');
+
+    if (!is_array($ids) || empty($ids)) {
+      return $this->jsonResponse(
+        false,
+        'Please select at least one Purchase Order.'
+      );
+    }
+
+    $result = $this->Purchase_order_model->cancelMany($ids);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+  );
+  }
 }

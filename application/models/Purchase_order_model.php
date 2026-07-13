@@ -41,6 +41,24 @@ class Purchase_order_model extends CI_Model
   public function update($po)
   {
     $this->validate($po);
+
+    /*** verify before updating anything */
+    $status = $this->db
+                  ->select('status')
+                  ->from('t_purchase_orders')
+                  ->where('id', $po->id)
+                  ->get()
+                  ->row()
+                  ->status;
+
+    if ($status !== 'OPEN') {
+      return [
+        'success' => false,
+        'message' => 'Only OPEN Purchase Orders can be modified.',
+        'data' => null
+      ];
+    }
+
     $this->db->trans_begin();
 
     try {
@@ -183,6 +201,138 @@ class Purchase_order_model extends CI_Model
         )
         ->get()
         ->result();
+  }
+
+  public function cancel($id)
+  {
+    $purchaseOrder = $this->db
+        ->select('id, po_no, status')
+        ->from('t_purchase_orders')
+        ->where('id', $id)
+        ->where('is_active', true)
+        ->get()
+        ->row();
+
+    if (!$purchaseOrder) {
+      return [
+        'success' => false,
+        'message' => 'Purchase Order not found.',
+        'data' => null
+      ];
+    }
+
+    if ($purchaseOrder->status === 'CANCELLED') {
+      return [
+        'success' => false,
+        'message' => 'Purchase Order is already cancelled.',
+        'data' => null
+      ];
+    }
+
+    if ($purchaseOrder->status === 'CLOSED') {
+      return [
+        'success' => false,
+        'message' => 'Closed Purchase Orders cannot be cancelled.',
+        'data' => null
+      ];
+    }
+
+    $this->db
+        ->where('id', $id)
+        ->update(
+            't_purchase_orders',
+            [
+              'status'     => 'CANCELLED',
+              'updated_by' => $this->session->userdata('user_id'),
+              'updated_on' => date('Y-m-d H:i:s')
+            ]
+        );
+
+    if ($this->db->affected_rows() === 0) {
+      return [
+        'success' => false,
+        'message' => 'Unable to cancel Purchase Order.',
+        'data' => null
+      ];
+    }
+
+    return [
+      'success' => true,
+      'message' => 'Purchase Order cancelled successfully.',
+      'data' => [
+        'id' => $purchaseOrder->id,
+        'po_no' => $purchaseOrder->po_no
+      ]
+    ];
+  }
+
+  public function cancelMany(array $ids)
+  {
+    $purchaseOrders = $this->db
+        ->select('id, status')
+        ->from('t_purchase_orders')
+        ->where_in('id', $ids)
+        ->where('is_active', true)
+        ->get()
+        ->result();
+
+    $ids = array_unique(
+      array_map('intval', $ids)
+    );
+
+    if (count($purchaseOrders) !== count($ids)) {
+        return [
+          'success' => false,
+          'message' => 'One or more Purchase Orders could not be found.',
+          'data' => null
+        ];
+    }
+
+    foreach ($purchaseOrders as $po) {
+      if ($po->status !== 'OPEN') {
+        return [
+          'success' => false,
+          'message' => 'Please select only OPEN Purchase Orders to cancel.',
+          'data' => null
+        ];
+      }
+    }
+
+    $this->db->trans_begin();
+
+    $this->db
+        ->where_in('id', $ids)
+        ->update(
+            't_purchase_orders',
+            [
+              'status'     => 'CANCELLED',
+              'updated_by' => $this->session->userdata('user_id'),
+              'updated_on' => date('Y-m-d H:i:s')
+            ]
+        );
+
+    if ($this->db->trans_status() === FALSE) {
+
+        $this->db->trans_rollback();
+
+        return [
+          'success' => false,
+          'message' => 'Unable to cancel the selected Purchase Orders.',
+          'data' => null
+        ];
+
+    }
+
+    $this->db->trans_commit();
+
+    return [
+      'success' => true,
+      'message' =>
+          count($ids) === 1
+            ? 'Purchase Order cancelled successfully.'
+            : count($ids) . ' Purchase Orders cancelled successfully.',
+      'data' => null
+    ];
   }
 
   private function insertHeader($po)

@@ -35,7 +35,8 @@
             type="checkbox"
             class="custom-control-input chkPurchaseOrder"
             id="chkPurchaseOrder<?= $po->id ?>"
-            value="<?= $po->id ?>">
+            value="<?= $po->id ?>"
+            data-status="<?= htmlspecialchars($po->status); ?>">
           <label
             class="custom-control-label"
             for="chkPurchaseOrder<?= $po->id ?>">
@@ -53,13 +54,13 @@
         <?php
           switch (htmlspecialchars($po->status)) {
             case 'CLOSED':
-              $status = '<span class="badge badge-success">CLOSED</span>';
+              $status = '<span class="badge badge-secondary">CLOSED</span>';
               break;
             case 'CANCELLED':
               $status = '<span class="badge badge-danger">CANCELLED</span>';
               break;
             default:
-              $status = '<span class="badge badge-warning">OPEN</span>';
+              $status = '<span class="badge badge-success">OPEN</span>';
               break;
           }
           echo $status;

@@ -10,14 +10,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
   Atlas.select.init('#selCustomerFilter');
 
+  /*** new purchase order */
   btnNewPurchaseOrder.addEventListener('click', () => {
     location.href = Atlas.config.baseUrl + 'purchase_orders';
   });
 
+  /*** edit purchase order */
+  btnEditPurchaseOrder.addEventListener('click', () => {
+    const id = getSelectedPurchaseOrderId();
+
+    if (!id) {
+      return;
+    }
+
+    location.href = Atlas.config.baseUrl + 'purchase_orders?id=' + id;
+  });
+
+  /*** refresh purchase order */
   btnRefreshPurchaseOrder.addEventListener('click', () => {
     location.reload();
   });
 
+  /*** cancel purchase order */
+  btnCancelPurchaseOrder.addEventListener('click', async () => {
+    const selected = getSelectedPurchaseOrders();
+
+    if (selected.length === 0) {
+      Atlas.toast.warning(
+        'Please select at least one Purchase Order.'
+      );
+      return;
+    }
+
+    const allOpen = selected.every(chk =>
+      chk.dataset.status === 'OPEN'
+    );
+
+    if (!allOpen) {
+      Atlas.toast.warning(
+        'Please select only OPEN Purchase Orders to cancel.'
+      );
+      return;
+    }
+
+    const confirmed = await Atlas.dialog.confirm(
+      'Cancel Purchase Order',
+      selected.length === 1
+        ? 'Are you sure you want to cancel the selected Purchase Order?'
+        : `Are you sure you want to cancel ${selected.length} Purchase Orders?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const formData = new FormData();
+
+    selected.forEach(chk => {
+      formData.append('ids[]', chk.value);
+    });
+
+    const result = await Atlas.ajax.post(
+      'purchase_orders/cancel',
+      formData
+    );
+
+    if (!result.success) {
+      Atlas.toast.error(result.message);
+      return;
+    }
+
+    Atlas.toast.success(result.message);
+
+    setTimeout(() => {
+      location.reload();
+    }, 500);
+  });
+
+  /*** checkbox event */
   chkSelectAllPurchaseOrder.addEventListener('change', () => {
     document.querySelectorAll('.chkPurchaseOrder').forEach(chk => {
       chk.checked = chkSelectAllPurchaseOrder.checked;
@@ -26,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateToolbarState();
   });
 
+  /*** toolbar state */
   document.querySelectorAll('.chkPurchaseOrder').forEach(chk => {
     chk.addEventListener('change', () => {
       const total = document.querySelectorAll('.chkPurchaseOrder').length;
@@ -35,15 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       updateToolbarState();
     });
-  });
-
-  btnEditPurchaseOrder.addEventListener('click', () => {
-    const id = getSelectedPurchaseOrderId();
-
-    if (!id) {
-      return;
-    }
-    location.href = Atlas.config.baseUrl + 'purchase_orders?id=' + id;
   });
 
 });
@@ -60,18 +122,58 @@ const getSelectedPurchaseOrderId = () => {
 
   if (checked.length > 1) {
     Atlas.toast.warning(
-      'Please select only one Purchase Order.'
+      'Please select only one Purchase Order. Multiple selection is supported only for Print and Cancel.'
     );
+
     return null;
   }
 
   return checked[0].value;
 }
 
-const updateToolbarState = () => {
-  const checked = document.querySelectorAll('.chkPurchaseOrder:checked').length;
+const getSelectedPurchaseOrderStatus = () => {
+  const checked = document.querySelector('.chkPurchaseOrder:checked');
 
-  btnEditPurchaseOrder.disabled = checked !== 1;
-  btnPrintPurchaseOrder.disabled = checked !== 1;
-  btnCancelPurchaseOrder.disabled = checked !== 1;
+  return checked
+    ? checked.dataset.status
+    : null;
+}
+
+const updateToolbarState = () => {
+  const selected = getSelectedPurchaseOrders();
+
+  btnEditPurchaseOrder.disabled = true;
+  btnPrintPurchaseOrder.disabled = true;
+  btnCancelPurchaseOrder.disabled = true;
+
+  if (selected.length === 0) {
+    return;
+  }
+
+  //** Print supports one or more */
+  btnPrintPurchaseOrder.disabled = false;
+
+  //** Edit supports exactly one */
+  if (selected.length === 1) {
+    const status = selected[0].dataset.status;
+
+    if (status === 'OPEN') {
+      btnEditPurchaseOrder.disabled = false;
+    }
+  }
+
+  //** Cancel supports one or more, but ALL must be OPEN */
+  const allOpen = selected.every(chk =>
+    chk.dataset.status === 'OPEN'
+  );
+
+  if (allOpen) {
+    btnCancelPurchaseOrder.disabled = false;
+  }
+}
+
+const getSelectedPurchaseOrders = () => {
+  return Array.from(
+    document.querySelectorAll('.chkPurchaseOrder:checked')
+  );
 }
