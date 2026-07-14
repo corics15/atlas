@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnNewSupplier.addEventListener('click', () => {
     frmSupplier.reset();
+    hidSupplierId.value = '';
+
     $('#selTerms').val('').trigger('change');
 
     Atlas.validation.clear();

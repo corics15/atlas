@@ -22,9 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   Atlas.select.init('#selSupplier', '#mdlCustomer');
   Atlas.select.init('#selSalesman', '#mdlCustomer');
+  Atlas.select.init('#selTerms', '#mdlCustomer');
 
   btnNewCustomer.addEventListener('click', () => {
     frmCustomer.reset();
+    hidCustomerId.value = '';
+
+    $('#selTerms').val('').trigger('change');
 
     Atlas.validation.clear();
     Atlas.modal.open({
@@ -82,10 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
     txtMobileNo.value = result.data.mobile_no;
     txtTelephoneNo.value = result.data.telephone_no;
     txtEmailAddress.value = result.data.email_address;
-    txtTerms.value = result.data.terms;
     txtCreditLimit.value = result.data.credit_limit;
 
     $('#selSalesman').val(result.data.salesman_id).trigger('change');
+    $('#selTerms').val(result.data.terms_id).trigger('change');
 
     Atlas.validation.clear();
 

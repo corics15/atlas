@@ -158,4 +158,20 @@ class Purchase_orders extends MY_Controller
       $result['data']
   );
   }
+
+  public function print()
+  {
+    $ids = $this->input->post('ids');
+
+    if (empty($ids)) {
+      show_error('No Purchase Order selected.');
+    }
+
+    $this->data['documents'] = $this->Purchase_order_model->getDocument($ids);
+
+    $this->load->view(
+      'purchase_orders/print',
+      $this->data
+    );
+  }
 }

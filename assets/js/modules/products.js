@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnNewProduct.addEventListener('click', () => {
     frmProduct.reset();
+    hidProductId.value = '';
 
     Atlas.validation.clear();
     Atlas.modal.open({

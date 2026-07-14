@@ -331,6 +331,56 @@ class Purchase_order_model extends CI_Model
     ];
   }
 
+  public function getDocument($ids)
+  {
+    if (!is_array($ids)) {
+      $ids = [$ids];
+    }
+
+    $documents = [];
+
+    foreach ($ids as $id) {
+      $header = $this->db
+          ->select("
+              p.*,
+              s.supplier_name,
+              s.address,
+              s.contact_person,
+              s.telephone_no,
+              t.terms_name
+          ")
+          ->from('t_purchase_orders p')
+          ->join('m_suppliers s', 's.id = p.supplier_id')
+          ->join('m_terms t', 't.id = p.terms_id', 'left')
+          ->where('p.id', $id)
+          ->get()
+          ->row();
+
+      $details = $this->db
+          ->select("
+              d.*,
+              p.barcode,
+              p.description,
+              u.uom
+          ")
+          ->from('t_purchase_order_details d')
+          ->join('m_products p', 'p.id = d.product_id')
+          ->join('m_uom u', 'u.id = p.uom_id')
+          ->where('purchase_order_id', $id)
+          ->order_by('d.id')
+          ->get()
+          ->result();
+
+      $documents[] = (object)[
+        'header' => $header,
+        'details' => $details
+      ];
+    }
+
+    return $documents;
+  }
+
+  /*** private functions */
   private function insertHeader($po)
   {
     $poNo = $this->generatePONumber();

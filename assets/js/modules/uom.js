@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnNewUom.addEventListener('click', () => {
     frmUom.reset();
+    hidUomId.value = '';
 
     Atlas.validation.clear();
     Atlas.modal.open({

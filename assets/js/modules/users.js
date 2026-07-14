@@ -188,26 +188,26 @@ document.addEventListener('DOMContentLoaded', () => {
   btnRefreshUsers.addEventListener('click', () => {
     location.reload();
   });
-
-  function getSelectedUserId() {
-    const checked = document.querySelectorAll('.chkUser:checked');
-    if (checked.length === 0) {
-      Atlas.toast.warning('Please select a user.');
-      return null;
-    }
-
-    if (checked.length > 1) {
-      Atlas.toast.warning('Please select only one user.');
-      return null;
-    }
-    return checked[0].value;
-  }
-
-  function updateToolbarState() {
-    const checked = document.querySelectorAll('.chkUser:checked').length;
-    btnEditUser.disabled = (checked !== 1);
-    btnResetPassword.disabled = (checked !== 1);
-    btnActivateUser.disabled = (checked !== 1);
-    btnDeactivateUser.disabled = (checked !== 1);
-  }
 });
+
+const getSelectedUserId = () => {
+  const checked = document.querySelectorAll('.chkUser:checked');
+  if (checked.length === 0) {
+    Atlas.toast.warning('Please select a user.');
+    return null;
+  }
+
+  if (checked.length > 1) {
+    Atlas.toast.warning('Please select only one user.');
+    return null;
+  }
+  return checked[0].value;
+}
+
+const updateToolbarState = () => {
+  const checked = document.querySelectorAll('.chkUser:checked').length;
+  btnEditUser.disabled = (checked !== 1);
+  btnResetPassword.disabled = (checked !== 1);
+  btnActivateUser.disabled = (checked !== 1);
+  btnDeactivateUser.disabled = (checked !== 1);
+}

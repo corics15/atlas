@@ -1,6 +1,5 @@
 const txtPONo = document.getElementById('txtPONo');
 const txtPODate = document.getElementById('txtPODate');
-// const txtTerms = document.getElementById('txtTerms');
 const selTerms = document.getElementById('selTerms');
 const txtRemarks = document.getElementById('txtRemarks');
 const txtCreditLimit = document.getElementById('txtCreditLimit');
@@ -134,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  //*** save */
+  /*** save */
   btnSavePurchaseOrder.addEventListener('click', async () => {
     if (!validatePurchaseOrder()) {
       return;
@@ -204,7 +203,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (window.purchaseOrderId > 0) {
     await loadPurchaseOrder(window.purchaseOrderId);
   }
-
 });
 
 window.addEventListener('beforeunload', (e) => {

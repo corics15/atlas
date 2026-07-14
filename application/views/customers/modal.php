@@ -72,10 +72,20 @@
               <small id="errSalesmanId" class="text-danger"></small>
             </div>
             <div class="form-group col-md-6">
-              <label for="txtTerms">Terms</label>
-              <input type="text" id="txtTerms" name="terms"
-                     class="form-control form-control-sm" placeholder="e.g. Net 30">
-              <small id="errTerms" class="text-danger"></small>
+              <label for="selTerms">Terms</label>
+              <select
+                id="selTerms"
+                name="terms_id"
+                class="form-control form-control-sm">
+                <option value="">Select Terms</option>
+                <?php foreach ($terms as $term): ?>
+                <option value="<?= $term->id; ?>">
+                  <?= htmlspecialchars($term->terms_name); ?>
+                </option>
+                <?php endforeach; ?>
+              </select>
+              <small id="errTerms"
+                class="text-danger"></small>
             </div>
           </div>
 

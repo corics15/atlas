@@ -108,6 +108,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*** print */
+  btnPrintPurchaseOrder.addEventListener('click', () => {
+    const selected = getSelectedPurchaseOrders();
+
+    console.log(1)
+
+    if (selected.length === 0) {
+      Atlas.toast.warning(
+        'Please select at least one Purchase Order.'
+      );
+      return;
+    }
+
+    const form = document.createElement('form');
+
+    form.method = 'POST';
+    form.action = Atlas.config.baseUrl + 'purchase_orders/print';
+    form.target = '_blank';
+
+    selected.forEach(chk => {
+      const input = document.createElement('input');
+
+      input.type = 'hidden';
+      input.name = 'ids[]';
+      input.value = chk.value;
+
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+  });
+
 });
 
 const getSelectedPurchaseOrderId = () => {

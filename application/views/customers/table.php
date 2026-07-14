@@ -59,7 +59,7 @@
       ?>
     </td>
     <td><?= $customer->salesman_name ?></td>
-    <td class="text-center"><?= $customer->terms ?></td>
+    <td class="text-center"><?= $customer->terms_name ?></td>
     <td class="text-right"><?= $customer->credit_limit ?></td>
     <td class="text-center">
       <?= $customer->is_active == 't' ? '<i class="fas fa-check text-success"></i>' : ''; ?>

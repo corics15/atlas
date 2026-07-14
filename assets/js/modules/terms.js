@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnNewTerm.addEventListener('click', () => {
     frmTerm.reset();
+    hidTermId.value = '';
 
     Atlas.validation.clear();
     Atlas.modal.open({
