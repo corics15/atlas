@@ -9,3 +9,17 @@ if (!function_exists('atlas_asset')) {
     return base_url($path) . '?v=' . $app['app_version'];
   }
 }
+
+if (!function_exists('atlas_url')) {
+  function atlas_url($path = '')
+  {
+    return base_url($path);
+  }
+}
+
+function atlas_company()
+{
+  $CI =& get_instance();
+  $CI->load->model('Company_model');
+  return $CI->Company_model->get();
+}

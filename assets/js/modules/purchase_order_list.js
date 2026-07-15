@@ -6,13 +6,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRefreshPurchaseOrder = document.getElementById('btnRefreshPurchaseOrder');
   const chkSelectAllPurchaseOrder = document.getElementById('chkSelectAllPurchaseOrder');
 
-  updateToolbarState();
-
   Atlas.select.init('#selSupplierFilter');
+
+  Atlas.table.init({
+    checkbox: '.chkPurchaseOrder',
+    selectAll: '#chkSelectAllPurchaseOrder',
+    onChange: updateToolbarState
+  });
+
+  updateToolbarState();
 
   /*** new purchase order */
   btnNewPurchaseOrder.addEventListener('click', () => {
-    location.href = Atlas.config.baseUrl + 'purchase_orders';
+    Atlas.page.redirect('purchase_orders');
   });
 
   /*** edit purchase order */
@@ -23,12 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    location.href = Atlas.config.baseUrl + 'purchase_orders?id=' + id;
+    Atlas.page.redirect('purchase_orders', { id: id });
   });
 
   /*** refresh purchase order */
   btnRefreshPurchaseOrder.addEventListener('click', () => {
-    location.reload();
+    Atlas.page.refresh;
   });
 
   /*** cancel purchase order */
@@ -83,69 +89,27 @@ document.addEventListener('DOMContentLoaded', () => {
     Atlas.toast.success(result.message);
 
     setTimeout(() => {
-      location.reload();
+      Atlas.page.refresh();
     }, 500);
-  });
-
-  /*** checkbox event */
-  chkSelectAllPurchaseOrder.addEventListener('change', () => {
-    document.querySelectorAll('.chkPurchaseOrder').forEach(chk => {
-      chk.checked = chkSelectAllPurchaseOrder.checked;
-    });
-
-    updateToolbarState();
-  });
-
-  /*** toolbar state */
-  document.querySelectorAll('.chkPurchaseOrder').forEach(chk => {
-    chk.addEventListener('change', () => {
-      const total = document.querySelectorAll('.chkPurchaseOrder').length;
-      const checked = document.querySelectorAll('.chkPurchaseOrder:checked').length;
-
-      chkSelectAllPurchaseOrder.checked = (total === checked);
-
-      updateToolbarState();
-    });
   });
 
   /*** print */
   btnPrintPurchaseOrder.addEventListener('click', () => {
-    const selected = getSelectedPurchaseOrders();
+    const ids = Atlas.table.selectedIds();
 
-    console.log(1)
-
-    if (selected.length === 0) {
+    if (ids.length === 0) {
       Atlas.toast.warning(
         'Please select at least one Purchase Order.'
       );
       return;
     }
-
-    const form = document.createElement('form');
-
-    form.method = 'POST';
-    form.action = Atlas.config.baseUrl + 'purchase_orders/print';
-    form.target = '_blank';
-
-    selected.forEach(chk => {
-      const input = document.createElement('input');
-
-      input.type = 'hidden';
-      input.name = 'ids[]';
-      input.value = chk.value;
-
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-    form.remove();
+    Atlas.print.post('purchase_orders/print', ids);
   });
 
 });
 
 const getSelectedPurchaseOrderId = () => {
-  const checked = document.querySelectorAll('.chkPurchaseOrder:checked');
+  const checked = Atlas.table.selected();
 
   if (checked.length === 0) {
     Atlas.toast.warning(
@@ -173,8 +137,8 @@ const getSelectedPurchaseOrderStatus = () => {
     : null;
 }
 
-const updateToolbarState = () => {
-  const selected = getSelectedPurchaseOrders();
+const updateToolbarState = (selected = Atlas.table.selected()) => {
+  // const selected = getSelectedPurchaseOrders();
 
   btnEditPurchaseOrder.disabled = true;
   btnPrintPurchaseOrder.disabled = true;
@@ -184,10 +148,10 @@ const updateToolbarState = () => {
     return;
   }
 
-  //** Print supports one or more */
+  //** print supports one or more */
   btnPrintPurchaseOrder.disabled = false;
 
-  //** Edit supports exactly one */
+  //** edit supports exactly one OPEN PO */
   if (selected.length === 1) {
     const status = selected[0].dataset.status;
 
@@ -196,7 +160,7 @@ const updateToolbarState = () => {
     }
   }
 
-  //** Cancel supports one or more, but ALL must be OPEN */
+  //** cancel supports one or more OPEN POs */
   const allOpen = selected.every(chk =>
     chk.dataset.status === 'OPEN'
   );
@@ -207,7 +171,5 @@ const updateToolbarState = () => {
 }
 
 const getSelectedPurchaseOrders = () => {
-  return Array.from(
-    document.querySelectorAll('.chkPurchaseOrder:checked')
-  );
+  return Atlas.table.selected();
 }

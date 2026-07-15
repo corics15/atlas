@@ -18,11 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const hidCustomerId = document.getElementById('hidCustomerId');
   const chkSelectAllCustomer = document.getElementById('chkSelectAllCustomer');
 
-  updateToolbarState();
-
   Atlas.select.init('#selSupplier', '#mdlCustomer');
   Atlas.select.init('#selSalesman', '#mdlCustomer');
   Atlas.select.init('#selTerms', '#mdlCustomer');
+
+  Atlas.table.init({
+    checkbox: '.chkCustomer',
+    selectAll: '#chkSelectAllCustomer',
+    onChange: updateToolbarState
+  });
+
+  updateToolbarState();
 
   btnNewCustomer.addEventListener('click', () => {
     frmCustomer.reset();
@@ -51,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Atlas.modal.close('mdlCustomer');
         Atlas.toast.success(result.message);
         setTimeout(() => {
-          location.reload();
+          Atlas.page.refresh();
         }, 1500);
       },
       onError: (result) => {
@@ -122,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
@@ -152,55 +158,38 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
     }
   });
 
-  chkSelectAllCustomer.addEventListener('change', () => {
-    document.querySelectorAll('.chkCustomer').forEach(chk => {
-      chk.checked = chkSelectAllCustomer.checked;
-    });
-    updateToolbarState();
-  });
-
-  document.querySelectorAll('.chkCustomer').forEach(chk => {
-    chk.addEventListener('change', () => {
-      const total = document.querySelectorAll('.chkCustomer').length;
-      const checked = document.querySelectorAll('.chkCustomer:checked').length;
-      chkSelectAllCustomer.checked = (total === checked);
-
-      updateToolbarState();
-    });
-
-  });
-
   btnRefreshCustomer.addEventListener('click', () => {
-    location.reload();
+    Atlas.page.refresh();
   });
-
-  function getSelectedCustomerId() {
-    const checked = document.querySelectorAll('.chkCustomer:checked');
-
-    if (checked.length === 0) {
-      Atlas.toast.warning('Please select a customer.');
-      return null;
-    }
-
-    if (checked.length > 1) {
-      Atlas.toast.warning('Please select only one customer.');
-      return null;
-    }
-
-    return checked[0].value;
-  }
-
-  function updateToolbarState() {
-    const checked = document.querySelectorAll('.chkCustomer:checked').length;
-    btnEditCustomer.disabled = (checked !== 1);
-    btnActivateCustomer.disabled = (checked !== 1);
-    btnDeactivateCustomer.disabled = (checked !== 1);
-  }
 });
+
+const getSelectedCustomerId = () => {
+  const checked = Atlas.table.selected();
+
+  if (checked.length === 0) {
+    Atlas.toast.warning('Please select a customer.');
+    return null;
+  }
+
+  if (checked.length > 1) {
+    Atlas.toast.warning('Please select only one customer.');
+    return null;
+  }
+
+  return checked[0].value;
+}
+
+const updateToolbarState = (selected = Atlas.table.selected()) => {
+  const checked = selected.length;
+
+  btnEditCustomer.disabled = (checked !== 1);
+  btnActivateCustomer.disabled = (checked !== 1);
+  btnDeactivateCustomer.disabled = (checked !== 1);
+}

@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const hidUomId = document.getElementById('hidUomId');
   const chkSelectAllUom = document.getElementById('chkSelectAllUom');
 
+  Atlas.table.init({
+    checkbox: '.chkUom',
+    selectAll: '#chkSelectAllUom',
+    onChange: updateToolbarState
+  });
+
   updateToolbarState();
 
   btnNewUom.addEventListener('click', () => {
@@ -40,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Atlas.modal.close('mdlUom');
         Atlas.toast.success(result.message);
         setTimeout(() => {
-          location.reload();
+          Atlas.page.refresh();
         }, 1500);
       },
       onError: (result) => { }
@@ -99,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
@@ -129,38 +135,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
     }
   });
 
-  chkSelectAllUom.addEventListener('change', () => {
-    document.querySelectorAll('.chkUom').forEach(chk => {
-      chk.checked = chkSelectAllUom.checked;
-    });
-    updateToolbarState();
-  });
-
-  document.querySelectorAll('.chkUom').forEach(chk => {
-    chk.addEventListener('change', () => {
-      const total = document.querySelectorAll('.chkUom').length;
-      const checked = document.querySelectorAll('.chkUom:checked').length;
-      chkSelectAllUom.checked = (total === checked);
-
-      updateToolbarState();
-    });
-
-  });
-
   btnRefreshUom.addEventListener('click', () => {
-    location.reload();
+    Atlas.page.refresh();
   });
 });
 
 const getSelectedUomId = () => {
-  const checked = document.querySelectorAll('.chkUom:checked');
+  const checked = Atlas.table.selected();
 
   if (checked.length === 0) {
     Atlas.toast.warning('Please select a UOM.');
@@ -175,8 +163,9 @@ const getSelectedUomId = () => {
   return checked[0].value;
 }
 
-const updateToolbarState = () => {
-  const checked = document.querySelectorAll('.chkUom:checked').length;
+const updateToolbarState = (selected = Atlas.table.selected()) => {
+  const checked = selected.length;
+
   btnEditUom.disabled = (checked !== 1);
   btnActivateUom.disabled = (checked !== 1);
   btnDeactivateUom.disabled = (checked !== 1);

@@ -22,6 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   Atlas.select.init('#selTerms', '#mdlSupplier');
 
+  Atlas.table.init({
+    checkbox: '.chkSupplier',
+    selectAll: '#chkSelectAllSupplier',
+    onChange: updateToolbarState
+  });
+
   updateToolbarState();
 
   btnNewSupplier.addEventListener('click', () => {
@@ -51,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Atlas.modal.close('mdlSupplier');
         Atlas.toast.success(result.message);
         setTimeout(() => {
-          location.reload();
+          Atlas.page.refresh();
         }, 1500);
       },
       onError: (result) => {
@@ -121,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
@@ -151,38 +157,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
     }
   });
 
-  chkSelectAllSupplier.addEventListener('change', () => {
-    document.querySelectorAll('.chkSupplier').forEach(chk => {
-      chk.checked = chkSelectAllSupplier.checked;
-    });
-    updateToolbarState();
-  });
-
-  document.querySelectorAll('.chkSupplier').forEach(chk => {
-    chk.addEventListener('change', () => {
-      const total = document.querySelectorAll('.chkSupplier').length;
-      const checked = document.querySelectorAll('.chkSupplier:checked').length;
-      chkSelectAllSupplier.checked = (total === checked);
-
-      updateToolbarState();
-    });
-
-  });
-
   btnRefreshSupplier.addEventListener('click', () => {
-    location.reload();
+    Atlas.page.refresh();
   });
 });
 
 const getSelectedSupplierId = () => {
-  const checked = document.querySelectorAll('.chkSupplier:checked');
+  const checked = Atlas.table.selected();
 
   if (checked.length === 0) {
     Atlas.toast.warning('Please select a supplier.');
@@ -197,9 +185,11 @@ const getSelectedSupplierId = () => {
   return checked[0].value;
 }
 
-const updateToolbarState = () => {
-  const checked = document.querySelectorAll('.chkSupplier:checked').length;
+const updateToolbarState = (selected = Atlas.table.selected()) => {
+  const checked = selected.length;
+
   btnEditSupplier.disabled = (checked !== 1);
   btnActivateSupplier.disabled = (checked !== 1);
   btnDeactivateSupplier.disabled = (checked !== 1);
+
 }

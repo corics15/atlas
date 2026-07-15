@@ -18,10 +18,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const hidProductId = document.getElementById('hidProductId');
   const chkSelectAllProduct = document.getElementById('chkSelectAllProduct');
 
-  updateToolbarState();
-
   Atlas.select.init('#selSupplier', '#mdlProduct');
   Atlas.select.init('#selUom', '#mdlProduct');
+
+  Atlas.table.init({
+    checkbox: '.chkProduct',
+    selectAll: '#chkSelectAllProduct',
+    onChange: updateToolbarState
+  });
+
+  updateToolbarState();
 
   btnNewProduct.addEventListener('click', () => {
     frmProduct.reset();
@@ -48,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Atlas.modal.close('mdlProduct');
         Atlas.toast.success(result.message);
         setTimeout(() => {
-          location.reload();
+          Atlas.page.refresh();
         }, 1500);
       },
       onError: (result) => {
@@ -116,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
@@ -146,55 +152,38 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
     }
   });
 
-  chkSelectAllProduct.addEventListener('change', () => {
-    document.querySelectorAll('.chkProduct').forEach(chk => {
-      chk.checked = chkSelectAllProduct.checked;
-    });
-    updateToolbarState();
-  });
-
-  document.querySelectorAll('.chkProduct').forEach(chk => {
-    chk.addEventListener('change', () => {
-      const total = document.querySelectorAll('.chkProduct').length;
-      const checked = document.querySelectorAll('.chkProduct:checked').length;
-      chkSelectAllProduct.checked = (total === checked);
-
-      updateToolbarState();
-    });
-
-  });
-
   btnRefreshProduct.addEventListener('click', () => {
-    location.reload();
+    Atlas.page.refresh();
   });
-
-  function getSelectedProductId() {
-    const checked = document.querySelectorAll('.chkProduct:checked');
-
-    if (checked.length === 0) {
-      Atlas.toast.warning('Please select a product.');
-      return null;
-    }
-
-    if (checked.length > 1) {
-      Atlas.toast.warning('Please select only one product.');
-      return null;
-    }
-
-    return checked[0].value;
-  }
-
-  function updateToolbarState() {
-    const checked = document.querySelectorAll('.chkProduct:checked').length;
-    btnEditProduct.disabled = (checked !== 1);
-    btnActivateProduct.disabled = (checked !== 1);
-    btnDeactivateProduct.disabled = (checked !== 1);
-  }
 });
+
+const getSelectedProductId = () => {
+  const checked = Atlas.table.selected();
+
+  if (checked.length === 0) {
+    Atlas.toast.warning('Please select a product.');
+    return null;
+  }
+
+  if (checked.length > 1) {
+    Atlas.toast.warning('Please select only one product.');
+    return null;
+  }
+
+  return checked[0].value;
+}
+
+const updateToolbarState = (selected = Atlas.table.selected()) => {
+  const checked = selected.length;
+
+  btnEditProduct.disabled = (checked !== 1);
+  btnActivateProduct.disabled = (checked !== 1);
+  btnDeactivateProduct.disabled = (checked !== 1);
+}

@@ -8,15 +8,31 @@
   <body>
 
     <?php /*** header */ ?>
+    <?php
+      $company = atlas_company();
+
+      $contactNo = null;
+      $mobile    = trim($company->mobile_no ?? '');
+      $telephone = trim($company->telephone_no ?? '');
+
+      if ($mobile !== '' && $telephone !== '') {
+          $contactNo = htmlspecialchars($mobile . ' / ' . $telephone);
+      } elseif ($mobile !== '') {
+          $contactNo = htmlspecialchars($mobile);
+      } elseif ($telephone !== '') {
+          $contactNo = htmlspecialchars($telephone);
+      }
+    ?>
     <?php foreach ($documents as $index => $document): ?>
 
       <?php $header = $document->header; ?>
       <h2 class="text-center" style="margin-bottom:1px">
-        <?= htmlspecialchars($app['company_name']) ?>
+        <?= htmlspecialchars($company->company_name) ?>
       </h2>
       <div class="text-center" style="font-size:12px !important">
-        <?= htmlspecialchars($app['company_address']) ?><br>
-        <?= htmlspecialchars($app['company_contact']) ?>
+        <?= htmlspecialchars($company->address) ?><br>
+        <?= $contactNo ?><br>
+        <?= htmlspecialchars($company->tin_no) ?><br>
       </div>
 
       <h3 class="text-center">

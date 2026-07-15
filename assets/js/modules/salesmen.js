@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const hidSalesmanId = document.getElementById('hidSalesmanId');
   const chkSelectAllSalesmen = document.getElementById('chkSelectAllSalesmen');
 
+  Atlas.table.init({
+    checkbox: '.chkSalesman',
+    selectAll: '#chkSelectAllSalesmen',
+    onChange: updateToolbarState
+  });
+
   updateToolbarState();
 
   btnNewSalesman.addEventListener('click', () => {
@@ -44,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Atlas.modal.close('mdlSalesman');
         Atlas.toast.success(result.message);
         setTimeout(() => {
-          location.reload();
+          Atlas.page.refresh();
         }, 1500);
       },
       onError: (result) => { }
@@ -107,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
@@ -137,55 +143,38 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
     }
   });
 
-  chkSelectAllSalesmen.addEventListener('change', () => {
-    document.querySelectorAll('.chkSalesman').forEach(chk => {
-      chk.checked = chkSelectAllSalesmen.checked;
-    });
-    updateToolbarState();
-  });
-
-  document.querySelectorAll('.chkSalesman').forEach(chk => {
-    chk.addEventListener('change', () => {
-      const total = document.querySelectorAll('.chkSalesman').length;
-      const checked = document.querySelectorAll('.chkSalesman:checked').length;
-      chkSelectAllSalesmen.checked = (total === checked);
-
-      updateToolbarState();
-    });
-
-  });
-
   btnRefreshSalesmen.addEventListener('click', () => {
-    location.reload();
+    Atlas.page.refresh();
   });
-
-  function getSelectedSalesmanId() {
-    const checked = document.querySelectorAll('.chkSalesman:checked');
-
-    if (checked.length === 0) {
-      Atlas.toast.warning('Please select a salesman.');
-      return null;
-    }
-
-    if (checked.length > 1) {
-      Atlas.toast.warning('Please select only one salesman.');
-      return null;
-    }
-
-    return checked[0].value;
-  }
-
-  function updateToolbarState() {
-    const checked = document.querySelectorAll('.chkSalesman:checked').length;
-    btnEditSalesman.disabled = (checked !== 1);
-    btnActivateSalesman.disabled = (checked !== 1);
-    btnDeactivateSalesman.disabled = (checked !== 1);
-  }
 });
+
+const getSelectedSalesmanId = () => {
+  const checked = Atlas.table.selected();
+
+  if (checked.length === 0) {
+    Atlas.toast.warning('Please select a salesman.');
+    return null;
+  }
+
+  if (checked.length > 1) {
+    Atlas.toast.warning('Please select only one salesman.');
+    return null;
+  }
+
+  return checked[0].value;
+}
+
+const updateToolbarState = (selected = Atlas.table.selected()) => {
+  const checked = selected.length;
+
+  btnEditSalesman.disabled = (checked !== 1);
+  btnActivateSalesman.disabled = (checked !== 1);
+  btnDeactivateSalesman.disabled = (checked !== 1);
+}

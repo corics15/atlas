@@ -93,7 +93,7 @@
             <div class="form-group col-md-6">
               <label for="txtCreditLimit">Credit Limit</label>
               <input type="number" id="txtCreditLimit" name="credit_limit"
-                     class="form-control form-control-sm" placeholder="Enter amount">
+                     class="form-control form-control-sm" placeholder="Enter amount" step="any">
               <small id="errCreditLimit" class="text-danger"></small>
             </div>
           </div>

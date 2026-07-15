@@ -11,8 +11,12 @@
 <script src="<?= atlas_asset('assets/js/core/modal.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/validation.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/form.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/layout.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/page.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/print.js'); ?>"></script>
 
 <script src="<?= atlas_asset('assets/js/core/select.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/table.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/product-finder.js'); ?>"></script>
 
 <?php if (!empty($pageScript)) : ?>

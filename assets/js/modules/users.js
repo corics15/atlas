@@ -18,6 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const chkSelectAllUsers = document.getElementById('chkSelectAllUsers');
 
+  Atlas.table.init({
+    checkbox: '.chkUser',
+    selectAll: '#chkSelectAllUsers',
+    onChange: updateToolbarState
+  });
+
   updateToolbarState();
 
   btnNewUser.addEventListener('click', () => {
@@ -45,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Atlas.modal.close('mdlUser');
         Atlas.toast.success(result.message);
         setTimeout(() => {
-          location.reload();
+          Atlas.page.refresh();
         }, 1500);
       },
       onError: (result) => {
@@ -101,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
@@ -131,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
@@ -169,29 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  chkSelectAllUsers.addEventListener('change', () => {
-    document.querySelectorAll('.chkUser').forEach(chk => {
-      chk.checked = chkSelectAllUsers.checked;
-    });
-  });
-
-  document.querySelectorAll('.chkUser').forEach(chk => {
-    chk.addEventListener('change', () => {
-      const total = document.querySelectorAll('.chkUser').length;
-      const checked = document.querySelectorAll('.chkUser:checked').length;
-      chkSelectAllUsers.checked = (total === checked);
-      updateToolbarState();
-    });
-    updateToolbarState();
-  });
-
   btnRefreshUsers.addEventListener('click', () => {
-    location.reload();
+    Atlas.page.refresh();
   });
 });
 
 const getSelectedUserId = () => {
-  const checked = document.querySelectorAll('.chkUser:checked');
+  const checked = Atlas.table.selected();
   if (checked.length === 0) {
     Atlas.toast.warning('Please select a user.');
     return null;
@@ -204,8 +194,9 @@ const getSelectedUserId = () => {
   return checked[0].value;
 }
 
-const updateToolbarState = () => {
-  const checked = document.querySelectorAll('.chkUser:checked').length;
+const updateToolbarState = (selected = Atlas.table.selected()) => {
+  const checked = selected.length;
+
   btnEditUser.disabled = (checked !== 1);
   btnResetPassword.disabled = (checked !== 1);
   btnActivateUser.disabled = (checked !== 1);

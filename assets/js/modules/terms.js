@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const hidTermId = document.getElementById('hidTermId');
   const chkSelectAllTerm = document.getElementById('chkSelectAllTerm');
 
+  Atlas.table.init({
+    checkbox: '.chkTerm',
+    selectAll: '#chkSelectAllTerm',
+    onChange: updateToolbarState
+  });
+
   updateToolbarState();
 
   btnNewTerm.addEventListener('click', () => {
@@ -40,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Atlas.modal.close('mdlTerm');
         Atlas.toast.success(result.message);
         setTimeout(() => {
-          location.reload();
+          Atlas.page.refresh();
         }, 1500);
       },
       onError: (result) => { }
@@ -99,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
@@ -129,38 +135,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.success) {
       Atlas.toast.success(result.message);
       setTimeout(() => {
-        location.reload();
+        Atlas.page.refresh();
       }, 500);
     } else {
       Atlas.toast.error(result.message);
     }
   });
 
-  chkSelectAllTerm.addEventListener('change', () => {
-    document.querySelectorAll('.chkTerm').forEach(chk => {
-      chk.checked = chkSelectAllTerm.checked;
-    });
-    updateToolbarState();
-  });
-
-  document.querySelectorAll('.chkTerm').forEach(chk => {
-    chk.addEventListener('change', () => {
-      const total = document.querySelectorAll('.chkTerm').length;
-      const checked = document.querySelectorAll('.chkTerm:checked').length;
-      chkSelectAllTerm.checked = (total === checked);
-
-      updateToolbarState();
-    });
-
-  });
-
   btnRefreshTerm.addEventListener('click', () => {
-    location.reload();
+    Atlas.page.refresh();
   });
 });
 
 const getSelectedTermId = () => {
-  const checked = document.querySelectorAll('.chkTerm:checked');
+  const checked = Atlas.table.selected();
 
   if (checked.length === 0) {
     Atlas.toast.warning('Please select a Term.');
@@ -175,8 +163,9 @@ const getSelectedTermId = () => {
   return checked[0].value;
 }
 
-const updateToolbarState = () => {
-  const checked = document.querySelectorAll('.chkTerm:checked').length;
+const updateToolbarState = (selected = Atlas.table.selected()) => {
+  const checked = selected.length;
+
   btnEditTerm.disabled = (checked !== 1);
   btnActivateTerm.disabled = (checked !== 1);
   btnDeactivateTerm.disabled = (checked !== 1);

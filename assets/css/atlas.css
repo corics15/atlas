@@ -82,9 +82,9 @@ h3,
 }
 
 /** custom css */
-body.login-page.swal2-height-auto {
+/* body.login-page.swal2-height-auto {
   height: 100vh !important;
-}
+} */
 
 .text-uppercase::placeholder {
   text-transform: none !important;
@@ -235,6 +235,11 @@ span.badge {
 
 .custom-control-input:focus:not(:checked)~.custom-control-label::before {
   border-color: #f9f0ab;
+}
+
+.custom-checkbox .custom-control-input:indeterminate~.custom-control-label::before {
+  border-color: #d9b32b;
+  background-color: #e19b1b;
 }
 
 /* center table cell content vertically */

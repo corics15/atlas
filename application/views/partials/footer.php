@@ -1,3 +1,3 @@
 <footer class="main-footer">
-  Atlas Framework © <?= '2026 - '.date('Y'); ?>
+  Powered by ATLAS Suite © <?= '2026 - '.date('Y'); ?>
 </footer>

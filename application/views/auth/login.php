@@ -11,7 +11,7 @@
 
   <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/plugins/fontawesome-free/css/all.min.css'); ?>">
   <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/dist/css/adminlte.min.css'); ?>">
-  <link rel="stylesheet" href="<?= atlas_asset('assets/css/app.css'); ?>">
+  <link rel="stylesheet" href="<?= atlas_asset('assets/css/login.css'); ?>">
   <link rel="shortcut icon" href="<?= atlas_asset($app['shortcut_ico']) ?>" type="image/x-icon">
 
 </head>
