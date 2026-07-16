@@ -57,6 +57,9 @@
             case 'CANCELLED':
               $status = '<span class="badge badge-danger">CANCELLED</span>';
               break;
+            case 'RECEIVED':
+              $status = '<span class="badge badge-info">RECEIVED</span>';
+              break;
             default:
               $status = '<span class="badge badge-success">OPEN</span>';
               break;

@@ -15,12 +15,21 @@
       <?= $toolbar['edit']['text']; ?>
       </button>
 
+      <?php if (!empty($toolbar['receive'])) : ?>
+      <button
+        id="<?= $toolbar['receive']['id']; ?>"
+        class="dropdown-item">
+          <i class="<?= $toolbar['receive']['icon']; ?>"></i>
+        <?= $toolbar['receive']['text']; ?>
+      </button>
+      <?php endif ?>
+
       <?php if (!empty($toolbar['resetPassword'])) : ?>
       <button
-          id="<?= $toolbar['resetPassword']['id']; ?>"
-          class="dropdown-item">
+        id="<?= $toolbar['resetPassword']['id']; ?>"
+        class="dropdown-item">
           <i class="<?= $toolbar['resetPassword']['icon']; ?>"></i>
-          <?= $toolbar['resetPassword']['text']; ?>
+        <?= $toolbar['resetPassword']['text']; ?>
       </button>
       <?php endif ?>
 
@@ -28,7 +37,7 @@
       <button
         id="<?= $toolbar['activate']['id']; ?>"
         class="dropdown-item">
-        <i class="<?= $toolbar['activate']['icon']; ?>"></i>
+          <i class="<?= $toolbar['activate']['icon']; ?>"></i>
         <?= $toolbar['activate']['text']; ?>
       </button>
       <?php endif ?>
@@ -37,7 +46,7 @@
       <button
         id="<?= $toolbar['deactivate']['id']; ?>"
         class="dropdown-item">
-      <i class="<?= $toolbar['deactivate']['icon']; ?>"></i>
+          <i class="<?= $toolbar['deactivate']['icon']; ?>"></i>
       <?= $toolbar['deactivate']['text']; ?>
       </button>
       <?php endif ?>
@@ -46,7 +55,7 @@
       <button
         id="<?= $toolbar['print']['id']; ?>"
         class="dropdown-item">
-        <i class="<?= $toolbar['print']['icon']; ?>"></i>
+          <i class="<?= $toolbar['print']['icon']; ?>"></i>
         <?= $toolbar['print']['text']; ?>
       </button>
       <?php endif ?>
@@ -55,7 +64,7 @@
       <button
         id="<?= $toolbar['cancel']['id']; ?>"
         class="dropdown-item">
-      <i class="<?= $toolbar['cancel']['icon']; ?>"></i>
+          <i class="<?= $toolbar['cancel']['icon']; ?>"></i>
       <?= $toolbar['cancel']['text']; ?>
       </button>
       <?php endif ?>
@@ -65,7 +74,7 @@
       <button
         id="<?= $toolbar['refresh']['id']; ?>"
         class="dropdown-item">
-      <i class="<?= $toolbar['refresh']['icon']; ?>"></i>
+          <i class="<?= $toolbar['refresh']['icon']; ?>"></i>
       <?= $toolbar['refresh']['text']; ?>
       </button>
     </div>

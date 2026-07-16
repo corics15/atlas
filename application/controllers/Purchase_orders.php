@@ -87,7 +87,8 @@ class Purchase_orders extends MY_Controller
     $this->data['statuses'] = [
       'OPEN',
       'CLOSED',
-      'CANCELLED'
+      'CANCELLED',
+      'RECEIVED',
     ];
 
     $this->pageScript = 'purchase_order_list';
@@ -118,6 +119,11 @@ class Purchase_orders extends MY_Controller
         'id'   => 'btnEditPurchaseOrder',
         'text' => 'Edit',
         'icon' => 'fas fa-edit'
+      ],
+      'receive' => [
+        'id'   => 'btnReceiveGoods',
+        'icon' => 'fas fa-dolly',
+        'text' => 'Receive Goods'
       ],
       'print' => [
         'id'   => 'btnPrintPurchaseOrder',

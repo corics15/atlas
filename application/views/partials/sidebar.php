@@ -15,7 +15,7 @@
   }
 ?>
 
-<aside class="main-sidebar sidebar-dark-primary elevation-4">
+<aside class="main-sidebar sidebar-dark-olive elevation-4">
 
   <?php /*** logo */ ?>
   <div class="d-flex justify-content-center mt-2">

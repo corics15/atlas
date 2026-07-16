@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const btnNewPurchaseOrder = document.getElementById('btnNewPurchaseOrder');
   const btnEditPurchaseOrder = document.getElementById('btnEditPurchaseOrder');
+  const btnReceiveGoods = document.getElementById('btnReceiveGoods');
   const btnPrintPurchaseOrder = document.getElementById('btnPrintPurchaseOrder');
   const btnCancelPurchaseOrder = document.getElementById('btnCancelPurchaseOrder');
   const btnRefreshPurchaseOrder = document.getElementById('btnRefreshPurchaseOrder');
@@ -30,6 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     Atlas.page.redirect('purchase_orders', { id: id });
+  });
+
+  /*** receive goods */
+  btnReceiveGoods.addEventListener('click', () => {
+    const id = getSelectedPurchaseOrderId();
+
+    if (!id) {
+      return;
+    }
+
+    Atlas.page.redirect('goods_receipts', { po: id });
   });
 
   /*** refresh purchase order */
@@ -138,11 +150,10 @@ const getSelectedPurchaseOrderStatus = () => {
 }
 
 const updateToolbarState = (selected = Atlas.table.selected()) => {
-  // const selected = getSelectedPurchaseOrders();
-
   btnEditPurchaseOrder.disabled = true;
   btnPrintPurchaseOrder.disabled = true;
   btnCancelPurchaseOrder.disabled = true;
+  btnReceiveGoods.disabled = true;
 
   if (selected.length === 0) {
     return;
@@ -151,12 +162,17 @@ const updateToolbarState = (selected = Atlas.table.selected()) => {
   //** print supports one or more */
   btnPrintPurchaseOrder.disabled = false;
 
-  //** edit supports exactly one OPEN PO */
+  //** edit and receive supports exactly one OPEN PO */
   if (selected.length === 1) {
     const status = selected[0].dataset.status;
 
     if (status === 'OPEN') {
       btnEditPurchaseOrder.disabled = false;
+      btnReceiveGoods.disabled = false;
+    }
+
+    if (status === 'PARTIALLY RECEIVED') {
+      btnReceiveGoods.disabled = false;
     }
   }
 

@@ -76,6 +76,11 @@ $config['atlas_menu'] = [
         'icon'  => 'fas fa-file-invoice',
         'url'   => 'purchase_orders/list'
       ],
+      [
+        'title' => 'Goods Receiving List',
+        'icon'  => 'fas fa-dolly',
+        'url'   => 'goods_receipts'
+      ],
     ]
   ],
 

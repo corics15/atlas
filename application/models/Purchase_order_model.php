@@ -116,12 +116,15 @@ class Purchase_order_model extends CI_Model
 
     $details = $this->db
         ->select("
+            d.id,
             d.product_id,
             p.barcode,
             s.supplier_name,
             p.description,
             u.uom,
             d.qty,
+            d.qty_received,
+            (d.qty - d.qty_received) AS qty_remaining,
             d.price,
             d.discount
         ")
@@ -378,6 +381,31 @@ class Purchase_order_model extends CI_Model
     }
 
     return $documents;
+  }
+
+  public function getForReceiving($id)
+  {
+    /*** header */
+    $header = $this->db
+        ->where('id', $id)
+        ->get('v_purchase_orders')
+        ->row();
+
+    if (!$header) {
+      return null;
+    }
+
+    /*** details */
+    $details = $this->db
+        ->where('purchase_order_id', $id)
+        ->order_by('id', 'ASC')
+        ->get('v_purchase_order_details')
+        ->result();
+
+    return [
+      'header'  => $header,
+      'details' => $details
+    ];
   }
 
   /*** private functions */
