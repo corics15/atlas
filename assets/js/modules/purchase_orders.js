@@ -420,7 +420,7 @@ const enableEditMode = (header) => {
   btnSavePurchaseOrder.innerHTML =
     header.status === 'OPEN'
       ? 'Save Changes'
-      : 'Read Only';
+      : 'Locked';
   btnSavePurchaseOrder.disabled = header.status !== 'OPEN';
   txtPONo.value = header.po_no;
 }

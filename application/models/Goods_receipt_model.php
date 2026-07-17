@@ -9,6 +9,10 @@ class Goods_receipt_model extends CI_Model
     $this->db->trans_begin();
 
     try {
+      $this->validateReceiveQuantities(
+        $grn['details']
+      );
+
       $header = $this->insertHeader($grn);
 
       $this->insertDetails(
@@ -24,6 +28,14 @@ class Goods_receipt_model extends CI_Model
       /*** update PO status */
       $this->updatePurchaseOrderStatus(
         $grn['po_id']
+      );
+
+      $this->Inventory_model->receive(
+        [
+          'id'     => $header['id'],
+          'grn_no' => $header['grn_no']
+        ],
+        $grn['details']
       );
 
       $this->db->trans_commit();
@@ -222,6 +234,32 @@ class Goods_receipt_model extends CI_Model
       throw new Exception(
         'Unable to update Purchase Order status.'
       );
+    }
+  }
+
+  private function validateReceiveQuantities($details)
+  {
+    foreach ($details as $detail) {
+      $row = $this->db
+        ->select('qty, qty_received')
+        ->from('t_purchase_order_details')
+        ->where('id', $detail->po_detail_id)
+        ->get()
+        ->row();
+
+      if (!$row) {
+        throw new Exception(
+          'Purchase Order detail not found.'
+        );
+      }
+
+      $remaining = $row->qty - $row->qty_received;
+
+      if ($detail->qty_receive > $remaining) {
+        throw new Exception(
+          'Receive quantity exceeds the remaining quantity.'
+        );
+      }
     }
   }
 

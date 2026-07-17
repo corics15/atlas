@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnActivateProduct = document.getElementById('btnActivateProduct');
   const btnDeactivateProduct = document.getElementById('btnDeactivateProduct');
   const btnRefreshProduct = document.getElementById('btnRefreshProduct');
+  const btnInventoryInquiry = document.getElementById('btnInventoryInquiry');
 
   const frmProduct = document.getElementById('frmProduct');
 
@@ -159,6 +160,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  btnInventoryInquiry.addEventListener('click', () => {
+    const id = getSelectedProductId();
+
+    if (!id) {
+      return;
+    }
+
+    Atlas.page.redirect('inventory/inquiry/' + id);
+  });
+
   btnRefreshProduct.addEventListener('click', () => {
     Atlas.page.refresh();
   });
@@ -186,4 +197,5 @@ const updateToolbarState = (selected = Atlas.table.selected()) => {
   btnEditProduct.disabled = (checked !== 1);
   btnActivateProduct.disabled = (checked !== 1);
   btnDeactivateProduct.disabled = (checked !== 1);
+  btnInventoryInquiry.disabled = (checked !== 1);
 }

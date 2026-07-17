@@ -51,6 +51,15 @@
       </button>
       <?php endif ?>
 
+      <?php if (!empty($toolbar['inventoryInquiry'])) : ?>
+      <button
+        id="<?= $toolbar['inventoryInquiry']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['inventoryInquiry']['icon']; ?>"></i>
+        <?= $toolbar['inventoryInquiry']['text']; ?>
+      </button>
+      <?php endif ?>
+
       <?php if (!empty($toolbar['print'])) : ?>
       <button
         id="<?= $toolbar['print']['id']; ?>"

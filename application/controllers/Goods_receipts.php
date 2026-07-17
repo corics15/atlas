@@ -9,6 +9,7 @@ class Goods_receipts extends MY_Controller
 
     $this->load->model('Purchase_order_model');
     $this->load->model('Goods_receipt_model');
+    $this->load->model('Inventory_model');
   }
 
   public function index()

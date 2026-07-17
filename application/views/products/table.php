@@ -16,7 +16,7 @@
     <th class="text-center">Barcode</th>
     <th>Description</th>
     <th class="text-center">UOM</th>
-    <th class="text-center">Qty</th>
+    <th class="text-right">Qty on Hand</th>
     <th class="text-right">Cost</th>
     <th class="text-right">SRP</th>
     <th class="text-center">Active</th>
@@ -47,7 +47,7 @@
       <?= htmlspecialchars($product->description); ?>
     </td>
     <td class="text-center"><?= $product->uom ?></td>
-    <td></td>
+    <td class="text-right"><?= number_format($product->qty_on_hand) ?></td>
     <td class="text-right"><?= $product->cost ?></td>
     <td class="text-right"><?= $product->srp ?></td>
     <td class="text-center">

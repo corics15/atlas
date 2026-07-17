@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /*** refresh purchase order */
   btnRefreshPurchaseOrder.addEventListener('click', () => {
-    Atlas.page.refresh;
+    Atlas.page.refresh();
   });
 
   /*** cancel purchase order */
@@ -171,7 +171,7 @@ const updateToolbarState = (selected = Atlas.table.selected()) => {
       btnReceiveGoods.disabled = false;
     }
 
-    if (status === 'PARTIALLY RECEIVED') {
+    if (status === 'PARTIAL') {
       btnReceiveGoods.disabled = false;
     }
   }

@@ -38,24 +38,29 @@ class Products extends MY_Controller
 
     $this->data['toolbar'] = [
       'edit' => [
-          'id' => 'btnEditProduct',
-          'text' => 'Edit',
-          'icon' => 'fas fa-edit'
+        'id' => 'btnEditProduct',
+        'text' => 'Edit',
+        'icon' => 'fas fa-edit'
       ],
       'activate' => [
-          'id' => 'btnActivateProduct',
-          'text' => 'Activate',
-          'icon' => 'fas fa-check-circle'
+        'id' => 'btnActivateProduct',
+        'text' => 'Activate',
+        'icon' => 'fas fa-check-circle'
       ],
       'deactivate' => [
-          'id' => 'btnDeactivateProduct',
-          'text' => 'Deactivate',
-          'icon' => 'fas fa-ban'
+        'id' => 'btnDeactivateProduct',
+        'text' => 'Deactivate',
+        'icon' => 'fas fa-ban'
+      ],
+      'inventoryInquiry' => [
+        'id'   => 'btnInventoryInquiry',
+        'icon' => 'fas fa-history',
+        'text' => 'Inventory Inquiry'
       ],
       'refresh' => [
-          'id' => 'btnRefreshProduct',
-          'text' => 'Refresh',
-          'icon' => 'fas fa-sync'
+        'id' => 'btnRefreshProduct',
+        'text' => 'Refresh',
+        'icon' => 'fas fa-sync'
       ]
     ];
 

@@ -86,9 +86,10 @@ class Purchase_orders extends MY_Controller
 
     $this->data['statuses'] = [
       'OPEN',
-      'CLOSED',
+      'PARTIAL',
+      'COMPLETED',
       'CANCELLED',
-      'RECEIVED',
+      'CLOSED',
     ];
 
     $this->pageScript = 'purchase_order_list';

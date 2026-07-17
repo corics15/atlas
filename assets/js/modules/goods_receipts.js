@@ -18,6 +18,16 @@ const collectReceiptDetails = () => {
       row.querySelector('.grn-receive-now').value || 0
     );
 
+    const remainingQty = parseFloat(row.dataset.remainingQty);
+    if (receiveNow > remainingQty) {
+      Atlas.toast.error(
+        'Receive quantity cannot exceed the remaining quantity.'
+      );
+      row.querySelector('.grn-receive-now').focus();
+      row.querySelector('.grn-receive-now').select();
+      throw new Error('Invalid receive quantity.');
+    }
+
     if (receiveNow <= 0) {
       return;
     }
@@ -42,7 +52,14 @@ const saveGoodsReceipt = async () => {
   formData.append('supplier_id', document.getElementById('hidSupplierId').value);
   formData.append('remarks', document.getElementById('txtRemarks').value.trim());
 
-  const details = collectReceiptDetails();
+  let details;
+  try {
+    details = collectReceiptDetails();
+  }
+  catch (error) {
+    return;
+  }
+
   formData.append(
     'details',
     JSON.stringify(details)
@@ -59,5 +76,7 @@ const saveGoodsReceipt = async () => {
   }
 
   Atlas.toast.success(result.message);
-  console.log(result.data);
+  setTimeout(() => {
+    Atlas.page.refresh();
+  }, 1500);
 };

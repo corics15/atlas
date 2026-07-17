@@ -29,7 +29,7 @@
       <input
         type="number"
         class="form-control form-control-sm text-right grn-receive-now"
-        value="<?= $item->qty_remaining ?>"
+        value="0"
         min="0"
         max="<?= $item->qty_remaining ?>"
         step="0.01">

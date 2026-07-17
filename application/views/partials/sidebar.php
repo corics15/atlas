@@ -30,7 +30,7 @@
     <span class="brand-text font-weight-light">
       <strong>ATLAS</strong>
       <small class="d-block text-muted">
-        Suite v<?= $app['app_version']; ?>
+        ERP Suite v<?= $app['app_version']; ?>
       </small>
     </span>
 

@@ -51,17 +51,28 @@
       <td class="text-center">
         <?php
           switch (htmlspecialchars($po->status)) {
+            case 'OPEN':
+              $status = '<span class="badge badge-success">OPEN</span>';
+              break;
+
+            case 'PARTIAL':
+              $status = '<span class="badge badge-warning">PARTIAL</span>';
+              break;
+
+            case 'COMPLETED':
+              $status = '<span class="badge badge-primary">COMPLETED</span>';
+              break;
+
             case 'CLOSED':
               $status = '<span class="badge badge-secondary">CLOSED</span>';
               break;
+
             case 'CANCELLED':
               $status = '<span class="badge badge-danger">CANCELLED</span>';
               break;
-            case 'RECEIVED':
-              $status = '<span class="badge badge-info">RECEIVED</span>';
-              break;
+
             default:
-              $status = '<span class="badge badge-success">OPEN</span>';
+              $status = '<span class="badge badge-light">UNKNOWN</span>';
               break;
           }
           echo $status;
