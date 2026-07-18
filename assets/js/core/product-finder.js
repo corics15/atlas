@@ -3,6 +3,7 @@ class AtlasProductFinder {
   constructor() {
     this.currentRow = null;
     this.selectedIndex = -1;
+    this.onSelect = null;
   }
 
   async load() {
@@ -46,6 +47,27 @@ class AtlasProductFinder {
                       `;
 
     $('#mdlProductFinder').modal('show');
+    setTimeout(() => search.focus(), 1000);
+  }
+
+  async select(callback) {
+    this.currentRow = null;
+    this.onSelect = callback;
+
+    const search = document.getElementById('searchInput');
+    const tbody = document.getElementById('tblProductFinder');
+
+    search.value = '';
+    tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center text-muted font-sm">
+            Start typing to search products...
+          </td>
+        </tr>
+    `;
+
+    $('#mdlProductFinder').modal('show');
+
     setTimeout(() => search.focus(), 150);
   }
 
@@ -183,6 +205,28 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
   }
 });
 
+// document.addEventListener('click', (e) => {
+//   const tr = e.target.closest('.pf-row');
+
+//   if (!tr) {
+//     return;
+//   }
+
+//   const row = Atlas.productFinder.currentRow;
+
+//   populateProductRow(row, {
+//     id: tr.dataset.id,
+//     barcode: tr.dataset.barcode,
+//     supplier_name: tr.dataset.supplier,
+//     description: tr.dataset.description,
+//     uom: tr.dataset.uom,
+//     srp: tr.dataset.price
+//   });
+
+//   Atlas.productFinder.hide();
+//   row.querySelector('.po-qty').focus();
+// });
+
 document.addEventListener('click', (e) => {
   const tr = e.target.closest('.pf-row');
 
@@ -190,19 +234,27 @@ document.addEventListener('click', (e) => {
     return;
   }
 
-  const row = Atlas.productFinder.currentRow;
-
-  populateProductRow(row, {
+  const product = {
     id: tr.dataset.id,
     barcode: tr.dataset.barcode,
     supplier_name: tr.dataset.supplier,
     description: tr.dataset.description,
     uom: tr.dataset.uom,
     srp: tr.dataset.price
-  });
+  };
 
+  /*** inventory adjustment event flow */
+  if (typeof Atlas.productFinder.onSelect === 'function') {
+    Atlas.productFinder.onSelect(product);
+    Atlas.productFinder.hide();
+    return;
+  }
+
+  /*** purchase order event flow */
+  const row = Atlas.productFinder.currentRow;
+  populateProductRow(row, product);
   Atlas.productFinder.hide();
-  row.querySelector('.po-qty').focus();
+  row.querySelector('.po-qty')?.focus();
 });
 
 let productFinderTimer = null;

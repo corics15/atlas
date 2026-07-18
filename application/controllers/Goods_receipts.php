@@ -14,18 +14,16 @@ class Goods_receipts extends MY_Controller
 
   public function index()
   {
-    $poId = (int) $this->input->get('po');
-
-    $this->data['poId'] = $poId;
-    $this->data['purchaseOrder'] = null;
-
-    if ($poId > 0) {
-      $this->data['purchaseOrder'] = $this->Purchase_order_model->get($poId);
-    }
-
-    $this->setPage('Goods Receiving');
+    $this->setPage('Goods Receipt List');
 
     $this->pageScript = 'goods_receipts';
+    $this->data['goodsReceipts'] = $this->Goods_receipt_model->getAll();
+
+    $this->data['tableContent'] = $this->load->view(
+        'goods_receipts/table',
+        $this->data,
+        TRUE
+    );
 
     $this->render('goods_receipts/index');
   }
@@ -48,5 +46,39 @@ class Goods_receipts extends MY_Controller
       $result['message'],
       $result['data']
     );
+  }
+
+  public function create()
+  {
+    $poId = (int) $this->input->get('po');
+
+    $this->data['poId'] = $poId;
+    $this->data['purchaseOrder'] = null;
+
+    if ($poId <= 0) {
+      show_404();
+    }
+
+    $this->data['purchaseOrder'] = $this->Purchase_order_model->get($poId);
+
+    if (!$this->data['purchaseOrder']) {
+      show_404();
+    }
+
+    $this->setPage('Receive Goods');
+    $this->pageScript = 'goods_receipts';
+    $this->render('goods_receipts/create');
+  }
+
+  public function view($id = 0)
+  {
+    $goodsReceipt = $this->Goods_receipt_model->get($id);
+
+    if (!$goodsReceipt)
+        show_404();
+
+    $this->data['goodsReceipt'] = $goodsReceipt;
+    $this->setPage('View Goods Receipt');
+    $this->render('goods_receipts/view');
   }
 }

@@ -60,6 +60,23 @@ class Goods_receipt_model extends CI_Model
     }
   }
 
+  public function getAll()
+  {
+    return $this->db
+        ->order_by('grn_date', 'DESC')
+        ->order_by('id', 'DESC')
+        ->get('v_goods_receipts')
+        ->result();
+  }
+
+  public function get($id)
+  {
+    return $this->db
+        ->where('id', $id)
+        ->get('v_goods_receipts')
+        ->row();
+  }
+
   /*** private functions */
   private function insertHeader($grn)
   {

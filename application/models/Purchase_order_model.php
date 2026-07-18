@@ -3,6 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Purchase_order_model extends CI_Model
 {
+
   public function save($po)
   {
     $this->validate($po);
@@ -91,7 +92,7 @@ class Purchase_order_model extends CI_Model
 
   public function generatePONumber()
   {
-    // Temporary implementation
+    // Temporary implementation, temporary generate
     return 'PO-' . date('YmdHis');
   }
 

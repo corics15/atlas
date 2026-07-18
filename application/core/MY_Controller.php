@@ -73,4 +73,23 @@ class MY_Controller extends CI_Controller
       ]
     );
   }
+
+  protected function getJsonRequest($key = null, $default = null)
+  {
+    static $request = null;
+
+    if ($request === null) {
+      $request = json_decode(file_get_contents('php://input'), true);
+
+      if (!is_array($request)) {
+        $request = $_POST;
+      }
+    }
+
+    if ($key === null) {
+      return $request;
+    }
+
+    return $request[$key] ?? $default;
+  }
 }

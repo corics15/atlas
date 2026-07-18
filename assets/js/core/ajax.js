@@ -4,7 +4,8 @@ class AtlasAjax {
     const options = {
       method: 'POST',
       headers: {
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest', /*** for backward compatibility */
       }
     };
 

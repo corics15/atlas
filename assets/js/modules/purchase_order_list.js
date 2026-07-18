@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.page.redirect('goods_receipts', { po: id });
+    Atlas.page.redirect('goods_receipts/create', { po: id });
   });
 
   /*** refresh purchase order */

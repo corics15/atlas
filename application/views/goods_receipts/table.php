@@ -1,39 +1,37 @@
 <thead class="thead-orange">
   <tr>
-    <th width="120" class="text-center">Barcode</th>
-    <th>Description</th>
-    <th width="80" class="text-center">UOM</th>
-    <th width="90" class="text-right">Ordered</th>
-    <th width="90" class="text-right">Received</th>
-    <th width="100" class="text-right">Remaining</th>
-    <th width="120" class="text-right">Receive Now</th>
+    <th width="40" class="text-center">
+      <div class="custom-control custom-checkbox ml-2 mt-1">
+        <input type="checkbox" class="custom-control-input row-check" id="customCheck1">
+        <label class="custom-control-label" for="customCheck1"></label>
+      </div>
+    </th>
+    <th width="140">GRN No.</th>
+    <th width="120" class="text-center">Date</th>
+    <th width="140">PO No.</th>
+    <th>Supplier</th>
+    <th>Remarks</th>
   </tr>
 </thead>
 
 <tbody>
-  <?php foreach ($purchaseOrder['details'] as $item): ?>
-  <tr
-    data-po-detail-id="<?= $item->id ?>"
-    data-product-id="<?= $item->product_id ?>"
-    data-ordered-qty="<?= $item->qty ?>"
-    data-unit-cost="<?= $item->price ?>"
-    data-remaining-qty="<?= $item->qty_remaining ?>">
-
-    <td class="text-center"><?= htmlspecialchars($item->barcode) ?></td>
-    <td><?= htmlspecialchars($item->description) ?></td>
-    <td class="text-center"><?= htmlspecialchars($item->uom) ?></td>
-    <td class="text-right"><?= number_format($item->qty, 2) ?></td>
-    <td class="text-right"><?= number_format($item->qty_received, 2) ?></td>
-    <td class="text-right"><?= number_format($item->qty_remaining, 2) ?></td>
-    <td>
-      <input
-        type="number"
-        class="form-control form-control-sm text-right grn-receive-now"
-        value="0"
-        min="0"
-        max="<?= $item->qty_remaining ?>"
-        step="0.01">
+  <?php foreach ($goodsReceipts as $row): ?>
+  <tr data-id="<?= $row->id; ?>">
+    <td class="text-center">
+      <div class="custom-control custom-checkbox ml-2 mt-1">
+        <input type="checkbox" class="custom-control-input row-check" id="customCheck1">
+        <label class="custom-control-label" for="customCheck1"></label>
+      </div>
     </td>
+    <td>
+      <a href="<?= base_url('goods_receipts/view/'.$row->id) ?>" class="text-olive text-wrap">
+        <?= htmlspecialchars($row->grn_no); ?>
+      </a>
+    </td>
+    <td class="text-center"><?= htmlspecialchars($row->grn_date); ?></td>
+    <td><?= htmlspecialchars($row->po_no); ?></td>
+    <td><?= htmlspecialchars($row->supplier_name); ?></td>
+    <td><?= htmlspecialchars($row->remarks); ?></td>
   </tr>
   <?php endforeach; ?>
 </tbody>
