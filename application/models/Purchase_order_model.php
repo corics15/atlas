@@ -551,7 +551,7 @@ class Purchase_order_model extends CI_Model
               SET
                 po_date = ?,
                 supplier_id = ?,
-                terms = ?,
+                terms_id = ?,
                 remarks = ?,
                 updated_by = ?,
                 updated_on = CURRENT_TIMESTAMP

@@ -1,5 +1,6 @@
 <thead class="thead-orange">
   <tr>
+    <th width="50" class="text-cener">#</th>
     <th width="120" class="text-center">Barcode</th>
     <th>Description</th>
     <th width="80" class="text-center">UOM</th>
@@ -11,7 +12,7 @@
 </thead>
 
 <tbody>
-  <?php foreach ($purchaseOrder['details'] as $item): ?>
+  <?php foreach ($purchaseOrder['details'] as $index => $item): ?>
   <tr
     data-po-detail-id="<?= $item->id ?>"
     data-product-id="<?= $item->product_id ?>"
@@ -19,6 +20,9 @@
     data-unit-cost="<?= $item->price ?>"
     data-remaining-qty="<?= $item->qty_remaining ?>">
 
+    <td class="text-right">
+      <?= $index + 1 ?>.
+    </td>
     <td class="text-center"><?= htmlspecialchars($item->barcode) ?></td>
     <td><?= htmlspecialchars($item->description) ?></td>
     <td class="text-center"><?= htmlspecialchars($item->uom) ?></td>

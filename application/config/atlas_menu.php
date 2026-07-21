@@ -83,6 +83,23 @@ $config['atlas_menu'] = [
       ],
     ]
   ],
+  [
+    'title' => 'Inventory',
+    'icon'  => 'fas fa-boxes',
+
+    'children' => [
+      [
+        'title' => 'New Adjustment',
+        'icon'  => 'fas fa-plus-circle',
+        'url'   => 'inventory_adjustments/create'
+      ],
+      [
+        'title' => 'Adjustment List',
+        'icon'  => 'fas fa-sliders-h',
+        'url'   => 'inventory_adjustments'
+      ],
+    ]
+  ],
 
   [
     'header' => 'ADMINISTRATION',

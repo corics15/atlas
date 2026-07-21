@@ -1,9 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+  const btnNewInventoryAdjustment = document.getElementById('btnNewInventoryAdjustment');
   const btnAddProductInventoryAdjustment = document.getElementById('btnAddProductInventoryAdjustment');
+  const btnEditInventoryAdjustment = document.getElementById('btnEditInventoryAdjustment');
   const btnSaveInventoryAdjustment = document.getElementById('btnSaveInventoryAdjustment');
+  const btnCancelInventoryAdjustment = document.getElementById('btnCancelInventoryAdjustment');
+  const tblInventoryAdjustmentDetails = document.getElementById('tblInventoryAdjustmentDetails');
+  const btnPostInventoryAdjustment = document.getElementById('btnPostInventoryAdjustment');
+  const btnRefreshInventoryAdjustment = document.getElementById('btnRefreshInventoryAdjustment');
+  const btnPrintInventoryAdjustment = document.getElementById('btnPrintInventoryAdjustment');
 
-  btnAddProductInventoryAdjustment.addEventListener('click', () => {
+  btnNewInventoryAdjustment?.addEventListener('click', () => Atlas.page.redirect(`inventory_adjustments/create`));
+
+  /*** add */
+  btnAddProductInventoryAdjustment?.addEventListener('click', () => {
     Atlas.productFinder.select(product => {
       const existingRow = findProductRow(product.id);
 
@@ -18,9 +28,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  btnSaveInventoryAdjustment.addEventListener('click', async () => {
+  /*** edit/update/view */
+  btnEditInventoryAdjustment?.addEventListener('click', () => {
+    const adjustmentId = getSelectedInventoryAdjustmentId();
+
+    if (!adjustmentId) {
+      return;
+    }
+
+    Atlas.page.redirect(`inventory_adjustments/view/${adjustmentId}`)
+  });
+
+  /*** save */
+  btnSaveInventoryAdjustment?.addEventListener('click', async () => {
     await saveInventoryAdjustment();
   });
+
+  /*** post */
+  btnPostInventoryAdjustment?.addEventListener('click', async () => {
+    await postInventoryAdjustment();
+  });
+
+  /*** cancel */
+  btnCancelInventoryAdjustment?.addEventListener('click', async () => {
+    await cancelInventoryAdjustment();
+  });
+
+  /*** delete row in adjustment details */
+  tblInventoryAdjustmentDetails?.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('btn-delete-row')) {
+      return;
+    }
+
+    e.target.closest('tr').remove();
+    restorePlaceholderRow();
+  });
+
+  btnPrintInventoryAdjustment?.addEventListener('click', () => {
+    const adjustmentId = getSelectedInventoryAdjustmentId();
+
+    if (!adjustmentId) return;
+
+    Atlas.page.open(`inventory_adjustments/print/${adjustmentId}`)
+  })
+
+  /*** refresh */
+  btnRefreshInventoryAdjustment?.addEventListener('click', () => Atlas.page.refresh())
 
 });
 
@@ -52,10 +105,10 @@ const addDetailRow = () => {
 const createDetailRow = () => {
   return `
         <tr>
-          <td class="ia-barcode align-middle"></td>
-          <td class="ia-description align-middle"></td>
-          <td class="ia-uom text-center align-middle"></td>
-          <td class="ia-on-hand text-right align-middle">0</td>
+          <td class="ia-barcode"></td>
+          <td class="ia-description"></td>
+          <td class="ia-uom text-center"></td>
+          <td class="ia-on-hand text-right">0</td>
           <td>
             <input
                 type="number"
@@ -63,7 +116,13 @@ const createDetailRow = () => {
                 class="form-control form-control-sm text-right ia-adjustment"
                 value="">
           </td>
-          <td class="ia-new-balance text-right align-middle">0</td>
+          <td class="ia-new-balance text-right">0</td>
+          <td class="text-center">
+            <i
+              class="fas fa-trash text-danger pointer btn-delete-row"
+              title="Remove Product" data-toggle="toolitp">
+            </i>
+          </td>
         </tr>
     `;
 };
@@ -83,6 +142,7 @@ const findProductRow = (productId) => {
 
 const collectAdjustmentHeader = () => {
   return {
+    adjustment_id: document.getElementById('hidInventoryAdjustmentId').value,
     adjustment_date: document.getElementById('dtAdjustmentDate').value,
     remarks: document.getElementById('txtAdjustmentRemarks').value.trim()
   };
@@ -97,7 +157,7 @@ const collectAdjustmentDetails = () => {
 
     const productId = parseInt(row.dataset.productId, 10);
 
-    // Skip placeholder or incomplete rows
+    /*** Skip placeholder or incomplete rows */
     if (!productId) {
       return;
     }
@@ -173,12 +233,7 @@ const saveInventoryAdjustment = async () => {
   }
 
   Atlas.toast.success(response.message);
-
-  // TODO
-  // Close modal
-
-  // TODO
-  // Refresh page / table
+  setTimeout(() => Atlas.page.redirect(`inventory_adjustments`), 1500);
 };
 
 const populateProductRow = async (row, product) => {
@@ -206,4 +261,133 @@ const populateProductRow = async (row, product) => {
   row.querySelector('.ia-new-balance').textContent = response.data.stock;
 
   row.querySelector('.ia-adjustment').focus();
+};
+
+const restorePlaceholderRow = () => {
+  const tbody = document.getElementById('tblInventoryAdjustmentDetails');
+
+  if (tbody.querySelectorAll('tr').length > 0) {
+    return;
+  }
+
+  tbody.innerHTML = `
+      <tr id="iaPlaceholderRow">
+        <td colspan="7" class="text-center text-muted py-2">
+          No products added.
+        </td>
+      </tr>
+    `;
+};
+
+const getSelectedInventoryAdjustmentId = () => {
+  const checkedRows = document.querySelectorAll(
+    'tbody .chkInventoryAdjustment:checked'
+  );
+
+  if (checkedRows.length === 0) {
+    Atlas.toast.warning('Please select an Inventory Adjustment.');
+    return null;
+  }
+
+  if (checkedRows.length > 1) {
+    Atlas.toast.warning('Please select only one Inventory Adjustment.');
+    return null;
+  }
+
+  return parseInt(
+    checkedRows[0].closest('tr').dataset.id,
+    10
+  );
+};
+
+const postInventoryAdjustment = async () => {
+  const adjustmentId = getSelectedInventoryAdjustmentId();
+
+  if (!adjustmentId) {
+    return;
+  }
+
+  const confirmed = await Atlas.dialog.confirm(
+    'Post Inventory Adjustment?',
+    'This action cannot be undone.'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  await executeInventoryAdjustmentAction(
+    'inventory_adjustments/post',
+    {
+      adjustment_id: adjustmentId
+    }
+  );
+};
+
+const cancelInventoryAdjustment = async () => {
+  const adjustmentId = getSelectedInventoryAdjustmentId();
+
+  if (!adjustmentId) {
+    return;
+  }
+
+  const reason = await Atlas.dialog.textarea({
+    icon: 'warning',
+    title: 'Cancel Inventory Adjustment?',
+    text: 'Please provide the reason for cancellation.',
+    // inputLabel: 'Cancellation Reason',
+    inputPlaceholder: 'Enter cancellation reason...',
+    required: false, /*** set to true if you want this to be required */
+    requiredMessage: 'Cancellation reason is required.',
+    confirmText: 'Confirm Cancellation'
+  });
+
+  if (reason === null) {
+    return;
+  }
+
+  await executeInventoryAdjustmentAction(
+    'inventory_adjustments/cancel',
+    {
+      adjustment_id: adjustmentId,
+      cancel_reason: reason
+    }
+  );
+};
+
+const executeInventoryAdjustmentAction = async (
+  endpoint,
+  payload,
+  onSuccess = () => Atlas.page.refresh()
+) => {
+
+  Atlas.loader.show();
+
+  try {
+    const response = await Atlas.ajax.post(
+      endpoint,
+      payload
+    );
+
+    Atlas.loader.hide();
+
+    if (!response.success) {
+      Atlas.toast.error(response.message);
+      return;
+    }
+
+    Atlas.toast.success(response.message);
+
+    setTimeout(() => {
+      onSuccess(response);
+    }, 1500);
+
+  } catch (error) {
+    Atlas.loader.hide();
+    Atlas.toast.error(
+      'An unexpected error occurred.'
+    );
+
+    console.error(error);
+  }
 };

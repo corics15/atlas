@@ -68,6 +68,25 @@ class AtlasTable {
   selectedIds() {
     return this.selected().map(chk => chk.value);
   }
+
+  requireSingleSelection(entityName = 'record') {
+    const checked = this.selected();
+
+    if (checked.length === 0) {
+      Atlas.toast.warning(
+        `Please select a ${entityName}.`
+      );
+      return null;
+    }
+
+    if (checked.length > 1) {
+      Atlas.toast.warning(
+        `Please select only one ${entityName}.`
+      );
+      return null;
+    }
+    return checked[0].value;
+  }
 }
 
 window.Atlas = window.Atlas || {};

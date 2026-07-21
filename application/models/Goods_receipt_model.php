@@ -60,8 +60,89 @@ class Goods_receipt_model extends CI_Model
     }
   }
 
-  public function getAll()
+  public function update($request)
   {
+    $this->db->trans_begin();
+
+    try {
+
+      /*** update header */
+      $this->db
+        ->where('id', $request['id'])
+        ->update(
+          't_goods_receipts',
+          [
+            'remarks'     => trim($request['remarks']) <> '' ? strtoupper(trim($request['remarks'])) : NULL,
+            'updated_by'  => $request['updated_by'],
+            'updated_on'  => date('Y-m-d H:i:s')
+          ]
+        );
+
+      /*** update details */
+      foreach ($request['details'] as $detail) {
+
+        $this->db
+          ->where('id', $detail['id'])
+          ->update(
+            't_goods_receipt_details',
+            [
+              'qty_received' => $detail['qty_received']
+            ]
+          );
+
+      }
+
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception('Unable to update Goods Receipt.');
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => true,
+        'message' => 'Goods Receipt updated successfully.',
+        'data'    => [
+          'goods_receipt_id' => $request['id']
+        ]
+      ];
+
+    } catch (Exception $e) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => false,
+        'message' => $e->getMessage(),
+        'data'    => null
+      ];
+    }
+  }
+
+  public function getAll($filters = [])
+  {
+    if (!empty($filters['keyword'])) {
+      $escaped = $this->db->escape_like_str($filters['keyword']);
+
+      $this->db->group_start()
+        ->where("grn_no ILIKE '%{$escaped}%'")
+        ->or_where("po_no ILIKE '%{$escaped}%'")
+        ->or_where("supplier_name ILIKE '%{$escaped}%'")
+      ->group_end();
+    }
+
+    if (!empty($filters['date_from'])) {
+      $this->db->where(
+        'grn_date >=',
+        $filters['date_from']
+      );
+    }
+
+    if (!empty($filters['date_to'])) {
+      $this->db->where(
+        'grn_date <=',
+        $filters['date_to']
+      );
+    }
+
     return $this->db
         ->order_by('grn_date', 'DESC')
         ->order_by('id', 'DESC')
@@ -75,6 +156,24 @@ class Goods_receipt_model extends CI_Model
         ->where('id', $id)
         ->get('v_goods_receipts')
         ->row();
+  }
+
+  public function getDetails($grnId)
+  {
+    return $this->db
+        ->select('
+            d.*,
+            p.barcode,
+            p.description,
+            u.uom
+        ')
+        ->from('t_goods_receipt_details d')
+        ->join('m_products p', 'p.id = d.product_id')
+        ->join('m_uom u', 'u.id = p.uom_id')
+        ->where('d.grn_id', $grnId)
+        ->order_by('d.id')
+        ->get()
+        ->result();
   }
 
   /*** private functions */

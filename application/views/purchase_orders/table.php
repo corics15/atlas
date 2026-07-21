@@ -12,7 +12,7 @@
         </label>
       </div>
     </th>
-    <th>PO No.</th>
+    <th class="text-center">PO No.</th>
     <th class="text-center">Date</th>
     <th>Supplier</th>
     <th class="text-right">
@@ -33,16 +33,20 @@
           <input
             type="checkbox"
             class="custom-control-input chkPurchaseOrder"
-            id="chkPurchaseOrder<?= $po->id ?>"
+            id="chkPurchaseOrder-<?= $po->id ?>"
             value="<?= $po->id ?>"
             data-status="<?= htmlspecialchars($po->status); ?>">
           <label
             class="custom-control-label"
-            for="chkPurchaseOrder<?= $po->id ?>">
+            for="chkPurchaseOrder-<?= $po->id ?>">
           </label>
         </div>
       </td>
-      <td><?= htmlspecialchars($po->po_no) ?></td>
+      <td class="text-center">
+        <a href="<?= base_url('purchase_orders?id='.$po->id) ?>" class="text-olive text-wrap">
+          <?= htmlspecialchars($po->po_no) ?>
+        </a>
+      </td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($po->po_date))) ?></td>
       <td><?= htmlspecialchars($po->supplier_name) ?></td>
       <td class="text-right">

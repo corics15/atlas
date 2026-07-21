@@ -45,9 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /*** refresh purchase order */
-  btnRefreshPurchaseOrder.addEventListener('click', () => {
-    Atlas.page.refresh();
-  });
+  btnRefreshPurchaseOrder.addEventListener('click', () => Atlas.page.refresh());
 
   /*** cancel purchase order */
   btnCancelPurchaseOrder.addEventListener('click', async () => {
@@ -115,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
       );
       return;
     }
+
     Atlas.print.post('purchase_orders/print', ids);
   });
 

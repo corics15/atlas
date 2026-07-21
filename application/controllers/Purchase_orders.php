@@ -17,14 +17,7 @@ class Purchase_orders extends MY_Controller
 
   public function index()
   {
-    $this->setPage(
-      'Purchase Orders',
-      [
-        'id'   => 'btnNewPurchaseOrder',
-        'icon' => 'fas fa-cart-plus',
-        'text' => 'New Purchase Order',
-      ]
-    );
+    $this->setPage('New Purchase Order');
 
     $this->pageScript = 'purchase_orders';
 

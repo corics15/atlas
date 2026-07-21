@@ -135,7 +135,9 @@ td.supplier-address {
 
 .font-sm,
 #tblPurchaseOrderDetails input,
-#tblPurchaseOrderDetails td {
+#tblPurchaseOrderDetails td,
+.swal2-textarea,
+.dropdown-menu {
   font-size: small !important;
 }
 
@@ -147,10 +149,14 @@ td.supplier-address {
   cursor: pointer;
 }
 
-.po-total-text {
+.total-text {
   color: darkgoldenrod;
   font-weight: 500;
   font-family: 'Montserrat', sans-serif;
+}
+
+#lblTotal {
+  font-weight: 500 !important;
 }
 
 h1 {
@@ -173,6 +179,19 @@ select option {
 
 table tr th {
   font-weight: 500;
+}
+
+/*** letter spacing */
+.ls-tight {
+  letter-spacing: -0.05em;
+}
+
+.ls-wide {
+  letter-spacing: 0.1em;
+}
+
+.ls-wider {
+  letter-spacing: 0.25em;
 }
 
 /*** table css */
@@ -392,7 +411,8 @@ span.badge {
 /*** labels */
 label {
   color: #2f666b;
-  font-weight: normal !important
+  font-weight: normal !important;
+  font-size: small;
 }
 
 /*** select2 css */

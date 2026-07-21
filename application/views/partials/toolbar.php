@@ -8,14 +8,26 @@
     </button>
 
     <div class="dropdown-menu dropdown-menu-right">
+
+      <?php /*** new item */ if (!empty($toolbar['new'])) : ?>
+      <button
+        id="<?= $toolbar['new']['id']; ?>"
+        class="dropdown-item">
+          <i class="<?= $toolbar['new']['icon']; ?>"></i>
+        <?= $toolbar['new']['text']; ?>
+      </button>
+      <?php endif ?>
+
+      <?php /*** edit item */ if (!empty($toolbar['edit'])) : ?>
       <button
         id="<?= $toolbar['edit']['id']; ?>"
         class="dropdown-item">
       <i class="<?= $toolbar['edit']['icon']; ?>"></i>
       <?= $toolbar['edit']['text']; ?>
       </button>
+      <?php endif ?>
 
-      <?php if (!empty($toolbar['receive'])) : ?>
+      <?php  /*** receive goods */ if (!empty($toolbar['receive'])) : ?>
       <button
         id="<?= $toolbar['receive']['id']; ?>"
         class="dropdown-item">
@@ -24,7 +36,16 @@
       </button>
       <?php endif ?>
 
-      <?php if (!empty($toolbar['resetPassword'])) : ?>
+      <?php /*** post inventory adjustment */  if (!empty($toolbar['post'])) : ?>
+      <button
+        id="<?= $toolbar['post']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['post']['icon']; ?>"></i>
+        <?= $toolbar['post']['text']; ?>
+      </button>
+      <?php endif ?>
+
+      <?php /*** reset password */  if (!empty($toolbar['resetPassword'])) : ?>
       <button
         id="<?= $toolbar['resetPassword']['id']; ?>"
         class="dropdown-item">
@@ -33,7 +54,7 @@
       </button>
       <?php endif ?>
 
-      <?php if (!empty($toolbar['activate'])) : ?>
+      <?php /*** activate item */  if (!empty($toolbar['activate'])) : ?>
       <button
         id="<?= $toolbar['activate']['id']; ?>"
         class="dropdown-item">
@@ -42,7 +63,7 @@
       </button>
       <?php endif ?>
 
-      <?php if (!empty($toolbar['deactivate'])) : ?>
+      <?php /*** deactivate item */  if (!empty($toolbar['deactivate'])) : ?>
       <button
         id="<?= $toolbar['deactivate']['id']; ?>"
         class="dropdown-item">
@@ -51,7 +72,7 @@
       </button>
       <?php endif ?>
 
-      <?php if (!empty($toolbar['inventoryInquiry'])) : ?>
+      <?php /*** inventory inquiry */  if (!empty($toolbar['inventoryInquiry'])) : ?>
       <button
         id="<?= $toolbar['inventoryInquiry']['id']; ?>"
         class="dropdown-item">
@@ -60,7 +81,7 @@
       </button>
       <?php endif ?>
 
-      <?php if (!empty($toolbar['print'])) : ?>
+      <?php /*** print item */  if (!empty($toolbar['print'])) : ?>
       <button
         id="<?= $toolbar['print']['id']; ?>"
         class="dropdown-item">
@@ -69,7 +90,7 @@
       </button>
       <?php endif ?>
 
-      <?php if (!empty($toolbar['cancel'])) : ?>
+      <?php /*** cancel item */  if (!empty($toolbar['cancel'])) : ?>
       <button
         id="<?= $toolbar['cancel']['id']; ?>"
         class="dropdown-item">
@@ -80,6 +101,7 @@
 
       <div class="dropdown-divider"></div>
 
+      <?php  /*** refresh page */ ?>
       <button
         id="<?= $toolbar['refresh']['id']; ?>"
         class="dropdown-item">

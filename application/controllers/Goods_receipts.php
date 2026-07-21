@@ -16,13 +16,42 @@ class Goods_receipts extends MY_Controller
   {
     $this->setPage('Goods Receipt List');
 
+    $filters = [
+      'date_from' => trim($this->input->get('date_from')),
+      'date_to' => trim($this->input->get('date_to')),
+      'keyword' => trim($this->input->get('keyword')),
+    ];
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $keyword = trim($this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+
     $this->pageScript = 'goods_receipts';
-    $this->data['goodsReceipts'] = $this->Goods_receipt_model->getAll();
+    $this->data['goodsReceipts'] = $this->Goods_receipt_model->getAll($filters);
+    $this->data['recordCount'] = count($this->data['goodsReceipts']);
+
+    $this->data['toolbar'] = [
+      'print' => [
+        'id'   => 'btnPrintGoodsReceipt',
+        'icon' => 'fas fa-print',
+        'text' => 'Print'
+      ],
+
+      'refresh' => [
+        'id'   => 'btnRefreshGoodsReceipt',
+        'icon' => 'fas fa-sync-alt',
+        'text' => 'Refresh'
+      ]
+    ];
 
     $this->data['tableContent'] = $this->load->view(
-        'goods_receipts/table',
-        $this->data,
-        TRUE
+      'goods_receipts/table',
+      $this->data,
+      TRUE
     );
 
     $this->render('goods_receipts/index');
@@ -40,6 +69,21 @@ class Goods_receipts extends MY_Controller
     ];
 
     $result = $this->Goods_receipt_model->save($data);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
+  public function update()
+  {
+    $request = $this->getJsonRequest();
+
+    $request['updated_by'] = $this->session->userdata('user_id');
+
+    $result = $this->Goods_receipt_model->update($request);
 
     return $this->jsonResponse(
       $result['success'],
@@ -78,7 +122,37 @@ class Goods_receipts extends MY_Controller
         show_404();
 
     $this->data['goodsReceipt'] = $goodsReceipt;
-    $this->setPage('View Goods Receipt');
+    $this->data['details'] = $this->Goods_receipt_model->getDetails($id);
+
+    $this->data['isEditable'] = false;
+
+    $this->setPage('Goods Receipt');
+    $this->pageScript = 'goods_receipts';
     $this->render('goods_receipts/view');
+  }
+
+  public function print()
+  {
+    $ids = $this->input->post('ids');
+
+    if (empty($ids)) {
+      show_error('No Goods Receipt selected.');
+    }
+
+    $documents = [];
+
+    foreach ($ids as $id) {
+      $documents[] = (object) [
+        'header'  => $this->Goods_receipt_model->get($id),
+        'details' => $this->Goods_receipt_model->getDetails($id)
+      ];
+    }
+
+    $this->data['documents'] = $documents;
+
+    $this->load->view(
+      'goods_receipts/print',
+      $this->data
+    );
   }
 }

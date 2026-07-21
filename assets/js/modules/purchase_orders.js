@@ -264,9 +264,9 @@ const createDetailRow = () => {
           </div>
         </div>
       </td>
-      <td class="po-supplier align-middle"></td>
-      <td class="po-description align-middle"></td>
-      <td class="po-uom align-middle"></td>
+      <td class="po-supplier"></td>
+      <td class="po-description"></td>
+      <td class="po-uom text-center"></td>
       <td>
         <input
           type="number" step="any"
@@ -285,7 +285,7 @@ const createDetailRow = () => {
           class="form-control form-control-sm text-right po-discount"
           value="0.00">
       </td>
-      <td class="po-total text-right align-middle">
+      <td class="po-total text-right">
         0.00
       </td>
       <td>

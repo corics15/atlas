@@ -6,12 +6,12 @@
       </div>
       <div class="col-sm-6 text-right">
         <?php if (!empty($pageButton)) : ?>
-        <button
-          id="<?= $pageButton['id']; ?>"
-          class="btn btn-sm btn-primary">
-        <i class="<?= $pageButton['icon']; ?>"></i>
-        <?= $pageButton['text']; ?>
-        </button>
+          <button
+            id="<?= $pageButton['id']; ?>"
+            class="btn btn-sm btn-primary">
+          <i class="<?= $pageButton['icon']; ?>"></i>
+            <?= $pageButton['text']; ?>
+          </button>
         <?php endif; ?>
       </div>
     </div>
