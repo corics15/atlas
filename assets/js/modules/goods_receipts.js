@@ -3,6 +3,8 @@ const btnSaveChangesGoodsReceipt = document.getElementById('btnSaveChangesGoodsR
 const tblGoodsReceiptDetails = document.getElementById('tblGoodsReceiptDetails');
 const btnPrintGoodsReceipt = document.getElementById('btnPrintGoodsReceipt');
 const btnRefreshGoodsReceipt = document.getElementById('btnRefreshGoodsReceipt');
+const btnPostGoodsReceipt = document.getElementById('btnPostGoodsReceipt');
+const btnCancelGoodsReceipt = document.getElementById('btnCancelGoodsReceipt');
 
 const hidGoodsReceiptId = document.getElementById('hidGoodsReceiptId');
 const txtRemarks = document.getElementById('txtRemarks');
@@ -16,49 +18,16 @@ document.addEventListener('DOMContentLoaded', () => {
   btnSaveGoodsReceipt?.addEventListener('click', saveGoodsReceipt);
 
   /*** update */
-  btnSaveChangesGoodsReceipt?.addEventListener('click', async () => {
-    btnSaveChangesGoodsReceipt.disabled = true;
+  btnSaveChangesGoodsReceipt?.addEventListener('click', saveChangesGoodsReceipt);
 
-    try {
-      const grn = {
-        id: Number(hidGoodsReceiptId.value),
-        remarks: txtRemarks.value,
-        details: []
-      };
-
-      document.querySelectorAll('#tblGoodsReceiptDetails tbody tr').forEach(row => {
-        if (!row.dataset.grnDetailId) {
-          return;
-        }
-
-        grn.details.push({
-          id: Number(row.dataset.grnDetailId),
-          qty_received: Number(row.querySelector('.grn-qty').value)
-        });
-      });
-
-      const result = await Atlas.ajax.post(
-        'goods_receipts/update',
-        grn
-      );
-
-      if (!result.success) {
-        Atlas.toast.error(result.message);
-        return;
-      }
-
-      Atlas.toast.success(result.message);
-
-      isDirty = false;
-      setTimeout(() => Atlas.page.refresh(), 1500);
-
-    } finally {
-      btnSaveChangesGoodsReceipt.disabled = false;
-    }
-  });
+  /*** cancel */
+  btnCancelGoodsReceipt?.addEventListener('click', cancelGoodsReceipt);
 
   /*** print */
   btnPrintGoodsReceipt?.addEventListener('click', printGoodsReceipt);
+
+  /*** post */
+  btnPostGoodsReceipt?.addEventListener('click', postGoodsReceipt);
 
   /*** refresh */
   btnRefreshGoodsReceipt?.addEventListener('click', () => Atlas.page.refresh());
@@ -124,10 +93,6 @@ const collectReceiptDetails = () => {
       throw new Error('Invalid receive quantity.');
     }
 
-    if (receiveNow <= 0) {
-      return;
-    }
-
     details.push({
       po_detail_id: parseInt(row.dataset.poDetailId),
       product_id: parseInt(row.dataset.productId),
@@ -172,11 +137,130 @@ const saveGoodsReceipt = async () => {
     }
 
     Atlas.toast.success(result.message);
-    setTimeout(() => Atlas.page.refresh(), 1500);
+    setTimeout(() => Atlas.page.redirect(`goods_receipts/view/${result.data.goods_receipt_id}`), 1500);
 
   } finally {
     btnSaveGoodsReceipt.disabled = false;
 
+  }
+};
+
+const saveChangesGoodsReceipt = async () => {
+  btnSaveChangesGoodsReceipt.disabled = true;
+
+  try {
+    const grn = {
+      id: Number(hidGoodsReceiptId.value),
+      remarks: txtRemarks.value,
+      details: []
+    };
+
+    document.querySelectorAll('#tblGoodsReceiptDetails tbody tr').forEach(row => {
+      if (!row.dataset.grnDetailId) {
+        return;
+      }
+
+      grn.details.push({
+        id: Number(row.dataset.grnDetailId),
+        qty_received: Number(row.querySelector('.grn-qty').value)
+      });
+    });
+
+    if (grn.details.length === 0) {
+      Atlas.toast.warning('There are no items to save.');
+      return;
+    }
+
+    const result = await Atlas.ajax.post(
+      'goods_receipts/update',
+      grn
+    );
+
+    if (!result.success) {
+      Atlas.toast.error(result.message);
+      return;
+    }
+
+    Atlas.toast.success(result.message);
+
+    isDirty = false;
+    setTimeout(() => Atlas.page.refresh(), 1500);
+
+  } finally {
+    btnSaveChangesGoodsReceipt.disabled = false;
+  }
+}
+
+const postGoodsReceipt = async () => {
+  const result = await Atlas.dialog.confirm(
+    'Post Goods Receipt?',
+    'Inventory quantities will be updated. This action cannot be undone.'
+  );
+
+  if (!result) {
+    return;
+  }
+
+  btnPostGoodsReceipt.disabled = true;
+
+  try {
+    const response = await Atlas.ajax.post(
+      'goods_receipts/post',
+      {
+        id: Number(hidGoodsReceiptId.value)
+      }
+    );
+
+    if (!response.success) {
+      Atlas.toast.error(response.message);
+      return;
+    }
+
+    Atlas.toast.success(response.message);
+
+    setTimeout(() => Atlas.page.refresh(), 1500);
+
+  } finally {
+    btnPostGoodsReceipt.disabled = false;
+  }
+};
+
+const cancelGoodsReceipt = async () => {
+
+  if (btnCancelGoodsReceipt.disabled) {
+    return;
+  }
+
+  const confirmed = await Atlas.dialog.confirm(
+    'Cancel Goods Receipt?',
+    'Are you sure you want to cancel this Goods Receipt?'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  btnCancelGoodsReceipt.disabled = true;
+
+  try {
+    const response = await Atlas.ajax.post(
+      'goods_receipts/cancel',
+      {
+        id: Number(hidGoodsReceiptId.value)
+      }
+    );
+
+    if (!response.success) {
+      Atlas.toast.error(response.message);
+      return;
+    }
+
+    Atlas.toast.success(response.message);
+
+    setTimeout(() => Atlas.page.refresh(), 1500);
+
+  } finally {
+    btnCancelGoodsReceipt.disabled = false;
   }
 };
 

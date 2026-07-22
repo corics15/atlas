@@ -36,7 +36,7 @@
         value="0"
         min="0"
         max="<?= $item->qty_remaining ?>"
-        step="0.01">
+        step="any">
     </td>
   </tr>
   <?php endforeach; ?>

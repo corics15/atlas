@@ -18,6 +18,7 @@
 <script src="<?= atlas_asset('assets/js/core/select.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/table.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/product-finder.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/format.js'); ?>"></script>
 
 <?php if (!empty($pageScript)) : ?>
   <script src="<?= atlas_asset('assets/js/modules/' . $pageScript . '.js'); ?>"></script>

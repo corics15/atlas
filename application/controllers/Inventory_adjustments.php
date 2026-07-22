@@ -94,7 +94,7 @@ class Inventory_adjustments extends MY_Controller
     $this->data['inventoryAdjustment'] = $inventoryAdjustment;
     $this->data['inventoryAdjustmentDetails'] = $this->Inventory_adjustment_model->getDetails($id);
 
-    $this->pageTitle  = 'View Inventory Adjustment';
+    $this->setPage('Inventory Adjustment');
     $this->pageScript = 'inventory_adjustments';
     $this->data['isEditable'] = ($inventoryAdjustment->status === 'DRAFT');
 

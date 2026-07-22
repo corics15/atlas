@@ -41,6 +41,21 @@ class Inventory_model extends CI_Model
       ->result();
   }
 
+  public function getInventoryList()
+  {
+    $rows = $this->db
+              ->from('v_inventory_inquiry')
+              ->order_by('description')
+              ->get()
+              ->result_array();
+
+    return [
+      'success' => true,
+      'message' => '',
+      'data'    => $rows,
+    ];
+  }
+
   /*** private functions */
   private function updateQtyOnHand($details)
   {
@@ -153,11 +168,13 @@ class Inventory_model extends CI_Model
   {
     $query = $this->db->query(
       "UPDATE t_goods_receipts
-          SET is_posted_to_inventory = TRUE,
+          SET status = ?,
+              is_posted_to_inventory = TRUE,
               updated_by = ?,
               updated_on = CURRENT_TIMESTAMP
         WHERE id = ?",
       [
+        'POSTED',
         $this->session->userdata('user_id'),
         $grn['id']
       ]

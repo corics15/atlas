@@ -4,38 +4,35 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Goods_receipt_model extends CI_Model
 {
 
+  /*** initial status is DRAFT */
   public function save($grn)
   {
     $this->db->trans_begin();
 
     try {
+      $draft = $this->db
+                  ->where('po_id', $grn['po_id'])
+                  ->where('status', 'DRAFT')
+                  ->get('t_goods_receipts')
+                  ->row_array();
+
+      if ($draft) {
+        throw new Exception(
+          'A draft Goods Receipt already exists for this Purchase Order.'
+        );
+      }
+
       $this->validateReceiveQuantities(
         $grn['details']
       );
 
+      /*** insert GRN header */
       $header = $this->insertHeader($grn);
 
+      /*** insert GRN details */
       $this->insertDetails(
         $header['id'],
         $grn['details'],
-      );
-
-      /*** reflect quantity change or table t_purchase_order_details */
-      $this->updatePurchaseOrderDetails(
-        $grn['details']
-      );
-
-      /*** update PO status */
-      $this->updatePurchaseOrderStatus(
-        $grn['po_id']
-      );
-
-      $this->Inventory_model->receive(
-        [
-          'id'     => $header['id'],
-          'grn_no' => $header['grn_no']
-        ],
-        $grn['details']
       );
 
       $this->db->trans_commit();
@@ -60,11 +57,14 @@ class Goods_receipt_model extends CI_Model
     }
   }
 
+  /*** updates the DRAFT */
   public function update($request)
   {
     $this->db->trans_begin();
 
     try {
+
+      $this->validateDraftGoodsReceipt($request['id']);
 
       /*** update header */
       $this->db
@@ -104,6 +104,121 @@ class Goods_receipt_model extends CI_Model
         'data'    => [
           'goods_receipt_id' => $request['id']
         ]
+      ];
+
+    } catch (Exception $e) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => false,
+        'message' => $e->getMessage(),
+        'data'    => null
+      ];
+    }
+  }
+
+  public function post($request)
+  {
+    $this->db->trans_begin();
+
+    try {
+      $this->validateDraftGoodsReceipt($request['id']);
+
+      $grn = $this->db
+        ->where('id', $request['id'])
+        ->get('t_goods_receipts')
+        ->row_array();
+
+      $details = $this->db
+                  ->select("
+                    po_detail_id,
+                    product_id,
+                    qty_received AS qty_receive,
+                    qty_ordered,
+                    unit_cost
+                  ")
+                  ->from('t_goods_receipt_details')
+                  ->where('grn_id', $request['id'])
+                  ->get()
+                  ->result();
+
+      if (count($details) === 0) {
+        throw new Exception('There are no items to post.');
+      }
+
+      $this->validateReceiveQuantities($details);
+      $this->load->model('Inventory_model');
+
+      $this->Inventory_model->receive($grn, $details);
+      $this->updatePurchaseOrderDetails($details);
+      $this->updatePurchaseOrderStatus($grn['po_id']);
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => true,
+        'message' => 'Goods Receipt posted successfully.',
+        'data' => [
+          'id' => $request['id']
+        ]
+      ];
+
+    } catch (Exception $e) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => false,
+        'message' => $e->getMessage(),
+        'data' => null
+      ];
+    }
+  }
+
+  public function cancel($request)
+  {
+    try {
+      $id = (int) ($request['id'] ?? 0);
+
+      if ($id <= 0) {
+        throw new Exception('Invalid Goods Receipt.');
+      }
+
+      $this->db->trans_begin();
+
+      $grn = $this->db
+          ->where('id', $id)
+          ->get('t_goods_receipts')
+          ->row();
+
+      if (!$grn) {
+        throw new Exception('Goods Receipt not found.');
+      }
+
+      if ($grn->status !== 'DRAFT') {
+        throw new Exception('Only DRAFT Goods Receipts can be cancelled.');
+      }
+
+      $this->db
+        ->where('id', $id)
+        ->update('t_goods_receipts', [
+            'status'     => 'CANCELLED',
+            'updated_by' => $this->session->userdata('user_id'),
+            'updated_on' => date('Y-m-d H:i:s')
+        ]);
+
+      if (!$this->db->trans_status()) {
+        throw new Exception('Failed to cancel Goods Receipt.');
+      }
+
+      $this->db->trans_commit();
+
+      return [
+          'success' => true,
+          'message' => 'Goods Receipt cancelled successfully.',
+          'data'    => [
+              'id'     => $id,
+              'status' => 'CANCELLED'
+          ]
       ];
 
     } catch (Exception $e) {
@@ -176,10 +291,20 @@ class Goods_receipt_model extends CI_Model
         ->result();
   }
 
+  /*** check if a DRAFT already exists for a certain PO id */
+  public function getDraftByPurchaseOrder($purchaseOrderId)
+  {
+    return $this->db
+                ->where('po_id', $purchaseOrderId)
+                ->where('status', 'DRAFT')
+                ->get('t_goods_receipts')
+                ->row_array();
+  }
+
   /*** private functions */
   private function insertHeader($grn)
   {
-    $grnNo = 'GRN-' . date('YmdHis');
+    $grnNo = 'GRN-' . date('YmdHis'); /*** generateGRN */
 
     $remarks = trim($grn['remarks']) <> ''
       ? strtoupper(trim($grn['remarks']))
@@ -191,13 +316,15 @@ class Goods_receipt_model extends CI_Model
                 grn_date,
                 po_id,
                 supplier_id,
+                status,
+                is_posted_to_inventory,
                 remarks,
                 entered_by,
                 entered_on
               )
             VALUES
               (
-                ?,?,?,?,?,?,
+                ?,?,?,?,?,?,?,?,
                 CURRENT_TIMESTAMP
               )
             RETURNING id";
@@ -209,6 +336,8 @@ class Goods_receipt_model extends CI_Model
         $grn['grn_date'],
         $grn['po_id'],
         $grn['supplier_id'],
+        'DRAFT',
+        FALSE,
         $remarks,
         $this->session->userdata('user_id')
       ]
@@ -379,4 +508,21 @@ class Goods_receipt_model extends CI_Model
     }
   }
 
+  private function validateDraftGoodsReceipt($id)
+  {
+    $grn = $this->db
+        ->where('id', $id)
+        ->get('t_goods_receipts')
+        ->row();
+
+    if (!$grn) {
+      throw new Exception('Goods Receipt not found.');
+    }
+
+    if ($grn->status !== 'DRAFT') {
+      throw new Exception('Only DRAFT Goods Receipts can perform this operation.');
+    }
+
+    return $grn;
+  }
 }

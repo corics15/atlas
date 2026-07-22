@@ -10,12 +10,23 @@ class Inventory extends MY_Controller
     $this->load->model('Inventory_model');
   }
 
+  public function index()
+  {
+    $this->setPage('Inventory Inquiry');
+    $this->pageScript = 'inventory';
+
+    $this->data['tableContent'] = $this->load->view(
+      'inventory/inventory_table',
+      $this->data,
+      TRUE
+    );
+    $this->render('inventory/index');
+  }
+
   public function inquiry($productId)
   {
     $this->setPage('Inventory Inquiry');
-
     $this->pageScript = 'inventory';
-
     $this->data['product'] = $this->Product_model->get($productId);
 
     if (!$this->data['product']) {
@@ -31,5 +42,16 @@ class Inventory extends MY_Controller
     );
 
     $this->render('inventory/inquiry');
+  }
+
+  public function getInventoryList()
+  {
+    $result = $this->Inventory_model->getInventoryList();
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
   }
 }

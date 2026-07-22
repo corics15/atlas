@@ -17,15 +17,17 @@ class Purchase_orders extends MY_Controller
 
   public function index()
   {
-    $this->setPage('New Purchase Order');
+    $this->data['purchaseOrderId'] = (int) $this->input->get('id');
+
+    $mode = (int) $this->input->get('id') ? 'Edit' : 'New';
+
+    $this->setPage($mode.' Purchase Order');
 
     $this->pageScript = 'purchase_orders';
 
     $this->data['suppliers'] = $this->Supplier_model->getDropdown();
     $this->data['products'] = $this->Product_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
-
-    $this->data['purchaseOrderId'] = (int) $this->input->get('id');
 
     $this->render('purchase_orders/index');
   }

@@ -89,6 +89,11 @@ $config['atlas_menu'] = [
 
     'children' => [
       [
+        'title' => 'Inventory Inquiry',
+        'icon'  => 'fas fa-search',
+        'url'   => 'inventory'
+      ],
+      [
         'title' => 'New Adjustment',
         'icon'  => 'fas fa-plus-circle',
         'url'   => 'inventory_adjustments/create'

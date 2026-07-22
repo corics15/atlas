@@ -323,9 +323,7 @@ const resetPurchaseOrder = async () => {
   txtRemarks.value = '';
   lblTotal.textContent = '0.00';
 
-  const tbody = document.getElementById(
-    'tblPurchaseOrderDetails'
-  );
+  const tbody = document.getElementById('tblPurchaseOrderDetails');
   tbody.innerHTML = createDetailRow();
   tbody.querySelector('.po-barcode').focus();
   isDirty = false;

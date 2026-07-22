@@ -73,7 +73,7 @@
         type="button"
         id="btnSaveGoodsReceipt"
         class="btn btn-outline-success">
-        Save Goods Receipt
+          Save Draft
       </button>
     </div>
 

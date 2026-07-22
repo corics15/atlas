@@ -92,17 +92,49 @@ class Goods_receipts extends MY_Controller
     );
   }
 
+  public function cancel()
+  {
+    $request = $this->getJsonRequest();
+
+    $result = $this->Goods_receipt_model->cancel($request);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
+  public function post()
+  {
+    $request = $this->getJsonRequest();
+
+    $result = $this->Goods_receipt_model->post($request);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
   public function create()
   {
     $poId = (int) $this->input->get('po');
-
-    $this->data['poId'] = $poId;
-    $this->data['purchaseOrder'] = null;
 
     if ($poId <= 0) {
       show_404();
     }
 
+    /*** check if a DRAFT GRN already exists for this PO */
+    $draft = $this->Goods_receipt_model->getDraftByPurchaseOrder($poId);
+
+    if ($draft) {
+      redirect('goods_receipts/view/' . $draft['id']);
+      return;
+    }
+
+    $this->data['poId'] = $poId;
     $this->data['purchaseOrder'] = $this->Purchase_order_model->get($poId);
 
     if (!$this->data['purchaseOrder']) {

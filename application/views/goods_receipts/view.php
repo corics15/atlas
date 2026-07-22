@@ -6,9 +6,30 @@
     <?php /*** header */ ?>
     <div class="card">
       <div class="card-header">
-        <h3 class="card-title">
-          Goods Receipt Information
-        </h3>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="card-title">
+            Goods Receipt Information
+          </h3>
+
+          <?php
+            $statusClass = NULL;
+            switch ($goodsReceipt->status) {
+              case 'POSTED':
+                $statusClass = 'text-success';
+                break;
+              case 'DRAFT':
+                $statusClass = 'text-secondary';
+                break;
+              default:
+                $statusClass = 'text-danger';
+                break;
+            }
+          ?>
+
+          <div class="ls-wider <?= $statusClass ?>" style="font-weight:500">[<?= $goodsReceipt->status ?>]</div>
+        </div>
+
       </div>
       <div class="card-body">
         <table class="table table-sm table-borderless">
@@ -51,7 +72,7 @@
             <thead class="thead-orange">
               <tr>
                 <th width="50" class="text-cener">#</th>
-                <th width="150">Barcode</th>
+                <th width="150" class="text-center">Barcode</th>
                 <th>Description</th>
                 <th width="80" class="text-center">UOM</th>
                 <th width="110" class="text-right">Ordered</th>
@@ -79,7 +100,7 @@
                   <td class="text-right">
                     <?= $index + 1 ?>.
                   </td>
-                  <td>
+                  <td class="text-center">
                     <?= htmlspecialchars($item->barcode) ?>
                   </td>
                   <td>
@@ -120,29 +141,38 @@
     <div class="card mt-3">
       <div class="card-body">
         <div class="row align-items-center">
+
           <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <a href="<?= site_url('goods_receipts'); ?>" class="btn btn-default btn-sm"><i class="fas fa-arrow-left"></i>
+                  Back
+                </a>
 
-            <a href="<?= site_url('goods_receipts'); ?>"
-              class="btn btn-default btn-sm">
-            <i class="bi bi-arrow-left"></i>
-            Back
-            </a>
+                <button id="btnPrintGoodsReceipt" class="btn btn-default btn-sm"><i class="fa fa-print"></i>
+                  Print
+                </button>
+              </div>
 
-            <button id="btnSaveChangesGoodsReceipt"
-              class="btn btn-outline-success btn-sm">
-            <i class="bi bi-floppy"></i>
-            Save Changes
-            </button>
+              <?php if ($goodsReceipt->status === 'DRAFT') : ?>
+                <div>
+                  <button id="btnPostGoodsReceipt" class="btn btn-default btn-sm"><i class="fa fa-check"></i>
+                    Post
+                  </button>
 
-            <button id="btnPrint"
-              class="btn btn-default btn-sm">
-            <i class="bi bi-printer"></i>
-            Print
-            </button>
+                  <button id="btnCancelGoodsReceipt" class="btn btn-default btn-sm"><i class="fa fa-ban"></i>
+                    Cancel
+                  </button>
 
+                  <button id="btnSaveChangesGoodsReceipt" class="btn btn-outline-success btn-sm"></i>
+                    Save Changes
+                  </button>
+                </div>
+              <?php endif ?>
+            </div>
           </div>
-          <div class="col-md-4">
 
+          <div class="col-md-4">
             <table class="table table-sm mb-0">
               <tr>
                 <td class="total-text text-right">
@@ -155,8 +185,8 @@
                 </td>
               </tr>
             </table>
-
           </div>
+
         </div>
       </div>
     </div>

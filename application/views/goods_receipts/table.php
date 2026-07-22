@@ -6,10 +6,11 @@
         <label class="custom-control-label" for="chkSelectAllGoodsReceipt"></label>
       </div>
     </th>
-    <th width="140">GRN No.</th>
+    <th width="140" class="text-center">GRN No.</th>
     <th width="120" class="text-center">Date</th>
-    <th width="140">PO No.</th>
+    <th width="140" class="text-center">PO No.</th>
     <th>Supplier</th>
+    <th class="text-center">Status</th>
     <th>Remarks</th>
   </tr>
 </thead>
@@ -33,14 +34,29 @@
           <label class="custom-control-label" for="chkGoodsReceipt-<?= $row->id ?>"></label>
         </div>
       </td>
-      <td>
+      <td class="text-center">
         <a href="<?= base_url('goods_receipts/view/'.$row->id) ?>" class="text-olive text-wrap">
           <?= htmlspecialchars($row->grn_no); ?>
         </a>
       </td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($row->grn_date))); ?></td>
-      <td><?= htmlspecialchars($row->po_no); ?></td>
+      <td class="text-center"><?= htmlspecialchars($row->po_no); ?></td>
       <td><?= htmlspecialchars($row->supplier_name); ?></td>
+      <td class="text-center">
+        <?php
+          switch (htmlspecialchars($row->status)) {
+            case 'DRAFT':
+              $status = '<span class="badge badge-secondary">DRAFT</span>';
+              break;
+            case 'POSTED':
+              $status = '<span class="badge badge-success">POSTED</span>';
+              break;
+            default:
+              $status = '<span class="badge badge-danger">CANCELLED</span>';
+              break;
+          }
+          echo $status;
+        ?>      </td>
       <td><?= htmlspecialchars($row->remarks); ?></td>
     </tr>
     <?php endforeach; ?>
