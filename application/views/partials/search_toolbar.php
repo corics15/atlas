@@ -8,7 +8,7 @@
         name="keyword"
         value="<?= htmlspecialchars($keyword ?? ''); ?>"
         class="form-control form-control-sm"
-        placeholder="Search...">
+        placeholder="<?= $searchPlaceHolder ?? 'Search...' ?>">
     </div>
     <div class="col-auto">
       <button

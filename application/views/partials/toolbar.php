@@ -81,6 +81,15 @@
       </button>
       <?php endif ?>
 
+      <?php /*** stock ledger */  if (!empty($toolbar['stockLedger'])) : ?>
+      <button
+        id="<?= $toolbar['stockLedger']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['stockLedger']['icon']; ?>"></i>
+        <?= $toolbar['stockLedger']['text']; ?>
+      </button>
+      <?php endif ?>
+
       <?php /*** print item */  if (!empty($toolbar['print'])) : ?>
       <button
         id="<?= $toolbar['print']['id']; ?>"

@@ -1,22 +1,38 @@
 class AtlasPrint {
 
-  post(url, ids, target = '_blank') {
-
+  post(url, data, target = '_blank') {
     const form = document.createElement('form');
 
     form.method = 'POST';
     form.action = Atlas.config.baseUrl + url;
     form.target = target;
 
-    ids.forEach(id => {
-      const input = document.createElement('input');
+    /*** for array of IDs */
+    if (Array.isArray(data)) {
+      data.forEach(id => {
+        const input = document.createElement('input');
 
-      input.type = 'hidden';
-      input.name = 'ids[]';
-      input.value = id;
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = id;
 
-      form.appendChild(input);
-    });
+        form.appendChild(input);
+      });
+    }
+
+    /*** object */
+    else {
+      Object.entries(data).forEach(([key, value]) => {
+
+        const input = document.createElement('input');
+
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value ?? '';
+
+        form.appendChild(input);
+      });
+    }
 
     document.body.appendChild(form);
     form.submit();

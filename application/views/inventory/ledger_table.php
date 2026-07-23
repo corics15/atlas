@@ -1,5 +1,6 @@
 <thead class="thead-orange">
   <tr>
+    <th width="60" class="text-center">#</th>
     <th class="text-center">Date</th>
     <th class="text-center">Type</th>
     <th class="text-center">Reference</th>
@@ -10,9 +11,17 @@
 </thead>
 <tbody>
   <?php if (!empty($ledger)) : ?>
-  <?php $previousBalance = null; ?>
+
+  <?php
+    $previousBalance = null;
+    $index = 1;
+    $totalIn = 0;
+    $totalOut = 0;
+  ?>
+
   <?php foreach ($ledger as $row) : ?>
   <tr>
+    <td class="text-center"><?= $index.'.' ?></td>
     <td class="text-center"><?= date('m/d/Y h:i A', strtotime($row->transaction_date)); ?></td>
 
     <td class="text-center">
@@ -33,10 +42,21 @@
     </td>
 
     <td class="text-center">
+      <?php
+        switch ($row->transaction_type) {
+          case 'GRN':
+            $url = 'goods_receipts/';
+            break;
+          
+          default: /*** ADJUSTMENT */
+            $url = 'inventory_adjustments/';
+            break;
+        }
+      ?>
       <a
-        href="#"
+        href="<?= base_url($url.'view/'.$row->reference_id) ?>"
         class="text-olive text-wrap"
-        data-toggle="tooltip" title="Open Transaction">
+        data-toggle="tooltip" title="Open Transaction" target="_blank">
         <i class="fas fa-external-link-alt fa-xs mr-1"></i>
         <?= htmlspecialchars($row->reference_no); ?>
       </a>
@@ -71,7 +91,12 @@
     </td>
 
   </tr>
-  <?php endforeach; ?>
+  <?php
+      $index++;
+      $totalIn += (float)$row->qty_in;
+      $totalOut += (float)$row->qty_out;
+    endforeach;
+  ?>
   <?php else : ?>
   <tr>
     <td colspan="6" class="text-center">
@@ -80,3 +105,19 @@
   </tr>
   <?php endif; ?>
 </tbody>
+
+<tfoot>
+  <tr class="bg-light">
+    <td colspan="4" class="font-weight-500 text-right">
+        TOTAL
+    </td>
+    <td class="font-weight-500 text-right text-success">
+        <?= number_format($totalIn); ?>
+    </td>
+    <td class="font-weight-500 text-right text-danger">
+        <?= number_format($totalOut); ?>
+    </td>
+    <td></td>
+  </tr>
+</tfoot>
+<input type="hidden" id="hidProductId" value="<?= $product->id ?>">

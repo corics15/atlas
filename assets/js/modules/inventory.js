@@ -1,51 +1,71 @@
-const tblInventory = document.getElementById('tblInventory');
+const btnViewStockLedger = document.getElementById('btnViewStockLedger');
+const btnRefreshInventory = document.getElementById('btnRefreshInventory');
+const btnPrintStockLedger = document.getElementById('btnPrintStockLedger');
+const btnBackInventoryInquiry = document.getElementById('btnBackInventoryInquiry');
+
+const txtFromDate = document.querySelector('input[name=date_from]');
+const txtToDate = document.querySelector('input[name=date_to]');
+const selSLTransactionType = document.getElementById('selSLTransactionType');
+const hidProductId = document.getElementById('hidProductId');
 
 document.addEventListener('DOMContentLoaded', async (e) => {
 
-  await loadInventory();
+  btnViewStockLedger?.addEventListener('click', async () => {
+    const id = getSelectedInventoryId();
 
-});
+    if (!id) {
+      return;
+    }
 
-document.addEventListener('click', (e) => {
-  const row = e.target.closest('#tblInventory tbody tr');
-
-  if (!row) {
-    return;
-  }
-
-  Atlas.page.redirect(`inventory/inquiry/${row.dataset.productId}`);
-});
-
-const loadInventory = async () => {
-  const result = await Atlas.ajax.get(
-    'inventory/getInventoryList'
-  );
-
-  if (!result.success) {
-    Atlas.toast.error(result.message);
-    return;
-  }
-
-  populateInventory(result.data);
-}
-
-const populateInventory = (rows) => {
-  const tbody = tblInventory.querySelector('tbody');
-  tbody.innerHTML = '';
-
-  rows.forEach(row => {
-    tbody.insertAdjacentHTML('beforeend', `
-      <tr data-product-id="${row.product_id}" class="pointer">
-        <td class="text-center">${row.case_barcode ?? ''}</td>
-        <td class="text-center">${row.barcode ?? ''}</td>
-        <td>${row.description}</td>
-        <td class="text-center">${row.pkg ?? ''}</td>
-        <td>${row.supplier_name}</td>
-        <td class="text-center">${row.uom}</td>
-        <td class="text-right">${Atlas.format.integer(row.qty_on_hand)}</td>
-        <td class="text-right">${Atlas.format.amount(row.cost)}</td>
-        <td class="text-right">${Atlas.format.amount(row.inventory_value)}</td>
-      </tr>
-    `);
+    Atlas.page.remember();
+    Atlas.page.redirect(`inventory/ledger/${id}`)
   });
+
+  /*** refresh */
+  btnRefreshInventory?.addEventListener('click', () => Atlas.page.refresh());
+
+  /*** print */
+  btnPrintStockLedger?.addEventListener('click', printStockLedger);
+
+  /*** back */
+  btnBackInventoryInquiry?.addEventListener('click', () => Atlas.page.back());
+
+  Atlas.table.init({
+    checkbox: '.chkInventoryInquiry',
+    selectAll: '#chkSelectAllInventory',
+  });
+
+});
+
+const getSelectedInventoryId = () => {
+  const checked = Atlas.table.selected();
+
+  if (checked.length === 0) {
+    Atlas.toast.warning('Please select an item from the table.');
+    return null;
+  }
+
+  if (checked.length > 1) {
+    Atlas.toast.warning('Please select only one item.');
+    return null;
+  }
+
+  return checked[0].value;
 }
+
+const printStockLedger = () => {
+  Atlas.print.post(
+    'inventory/ledger_print',
+    {
+      product_id: hidProductId.value,
+      from_date: txtFromDate.value,
+      to_date: txtToDate.value,
+      transaction_type: selSLTransactionType.value
+    }
+  );
+};
+
+btnPrintStockLedger?.addEventListener(
+  'click',
+  printStockLedger
+);

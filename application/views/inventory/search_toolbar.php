@@ -6,7 +6,7 @@
       <input
         type="date"
         name="date_from"
-        value="<?= htmlspecialchars($date_from ?: date('Y-m-d')); ?>"
+        value="<?= htmlspecialchars($date_from ?: date('Y-01-01')); ?>"
         class="form-control form-control-sm">
     </div>
 
@@ -19,15 +19,21 @@
         class="form-control form-control-sm">
     </div>
 
-    <div class="">
-      <label for="txtSearchGeneric">Search</label>
-      <input
-        id="txtSearchGeneric"
-        type="text"
-        name="keyword"
-        value="<?= htmlspecialchars($keyword ?? ''); ?>"
-        class="form-control form-control-sm"
-        placeholder="<?= $searchPlaceHolder ?>">
+    <div style="min-width:150px;">
+      <label for="selSLTransactionType">Type</label>
+      <select
+        id="selSLTransactionType"
+        name="transType"
+        class="form-control form-control-sm custom-select">
+        <option value="">All</option>
+        <?php foreach ($transaction_types as $item): ?>
+          <option
+            value="<?= $item; ?>"
+            <?= ($transType == $item) ? 'selected' : ''; ?>>
+            <?= $item; ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
     </div>
 
     <div class="">

@@ -19,7 +19,7 @@
   <?php if (empty($goodsReceipts)): ?>
 
     <tr>
-      <td colspan="6" class="text-center text-muted py-3">
+      <td colspan="7" class="text-center text-muted py-3">
         No goods receipts found.
       </td>
     </tr>
@@ -56,7 +56,8 @@
               break;
           }
           echo $status;
-        ?>      </td>
+        ?>
+      </td>
       <td><?= htmlspecialchars($row->remarks); ?></td>
     </tr>
     <?php endforeach; ?>

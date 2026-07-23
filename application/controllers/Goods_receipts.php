@@ -33,6 +33,7 @@ class Goods_receipts extends MY_Controller
     $this->pageScript = 'goods_receipts';
     $this->data['goodsReceipts'] = $this->Goods_receipt_model->getAll($filters);
     $this->data['recordCount'] = count($this->data['goodsReceipts']);
+    $this->data['searchPlaceHolder'] = 'Search GRN, PO, Supplier...';
 
     $this->data['toolbar'] = [
       'print' => [

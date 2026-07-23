@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnEditInventoryAdjustment = document.getElementById('btnEditInventoryAdjustment');
   const btnSaveInventoryAdjustment = document.getElementById('btnSaveInventoryAdjustment');
   const btnCancelInventoryAdjustment = document.getElementById('btnCancelInventoryAdjustment');
+  const btnBackInventoryAdjustment = document.getElementById('btnBackInventoryAdjustment');
   const tblInventoryAdjustmentDetails = document.getElementById('tblInventoryAdjustmentDetails');
   const btnPostInventoryAdjustment = document.getElementById('btnPostInventoryAdjustment');
   const btnRefreshInventoryAdjustment = document.getElementById('btnRefreshInventoryAdjustment');
@@ -64,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     restorePlaceholderRow();
   });
 
+  /*** print */
   btnPrintInventoryAdjustment?.addEventListener('click', () => {
     const adjustmentId = getSelectedInventoryAdjustmentId();
 

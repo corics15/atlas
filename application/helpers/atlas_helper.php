@@ -4,8 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 if (!function_exists('atlas_asset')) {
   function atlas_asset($path)
   {
-    $CI =& get_instance();
-    $app = $CI->config->item('atlas');
+    $app = atlas_app();
     return base_url($path) . '?v=' . $app['app_version'];
   }
 }
@@ -14,6 +13,14 @@ if (!function_exists('atlas_url')) {
   function atlas_url($path = '')
   {
     return base_url($path);
+  }
+}
+
+if (!function_exists('atlas_app')) {
+  function atlas_app()
+  {
+    $CI =& get_instance();
+    return $CI->config->item('atlas');
   }
 }
 

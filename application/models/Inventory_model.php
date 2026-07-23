@@ -21,18 +21,42 @@ class Inventory_model extends CI_Model
     $this->markGoodsReceiptAsPosted($grn);
   }
 
-  public function getStockLedger($productId)
+  public function getStockLedger($productId, $filters = [])
   {
+    if (!empty($filters['date_from'])) {
+      $this->db->where(
+        "transaction_date::date >= '{$filters['date_from']}'",
+       NULL,
+       FALSE,
+      );
+    }
+
+    if (!empty($filters['date_to'])) {
+      $this->db->where(
+        "transaction_date::date <= '{$filters['date_to']}'",
+       NULL,
+       FALSE,
+      );
+    }
+
+    if (!empty($filters['transType'])) {
+      $this->db->where(
+        'transaction_type',
+        $filters['transType']
+      );
+    }
+
     return $this->db
       ->select("
-        transaction_date,
-        transaction_type,
-        reference_no,
-        qty_in,
-        qty_out,
-        balance_after,
-        unit_cost,
-        remarks
+          transaction_date,
+          transaction_type,
+          reference_no,
+          qty_in,
+          qty_out,
+          balance_after,
+          unit_cost,
+          remarks,
+          reference_id
       ")
       ->from('t_stock_ledger')
       ->where('product_id', $productId)
@@ -41,19 +65,23 @@ class Inventory_model extends CI_Model
       ->result();
   }
 
-  public function getInventoryList()
+  public function getAll($filters = [])
   {
-    $rows = $this->db
-              ->from('v_inventory_inquiry')
-              ->order_by('description')
-              ->get()
-              ->result_array();
+    if (!empty($filters['keyword'])) {
+      $escaped = $this->db->escape_like_str($filters['keyword']);
 
-    return [
-      'success' => true,
-      'message' => '',
-      'data'    => $rows,
-    ];
+      $this->db->group_start()
+        ->where("barcode ILIKE '%{$escaped}%'")
+        ->or_where("case_barcode ILIKE '%{$escaped}%'")
+        ->or_where("description ILIKE '%{$escaped}%'")
+        ->or_where("supplier_name ILIKE '%{$escaped}%'")
+      ->group_end();
+    }
+
+    return $this->db
+        ->order_by('description')
+        ->get('v_inventory_inquiry')
+        ->result();
   }
 
   /*** private functions */

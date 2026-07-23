@@ -1,6 +1,14 @@
+<div class="align-items-md-end align-items-start d-flex flex-column flex-md-row justify-content-between">
+  <?php $this->load->view('inventory/search_toolbar'); ?>
+</div>
+
 <div class="row">
   <div class="col-md-6">
-    <table class="table table-sm table-borderless mb-3">
+    <table class="table table-sm table-bordered table-hover mb-3">
+      <tr>
+        <th width="120">Case Barcode</th>
+        <td><?= htmlspecialchars($product->case_barcode); ?></td>
+      </tr>
       <tr>
         <th width="120">Barcode</th>
         <td><?= htmlspecialchars($product->barcode); ?></td>
@@ -16,7 +24,7 @@
     </table>
   </div>
   <div class="col-md-6">
-    <table class="table table-sm table-borderless mb-3">
+    <table class="table table-sm table-bordered table-hover mb-3">
       <tr>
         <th width="120">UOM</th>
         <td><?= htmlspecialchars($product->uom); ?></td>
@@ -28,12 +36,16 @@
         </td>
       </tr>
       <tr>
-        <th>Cost / SRP</th>
-        <td>
-          <?= number_format($product->cost, 2); ?>
-          /
-          <?= number_format($product->srp, 2); ?>
-        </td>
+        <th>Cost</th>
+        <td><?= number_format($product->cost, 2); ?></td>
+      </tr>
+      <tr>
+        <th>SRP</th>
+        <td><?= number_format($product->srp, 2); ?></td>
+      </tr>
+      <tr>
+        <th>SP</th>
+        <td><?= number_format($product->selling_price, 2); ?></td>
       </tr>
     </table>
   </div>

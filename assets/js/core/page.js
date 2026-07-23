@@ -15,8 +15,33 @@ class AtlasPage {
     location.href = fullUrl;
   }
 
-  back() {
+  back(defaultUrl = '') {
+    const returnUrl = sessionStorage.getItem('atlas_return_url');
+
+    if (returnUrl) {
+      sessionStorage.removeItem('atlas_return_url');
+      location.href = returnUrl;
+      return;
+    }
+
+    if (defaultUrl) {
+      this.redirect(defaultUrl);
+      return;
+    }
+
     history.back();
+  }
+
+  remember() {
+    sessionStorage.setItem(
+      'atlas_return_url',
+      location.pathname + location.search
+    );
+  }
+
+  redirectRemember(url, params = null) {
+    this.remember();
+    this.redirect(url, params);
   }
 
   open(url, target = '_blank') {
