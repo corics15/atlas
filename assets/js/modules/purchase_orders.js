@@ -258,7 +258,7 @@ const createDetailRow = () => {
           <div class="input-group-append">
             <button
               type="button"
-              class="btn btn-sm btn-outline-info btn-product-finder">
+              class="btn btn-sm btn-outline-warning btn-product-finder">
               <i class="fas fa-search font-smr"></i>
             </button>
           </div>

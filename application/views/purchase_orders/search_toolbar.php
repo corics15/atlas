@@ -56,7 +56,7 @@
     <div>
       <button
         type="submit"
-        class="btn btn-sm btn-secondary">
+        class="btn btn-sm btn-default">
       <i class="fas fa-search"></i>
       Search
       </button>

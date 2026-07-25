@@ -13,7 +13,7 @@
     <div class="col-auto">
       <button
         type="submit"
-        class="btn btn-sm btn-secondary btn-block">
+        class="btn btn-sm btn-default btn-block">
       <i class="fas fa-search"></i>
       Search
       </button>

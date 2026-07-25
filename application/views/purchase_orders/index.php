@@ -88,7 +88,7 @@
                       <div class="input-group-append">
                         <button
                           type="button"
-                          class="btn btn-sm btn-outline-info btn-product-finder">
+                          class="btn btn-sm btn-outline-warning btn-product-finder">
                           <i class="fas fa-search font-smr"></i>
                         </button>
                       </div>
@@ -141,7 +141,7 @@
                 <td id="lblTotal" class="text-right">0.00</td>
               </tr>
             </table>
-            <button id="btnSavePurchaseOrder" class="btn btn-outline-success btn-block">Save Purchase Order</button>
+            <button id="btnSavePurchaseOrder" class="btn btn-default btn-sm btn-block">Save Purchase Order</button>
           </div>
         </div>
       </div>

@@ -8,7 +8,7 @@
         <?php if (!empty($pageButton)) : ?>
           <button
             id="<?= $pageButton['id']; ?>"
-            class="btn btn-sm btn-primary">
+            class="btn btn-sm btn-default">
           <i class="<?= $pageButton['icon']; ?>"></i>
             <?= $pageButton['text']; ?>
           </button>

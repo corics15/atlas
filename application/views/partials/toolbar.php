@@ -2,7 +2,7 @@
 
   <div class="btn-group">
     <button
-      class="btn btn-sm btn-secondary dropdown-toggle"
+      class="btn btn-sm btn-default dropdown-toggle"
       data-toggle="dropdown">
     Actions
     </button>
@@ -68,7 +68,7 @@
         id="<?= $toolbar['deactivate']['id']; ?>"
         class="dropdown-item">
           <i class="<?= $toolbar['deactivate']['icon']; ?>"></i>
-      <?= $toolbar['deactivate']['text']; ?>
+        <?= $toolbar['deactivate']['text']; ?>
       </button>
       <?php endif ?>
 

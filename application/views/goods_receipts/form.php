@@ -68,13 +68,15 @@
 
     <hr>
 
-    <div class="text-right">
-      <button
-        type="button"
-        id="btnSaveGoodsReceipt"
-        class="btn btn-outline-success">
-          Save Draft
-      </button>
+    <div class="row justify-content-end">
+      <div class="col-md-2">
+        <button
+          type="button"
+          id="btnSaveGoodsReceipt"
+          class="btn btn-sm btn-default btn-block">
+            Save Draft
+        </button>
+      </div>
     </div>
 
   </div>

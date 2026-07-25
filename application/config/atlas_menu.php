@@ -103,6 +103,16 @@ $config['atlas_menu'] = [
         'icon'  => 'fas fa-sliders-h',
         'url'   => 'inventory_adjustments'
       ],
+      [
+        'title' => 'New Stock Transfer',
+        'icon'  => 'fas fa-random',
+        'url'   => 'stock_transfers/create'
+      ],
+      [
+        'title' => 'Stock Transfer List',
+        'icon'  => 'fas fa-exchange-alt',
+        'url'   => 'stock_transfers'
+      ],
     ]
   ],
 

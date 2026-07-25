@@ -164,7 +164,7 @@ td.supplier-address {
 }
 
 h1 {
-  color: #b88517 !important;
+  color: #b8179ed6 !important;
 }
 
 input[type="date"] {
@@ -307,7 +307,6 @@ span.badge {
   background-color: #f9a825;
   border-color: #f9a825;
   color: #212121;
-  /* dark text for contrast */
 }
 
 .btn-info {
@@ -450,5 +449,128 @@ label {
 .select2-selection__rendered {
   font-size: smaller !important;
 }
+
+.select2-container .select2-selection {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.select2-container .select2-selection:hover,
+.select2-container .select2-selection:focus {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease-in-out;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
+}
+
+/*** more custom css */
+/* Custom footer class with same look as card-footer */
+.card-footer-custom {
+  padding: .75rem 1.25rem;
+  /* same as card-footer */
+  background-color: #f8f9fa;
+  /* same light gray background */
+  border-top: 1px solid rgba(0, 0, 0, .125);
+  /* same border */
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-default {
+  background-color: #c0730040 !important;
+  border-color: #c073000d !important;
+}
+
+.btn:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.btn {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Inputs, textareas, bootstrap selects, shadow */
+.form-control,
+.custom-select,
+textarea {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.form-control:hover,
+.form-control:focus,
+.custom-select:hover,
+.custom-select:focus,
+textarea:hover,
+textarea:focus {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+/* Checkboxes and radios */
+.custom-control-input:checked~.custom-control-label::before,
+.custom-control-input:focus~.custom-control-label::before {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* On hover/focus for checkboxes/radios */
+.custom-control-input:hover~.custom-control-label::before {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+/* Disable shadows for inputs inside tables */
+table .form-control,
+table .custom-select,
+table textarea,
+table .select2-container .select2-selection {
+  box-shadow: none !important;
+  transition: none !important;
+}
+
+/* focus style */
+.form-control:focus,
+.custom-select:focus,
+textarea:focus {
+  border-color: #745c0c68;
+  box-shadow: 0 0 0 0.1rem rgba(139, 69, 19, 0.15);
+}
+
+/* Checkboxes and radios */
+.custom-control-input:focus~.custom-control-label::before {
+  border-color: #745c0c68;
+  box-shadow: 0 0 0 0.1rem rgba(139, 69, 19, 0.15);
+}
+
+/* Apply brown text color to all buttons */
+.btn,
+.btn i,
+.dropdown-item {
+  color: #745c0c !important;
+}
+
+/* Hover/focus for dropdown items */
+.dropdown-item:hover,
+.dropdown-item:focus {
+  color: #745c0c !important;
+  background-color: rgba(116, 92, 12, 0.1);
+  /* subtle brown tint */
+}
+
+/* Preserve disabled state */
+.dropdown-item.disabled,
+.dropdown-item:disabled {
+  color: #6c757d !important;
+  /* Bootstrap’s default muted gray */
+  background-color: transparent !important;
+}
+
+/* Optional: keep hover/focus consistent */
+.btn:hover,
+.btn:focus {
+  color: #745c0c !important;
+}
+
 
 /** end custom css */

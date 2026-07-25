@@ -19,7 +19,7 @@
           <div class="input-group">
             <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Enter product name or barcode">
             <div class="input-group-append">
-              <button class="btn btn-sm btn-outline-secondary" type="button"><i class="fas fa-search"></i></button>
+              <button class="btn btn-sm btn-outline-warning" type="button"><i class="fas fa-search"></i></button>
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@
           Press <i class="fa fa-arrow-up"></i> or <i class="fa fa-arrow-down"></i> to navigate.
           Press "Enter" to confirm or "Esc" to cancel.
         </div>
-        <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Cancel</button>
       </div>
 
     </div>

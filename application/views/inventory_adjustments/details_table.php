@@ -13,7 +13,7 @@
             <button
               type="button"
               id="btnAddProductInventoryAdjustment"
-              class="btn btn-sm btn-primary">
+              class="btn btn-sm btn-default">
             <i class="fas fa-plus mr-1"></i>
             Add Product
             </button>
@@ -106,7 +106,8 @@
       </div>
 
       <?php if ($isEditable): ?>
-        <div class="align-items-center card-footer d-flex justify-content-between">
+
+        <div class="card-footer-custom">
 
           <div class="d-flex justify-content-between align-items-center">
             <button
@@ -133,12 +134,13 @@
             <button
               type="button"
               id="btnSaveInventoryAdjustment"
-              class="btn btn-outline-success">
+              class="btn btn-default btn-sm">
               Save Adjustment
             </button>
           </div>
 
         </div>
+
       <?php endif ?>
     </div>
   </div>
