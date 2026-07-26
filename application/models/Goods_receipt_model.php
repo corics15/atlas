@@ -4,6 +4,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Goods_receipt_model extends CI_Model
 {
 
+  public function __construct()
+  {
+    parent::__construct();
+
+    $this->load->model('Inventory_model');
+  }
+
   /*** initial status is DRAFT */
   public function save($grn)
   {
@@ -147,7 +154,6 @@ class Goods_receipt_model extends CI_Model
       }
 
       $this->validateReceiveQuantities($details);
-      $this->load->model('Inventory_model');
 
       $this->Inventory_model->receive($grn, $details);
       $this->updatePurchaseOrderDetails($details);
@@ -213,12 +219,12 @@ class Goods_receipt_model extends CI_Model
       $this->db->trans_commit();
 
       return [
-          'success' => true,
-          'message' => 'Goods Receipt cancelled successfully.',
-          'data'    => [
-              'id'     => $id,
-              'status' => 'CANCELLED'
-          ]
+        'success' => true,
+        'message' => 'Goods Receipt cancelled successfully.',
+        'data'    => [
+          'id'     => $id,
+          'status' => 'CANCELLED'
+        ]
       ];
 
     } catch (Exception $e) {

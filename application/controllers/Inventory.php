@@ -109,15 +109,13 @@ class Inventory extends MY_Controller
     $data['product'] = $this->Product_model->get($productId);
 
     $data['ledger'] = $this->Inventory_model->getStockLedger(
-        $productId,
-        $fromDate,
-        $toDate,
-        $transactionType
+      $productId,
+      $fromDate,
+      $toDate,
+      $transactionType
     );
 
     $data['title'] = 'Stock Ledger';
-
-    // $data['subtitle'] = $data['product']->description;
 
     $data['period'] =
         (!empty($fromDate) && !empty($toDate))

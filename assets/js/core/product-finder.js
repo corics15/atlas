@@ -25,7 +25,7 @@ class AtlasProductFinder {
             <td>${product.supplier_name ?? ''}</td>
             <td>${product.description ?? ''}</td>
             <td class="text-center">${product.uom ?? ''}</td>
-            <td class="text-right">${Number(product.srp).toFixed(2)}</td>
+            <td class="text-right">${Atlas.format.amount(product.srp)}</td>
         </tr>
       `);
 
@@ -125,7 +125,7 @@ class AtlasProductFinder {
                                     <td>${product.supplier_name ?? ''}</td>
                                     <td>${product.description ?? ''}</td>
                                     <td class="text-center">${product.uom}</td>
-                                    <td class="text-right">${Number(product.srp).toFixed(2)}</td>
+                                    <td class="text-right">${Atlas.format.amount(product.srp)}</td>
                                   </tr>
                                 `);
     });

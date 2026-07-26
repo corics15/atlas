@@ -136,6 +136,8 @@ td.supplier-address {
 .font-sm,
 #tblPurchaseOrderDetails input,
 #tblPurchaseOrderDetails td,
+#tblStockTransferDetails input,
+#tblStockTransferDetails td,
 .swal2-textarea,
 .dropdown-menu {
   font-size: small !important;

@@ -80,7 +80,7 @@
                 href="<?= atlas_url($item['url']); ?>"
                 class="nav-link <?= ($currentRoute == $item['url']) ? 'active' : ''; ?>">
                 <i class="nav-icon <?= $item['icon']; ?>"></i>
-                <p class="<?= ($currentRoute == $item['url']) ? 'font-weight-bold' : ''; ?>">
+                <p class="<?= ($currentRoute == $item['url']) ? '' : ''; ?>">
                   <?= $item['title']; ?>
                 </p>
               </a>

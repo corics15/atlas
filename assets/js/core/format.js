@@ -18,6 +18,16 @@ class AtlasFormat {
   percent(value, decimals = 2) {
     return `${this.number(value, decimals)}%`;
   }
+
+  /*** convert formatted string back to number (with decimals) */
+  parseNumber(str) {
+    if (!str) return 0;
+    return parseFloat(str.replace(/,/g, ''));
+  }
+
+  amountFromText(text) {
+    return this.amount(this.parseNumber(text || 0));
+  }
 }
 
 window.Atlas = window.Atlas || {};

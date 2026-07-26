@@ -6,6 +6,9 @@ class Inventory_model extends CI_Model
   public function __construct()
   {
     parent::__construct();
+
+    $this->load->model('Branch_inventory_model');
+    $this->load->model('Stock_transfer_model');
   }
 
   public function receive($grn, $details)
@@ -17,6 +20,29 @@ class Inventory_model extends CI_Model
       $grn,
       $details
     );
+
+    /*** parked until Sales, Sales Returns, and Purchase Returns are completed. */
+    // foreach ($details as $detail) {
+    //   $balance = $this->Branch_inventory_model
+    //       ->getBalance(
+    //         // $grn['branch_id'], /*** parked at the moment */
+    //         1,
+    //         $detail->product_id
+    //       );
+
+    //   $this->writeStockLedger(
+    //     // $grn['branch_id'], /*** parked at the moment */
+    //     1,
+    //     'GRN',
+    //     $grn['id'],
+    //     $grn['grn_no'],
+    //     $detail->product_id,
+    //     $detail->qty_receive,
+    //     0,
+    //     $balance->qty_on_hand,
+    //     $detail->unit_cost
+    //   );
+    // }
 
     $this->markGoodsReceiptAsPosted($grn);
   }
@@ -84,6 +110,54 @@ class Inventory_model extends CI_Model
         ->result();
   }
 
+  public function postGoodsReceipt($goodsReceiptId)
+  {
+
+  }
+
+  public function postInventoryAdjustment($adjustmentId)
+  {
+
+  }
+
+  public function postStockTransfer($stockTransferId)
+  {
+    $header = $this->Stock_transfer_model->get($stockTransferId);
+    $details = $this->Stock_transfer_model->getDetails($stockTransferId);
+
+    foreach ($details as $detail) {
+
+      /*** deduct from source */
+      $this->Branch_inventory_model->adjustBalance(
+        $header->from_branch_id,
+        $detail->product_id,
+        -$detail->qty
+      );
+
+      /*** add to destination */
+      $this->Branch_inventory_model->adjustBalance(
+        $header->to_branch_id,
+        $detail->product_id,
+        $detail->qty
+      );
+    }
+
+    return [
+      'success' => TRUE,
+      'message' => ''
+    ];
+  }
+
+  public function postSales($salesId)
+  {
+
+  }
+
+  public function reverseTransaction($transactionType, $referenceId)
+  {
+
+  }
+
   /*** private functions */
   private function updateQtyOnHand($details)
   {
@@ -110,6 +184,44 @@ class Inventory_model extends CI_Model
       }
     }
   }
+
+  // private function writeStockLedger(
+  //     $branchId,
+  //     $transactionType,
+  //     $referenceId,
+  //     $referenceNo,
+  //     $productId,
+  //     $qtyIn,
+  //     $qtyOut,
+  //     $balanceAfter,
+  //     $unitCost = 0,
+  //     $remarks = NULL
+  // )
+  // {
+  //     $query = $this->db->insert(
+  //       't_stock_ledger',
+  //       [
+  //         'branch_id'        => $branchId,
+  //         'transaction_type' => strtoupper($transactionType),
+  //         'reference_id'     => $referenceId,
+  //         'reference_no'     => $referenceNo,
+  //         'product_id'       => $productId,
+  //         'qty_in'           => $qtyIn,
+  //         'qty_out'          => $qtyOut,
+  //         'balance_after'    => $balanceAfter,
+  //         'unit_cost'        => $unitCost,
+  //         'remarks'          => $remarks,
+  //         'entered_by'       => $this->session->userdata('user_id'),
+  //         'entered_on'       => date('Y-m-d H:i:s')
+  //       ]
+  //     );
+
+  //     if (!$query) {
+  //       throw new Exception(
+  //         'Unable to write Stock Ledger.'
+  //       );
+  //     }
+  // }
 
   private function writeStockLedger($grn, $details)
   {

@@ -6,48 +6,75 @@ class Stock_transfers extends MY_Controller
   public function __construct()
   {
     parent::__construct();
+
+    $this->load->model('Branch_model');
+    $this->load->model('Inventory_model');
+    $this->load->model('Stock_transfer_model');
   }
 
   public function index()
   {
-    $this->setPage('Stock Transfers');
-    $this->pageScript = 'stock_transfers';
-
-    // $filters = [
-    //   'keyword' => trim($this->input->get('keyword')),
-    // ];
-
-    // $this->data = array_merge(
-    //   $this->data,
-    //   $filters
-    // );
-
-    // $keyword = trim($this->input->get('keyword'));
-    // $this->data['keyword'] = $keyword;
-
-    // $this->data['toolbar'] = [
-    //   'stockLedger' => [
-    //     'id'   => 'btnViewStockLedger',
-    //     'icon' => 'fas fa-history',
-    //     'text' => 'View Stock Ledger'
-    //   ],
-
-    //   'refresh' => [
-    //     'id'   => 'btnRefreshInventory',
-    //     'icon' => 'fas fa-sync-alt',
-    //     'text' => 'Refresh'
-    //   ]
-    // ];
-
-    // $this->data['inventoryInquiry'] = $this->Inventory_model->getAll($filters);
-    // $this->data['recordCount'] = count($this->data['inventoryInquiry']);
-    // $this->data['searchPlaceHolder'] = 'Search Barcode, Descr, Supplier...';
-
-    $this->data['tableContent'] = $this->load->view(
-      'stock_transfers/table',
-      $this->data,
-      TRUE
+    $this->setPage(
+      'Stock Transfer List',
+      [
+        'id'   => 'btnNewStockTransfer',
+        'icon' => 'fa fa-plus',
+        'text' => 'New Stock Transfer',
+      ]
     );
+
+    $this->data['statuses'] = [
+      'OPEN',
+      'POSTED',
+      'CANCELLED',
+    ];
+
+    $this->data['toolbar'] = [
+      'edit' => [
+        'id'   => 'btnEditStockTransfer',
+        'text' => 'Edit',
+        'icon' => 'fas fa-edit'
+      ],
+      'print' => [
+        'id'   => 'btnPrintStockTransfer',
+        'text' => 'Print',
+        'icon' => 'fas fa-print'
+      ],
+      'cancel' => [
+        'id'   => 'btnCancelStockTransfer',
+        'text' => 'Cancel',
+        'icon' => 'fas fa-ban'
+      ],
+      'refresh' => [
+        'id'   => 'btnRefreshStockTransfer',
+        'text' => 'Refresh',
+        'icon' => 'fas fa-sync'
+      ]
+    ];
+
+    $this->pageScript = 'stock_transfers';
+    $this->data['searchPlaceHolder'] = 'Search Transfer #, Branch';
+
+    $filters = [
+      'date_from' => trim($this->input->get('date_from')),
+      'date_to'   => trim($this->input->get('date_to')),
+      'status'    => trim($this->input->get('status')),
+      'keyword' => trim($this->input->get('keyword')),
+    ];
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['stockTransfers'] = $this->Stock_transfer_model->getAll($filters);
+    $this->data['recordCount'] = count($this->data['stockTransfers']);
+    $this->data['tableContent'] =
+        $this->load->view(
+            'stock_transfers/table',
+            $this->data,
+            TRUE
+        );
 
     $this->render('stock_transfers/index');
   }
@@ -55,9 +82,118 @@ class Stock_transfers extends MY_Controller
   public function create()
   {
     $this->setPage('New Stock Transfer');
-    // $this->pageScript = 'goods_receipts';
+    $this->pageScript = 'stock_transfers';
 
-    $this->data['inventoryInquiry'] = [];
+    $this->data['stockTransfer'] = NULL;
+    $this->data['branches'] = $this->Branch_model->getDropdown();
     $this->render('stock_transfers/create');
+  }
+
+  public function edit($id)
+  {
+    $this->setPage('Edit Stock Transfer');
+    $this->pageScript = 'stock_transfers';
+    $this->data['branches'] = $this->Branch_model->getDropdown();
+    $this->data['stockTransfer'] = $this->Stock_transfer_model->get($id);
+    $this->data['details'] = $this->Stock_transfer_model->getDetails($id);
+    $this->data['stockTransferId'] = $id;
+    $this->render('stock_transfers/create');
+  }
+
+  public function save()
+  {
+    $postData = $this->input->raw_input_stream;
+    $stockTransfer = json_decode($postData);
+    $result = $this->Stock_transfer_model->save($stockTransfer);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
+  public function cancel()
+  {
+    $ids = $this->getJsonRequest('ids');
+    $cancelReason = $this->getJsonRequest('cancel_reason');
+
+    $result = $this->Stock_transfer_model->cancel($ids, $cancelReason);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
+  public function getProducts()
+  {
+    $result = $this->Inventory_model->getInventoryList();
+
+    return $this->jsonResponse(
+        $result['success'],
+        $result['message'],
+        $result['data']
+    );
+  }
+
+  public function getList()
+  {
+    $result = [
+      'success' => TRUE,
+      'message' => '',
+      'data' => $this->Stock_transfer_model->getList()
+    ];
+
+    return $this->jsonResponse(
+        $result['success'],
+        $result['message'],
+        $result['data']
+    );
+  }
+
+  public function getById($id)
+  {
+    return $this->jsonResponse(
+      TRUE,
+      '',
+      [
+        'header' => $this->Stock_transfer_model->get($id),
+        'details' => $this->Stock_transfer_model->getDetails($id)
+      ]
+    );
+  }
+
+  public function print()
+  {
+    $ids = $this->input->post('ids');
+
+    if (!$ids) {
+      show_404();
+    }
+
+    $documents = [];
+
+    foreach ($ids as $id) {
+      $header = $this->Stock_transfer_model->get($id);
+
+      if (!$header) {
+        continue;
+      }
+
+      $documents[] = (object)[
+        'header'  => $header,
+        'details' => $this->Stock_transfer_model->getDetails($id)
+      ];
+    }
+
+    $this->load->view(
+      'stock_transfers/print',
+      [
+        'documents' => $documents,
+        'title' => 'STOCK TRANSFER'
+      ]
+    );
   }
 }

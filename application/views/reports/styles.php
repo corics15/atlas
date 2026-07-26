@@ -169,4 +169,10 @@
   .no-border {
     border: none !important;
   }
+
+  .page-break {
+    display: block;
+    page-break-after: always;
+    break-after: page;
+  }
 </style>

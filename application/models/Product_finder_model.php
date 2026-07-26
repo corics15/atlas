@@ -14,7 +14,8 @@ class Product_finder_model extends CI_Model
         s.supplier_name,
         p.description,
         u.uom,
-        p.srp
+        p.srp,
+        p.qty_on_hand
       ")
       ->from('m_products p')
       ->join(

@@ -164,7 +164,7 @@
                     Cancel
                   </button>
 
-                  <button id="btnSaveChangesGoodsReceipt" class="btn btn-outline-success btn-sm"></i>
+                  <button id="btnSaveChangesGoodsReceipt" class="btn btn-default btn-sm"></i>
                     Save Changes
                   </button>
                 </div>

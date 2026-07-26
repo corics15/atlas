@@ -14,7 +14,7 @@ class Goods_receipts extends MY_Controller
 
   public function index()
   {
-    $this->setPage('Goods Receipt List');
+    $this->setPage('Goods Receiving List');
 
     $filters = [
       'date_from' => trim($this->input->get('date_from')),

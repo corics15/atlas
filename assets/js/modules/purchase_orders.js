@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     markDirty();
   });
 
+  /*** details table on change event */
   document.addEventListener('input', (e) => {
     if (
       e.target.classList.contains('po-qty') ||
@@ -205,6 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+/*** for markDirty */
 window.addEventListener('beforeunload', (e) => {
   if (!isDirty) {
     return;
@@ -235,18 +237,18 @@ const calculateRowTotal = (row) => {
   const discount = Number(row.querySelector('.po-discount').value || 0);
   const amount = (qty * price) - discount;
 
-  row.querySelector('.po-total').textContent = amount.toFixed(2);
+  row.querySelector('.po-total').textContent = Atlas.format.amount(amount);// amount.toFixed(2);
   calculateGrandTotal();
 }
 
 const calculateGrandTotal = () => {
   let grandTotal = 0;
   document.querySelectorAll('#tblPurchaseOrderDetails tr').forEach(row => {
-    grandTotal += Number(
+    grandTotal += Atlas.format.parseNumber(
       row.querySelector('.po-total').textContent || 0
     );
   });
-  document.getElementById('lblTotal').textContent = grandTotal.toFixed(2);
+  document.getElementById('lblTotal').textContent = Atlas.format.amount(grandTotal);//grandTotal.toFixed(2);
 }
 
 const createDetailRow = () => {

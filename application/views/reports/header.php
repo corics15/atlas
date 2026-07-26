@@ -15,7 +15,7 @@
     <table class="report-borderless">
       <tr>
         <td width="90">
-          <?php if(!empty($app->logo)) : ?>
+          <?php if (!empty($app['logo'])) : ?>
           <img
             src="<?= atlas_asset($company->logo); ?>"
             width="70">
