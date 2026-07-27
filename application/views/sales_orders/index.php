@@ -27,4 +27,4 @@
   </div>
 </section>
 
-<?php $this->load->view('customers/modal'); ?>
+<?php //$this->load->view('stock_transfers/modal'); ?>

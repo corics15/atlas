@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Customer_model extends CI_Model
+class Outlet_type_model extends CI_Model
 {
   public function getAll($keyword = '')
   {
@@ -9,13 +9,13 @@ class Customer_model extends CI_Model
       $escaped = $this->db->escape_like_str($keyword);
 
       $this->db->group_start()
-          ->where("customer_name ILIKE '%{$escaped}%'")
+          ->where("outlet_type_name ILIKE '%{$escaped}%'")
       ->group_end();
     }
 
     return $this->db
-        ->order_by('customer_name ASC')
-        ->get('v_customers')
+        ->order_by('outlet_type_name ASC')
+        ->get('m_outlet_types')
         ->result();
   }
 
@@ -23,26 +23,26 @@ class Customer_model extends CI_Model
   {
     return $this->db
         ->where('id', $id)
-        ->get('v_customers')
+        ->get('m_outlet_types')
         ->row();
   }
 
   public function save($data, $id = null)
   {
     if (empty($id)) {
-      return $this->db->insert('m_customers', $data);
+      return $this->db->insert('m_outlet_types', $data);
     }
 
     return $this->db
         ->where('id', $id)
-        ->update('m_customers', $data);
+        ->update('m_outlet_types', $data);
   }
 
   public function activate($id)
   {
     return $this->db
         ->where('id', $id)
-        ->update('m_customers', [
+        ->update('m_outlet_types', [
           'is_active' => TRUE
         ]);
   }
@@ -51,17 +51,18 @@ class Customer_model extends CI_Model
   {
     return $this->db
         ->where('id', $id)
-        ->update('m_customers', [
+        ->update('m_outlet_types', [
           'is_active' => FALSE
         ]);
   }
 
   public function getDropdown()
   {
-    $this->db->select('id, customer_name, salesman_id, terms_name, credit_limit, terms_id');
+    $this->db->select('id, outlet_type_name');
     $this->db->where('is_active', TRUE);
-    $this->db->order_by('customer_name');
+    $this->db->order_by('outlet_type_name');
 
-    return $this->db->get('v_customers')->result();
+    return $this->db->get('m_outlet_types')->result();
   }
+
 }

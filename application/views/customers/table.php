@@ -18,6 +18,7 @@
     <th>Salesman</th>
     <th class="text-center">Terms</th>
     <th class="text-right">Credit Limit</th>
+    <th class="text-center">Outlet Type</th>
     <th class="text-center">Active</th>
   </tr>
 </thead>
@@ -60,7 +61,8 @@
     </td>
     <td><?= $customer->salesman_name ?></td>
     <td class="text-center"><?= $customer->terms_name ?></td>
-    <td class="text-right"><?= $customer->credit_limit ?></td>
+    <td class="text-right"><?= number_format($customer->credit_limit, 2) ?></td>
+    <td class="text-center"><?= $customer->outlet_type_name ?></td>
     <td class="text-center">
       <?= $customer->is_active == 't' ? '<i class="fas fa-check text-success"></i>' : ''; ?>
     </td>

@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     markDirty();
   });
 
-  /*** event for product search on details table */
+  /*** product finder event */
   document.addEventListener('click', e => {
     if (!e.target.closest('.btn-product-finder')) {
       return;
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     Atlas.toast.success(result.message);
-    // setTimeout(() => Atlas.page.refresh(), 1500);
+    setTimeout(() => Atlas.page.refresh(), 1500);
   });
 
   /*** print */
@@ -225,6 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     markDirty();
   });
 
+  /*** add row when in edit mode */
   if (isEditMode) {
     const lastRow = tblStockTransferDetails.lastElementChild;
 

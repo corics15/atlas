@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     Atlas.select.init(control);
   });
 
+  /*** product finder event */
   document.addEventListener('click', (e) => {
     if (e.target.closest('.btn-product-finder')) {
       const row = e.target.closest('tr');
@@ -60,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const result = await Atlas.ajax.get(
-      'product_finder/barcode/' + encodeURIComponent(barcode)
+      `product_finder/barcode/${encodeURIComponent(barcode)}`
     );
 
     if (!result.success) {
@@ -88,33 +89,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  document.addEventListener('keydown', (e) => {
+  // document.addEventListener('keydown', (e) => {
 
-    if (!e.target.classList.contains('po-qty')) {
-      return;
-    }
+  //   if (!e.target.classList.contains('po-qty')) {
+  //     return;
+  //   }
 
-    if (e.key !== 'Enter') {
-      return;
-    }
+  //   if (e.key !== 'Enter') {
+  //     return;
+  //   }
 
-    e.preventDefault();
-    const row = e.target.closest('tr');
-    if (!row.dataset.productId) {
-      Atlas.toast.warning('Please select a product.');
-      row.querySelector('.po-barcode').focus();
-      return;
-    }
+  //   e.preventDefault();
+  //   const row = e.target.closest('tr');
+  //   if (!row.dataset.productId) {
+  //     Atlas.toast.warning('Please select a product.');
+  //     row.querySelector('.po-barcode').focus();
+  //     return;
+  //   }
 
-    /*** check if there's an empty row below */
-    const nextRow = row.nextElementSibling;
-    if (nextRow && !nextRow.dataset.productId) {
-      nextRow.querySelector('.po-barcode').focus();
-      return;
-    }
-    addDetailRow();
-  });
+  //   /*** check if there's an empty row below */
+  //   const nextRow = row.nextElementSibling;
+  //   if (nextRow && !nextRow.dataset.productId) {
+  //     nextRow.querySelector('.po-barcode').focus();
+  //     return;
+  //   }
+  //   addDetailRow();
+  // });
 
+  /*** delete row */
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-delete-row');
 

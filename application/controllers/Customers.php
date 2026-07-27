@@ -8,6 +8,7 @@ class Customers extends MY_Controller
     parent::__construct();
     $this->load->model('Customer_model');
     $this->load->model('Salesman_model');
+    $this->load->model('Outlet_type_model');
     $this->load->model('Term_model');
 
     $this->load->library('form_validation');
@@ -28,6 +29,7 @@ class Customers extends MY_Controller
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $this->data['customers'] = $this->Customer_model->getAll($keyword);
+    $this->data['outlets'] = $this->Outlet_type_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
     $this->data['recordCount'] = count($this->data['customers']);
 
@@ -101,6 +103,12 @@ class Customers extends MY_Controller
     );
 
     $this->form_validation->set_rules(
+      'outlet_type_id',
+      'Outlet Type',
+      'required|trim'
+    );
+
+    $this->form_validation->set_rules(
       'terms_id',
       'Terms',
       'required|trim'
@@ -118,6 +126,7 @@ class Customers extends MY_Controller
       'telephone_no'   => trim($postData['telephone_no']) <> '' ? strtoupper(trim($postData['telephone_no'])) : NULL,
       'email_address'  => trim($postData['email_address']) <> '' ? trim($postData['email_address']) : NULL,
       'salesman_id'    => (int) $postData['salesman_id'],
+      'outlet_type_id' => (int) $postData['outlet_type_id'],
       'terms_id'       => trim($postData['terms_id']),
       'credit_limit'   => (float) $postData['credit_limit'],
     ];

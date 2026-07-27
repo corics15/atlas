@@ -91,6 +91,23 @@
 
           <div class="form-row">
             <div class="form-group col-md-6">
+              <label for="selOutletType">Outlet Type</label>
+              <select
+                id="selOutletType"
+                name="outlet_type_id"
+                class="form-control form-control-sm">
+                <option value="">Select Outlet Type</option>
+                <?php foreach ($outlets as $outlet): ?>
+                <option value="<?= $outlet->id; ?>">
+                  <?= htmlspecialchars($outlet->outlet_type_name); ?>
+                </option>
+                <?php endforeach; ?>
+              </select>
+              <small id="errOutletTypeId"
+                class="text-danger"></small>
+            </div>
+
+            <div class="form-group col-md-6">
               <label for="txtCreditLimit">Credit Limit</label>
               <input type="number" id="txtCreditLimit" name="credit_limit"
                      class="form-control form-control-sm" placeholder="Enter amount" step="any">
@@ -100,8 +117,7 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
-          <button type="submit" id="btnSaveCustomer" class="btn btn-sm btn-primary">Save Customer</button>
+          <button type="submit" id="btnSaveCustomer" class="btn btn-sm btn-default">Save Customer</button>
         </div>
       </form>
 

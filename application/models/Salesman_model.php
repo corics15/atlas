@@ -71,7 +71,7 @@ class Salesman_model extends CI_Model
 
   public function getDropdown()
   {
-    $this->db->select('id, code, first_name, last_name');
+    $this->db->select("id, code, first_name, last_name, concat(first_name, ' ', last_name) AS salesman_name");
     $this->db->where('is_active', TRUE);
     $this->db->order_by('last_name');
     $this->db->order_by('first_name');

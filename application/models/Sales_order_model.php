@@ -1,0 +1,303 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Sales_order_model extends CI_Model
+{
+
+  public function get($id)
+  {
+    return $this->db
+        ->select("
+            so.*,
+            c.customer_name,
+            concat(s.first_name, ' ', s.last_name) AS salesman_name,
+            t.terms_name
+        ")
+        ->from('t_sales_orders so')
+        ->join(
+            'm_customers c',
+            'c.id = so.customer_id',
+            'left'
+        )
+        ->join(
+            'm_salesmen s',
+            's.id = so.salesman_id',
+            'left'
+        )
+        ->join(
+            'm_terms t',
+            't.id = so.terms_id',
+            'left'
+        )
+        ->where('so.id', $id)
+        ->get()
+        ->row();
+  }
+
+  public function getDetails($salesOrderId)
+  {
+    return $this->db
+        ->select("
+            sod.*,
+            p.barcode,
+            p.description,
+            u.uom
+        ")
+        ->from('t_sales_order_details sod')
+        ->join(
+            'm_products p',
+            'p.id = sod.product_id',
+            'left'
+        )
+        ->join(
+            'm_uom u',
+            'u.id = p.uom_id',
+            'left'
+        )
+        ->where(
+            'sod.sales_order_id',
+            $salesOrderId
+        )
+        ->order_by(
+            'sod.id',
+            'ASC'
+        )
+        ->get()
+        ->result();
+  }
+
+  public function getAll($keyword = '')
+  {
+    if (!empty($keyword)) {
+      $escaped = $this->db->escape_like_str($keyword);
+
+      $this->db->group_start()
+          ->where("so.so_no ILIKE '%{$escaped}%'")
+          ->or_where("c.customer_name ILIKE '%{$escaped}%'")
+          ->group_end();
+    }
+
+    return $this->db
+      ->select("
+          so.*,
+          c.customer_name,
+          concat(s.first_name, ' ', s.last_name) AS salesman_name,
+          t.terms_name
+      ")
+      ->from('t_sales_orders so')
+      ->join(
+          'm_customers c',
+          'c.id = so.customer_id',
+          'left'
+      )
+      ->join(
+          'm_salesmen s',
+          's.id = so.salesman_id',
+          'left'
+      )
+      ->join(
+          'm_terms t',
+          't.id = so.terms_id',
+          'left'
+      )
+      ->order_by(
+          'so.id',
+          'DESC'
+      )
+      ->get()
+      ->result();
+  }
+
+  public function save($postData)
+  {
+    try {
+      $this->db->trans_begin();
+
+      if (empty($postData->id)) {
+
+        /*** insert header */
+        $header = [
+          'so_no' => $this->generateSoNo(),
+          'order_date' => $postData->order_date,
+          'customer_id' => (int) $postData->customer_id,
+          'salesman_id' => (int) $postData->salesman_id,
+          'terms_id' => $postData->terms_id <> '' ? (int) $postData->terms_id : NULL,
+          'remarks' => trim($postData->remarks) <> '' ? strtoupper(trim($postData->remarks)) : NULL,
+          'status' => 'OPEN',
+          'entered_by' => $this->session->userdata('user_id'),
+          'entered_on' => date('Y-m-d H:i:s')
+        ];
+
+        $this->db->insert('t_sales_orders', $header);
+
+        $salesOrderId = $this->db->insert_id();
+        $soNo = $header['so_no'];
+
+      } else {
+
+        /*** don't allow modification of POSTED/CANCELLED docs */
+        $current = $this->db
+            ->select('status')
+            ->where('id', $postData->id)
+            ->get('t_sales_orders')
+            ->row();
+
+        if (!$current) {
+          throw new Exception('Sales Order not found.');
+        }
+
+        if ($current->status !== 'OPEN') {
+          throw new Exception(
+            "Cannot modify a {$current->status} Sales Order."
+          );
+        }
+
+        /*** update header */
+        $this->db
+            ->where('id', $postData->id)
+            ->update(
+              't_sales_orders',
+              [
+                'order_date' => $postData->order_date,
+                'customer_id' => (int) $postData->customer_id,
+                'salesman_id' => (int) $postData->salesman_id,
+                'terms_id' => (int) $postData->terms_id,
+                'remarks' => trim($postData->remarks) <> '' ? strtoupper(trim($postData->remarks)) : NULL,
+                'updated_by' => $this->session->userdata('user_id'),
+                'updated_on' => date('Y-m-d H:i:s')
+              ]
+            );
+
+        $salesOrderId = $postData->id;
+
+        $soNo = $this->db
+            ->select('so_no')
+            ->where('id', $salesOrderId)
+            ->get('t_sales_orders')
+            ->row()
+            ->so_no;
+
+        /*** remove old details */
+        $this->db->where('sales_order_id', $salesOrderId)->delete('t_sales_order_details');
+      }
+
+      /*** INSERT DETAILS */
+      foreach ($postData->details as $detail) {
+        $this->db->insert(
+          't_sales_order_details',
+          [
+            'sales_order_id' => $salesOrderId,
+            'product_id' => $detail->product_id,
+            'qty' => $detail->qty,
+            'unit_price' => 0,
+            'remarks' => NULL
+          ]
+        );
+      }
+
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception('Unable to save Sales Order.');
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => empty($postData->id)
+          ? 'Sales Order saved.'
+          : 'Sales Order updated.',
+        'data' => [
+          'sales_order_id' => $salesOrderId,
+          'so_no' => $soNo
+        ]
+      ];
+
+    } catch (Exception $ex) {
+
+      $this->db->trans_rollback();
+
+      log_message(
+        'error',
+        __METHOD__ . ' : ' . $ex->getMessage()
+      );
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data' => [],
+      ];
+    }
+  }
+
+  public function cancel(array $ids, $cancelReason = null)
+  {
+    try {
+
+      if (empty($ids)) {
+        throw new Exception('Please select at least one Sales Order.');
+      }
+
+      $this->db->trans_begin();
+
+      foreach ($ids as $id) {
+          $row = $this->db
+              ->where('id', $id)
+              ->get('t_sales_orders')
+              ->row();
+
+          if (!$row) {
+            throw new Exception("Sales Order #{$id} not found.");
+          }
+
+          if ($row->status !== 'OPEN') {
+            throw new Exception(
+              "{$row->transfer_no} is already {$row->status}."
+            );
+          }
+
+          $this->db
+              ->where('id', $id)
+              ->update(
+                  't_sales_orders',
+                  [
+                    'status'         => 'CANCELLED',
+                    'cancelled_by'   => $this->session->userdata('user_id'),
+                    'cancelled_on'   => date('Y-m-d H:i:s'),
+                    'cancel_reason'  => $cancelReason,
+                    'updated_by'     => $this->session->userdata('user_id'),
+                    'updated_on'     => date('Y-m-d H:i:s')
+                  ]
+              );
+
+          if (!$this->db->affected_rows()) {
+            throw new Exception(
+              "Unable to cancel {$row->transfer_no}."
+            );
+          }
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => true,
+        'message' => count($ids) . ' Sales Order(s) cancelled successfully.',
+        'data'    => $ids
+      ];
+
+    } catch (Exception $e) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => false,
+        'message' => $e->getMessage(),
+        'data'    => null
+      ];
+    }
+  }
+
+  public function generateSoNo()
+  {
+    // Temporary implementation, temporary generate
+    return 'SO-' . date('YmdHis');
+  }
+}

@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   Atlas.select.init('#selSupplier', '#mdlCustomer');
   Atlas.select.init('#selSalesman', '#mdlCustomer');
   Atlas.select.init('#selTerms', '#mdlCustomer');
+  Atlas.select.init('#selOutletType', '#mdlCustomer');
 
   Atlas.table.init({
     checkbox: '.chkCustomer',
@@ -61,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500);
       },
       onError: (result) => {
-        console.log(result);
+        Atlas.toast.error(result.message);
       }
     });
   });
@@ -96,6 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     $('#selSalesman').val(result.data.salesman_id).trigger('change');
     $('#selTerms').val(result.data.terms_id).trigger('change');
+    $('#selOutletType').val(result.data.outlet_type_id).trigger('change');
 
     Atlas.validation.clear();
 

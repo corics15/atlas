@@ -84,7 +84,6 @@ class Stock_transfers extends MY_Controller
     $this->setPage('New Stock Transfer');
     $this->pageScript = 'stock_transfers';
 
-    $this->data['stockTransfer'] = NULL;
     $this->data['branches'] = $this->Branch_model->getDropdown();
     $this->render('stock_transfers/create');
   }
@@ -138,20 +137,20 @@ class Stock_transfers extends MY_Controller
     );
   }
 
-  public function getList()
-  {
-    $result = [
-      'success' => TRUE,
-      'message' => '',
-      'data' => $this->Stock_transfer_model->getList()
-    ];
+  // public function getList()
+  // {
+  //   $result = [
+  //     'success' => TRUE,
+  //     'message' => '',
+  //     'data' => $this->Stock_transfer_model->getList()
+  //   ];
 
-    return $this->jsonResponse(
-        $result['success'],
-        $result['message'],
-        $result['data']
-    );
-  }
+  //   return $this->jsonResponse(
+  //       $result['success'],
+  //       $result['message'],
+  //       $result['data']
+  //   );
+  // }
 
   public function getById($id)
   {

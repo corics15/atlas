@@ -54,6 +54,12 @@ $config['atlas_menu'] = [
         'icon'  => 'fas fa-user-tie',
         'url'   => 'salesmen'
       ],
+
+      [
+        'title' => 'Outlet Types',
+        'icon'  => 'fas fa-store',
+        'url'   => 'outlet_types'
+      ],
     ]
   ],
 
@@ -83,6 +89,7 @@ $config['atlas_menu'] = [
       ],
     ]
   ],
+
   [
     'title' => 'Inventory',
     'icon'  => 'fas fa-boxes',
@@ -112,6 +119,34 @@ $config['atlas_menu'] = [
         'title' => 'Stock Transfer List',
         'icon'  => 'fas fa-exchange-alt',
         'url'   => 'stock_transfers'
+      ],
+    ]
+  ],
+
+  [
+    'title' => 'Sales',
+    'icon'  => 'fas fa-shopping-cart',
+
+    'children' => [
+      [
+        'title' => 'New Sales Order',
+        'icon'  => 'fas fa-plus-circle',
+        'url'   => 'sales_orders/create'
+      ],
+      [
+        'title' => 'Sales Order List',
+        'icon'  => 'fas fa-clipboard-list',
+        'url'   => 'sales_orders'
+      ],
+      [
+        'title' => 'New Sales Invoice',
+        'icon'  => 'fas fa-file-invoice-dollar',
+        'url'   => 'sales_invoices/create'
+      ],
+      [
+        'title' => 'Sales Invoice List',
+        'icon'  => 'fas fa-receipt',
+        'url'   => 'sales_invoices'
       ],
     ]
   ],
