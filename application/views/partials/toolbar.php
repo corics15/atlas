@@ -27,7 +27,7 @@
       </button>
       <?php endif ?>
 
-      <?php  /*** receive goods */ if (!empty($toolbar['receive'])) : ?>
+      <?php  /*** receive items */ if (!empty($toolbar['receive'])) : ?>
       <button
         id="<?= $toolbar['receive']['id']; ?>"
         class="dropdown-item">
@@ -36,12 +36,21 @@
       </button>
       <?php endif ?>
 
-      <?php /*** post inventory adjustment */  if (!empty($toolbar['post'])) : ?>
+      <?php /*** create item*/  if (!empty($toolbar['post'])) : ?>
       <button
         id="<?= $toolbar['post']['id']; ?>"
         class="dropdown-item">
         <i class="<?= $toolbar['post']['icon']; ?>"></i>
         <?= $toolbar['post']['text']; ?>
+      </button>
+      <?php endif ?>
+
+      <?php /*** create item*/  if (!empty($toolbar['create'])) : ?>
+      <button
+        id="<?= $toolbar['create']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['create']['icon']; ?>"></i>
+        <?= $toolbar['create']['text']; ?>
       </button>
       <?php endif ?>
 

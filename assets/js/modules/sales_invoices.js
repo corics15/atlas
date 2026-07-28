@@ -1,0 +1,267 @@
+const btnSaveSalesInvoice = document.getElementById('btnSaveSalesInvoice');
+const btnPostSalesInvoice = document.getElementById('btnPostSalesInvoice');
+const btnEditSalesInvoice = document.getElementById('btnEditSalesInvoice');
+const btnRefreshSalesInvoice = document.getElementById('btnRefreshSalesInvoice');
+const btnCancelSalesInvoice = document.getElementById('btnCancelSalesInvoice');
+
+const txtCreditLimit = document.getElementById('txtCreditLimit');
+
+const hidSalesOrderId = document.getElementById('hidSalesOrderId');
+const hidSalesInvoiceId = document.getElementById('hidSalesInvoiceId');
+
+let isDirty = false;
+let isLoading = true;
+let isEditMode = (hidSalesOrderId?.value) ? true : false;
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+  Atlas.table.init({
+    checkbox: '.chkSalesInvoice',
+    selectAll: '#chkSelectAllSalesInvoice',
+  });
+
+  /*** dirty tracking */
+  document.addEventListener('input', (e) => {
+    if (
+      e.target.classList.contains('so-qty') ||
+      e.target.id === `txtSalesOrderRemarks`
+    ) {
+      markDirty();
+    }
+  });
+
+  /*** edit */
+  btnEditSalesInvoice?.addEventListener('click', () => {
+    const id = getSelectedId();
+
+    if (!id) {
+      return;
+    }
+
+    Atlas.page.redirect(`sales_invoices/edit/${id}`);
+  });
+
+  /*** save */
+  btnSaveSalesInvoice?.addEventListener('click', async () => {
+
+    if (!validateSalesInvoice()) {
+      return;
+    }
+
+    btnSaveSalesInvoice.disabled = true;
+
+    try {
+      const salesInvoice = {
+        id: hidSalesInvoiceId?.value ?? '',
+        sales_order_id: hidSalesOrderId.value,
+        invoice_date: dtInvoiceDate.value,
+        customer_id: selCustomer.value,
+        salesman_id: selSalesman.value,
+        terms_id: selTerms.value,
+        credit_limit: Atlas.format.parseNumber(txtCreditLimit.value),
+        remarks: txtSalesOrderRemarks.value,
+        details: []
+      };
+
+      document.querySelectorAll('#tblSalesOrderDetails tr').forEach(row => {
+
+        if (!row.dataset.productId) {
+          return;
+        }
+
+        /*** only push rows whose quantity is greater than zero */
+        const qty = Atlas.format.integer(row.querySelector('.so-qty').value);
+        if (qty > 0) {
+          salesInvoice.details.push({
+            product_id: Atlas.format.integer(row.dataset.productId),
+            sales_order_detail_id: Atlas.format.integer(row.dataset.salesOrderDetailId),
+            qty: qty
+          });
+        }
+      });
+
+      const result = await Atlas.ajax.post(
+        'sales_invoices/save',
+        salesInvoice
+      );
+
+      if (!result.success) {
+        Atlas.toast.error(result.message);
+        return;
+      }
+
+      Atlas.toast.success(result.message);
+      hidSalesInvoiceId.value = result.data.sales_invoice_id;
+      isEditMode = true;
+      isDirty = false;
+      setTimeout(() => Atlas.page.redirect(`sales_invoices/edit/${result.data.sales_invoice_id}`), 1500);
+    }
+    finally {
+      btnSaveSalesInvoice.disabled = false;
+    }
+  });
+
+  /*** post */
+  btnPostSalesInvoice?.addEventListener('click', async () => {
+    const ids = Atlas.table.selectedIds();
+
+    if (ids.length === 0) {
+      Atlas.toast.warning('Please select at least one Sales Invoice')
+      return false;
+    }
+
+    const result = await Atlas.dialog.confirm(
+      'Confirm Action',
+      'Post Sales Invoice?'
+    );
+
+    if (!result) {
+      return;
+    }
+
+    btnPostSalesInvoice.disabled = true;
+
+    try {
+      const response = await Atlas.ajax.post(
+        'sales_invoices/post',
+        {
+          ids: ids
+        }
+      );
+
+      if (!response.success) {
+        Atlas.toast.error(response.message);
+        return;
+      }
+
+      Atlas.toast.success(response.message);
+      setTimeout(() => Atlas.page.refresh(), 1500);
+
+    } finally {
+      btnPostSalesInvoice.disabled = false;
+    }
+  });
+
+  /*** cancel */
+  btnCancelSalesInvoice?.addEventListener('click', async () => {
+    const ids = Atlas.table.selectedIds();
+
+    if (!ids.length) {
+      Atlas.toast.warning('Please select at least one Sales Invoice.');
+      return;
+    }
+
+    const reason = await Atlas.dialog.textarea({
+      icon: 'warning',
+      title: `Cancel ${ids.length} Sales Invoice(s)?`,
+      text: 'Please provide the reason for cancellation.',
+      inputPlaceholder: 'Enter cancellation reason...',
+      required: false,
+      confirmText: 'Confirm Cancellation'
+    });
+
+    if (reason === null) {
+      return;
+    }
+
+    const result = await Atlas.ajax.post(
+      'sales_invoices/cancel',
+      {
+        ids: ids,
+        cancel_reason: reason
+      }
+    );
+
+    if (!result.success) {
+      Atlas.toast.error(result.message);
+      return;
+    }
+
+    Atlas.toast.success(result.message);
+    // setTimeout(() => Atlas.page.refresh(), 1200);
+  });
+
+  /*** refresh */
+  btnRefreshSalesInvoice?.addEventListener('click', () => {
+    Atlas.page.refresh();
+  });
+
+});
+
+window.addEventListener('beforeunload', e => {
+  if (!isDirty) {
+    return;
+  }
+
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+const getSelectedId = () => {
+  const checked = Atlas.table.selected();
+
+  if (checked.length === 0) {
+    Atlas.toast.warning(
+      'Please select a Sales Invoice.'
+    );
+    return null;
+  }
+
+  if (checked.length > 1) {
+    Atlas.toast.warning(
+      'Please select only one Sales Invoice.'
+    );
+
+    return null;
+  }
+
+  return checked[0].value;
+};
+
+const validateSalesInvoice = () => {
+  const rows = document.querySelectorAll('#tblSalesOrderDetails tr');
+
+  let hasProduct = false;
+  let hasQty = false;
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+
+    if (!row.dataset.productId) {
+      continue;
+    }
+
+    hasProduct = true;
+
+    const qty = Atlas.format.integer(row.querySelector('.so-qty').value || 0);
+    if (qty < 0) {
+      Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
+      setTimeout(() => row.querySelector('.so-qty').focus(), 500);
+      return false;
+    }
+
+    if (qty > 0) {
+      hasQty = true;
+    }
+  }
+
+  if (!hasProduct) {
+    Atlas.toast.warning('Please add at least one product.');
+    return false;
+  }
+
+  if (!hasQty) {
+    Atlas.toast.warning('Please enter a quantity for at least one item.');
+    return false;
+  }
+
+  return true;
+};
+
+const markDirty = () => {
+  if (isLoading) {
+    return;
+  }
+
+  isDirty = true;
+};

@@ -217,7 +217,6 @@ const postGoodsReceipt = async () => {
     }
 
     Atlas.toast.success(response.message);
-
     setTimeout(() => Atlas.page.refresh(), 1500);
 
   } finally {

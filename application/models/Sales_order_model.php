@@ -36,34 +36,62 @@ class Sales_order_model extends CI_Model
 
   public function getDetails($salesOrderId)
   {
-    return $this->db
-        ->select("
-            sod.*,
-            p.barcode,
-            p.description,
-            u.uom
-        ")
-        ->from('t_sales_order_details sod')
-        ->join(
-            'm_products p',
-            'p.id = sod.product_id',
-            'left'
-        )
-        ->join(
-            'm_uom u',
-            'u.id = p.uom_id',
-            'left'
-        )
-        ->where(
-            'sod.sales_order_id',
-            $salesOrderId
-        )
-        ->order_by(
-            'sod.id',
-            'ASC'
-        )
-        ->get()
-        ->result();
+    // return $this->db
+    //     ->select("
+    //         sod.*,
+    //         p.barcode,
+    //         p.description,
+    //         u.uom
+    //     ")
+    //     ->from('t_sales_order_details sod')
+    //     ->join(
+    //         'm_products p',
+    //         'p.id = sod.product_id',
+    //         'left'
+    //     )
+    //     ->join(
+    //         'm_uom u',
+    //         'u.id = p.uom_id',
+    //         'left'
+    //     )
+    //     ->where(
+    //         'sod.sales_order_id',
+    //         $salesOrderId
+    //     )
+    //     ->order_by(
+    //         'sod.id',
+    //         'ASC'
+    //     )
+    //     ->get()
+    //     ->result();
+    return $this->db->query("SELECT
+                              sod.id,
+                              sod.product_id,
+                              p.barcode,
+                              p.description,
+                              sod.qty,
+                              COALESCE(inv.qty_invoiced, 0) AS qty_fulfilled,
+                              sod.qty - COALESCE(inv.qty_invoiced, 0) AS qty_remaining,
+                              u.uom
+                            FROM t_sales_order_details sod
+                            INNER JOIN m_products p ON p.id = sod.product_id
+                            LEFT JOIN m_uom u ON u.id = p.uom_id
+                            LEFT JOIN (
+                                SELECT
+                                    sid.sales_order_detail_id,
+                                    SUM(sid.qty) qty_invoiced
+                                FROM t_sales_invoice_details sid
+                                INNER JOIN t_sales_invoices si ON si.id = sid.sales_invoice_id
+                                WHERE si.status <> 'CANCELLED'
+                                GROUP BY sid.sales_order_detail_id
+                            ) inv
+                            ON inv.sales_order_detail_id = sod.id
+                            WHERE sod.sales_order_id = ?
+                            ORDER BY sod.id",
+                            [
+                              $salesOrderId
+                            ]
+                          )->result();
   }
 
   public function getAll($keyword = '')
@@ -122,6 +150,7 @@ class Sales_order_model extends CI_Model
           'customer_id' => (int) $postData->customer_id,
           'salesman_id' => (int) $postData->salesman_id,
           'terms_id' => $postData->terms_id <> '' ? (int) $postData->terms_id : NULL,
+          'credit_limit' => $postData->credit_limit,
           'remarks' => trim($postData->remarks) <> '' ? strtoupper(trim($postData->remarks)) : NULL,
           'status' => 'OPEN',
           'entered_by' => $this->session->userdata('user_id'),
@@ -162,6 +191,7 @@ class Sales_order_model extends CI_Model
                 'customer_id' => (int) $postData->customer_id,
                 'salesman_id' => (int) $postData->salesman_id,
                 'terms_id' => (int) $postData->terms_id,
+                'credit_limit' => $postData->credit_limit,
                 'remarks' => trim($postData->remarks) <> '' ? strtoupper(trim($postData->remarks)) : NULL,
                 'updated_by' => $this->session->userdata('user_id'),
                 'updated_on' => date('Y-m-d H:i:s')
@@ -225,6 +255,73 @@ class Sales_order_model extends CI_Model
         'success' => FALSE,
         'message' => $ex->getMessage(),
         'data' => [],
+      ];
+    }
+  }
+
+  public function post($ids)
+  {
+    try {
+      if (empty($ids)) {
+        throw new Exception(
+          'Please select at least one Sales Order.'
+        );
+      }
+
+      $this->db->trans_begin();
+
+      foreach ($ids as $id) {
+
+          $salesOrder = $this->db
+              ->where('id', $id)
+              ->get('t_sales_orders')
+              ->row();
+
+          if (!$salesOrder) {
+            throw new Exception(
+              'Sales Order not found.'
+            );
+          }
+
+          if ($salesOrder->status !== 'OPEN') {
+            throw new Exception(
+              "Sales Order {$salesOrder->so_no} is already {$salesOrder->status}."
+            );
+          }
+
+          $this->db
+              ->where('id', $id)
+              ->update(
+                  't_sales_orders',
+                  [
+                    'status'     => 'POSTED',
+                    'updated_by' => $this->session->userdata('user_id'),
+                    'updated_on' => date('Y-m-d H:i:s')
+                  ]
+              );
+      }
+
+      if (!$this->db->trans_status()) {
+        throw new Exception(
+          'Unable to post Sales Order.'
+        );
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Sales Order(s) posted successfully.',
+        'data'    => []
+      ];
+    }
+    catch (Exception $ex) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data'    => []
       ];
     }
   }

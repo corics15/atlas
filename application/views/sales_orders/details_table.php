@@ -17,6 +17,8 @@
                 <th>Description</th>
                 <th width="120" class="text-right">Available</th>
                 <th width="120" class="text-right">Qty</th>
+                <th width="120" class="text-right">Fulfilled</th>
+                <th width="120" class="text-right">Remaining</th>
                 <th width="80" class="text-center">UOM</th>
                 <th width="40"></th>
               </tr>
@@ -61,6 +63,15 @@
                         class="form-control form-control-sm text-right so-qty"
                         value="<?= number_format($detail->qty) ?>">
                     </td>
+
+                    <td class="text-right">
+                      <?= number_format($detail->qty_fulfilled, 0) ?>
+                    </td>
+
+                    <td class="text-right <?= ($detail->qty_remaining == 0) ? 'text-success font-weight-500' : '' ?>" <?= ($detail->qty_remaining == 0) ? 'title="Fully Invoiced"' : '' ?>>
+                      <?= number_format($detail->qty_remaining, 0) ?>
+                    </td>
+
                     <td class="so-uom text-center">
                       <?= htmlspecialchars($detail->uom) ?>
                     </td>
@@ -70,7 +81,7 @@
                   </tr>
                 <?php endforeach; ?>
 
-                <?php else: ?>
+              <?php else: ?>
 
                 <tr class="so-detail-row">
                   <td class="so-row-no text-center">
@@ -102,6 +113,8 @@
                       class="form-control form-control-sm text-right so-qty"
                       value="">
                   </td>
+                  <td></td>
+                  <td></td>
                   <td class="so-uom text-center"></td>
                   <td class="text-center">
                     <i class="fas fa-trash text-danger pointer btn-delete-row"></i>

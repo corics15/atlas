@@ -1,20 +1,24 @@
-<?php $isEdit = isset($salesOrder); $status = null; ?>
+<?php
+  $isEdit = isset($salesInvoice);
+  $isFromSalesOrder = isset($salesOrder);
+  $status = null;
+?>
 
 <section class="content">
   <div class="container-fluid">
     <div class="card">
       <div class="card-header">
 
-      <?php if (isset($salesOrder)) : ?>
+      <?php if (isset($salesInvoice)) : ?>
 
         <div class="d-flex justify-content-between align-items-center">
           <h3 class="card-title">
-            Sales Order Header
+            Sales Invoice Header
           </h3>
 
           <?php
             $statusClass = NULL;
-            switch ($salesOrder->status) {
+            switch ($salesInvoice->status) {
               case 'POSTED':
                 $statusClass = 'text-success';
                 break;
@@ -27,12 +31,12 @@
             }
           ?>
 
-          <div class="ls-wider <?= $statusClass ?>" style="font-weight:500">[<?= $salesOrder->status ?>]</div>
+          <div class="ls-wider <?= $statusClass ?>" style="font-weight:500">[<?= $salesInvoice->status ?>]</div>
         </div>
 
       <?php else : ?>
         <h3 class="card-title">
-          Sales Order Header
+          Sales Invoice Header
         </h3>
       <?php endif; ?>
 
@@ -46,22 +50,34 @@
             <div class="form-group">
               <label for="txtSalesOrderNo">Sales Order No.</label>
               <input
-                type="text"
-                id="txtSalesOrderNo"
-                class="form-control form-control-sm"
-                value="<?= isset($salesOrder) ? htmlspecialchars($salesOrder->so_no) : 'AUTO-GENERATED'; ?>"
-                readonly>
+                  type="text"
+                  id="txtSalesOrderNo"
+                  class="form-control form-control-sm"
+                  value="<?= $isEdit ? htmlspecialchars($salesInvoice->so_no) : htmlspecialchars($salesOrder->so_no) ?>"
+                  readonly>
             </div>
           </div>
 
           <div class="col-md-3">
             <div class="form-group">
-              <label for="dtOrderDate">Order Date</label>
+              <label for="txtSalesInvoiceNo">Sales Invoice No.</label>
               <input
-                type="date"
-                id="dtOrderDate"
-                class="form-control form-control-sm"
-                value="<?= isset($salesOrder) ? $salesOrder->order_date : date('Y-m-d'); ?>">
+                  type="text"
+                  id="txtSalesInvoiceNo"
+                  class="form-control form-control-sm"
+                  value="<?= $isEdit ? htmlspecialchars($salesInvoice->si_no) : 'AUTO-GENERATED'; ?>"
+                  readonly>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="form-group">
+              <label for="dtInvoiceDate">Invoice Date</label>
+              <input
+                  type="date"
+                  id="dtInvoiceDate"
+                  class="form-control form-control-sm"
+                  value="<?= $isEdit ? $salesInvoice->invoice_date : date('Y-m-d'); ?>">
             </div>
           </div>
 
@@ -75,7 +91,7 @@
               <label for="selCustomer">Customer</label>
               <select
                 id="selCustomer"
-                class="form-control form-control-sm">
+                class="form-control form-control-sm no-event" readonly>
                 <option value="">Select Customer</option>
 
                 <?php foreach ($customers as $customer): ?>
@@ -86,10 +102,11 @@
                     data-terms="<?= htmlspecialchars($customer->terms_name) ?>"
                     data-terms-id="<?= $customer->terms_id ?>"
                     data-credit-limit="<?= $customer->credit_limit ?>"
-                    <?= isset($salesOrder)
-                        && $salesOrder->customer_id == $customer->id
-                            ? 'selected'
-                            : '' ?>>
+                    <?=
+                      $isEdit ? ($salesInvoice->customer_id == $customer->id ? 'selected' : '') :
+                      ($isFromSalesOrder && $salesOrder->customer_id == $customer->id ? 'selected' : '')
+                    ?>
+                    >
                     <?= htmlspecialchars($customer->customer_name) ?>
 
                 </option>
@@ -107,7 +124,7 @@
               <label for="selSalesman">Salesman</label>
               <select
                 id="selSalesman"
-                class="form-control form-control-sm">
+                class="form-control form-control-sm no-event" readonly>
                 <option value="">Select Salesman</option>
 
                 <?php foreach ($salesmen as $salesman): ?>
@@ -115,10 +132,11 @@
                 <option
                     value="<?= $salesman->id ?>"
                     data-salesman-id="<?= $salesman->id ?>"
-                    <?= isset($salesOrder)
-                        && $salesOrder->salesman_id == $salesman->id
-                            ? 'selected'
-                            : '' ?>>
+                    <?=
+                      $isEdit ? ($salesInvoice->salesman_id == $salesman->id ? 'selected' : '') :
+                      ($isFromSalesOrder && $salesOrder->salesman_id == $salesman->id ? 'selected' : '' )
+                    ?>
+                    >
                     <?= htmlspecialchars($salesman->salesman_name) ?>
                 </option>
 
@@ -135,7 +153,7 @@
               <label for="selTerms">Terms</label>
               <select
                 id="selTerms"
-                class="form-control form-control-sm">
+                class="form-control form-control-sm no-event" readonly>
                 <option value="">Select Term</option>
 
                 <?php foreach ($terms as $term): ?>
@@ -143,10 +161,11 @@
                 <option
                     value="<?= $term->id ?>"
                     data-term-id="<?= $term->id ?>"
-                    <?= isset($salesOrder)
-                        && $salesOrder->terms_id == $term->id
-                            ? 'selected'
-                            : '' ?>>
+                    <?=
+                      $isEdit ? ($salesInvoice->terms_id == $term->id ? 'selected' : '') :
+                      ($isFromSalesOrder && $salesOrder->terms_id == $term->id ? 'selected' : '')
+                    ?>
+                    >
                     <?= htmlspecialchars($term->terms_name) ?>
                 </option>
 
@@ -164,8 +183,12 @@
               <input
                 type="text"
                 id="txtCreditLimit"
-                class="form-control form-control-sm"
-                value="<?= isset($salesOrder) ? number_format($salesOrder->credit_limit, 2) : '0.00'; ?>">
+                class="form-control form-control-sm no-event"
+                value="<?=
+                          $isEdit ? number_format($salesInvoice->credit_limit, 2) :
+                          ($isFromSalesOrder ? number_format($salesOrder->credit_limit, 2) : '0.00')
+                        ?>"
+                readonly>
 
             </div>
           </div>
@@ -180,7 +203,10 @@
               <textarea
                 id="txtSalesOrderRemarks"
                 class="form-control form-control-sm text-uppercase"
-                rows="3"><?= isset($salesOrder) ? htmlspecialchars($salesOrder->remarks) : ''; ?></textarea>
+                rows="3"><?=
+                            $isEdit ? htmlspecialchars($salesInvoice->remarks) :
+                            ($isFromSalesOrder? htmlspecialchars($salesOrder->remarks): '')
+                          ?></textarea>
             </div>
           </div>
 
@@ -194,3 +220,7 @@
     type="hidden"
     id="hidSalesOrderId"
     value="<?= isset($salesOrderId) ? $salesOrderId : ''; ?>">
+<input
+    type="hidden"
+    id="hidSalesInvoiceId"
+    value="<?= isset($salesInvoice) ? $salesInvoice->id : '' ?>">

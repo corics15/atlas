@@ -45,6 +45,10 @@ h3,
   font-size: smaller;
 }
 
+.no-event {
+  pointer-events: none !important;
+}
+
 /* Navigation and sidebar */
 .navbar,
 .main-sidebar {
@@ -420,7 +424,7 @@ span.badge {
 
 /*** labels */
 label {
-  color: #2f666b;
+  color: #149997;
   font-weight: normal !important;
   font-size: small;
 }
@@ -477,6 +481,10 @@ label {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.btn-no-underline {
+  text-decoration: none !important;
 }
 
 .btn-default {

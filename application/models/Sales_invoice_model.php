@@ -1,0 +1,459 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Sales_invoice_model extends CI_Model
+{
+  public function getAll()
+  {
+    return $this->db
+        ->select("
+            si.*,
+            so.so_no,
+            so.id AS so_id,
+            c.customer_name,
+            concat(s.first_name, ' ', s.last_name) AS salesman_name,
+            t.terms_name
+        ")
+        ->from('t_sales_invoices si')
+        ->join(
+            't_sales_orders so',
+            'so.id = si.sales_order_id',
+            'left'
+        )
+        ->join(
+            'm_customers c',
+            'c.id = si.customer_id',
+            'left'
+        )
+        ->join(
+            'm_salesmen s',
+            's.id = si.salesman_id',
+            'left'
+        )
+        ->join(
+            'm_terms t',
+            't.id = si.terms_id',
+            'left'
+        )
+        ->order_by(
+            'si.invoice_date',
+            'DESC'
+        )
+        ->order_by(
+            'si.id',
+            'DESC'
+        )
+        ->get()
+        ->result();
+  }
+
+  public function get($id)
+  {
+    return $this->db
+        ->select("
+            si.*,
+            so.so_no
+        ")
+        ->from('t_sales_invoices si')
+        ->join(
+            't_sales_orders so',
+            'so.id = si.sales_order_id'
+        )
+        ->where('si.id', $id)
+        ->get()
+        ->row();
+  }
+
+  public function getDetails($id)
+  {
+    return $this->db
+        ->select("
+            sid.*,
+            p.barcode,
+            p.description,
+            u.uom
+        ")
+        ->from('t_sales_invoice_details sid')
+        ->join(
+            'm_products p',
+            'p.id = sid.product_id',
+            'left'
+        )
+        ->join(
+            'm_uom u',
+            'u.id = p.uom_id',
+            'left'
+        )
+        ->where(
+            'sid.sales_invoice_id',
+            $id
+        )
+        ->order_by(
+            'sid.id',
+            'ASC'
+        )
+        ->get()
+        ->result();
+  }
+
+  public function getSalesOrder($salesOrderId)
+  {
+    return $this->db
+        ->select("
+            so.*,
+            c.customer_name,
+            concat(s.first_name, ' ', s.last_name) AS salesman_name,
+            t.terms_name
+        ")
+        ->from('t_sales_orders so')
+        ->join(
+            'm_customers c',
+            'c.id = so.customer_id',
+            'left'
+        )
+        ->join(
+            'm_salesmen s',
+            's.id = so.salesman_id',
+            'left'
+        )
+        ->join(
+            'm_terms t',
+            't.id = so.terms_id',
+            'left'
+        )
+        ->where(
+            'so.id',
+            $salesOrderId
+        )
+        ->get()
+        ->row();
+  }
+
+  public function getSalesOrderDetails($salesOrderId)
+  {
+    return $this->db
+      ->query("SELECT
+                sod.id AS sales_order_detail_id,
+                sod.product_id,
+                sod.qty - COALESCE(inv.qty_invoiced, 0) AS qty,
+                p.barcode,
+                p.description,
+                u.uom
+              FROM t_sales_order_details sod
+              INNER JOIN m_products p ON p.id = sod.product_id
+              LEFT JOIN m_uom u ON u.id = p.uom_id
+              LEFT JOIN (
+                SELECT
+                  sid.sales_order_detail_id,
+                  SUM(sid.qty) qty_invoiced
+                FROM t_sales_invoice_details sid
+                INNER JOIN t_sales_invoices si ON si.id = sid.sales_invoice_id
+                WHERE si.status <> 'CANCELLED'
+                GROUP BY sid.sales_order_detail_id
+              ) inv
+              ON inv.sales_order_detail_id = sod.id
+              WHERE sod.sales_order_id = ?
+              AND (sod.qty - COALESCE(inv.qty_invoiced,0)) > 0
+              ORDER BY sod.id
+              ",
+              [
+                $salesOrderId
+              ]
+            )
+      ->result();
+  }
+
+  public function save($salesInvoice)
+  {
+    try {
+      $this->db->trans_begin();
+
+      if (empty($salesInvoice->id)) {
+        $header = [
+          'si_no'          => $this->generateInvoiceNo(),
+          'invoice_date'   => $salesInvoice->invoice_date,
+          'sales_order_id' => $salesInvoice->sales_order_id,
+          'customer_id'    => $salesInvoice->customer_id,
+          'salesman_id'    => $salesInvoice->salesman_id,
+          'terms_id'       => $salesInvoice->terms_id,
+          'credit_limit'   => $salesInvoice->credit_limit,
+          'remarks'        => trim($salesInvoice->remarks) <> '' ? strtoupper(trim($salesInvoice->remarks)) : NULL,
+          'status'         => 'OPEN',
+          'entered_by'     => $this->session->userdata('user_id'),
+          'entered_on'     => date('Y-m-d H:i:s')
+        ];
+
+        $this->db->insert('t_sales_invoices', $header);
+
+        $salesInvoiceId = $this->db->insert_id();
+        $invoiceNo = $header['si_no'];
+      }
+
+      else {
+
+        $invoice = $this->db
+            ->where('id', $salesInvoice->id)
+            ->get('t_sales_invoices')
+            ->row();
+
+        if (!$invoice) {
+          throw new Exception(
+            'Sales Invoice not found.'
+          );
+        }
+
+        if ($invoice->status != 'OPEN') {
+          throw new Exception(
+            "Cannot modify a {$invoice->status} Sales Invoice."
+          );
+        }
+
+        $this->db
+            ->where('id', $salesInvoice->id)
+            ->update(
+                't_sales_invoices',
+                [
+                  'invoice_date' => $salesInvoice->invoice_date,
+                  'remarks' => trim($salesInvoice->remarks) <> '' ? strtoupper(trim($salesInvoice->remarks)) : NULL,
+                  'updated_by' => $this->session->userdata('user_id'),
+                  'updated_on' => date('Y-m-d H:i:s')
+                ]
+            );
+
+        $salesInvoiceId = $salesInvoice->id;
+        $invoiceNo = $invoice->si_no;
+
+        $this->db
+            ->where(
+              'sales_invoice_id',
+              $salesInvoiceId
+            )
+            ->delete(
+              't_sales_invoice_details'
+            );
+      }
+
+      foreach ($salesInvoice->details as $detail)
+      {
+        if ($detail->qty <= 0) {
+          continue;
+        }
+
+        $this->db->insert(
+          't_sales_invoice_details',
+          [
+            'sales_invoice_id'      => $salesInvoiceId,
+            'sales_order_detail_id' => $detail->sales_order_detail_id,
+            'product_id'            => $detail->product_id,
+            'qty'                   => $detail->qty,
+            'unit_price'            => 0,
+            'discount_percent'      => 0,
+            'discount_amount'       => 0,
+            'remarks'               => NULL
+          ]
+        );
+      }
+
+      if ($this->db->trans_status() === FALSE)
+      {
+        throw new Exception('Unable to save Sales Invoice.');
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Sales Invoice saved.',
+        'data' => [
+          'sales_invoice_id' => $salesInvoiceId,
+          'si_no' => $invoiceNo
+        ]
+      ];
+
+    }
+    catch (Exception $ex) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data' => []
+      ];
+    }
+  }
+
+  public function post($ids)
+  {
+    try {
+      if (empty($ids)) {
+        throw new Exception(
+          'Please select at least one Sales Invoice.'
+        );
+      }
+
+      $this->db->trans_begin();
+
+      foreach ($ids as $id) {
+        $invoice = $this->db
+            ->where('id', $id)
+            ->get('t_sales_invoices')
+            ->row();
+
+        if (!$invoice) {
+          throw new Exception(
+            'Sales Invoice not found.'
+          );
+        }
+
+        if ($invoice->status != 'OPEN') {
+          throw new Exception(
+            "Sales Invoice {$invoice->si_no} is already {$invoice->status}."
+          );
+        }
+
+        /*
+        * Inventory deduction
+        * (next step)
+        */
+
+        $this->db
+            ->where('id', $id)
+            ->update(
+                't_sales_invoices',
+                [
+                  'status'     => 'POSTED',
+                  'posted_by'  => $this->session->userdata('user_id'),
+                  'posted_on'  => date('Y-m-d H:i:s'),
+                  'updated_by' => $this->session->userdata('user_id'),
+                  'updated_on' => date('Y-m-d H:i:s')
+                ]
+            );
+      }
+
+      if (!$this->db->trans_status()) {
+        throw new Exception(
+          'Unable to post Sales Invoice.'
+        );
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Sales Invoice(s) posted successfully.',
+        'data'    => []
+      ];
+
+    } catch (Exception $ex) {
+        $this->db->trans_rollback();
+
+        return [
+          'success' => FALSE,
+          'message' => $ex->getMessage(),
+          'data'    => []
+        ];
+    }
+  }
+
+  public function cancel($ids, $cancelReason)
+  {
+    try {
+      if (empty($ids)) {
+        throw new Exception(
+          'Please select at least one Sales Invoice.'
+        );
+      }
+
+      $this->db->trans_begin();
+
+      foreach ($ids as $id) {
+          $invoice = $this->db
+              ->where('id', $id)
+              ->get('t_sales_invoices')
+              ->row();
+
+          if (!$invoice) {
+            throw new Exception(
+              'Sales Invoice not found.'
+            );
+          }
+
+          if ($invoice->status != 'OPEN') {
+            throw new Exception(
+              "Only OPEN Sales Invoices can be cancelled."
+            );
+          }
+
+          $this->db
+              ->where('id', $id)
+              ->update(
+                  't_sales_invoices',
+                  [
+                      'status'          => 'CANCELLED',
+                      'cancel_reason'   => trim($cancelReason),
+                      'cancelled_by'    => $this->session->userdata('user_id'),
+                      'cancelled_on'    => date('Y-m-d H:i:s'),
+                      'updated_by'      => $this->session->userdata('user_id'),
+                      'updated_on'      => date('Y-m-d H:i:s')
+                  ]
+              );
+      }
+
+      if (!$this->db->trans_status()) {
+        throw new Exception(
+          'Unable to cancel Sales Invoice.'
+        );
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Sales Invoice(s) cancelled successfully.',
+        'data'    => []
+      ];
+
+    }
+    catch (Exception $ex) {
+        $this->db->trans_rollback();
+
+        return [
+          'success' => FALSE,
+          'message' => $ex->getMessage(),
+          'data'    => []
+        ];
+    }
+  }
+
+  public function hasRemainingItems($salesOrderId)
+  {
+    $row = $this->db
+        ->query("SELECT COUNT(*) remaining_count
+                  FROM t_sales_order_details sod
+                  LEFT JOIN (
+                    SELECT
+                      sid.sales_order_detail_id,
+                      SUM(sid.qty) qty_invoiced
+                    FROM t_sales_invoice_details sid
+                    INNER JOIN t_sales_invoices si ON si.id = sid.sales_invoice_id
+                    WHERE si.status <> 'CANCELLED'
+                    GROUP BY sid.sales_order_detail_id
+                  ) inv
+                  ON inv.sales_order_detail_id = sod.id
+                  WHERE sod.sales_order_id = ?
+                  AND (sod.qty - COALESCE(inv.qty_invoiced, 0)) > 0",
+                  [
+                    $salesOrderId
+                  ]
+              )
+              ->row();
+
+    return $row->remaining_count > 0;
+  }
+
+  private function generateInvoiceNo()
+  {
+    return 'SI-' . date('YmdHis');
+  }
+
+}

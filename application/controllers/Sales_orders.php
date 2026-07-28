@@ -30,6 +30,16 @@ class Sales_orders extends MY_Controller
         'text' => 'Edit',
         'icon' => 'fas fa-edit'
       ],
+      'post' => [
+        'id'   => 'btnPostSalesOrder',
+        'text' => 'Post',
+        'icon' => 'fas fa-check-circle'
+      ],
+      'create' => [
+        'id'   => 'btnCreateSalesInvoice',
+        'text' => 'Create Invoice',
+        'icon' => 'fas fa-file-contract'
+      ],
       'print' => [
         'id'   => 'btnPrintSalesOrder',
         'text' => 'Print',
@@ -71,6 +81,18 @@ class Sales_orders extends MY_Controller
     $this->render('sales_orders/create');
   }
 
+  public function post()
+  {
+    $request = $this->getJsonRequest();
+    $result = $this->Sales_order_model->post($request['ids']);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
   public function edit($id)
   {
     $this->setPage('Edit Sales Order');
@@ -104,7 +126,6 @@ class Sales_orders extends MY_Controller
   {
     $ids = $this->getJsonRequest('ids');
     $cancelReason = $this->getJsonRequest('cancel_reason');
-
     $result = $this->Sales_order_model->cancel($ids, $cancelReason);
 
     return $this->jsonResponse(

@@ -2,11 +2,12 @@
   <tr>
     <th width="40" class="text-center">
       <div class="custom-control custom-checkbox ml-2 mt-1">
-        <input type="checkbox" class="custom-control-input" id="chkSelectAllSalesOrder">
-        <label class="custom-control-label" for="chkSelectAllSalesOrder"></label>
+        <input type="checkbox" class="custom-control-input" id="chkSelectAllSalesInvoice">
+        <label class="custom-control-label" for="chkSelectAllSalesInvoice"></label>
       </div>
     </th>
     <th class="text-center">Date</th>
+    <th class="text-center">SI No.</th>
     <th class="text-center">SO No.</th>
     <th>Customer</th>
     <th>Salesman</th>
@@ -16,30 +17,32 @@
   </tr>
 </thead>
 <tbody>
-  <?php if (count($salesOrders) == 0): ?>
+  <?php if (count($salesInvoices) == 0): ?>
     <tr>
       <td colspan="8" class="text-center text-muted py-3">
-        No Sales Order found.
+        No Sales Invoice found.
       </td>
     </tr>
   <?php endif; ?>
 
-  <?php foreach ($salesOrders as $row): ?>
+  <?php foreach ($salesInvoices as $row): ?>
     <tr
       class="stock-transfer-row"
-      data-id="<?= $row->id ?>"
-      data-status="<?= $row->status ?>">
+      data-id="<?= $row->id ?>">
       <td class="text-center">
         <div class="custom-control custom-checkbox ml-2 mt-1">
-          <input type="checkbox" class="custom-control-input chkSalesOrder" id="chkSalesOrder-<?= $row->id ?>" value="<?= $row->id ?>">
-          <label class="custom-control-label" for="chkSalesOrder-<?= $row->id ?>"></label>
+          <input type="checkbox" class="custom-control-input chkSalesInvoice" id="chkSalesInvoice-<?= $row->id ?>" value="<?= $row->id ?>">
+          <label class="custom-control-label" for="chkSalesInvoice-<?= $row->id ?>"></label>
         </div>
       </td>
       <td class="text-center">
-        <?= date('m/d/Y', strtotime($row->order_date)) ?>
+        <?= date('m/d/Y', strtotime($row->invoice_date)) ?>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('sales_orders/edit/').$row->id ?>" class="text-wrap text-olive"><?= $row->so_no ?></a>
+        <a href="<?= base_url('sales_invoices/edit/').$row->id ?>" class="text-wrap text-olive"><?= $row->si_no ?></a>
+      </td>
+      <td class="text-center">
+        <a href="<?= base_url('sales_orders/edit/').$row->so_id ?>" class="text-wrap text-olive"><?= $row->so_no ?></a>
       </td>
       <td>
         <?= htmlspecialchars($row->customer_name) ?>

@@ -2,6 +2,7 @@ const hidSalesOrderId = document.getElementById('hidSalesOrderId');
 
 const txtSalesOrderNo = document.getElementById('txtSalesOrderNo');
 const dtOrderDate = document.getElementById('dtOrderDate');
+const txtCreditLimit = document.getElementById('txtCreditLimit');
 
 const selCustomer = document.getElementById('selCustomer');
 const selSalesman = document.getElementById('selSalesman');
@@ -16,11 +17,11 @@ const btnEditSalesOrder = document.getElementById('btnEditSalesOrder');
 const btnCancelSalesOrder = document.getElementById('btnCancelSalesOrder');
 const btnRefreshSalesOrder = document.getElementById('btnRefreshSalesOrder');
 const btnPrintSalesOrder = document.getElementById('btnPrintSalesOrder');
+const btnPostSalesOrder = document.getElementById('btnPostSalesOrder');
+const btnCreateSalesInvoice = document.getElementById('btnCreateSalesInvoice');
 
 let isDirty = false;
-
 let isLoading = true;
-
 let isEditMode = (hidSalesOrderId?.value) ? true : false;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -42,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   Atlas.select.onChange('#selCustomer', (option) => {
     $('#selSalesman').val(option.dataset.salesmanId).trigger('change');
     $('#selTerms').val(option.dataset.termsId).trigger('change');
-    console.log(option.dataset)
+    txtCreditLimit.value = Atlas.format.amount(option.dataset.creditLimit);
     markDirty()
   });
   Atlas.select.onChange('#selSaleman', () => markDirty());
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  /*** save sales order */
+  /*** save */
   btnSaveSalesOrder?.addEventListener('click', async () => {
 
     if (!validateSalesOrder()) {
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         customer_id: selCustomer.value,
         salesman_id: selSalesman.value,
         terms_id: selTerms.value,
+        credit_limit: Atlas.format.parseNumber(txtCreditLimit.value) || 0,
         remarks: txtSalesOrderRemarks.value,
         details: []
       };
@@ -120,9 +122,71 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(
-      `sales_orders/edit/${id}`
+    Atlas.page.redirect(`sales_orders/edit/${id}`);
+  });
+
+  /*** post */
+  btnPostSalesOrder?.addEventListener('click', async () => {
+    const ids = Atlas.table.selectedIds();
+
+    if (ids.length === 0) {
+      Atlas.toast.warning('Please select at least one Sales Order')
+      return false;
+    }
+
+    const result = await Atlas.dialog.confirm(
+      'Confirm Action',
+      'Post Sales Order?'
     );
+
+    if (!result) {
+      return;
+    }
+
+    btnPostSalesOrder.disabled = true;
+
+    try {
+      const response = await Atlas.ajax.post(
+        'sales_orders/post',
+        {
+          ids: ids
+        }
+      );
+
+      if (!response.success) {
+        Atlas.toast.error(response.message);
+        return;
+      }
+
+      Atlas.toast.success(response.message);
+      setTimeout(() => Atlas.page.refresh(), 1500);
+
+    } finally {
+      btnPostSalesOrder.disabled = false;
+    }
+  });
+
+  /*** create sales invoice */
+  btnCreateSalesInvoice?.addEventListener('click', () => {
+    const ids = Atlas.table.selectedIds();
+
+    if (ids.length !== 1) {
+      Atlas.toast.warning('Please select one Sales Order.');
+      return;
+    }
+
+    const row = document.querySelector(`tr[data-id="${ids[0]}"]`);
+
+    if (!row) {
+      return;
+    }
+
+    if (row.dataset.status !== 'POSTED') {
+      Atlas.toast.warning('Only POSTED Sales Orders can be invoiced.');
+      return;
+    }
+
+    Atlas.page.redirect(`sales_invoices/create/${ids[0]}`);
   });
 
   /*** print */
@@ -258,6 +322,8 @@ const createDetailRow = () => {
           class="form-control form-control-sm text-right so-qty"
           value="">
       </td>
+      <td></td>
+      <td></td>
       <td class="so-uom text-center"></td>
       <td class="text-center">
         <i class="fas fa-trash text-danger pointer btn-delete-row"></i>

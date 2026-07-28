@@ -35,7 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
     frmCustomer.reset();
     hidCustomerId.value = '';
 
-    $('#selTerms').val('').trigger('change');
+    /*** default to NONE, currently 8 is the value of NONE */
+    $('#selTerms').val('8').trigger('change');
 
     Atlas.validation.clear();
     Atlas.modal.open({

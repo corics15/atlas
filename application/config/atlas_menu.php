@@ -140,7 +140,7 @@ $config['atlas_menu'] = [
       ],
       [
         'title' => 'New Sales Invoice',
-        'icon'  => 'fas fa-file-invoice-dollar',
+        'icon'  => 'fas fa-file-contract',
         'url'   => 'sales_invoices/create'
       ],
       [
