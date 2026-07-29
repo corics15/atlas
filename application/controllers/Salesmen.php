@@ -7,6 +7,7 @@ class Salesmen extends MY_Controller
   {
     parent::__construct();
     $this->load->model('Salesman_model');
+
     $this->load->library('form_validation');
   }
 
@@ -61,11 +62,11 @@ class Salesmen extends MY_Controller
   public function save()
   {
     $postData = $this->input->post();
-    $this->form_validation->set_rules(
-      'salesman_code',
-      'Code',
-      'required|trim'
-    );
+    // $this->form_validation->set_rules(
+    //   'salesman_code',
+    //   'Code',
+    //   'required|trim'
+    // );
 
     $this->form_validation->set_rules(
       'first_name',
@@ -93,13 +94,15 @@ class Salesmen extends MY_Controller
     }
 
     $data = [
-      'code' => strtoupper(trim($postData['salesman_code'])),
       'first_name' => strtoupper(trim($postData['first_name'])),
       'last_name' => strtoupper(trim($postData['last_name'])),
       'mobile_no' => trim($postData['contact_no']) <> '' ? trim($postData['contact_no']) : NULL,
     ];
 
     if (empty($id)) {
+      /*** get next salesman code */
+      $newCode = $this->Salesman_model->getNextSalesmanCode();
+      $data['code'] = $newCode;
       $data['entered_by'] = $this->session->userdata('user_id');
       $data['entered_on'] = date('Y-m-d H:i:s');
     } else {

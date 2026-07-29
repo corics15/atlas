@@ -3,6 +3,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Sales_invoice_model extends CI_Model
 {
+
+  public function __construct()
+  {
+    parent::__construct();
+
+    $this->load->model('Inventory_model');
+  }
+
   public function getAll()
   {
     return $this->db
@@ -52,12 +60,30 @@ class Sales_invoice_model extends CI_Model
     return $this->db
         ->select("
             si.*,
-            so.so_no
+            so.so_no,
+            c.customer_name,
+            concat(s.first_name, ' ', s.last_name) AS salesman_name,
+            t.terms_name
         ")
         ->from('t_sales_invoices si')
         ->join(
             't_sales_orders so',
             'so.id = si.sales_order_id'
+        )
+        ->join(
+            'm_customers c',
+            'c.id = si.customer_id',
+            'left'
+        )
+        ->join(
+            'm_salesmen s',
+            's.id = si.salesman_id',
+            'left'
+        )
+        ->join(
+            'm_terms t',
+            't.id = si.terms_id',
+            'left'
         )
         ->where('si.id', $id)
         ->get()
@@ -66,17 +92,25 @@ class Sales_invoice_model extends CI_Model
 
   public function getDetails($id)
   {
+    $branchId = (int) $this->session->userdata('branch_id');
+
     return $this->db
         ->select("
             sid.*,
             p.barcode,
             p.description,
+            COALESCE(bi.qty_on_hand, 0) AS qty_available,
             u.uom
         ")
         ->from('t_sales_invoice_details sid')
         ->join(
             'm_products p',
             'p.id = sid.product_id',
+            'left'
+        )
+        ->join(
+            't_branch_inventory bi',
+            "bi.product_id = sid.product_id AND bi.branch_id = {$branchId}",
             'left'
         )
         ->join(
@@ -131,6 +165,8 @@ class Sales_invoice_model extends CI_Model
 
   public function getSalesOrderDetails($salesOrderId)
   {
+    $branchId = (int) $this->session->userdata('branch_id');
+
     return $this->db
       ->query("SELECT
                 sod.id AS sales_order_detail_id,
@@ -138,9 +174,11 @@ class Sales_invoice_model extends CI_Model
                 sod.qty - COALESCE(inv.qty_invoiced, 0) AS qty,
                 p.barcode,
                 p.description,
+                COALESCE(bi.qty_on_hand,0) AS qty_available,
                 u.uom
               FROM t_sales_order_details sod
               INNER JOIN m_products p ON p.id = sod.product_id
+              LEFT JOIN t_branch_inventory bi ON bi.product_id = sod.product_id AND bi.branch_id = ?
               LEFT JOIN m_uom u ON u.id = p.uom_id
               LEFT JOIN (
                 SELECT
@@ -157,6 +195,7 @@ class Sales_invoice_model extends CI_Model
               ORDER BY sod.id
               ",
               [
+                $branchId,
                 $salesOrderId
               ]
             )
@@ -311,10 +350,25 @@ class Sales_invoice_model extends CI_Model
           );
         }
 
-        /*
-        * Inventory deduction
-        * (next step)
-        */
+        /*** inventory deduction */
+        $result = $this->Inventory_model->postSales($id);
+        if (!$result['success']) {
+          throw new Exception($result['message']);
+        }
+        /*** end inventory deduction */
+
+        /*** post sales invoice */
+        $this->db
+            ->where('id', $id)
+            ->update(
+                't_sales_invoices',
+                [
+                  'status'     => 'POSTED',
+                  'updated_by' => $this->session->userdata('user_id'),
+                  'updated_on' => date('Y-m-d H:i:s')
+                ]
+            );
+        /*** end post sales invoice */
 
         $this->db
             ->where('id', $id)

@@ -1,5 +1,5 @@
 <div class="modal fade" id="mdlSalesman" tabindex="-1" aria-labelledby="mdlSalesmanLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-md modal-dialog-centered">
     <div class="modal-content">
 
       <div class="modal-header">
@@ -17,7 +17,7 @@
             <div class="form-group col-md-6">
               <label for="txtSalesmanCode">Code</label>
               <input type="text" id="txtSalesmanCode" name="salesman_code"
-                     class="form-control form-control-sm text-uppercase" placeholder="Enter code">
+                     class="form-control form-control-sm text-uppercase" placeholder="AUTO-GENERATED" readonly>
               <small id="errSalesmanCode" class="text-danger"></small>
             </div>
             <div class="form-group col-md-6">

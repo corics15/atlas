@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const txtUsername = document.getElementById('txtUsername');
   const txtFirstName = document.getElementById('txtFirstName');
   const txtLastName = document.getElementById('txtLastName');
+  const selBranch = document.getElementById('selBranch');
 
   const hidUserId = document.getElementById('hidUserId');
 
@@ -24,8 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
     onChange: updateToolbarState
   });
 
+  Atlas.select.init('#selBranch', '#mdlUser');
+
   updateToolbarState();
 
+  /*** new */
   btnNewUser.addEventListener('click', () => {
     frmUser.reset();
     hidUserId.value = '';
@@ -35,8 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
       id: 'mdlUser',
       title: 'New User'
     });
+    $('#selBranch').val('1').trigger('change');
   });
 
+  /*** save */
   frmUser.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -50,16 +56,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Atlas.modal.close('mdlUser');
         Atlas.toast.success(result.message);
-        setTimeout(() => {
-          Atlas.page.refresh();
-        }, 1500);
+        setTimeout(() => Atlas.page.refresh(), 1500);
       },
       onError: (result) => {
-        console.log(result);
+        Atlas.toast.error(result.message);
+        if (result.data.errors.branch_id)
+          document.getElementById('errBranch').innerHTML = result.data.errors.branch_id
       }
     });
   });
 
+  /*** edit */
   btnEditUser.addEventListener('click', async () => {
     const id = getSelectedUserId();
     if (!id) {
@@ -77,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     txtUsername.value = result.data.username;
     txtFirstName.value = result.data.first_name;
     txtLastName.value = result.data.last_name;
+    $('#selBranch').val(result.data.branch_id).trigger('change');
 
     Atlas.modal.open({
       id: 'mdlUser',
@@ -175,9 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnRefreshUsers.addEventListener('click', () => {
-    Atlas.page.refresh();
-  });
+  btnRefreshUsers.addEventListener('click', () => Atlas.page.refresh());
 });
 
 const getSelectedUserId = () => {

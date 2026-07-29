@@ -26,8 +26,8 @@ class Product_finder extends MY_Controller
 
     if (!$product) {
       return $this->jsonResponse(
-          false,
-          'Product not found.'
+        false,
+        'Product not found.'
       );
     }
 
@@ -40,10 +40,7 @@ class Product_finder extends MY_Controller
 
   public function search()
   {
-    $keyword = trim(
-      $this->input->get('q')
-    );
-
+    $keyword = trim($this->input->get('q'));
     $result = $this->Product_finder_model->search($keyword);
 
     return $this->jsonResponse(

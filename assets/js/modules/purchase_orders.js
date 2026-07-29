@@ -89,32 +89,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // document.addEventListener('keydown', (e) => {
+  /*** "enter" key event after entering qty */
+  document.addEventListener('keydown', (e) => {
 
-  //   if (!e.target.classList.contains('po-qty')) {
-  //     return;
-  //   }
+    if (!e.target.classList.contains('po-qty')) {
+      return;
+    }
 
-  //   if (e.key !== 'Enter') {
-  //     return;
-  //   }
+    if (e.key !== 'Enter') {
+      return;
+    }
 
-  //   e.preventDefault();
-  //   const row = e.target.closest('tr');
-  //   if (!row.dataset.productId) {
-  //     Atlas.toast.warning('Please select a product.');
-  //     row.querySelector('.po-barcode').focus();
-  //     return;
-  //   }
+    e.preventDefault();
+    const row = e.target.closest('tr');
+    if (!row.dataset.productId) {
+      Atlas.toast.warning('Please select a product.');
+      row.querySelector('.po-barcode').focus();
+      return;
+    }
 
-  //   /*** check if there's an empty row below */
-  //   const nextRow = row.nextElementSibling;
-  //   if (nextRow && !nextRow.dataset.productId) {
-  //     nextRow.querySelector('.po-barcode').focus();
-  //     return;
-  //   }
-  //   addDetailRow();
-  // });
+    /*** check if there's an empty row below */
+    const nextRow = row.nextElementSibling;
+    if (nextRow && !nextRow.dataset.productId) {
+      nextRow.querySelector('.po-barcode').focus();
+      return;
+    }
+    addDetailRow();
+  });
 
   /*** delete row */
   document.addEventListener('click', (e) => {

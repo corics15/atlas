@@ -55,7 +55,7 @@
                         <?= htmlspecialchars($detail->description) ?>
                       </td>
                       <td class="so-available text-right">
-                        -
+                        <?= number_format($detail->qty_available, 0) ?>
                       </td>
                       <td class="text-right">
                         <input
@@ -95,9 +95,7 @@
                       </div>
                     </td>
                     <td class="so-description"></td>
-                    <td class="so-available text-right">
-                      0.00
-                    </td>
+                    <td class="so-available text-right">-</td>
                     <td class="text-right">
                       <input
                         type="number"

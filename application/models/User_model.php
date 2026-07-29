@@ -30,8 +30,11 @@ class User_model extends MY_Model
     }
 
     return $this->db
-        ->order_by('id', 'DESC')
-        ->get('m_users')
+        ->select('u.*, b.branch_name')
+        ->from('m_users u')
+        ->join('m_branches b', 'b.id = u.branch_id', 'left')
+        ->order_by('u.id', 'DESC')
+        ->get()
         ->result();
   }
 

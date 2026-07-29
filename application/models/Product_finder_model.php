@@ -3,9 +3,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Product_finder_model extends CI_Model
 {
+  public function __construct()
+  {
+    parent::__construct();
+  }
+
   public function search($keyword)
   {
     $search = "%{$keyword}%";
+    $branchId = (int) $this->session->userdata('branch_id');
 
     return $this->db
       ->select("
@@ -15,9 +21,14 @@ class Product_finder_model extends CI_Model
         p.description,
         u.uom,
         p.srp,
-        p.qty_on_hand
+        COALESCE(bi.qty_on_hand, 0) qty_on_hand
       ")
       ->from('m_products p')
+      ->join(
+        't_branch_inventory bi',
+        "bi.product_id = p.id AND bi.branch_id = {$branchId}",
+        'left'
+      )
       ->join(
         'm_suppliers s',
         's.id = p.supplier_id'

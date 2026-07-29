@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateToolbarState();
 
+  /*** new */
   btnNewSupplier.addEventListener('click', () => {
     frmSupplier.reset();
     hidSupplierId.value = '';
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*** save */
   frmSupplier.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -61,11 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500);
       },
       onError: (result) => {
-        console.log(result);
+        Atlas.toast.error(result.message);
       }
     });
   });
 
+  /*** edit */
   btnEditSupplier.addEventListener('click', async () => {
     const id = getSelectedSupplierId();
 
@@ -164,9 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnRefreshSupplier.addEventListener('click', () => {
-    Atlas.page.refresh();
-  });
+  btnRefreshSupplier.addEventListener('click', () => Atlas.page.refresh());
+
 });
 
 const getSelectedSupplierId = () => {

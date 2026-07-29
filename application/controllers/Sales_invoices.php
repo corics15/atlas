@@ -148,4 +148,36 @@ class Sales_invoices extends MY_Controller
     );
   }
 
+  public function print()
+  {
+    $ids = $this->input->post('ids');
+
+    if (!$ids) {
+      show_404();
+    }
+
+    $documents = [];
+
+    foreach ($ids as $id) {
+      $header = $this->Sales_invoice_model->get($id);
+
+      if (!$header) {
+        continue;
+      }
+
+      $documents[] = (object)[
+        'header'  => $header,
+        'details' => $this->Sales_invoice_model->getDetails($id)
+      ];
+    }
+
+    $this->load->view(
+      'sales_invoices/print',
+      [
+        'documents' => $documents,
+        'title'     => 'SALES INVOICE'
+      ]
+    );
+  }
+
 }

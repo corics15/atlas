@@ -234,9 +234,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /*** refresh */
-  btnRefreshSalesOrder?.addEventListener('click', () => {
-    Atlas.page.refresh();
-  });
+  btnRefreshSalesOrder?.addEventListener('click', () => Atlas.page.refresh());
 
   /*** remove row event on details table */
   document.addEventListener('click', e => {
@@ -286,7 +284,8 @@ const addDetailRow = (markAsDirty = true) => {
   const tbody = document.getElementById('tblSalesOrderDetails');
   tbody.insertAdjacentHTML('beforeend', createDetailRow());
   renumberRows();
-  setTimeout(() => tbody.lastElementChild.querySelector('.so-barcode').focus(), 500);
+  /*** let product finder determine which element to focus on */
+  // setTimeout(() => tbody.lastElementChild.querySelector('.so-barcode').focus(), 500);
   if (markAsDirty) {
     markDirty();
   }
@@ -349,7 +348,7 @@ const populateProductRow = (row, product) => {
   row.querySelector('.so-barcode').value = product.barcode;
   row.querySelector('.so-description').textContent = product.description;
   row.querySelector('.so-uom').textContent = product.uom;
-  row.querySelector('.so-available').textContent = '-';
+  row.querySelector('.so-available').textContent = Atlas.format.integer(product.qty_on_hand);
   setTimeout(() => row.querySelector('.so-qty').focus(), 500);
   markDirty();
 
@@ -423,7 +422,7 @@ const removeDetailRow = (row) => {
     row.dataset.productId = '';
     row.querySelector('.so-barcode').value = '';
     row.querySelector('.so-description').textContent = '';
-    row.querySelector('.so-available').textContent = '0.00';
+    row.querySelector('.so-available').textContent = '-';
     row.querySelector('.so-qty').value = '';
     row.querySelector('.so-uom').textContent = '';
     setTimeout(() => row.querySelector('.so-barcode').focus(), 500);

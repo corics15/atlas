@@ -1,5 +1,5 @@
 <div class="modal fade" id="mdlUser" tabindex="-1" aria-labelledby="mdlUserLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-md modal-dialog-centered">
     <div class="modal-content">
 
       <div class="modal-header">
@@ -35,12 +35,24 @@
                      class="form-control form-control-sm text-uppercase" placeholder="Enter last name">
               <small id="errLastName" class="text-danger"></small>
             </div>
+
+            <div class="form-group col-md-6">
+              <label for="selBranch">Branch</label>
+              <select id="selBranch" name="branch_id" class="form-control form-control-sm">
+                <option value="">Select Branch</option>
+                <?php foreach ($branches as $branch): ?>
+                  <option value="<?= $branch->id; ?>">
+                    <?= htmlspecialchars($branch->branch_name); ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+              <small id="errBranch" class="text-danger"></small>
+            </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-sm btn-secondary" data-dismiss="modal">Cancel</button>
-          <button type="submit" id="btnSaveUser" class="btn btn-sm btn-primary">Save User</button>
+          <button type="submit" id="btnSaveUser" class="btn btn-sm btn-default">Save User</button>
         </div>
       </form>
 

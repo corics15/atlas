@@ -307,10 +307,17 @@ class Goods_receipt_model extends CI_Model
                 ->row_array();
   }
 
+  public function generateGrnNo()
+  {
+    // Temporary implementation, temporary generate
+    return 'GRN-' . date('YmdHis');
+  }
+
   /*** private functions */
   private function insertHeader($grn)
   {
-    $grnNo = 'GRN-' . date('YmdHis'); /*** generateGRN */
+    $grnNo = $this->generateGrnNo();
+    $branchId = (int) $this->session->userdata('branch_id');
 
     $remarks = trim($grn['remarks']) <> ''
       ? strtoupper(trim($grn['remarks']))
@@ -322,6 +329,7 @@ class Goods_receipt_model extends CI_Model
                 grn_date,
                 po_id,
                 supplier_id,
+                branch_id,
                 status,
                 is_posted_to_inventory,
                 remarks,
@@ -330,7 +338,7 @@ class Goods_receipt_model extends CI_Model
               )
             VALUES
               (
-                ?,?,?,?,?,?,?,?,
+                ?,?,?,?,?,?,?,?,?,
                 CURRENT_TIMESTAMP
               )
             RETURNING id";
@@ -342,6 +350,7 @@ class Goods_receipt_model extends CI_Model
         $grn['grn_date'],
         $grn['po_id'],
         $grn['supplier_id'],
+        $branchId,
         'DRAFT',
         FALSE,
         $remarks,

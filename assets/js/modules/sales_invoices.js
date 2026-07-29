@@ -3,6 +3,7 @@ const btnPostSalesInvoice = document.getElementById('btnPostSalesInvoice');
 const btnEditSalesInvoice = document.getElementById('btnEditSalesInvoice');
 const btnRefreshSalesInvoice = document.getElementById('btnRefreshSalesInvoice');
 const btnCancelSalesInvoice = document.getElementById('btnCancelSalesInvoice');
+const btnPrintSalesInvoice = document.getElementById('btnPrintSalesInvoice');
 
 const txtCreditLimit = document.getElementById('txtCreditLimit');
 
@@ -178,8 +179,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     Atlas.toast.success(result.message);
-    // setTimeout(() => Atlas.page.refresh(), 1200);
+    setTimeout(() => Atlas.page.refresh(), 1200);
   });
+
+  /*** print */
+  btnPrintSalesInvoice?.addEventListener('click', printSalesInvoice);
 
   /*** refresh */
   btnRefreshSalesInvoice?.addEventListener('click', () => {
@@ -256,6 +260,20 @@ const validateSalesInvoice = () => {
   }
 
   return true;
+};
+
+const printSalesInvoice = () => {
+  const ids = Atlas.table.selectedIds();
+
+  if (ids.length === 0) {
+    Atlas.toast.warning('Please select at least one Sales Invoice.');
+    return;
+  }
+
+  Atlas.print.post(
+    'sales_invoices/print',
+    ids
+  );
 };
 
 const markDirty = () => {

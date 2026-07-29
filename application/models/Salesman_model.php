@@ -78,4 +78,16 @@ class Salesman_model extends CI_Model
 
     return $this->db->get('m_salesmen')->result();
   }
+
+  public function getNextSalesmanCode()
+  {
+    $lastCode = $this->db
+        ->select('MAX(code) AS max_code')
+        ->get('m_salesmen')
+        ->row()
+        ->max_code;
+
+    /*** if no rows yet, start at 1000 */
+    return $lastCode ? ((int)$lastCode + 1) : 1000;
+  }
 }

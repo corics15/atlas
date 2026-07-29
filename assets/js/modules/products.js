@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateToolbarState();
 
+  /*** new */
   btnNewProduct.addEventListener('click', () => {
     frmProduct.reset();
     hidProductId.value = '';
@@ -41,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*** save */
   frmProduct.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -59,11 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500);
       },
       onError: (result) => {
-        console.log(result);
+        Atlas.toast.error(result.message);
       }
     });
   });
 
+  /*** edit */
   btnEditProduct.addEventListener('click', async () => {
     const id = getSelectedProductId();
 
@@ -71,9 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const result = await Atlas.ajax.get(
-      'products/get/' + id
-    );
+    const result = await Atlas.ajax.get(`products/get/${id}`);
 
     if (!result.success) {
       Atlas.toast.error(result.message);
@@ -160,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  /*** inventory inquiry or stock ledger */
   btnInventoryInquiry.addEventListener('click', () => {
     const id = getSelectedProductId();
 
@@ -167,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.page.redirect('inventory/ledger/' + id);
+    Atlas.page.redirect(`inventory/ledger/${id}`);
   });
 
   btnRefreshProduct.addEventListener('click', () => {

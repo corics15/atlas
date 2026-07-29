@@ -1,5 +1,5 @@
 <div class="modal fade" id="mdlOutletType" tabindex="-1" aria-labelledby="mdlOutletTypeLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-md modal-dialog-centered">
     <div class="modal-content">
 
       <div class="modal-header">
@@ -19,6 +19,24 @@
               <input type="text" id="txtOutletTypeName" name="outlet_type_name"
                      class="form-control form-control-sm text-uppercase" placeholder="Enter description">
               <small id="errOutletTypeName" class="text-danger"></small>
+            </div>
+
+            <div class="form-group col-md-6">
+              <div class="mb-2">
+                <h6 class="mb-2">Common Outlet Types</h6>
+                <ul class="pl-3 mb-2 small">
+                  <li>Retail Store</li>
+                  <li>Supermarket</li>
+                  <li>Convenience Store</li>
+                  <li>Pharmacy</li>
+                  <li>Restaurant</li>
+                  <li>Café</li>
+                  <li>Wholesale Distributor</li>
+                  <li>Online Shop</li>
+                  <li>Department Store</li>
+                  <li>Specialty Shop</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>

@@ -36,45 +36,21 @@ class Sales_order_model extends CI_Model
 
   public function getDetails($salesOrderId)
   {
-    // return $this->db
-    //     ->select("
-    //         sod.*,
-    //         p.barcode,
-    //         p.description,
-    //         u.uom
-    //     ")
-    //     ->from('t_sales_order_details sod')
-    //     ->join(
-    //         'm_products p',
-    //         'p.id = sod.product_id',
-    //         'left'
-    //     )
-    //     ->join(
-    //         'm_uom u',
-    //         'u.id = p.uom_id',
-    //         'left'
-    //     )
-    //     ->where(
-    //         'sod.sales_order_id',
-    //         $salesOrderId
-    //     )
-    //     ->order_by(
-    //         'sod.id',
-    //         'ASC'
-    //     )
-    //     ->get()
-    //     ->result();
+    $branchId = (int) $this->session->userdata('branch_id');
+
     return $this->db->query("SELECT
                               sod.id,
                               sod.product_id,
                               p.barcode,
                               p.description,
+                              COALESCE(bi.qty_on_hand,0) AS qty_available,
                               sod.qty,
                               COALESCE(inv.qty_invoiced, 0) AS qty_fulfilled,
                               sod.qty - COALESCE(inv.qty_invoiced, 0) AS qty_remaining,
                               u.uom
                             FROM t_sales_order_details sod
                             INNER JOIN m_products p ON p.id = sod.product_id
+                            LEFT JOIN t_branch_inventory bi ON bi.product_id = sod.product_id AND bi.branch_id = ?
                             LEFT JOIN m_uom u ON u.id = p.uom_id
                             LEFT JOIN (
                                 SELECT
@@ -89,6 +65,7 @@ class Sales_order_model extends CI_Model
                             WHERE sod.sales_order_id = ?
                             ORDER BY sod.id",
                             [
+                              $branchId,
                               $salesOrderId
                             ]
                           )->result();

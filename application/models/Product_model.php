@@ -11,6 +11,7 @@ class Product_model extends CI_Model
       $this->db->group_start()
           ->where("description ILIKE '%{$escaped}%'")
           ->or_where("barcode ILIKE '%{$escaped}%'")
+          ->or_where("case_barcode ILIKE '%{$escaped}%'")
       ->group_end();
     }
 

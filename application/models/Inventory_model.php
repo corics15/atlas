@@ -9,12 +9,21 @@ class Inventory_model extends CI_Model
 
     $this->load->model('Branch_inventory_model');
     $this->load->model('Stock_transfer_model');
+    $this->load->model('Sales_invoice_model');
   }
 
   public function receive($grn, $details)
   {
     $this->validateGoodsReceiptPosting($grn);
-    $this->updateQtyOnHand($details);
+    // $this->updateQtyOnHand($details);
+
+    foreach ($details as $detail) {
+      $this->Branch_inventory_model->adjustBalance(
+        $grn['branch_id'],
+        $detail->product_id,
+        $detail->qty_receive
+      );
+    }
 
     $this->writeStockLedger(
       $grn,
@@ -148,9 +157,54 @@ class Inventory_model extends CI_Model
     ];
   }
 
-  public function postSales($salesId)
+  public function postSales($salesInvoiceId)
   {
+    $branchId = (int) $this->session->userdata('branch_id');
+    $header = $this->Sales_invoice_model->get($salesInvoiceId);
 
+    if (!$header) {
+      return [
+        'success' => FALSE,
+        'message' => 'Sales Invoice not found.'
+      ];
+    }
+
+    $details = $this->Sales_invoice_model->getDetails($salesInvoiceId);
+
+    /*** quantity balance validation */
+    foreach ($details as $detail)
+    {
+      $balance = $this->Branch_inventory_model->getBalance(
+        $branchId,
+        $detail->product_id
+      );
+
+      $available = $balance ? $balance->qty_on_hand : 0;
+      if ($available < $detail->qty) {
+        return [
+          'success' => FALSE,
+          'message' =>
+            "Insufficient stock.\n\n" .
+            "{$detail->description}\n\n" .
+            "Available : {$available}\n" .
+            "Required  : {$detail->qty}"
+        ];
+      }
+    }
+
+    /*** deduct inventory */
+    foreach ($details as $detail)
+    {
+      $this->Branch_inventory_model->adjustBalance(
+        $branchId,
+        $detail->product_id,
+        -$detail->qty
+      );
+    }
+    return [
+      'success' => TRUE,
+      'message' => ''
+    ];
   }
 
   public function reverseTransaction($transactionType, $referenceId)

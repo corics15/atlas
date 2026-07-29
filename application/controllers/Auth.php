@@ -36,6 +36,7 @@ class Auth extends MY_Controller
       'username'   => $user->username,
       'first_name' => $user->first_name,
       'last_name'  => $user->last_name,
+      'branch_id'  => $user->branch_id,
       'logged_in'  => TRUE
     ]);
 

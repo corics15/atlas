@@ -13,6 +13,7 @@
       </div>
     </th>
     <th>Supplier</th>
+    <th class="text-center">Case Barcode</th>
     <th class="text-center">Barcode</th>
     <th>Description</th>
     <th class="text-center">UOM</th>
@@ -41,6 +42,9 @@
     </td>
     <td><?= htmlspecialchars($product->supplier_name); ?></td>
     <td class="text-center">
+      <?= htmlspecialchars($product->case_barcode); ?>
+    </td>
+    <td class="text-center">
       <?= htmlspecialchars($product->barcode); ?>
     </td>
     <td>
@@ -57,7 +61,7 @@
   <?php endforeach; ?>
   <?php else : ?>
   <tr>
-    <td colspan="9" class="text-center">
+    <td colspan="10" class="text-center">
       No records found.
     </td>
   </tr>

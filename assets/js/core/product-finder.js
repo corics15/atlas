@@ -28,7 +28,6 @@ class AtlasProductFinder {
             <td class="text-right">${Atlas.format.amount(product.srp)}</td>
         </tr>
       `);
-
     });
   }
 
@@ -120,7 +119,8 @@ class AtlasProductFinder {
                                       data-supplier="${product.supplier_name ?? ''}"
                                       data-description="${product.description ?? ''}"
                                       data-uom="${product.uom ?? ''}"
-                                      data-price="${product.srp}">
+                                      data-price="${product.srp}"
+                                      data-qty-on-hand="${product.qty_on_hand}">
                                     <td class="text-center">${product.barcode ?? ''}</td>
                                     <td>${product.supplier_name ?? ''}</td>
                                     <td>${product.description ?? ''}</td>
@@ -205,6 +205,7 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
   }
 });
 
+/*** event after product has been selected */
 document.addEventListener('click', (e) => {
   const tr = e.target.closest('.pf-row');
 
@@ -218,7 +219,8 @@ document.addEventListener('click', (e) => {
     supplier_name: tr.dataset.supplier,
     description: tr.dataset.description,
     uom: tr.dataset.uom,
-    srp: tr.dataset.price
+    srp: tr.dataset.price,
+    qty_on_hand: tr.dataset.qtyOnHand
   };
 
   /*** inventory adjustment event flow */
@@ -232,7 +234,10 @@ document.addEventListener('click', (e) => {
   const row = Atlas.productFinder.currentRow;
   populateProductRow(row, product);
   Atlas.productFinder.hide();
-  row.querySelector('.po-qty')?.focus();
+  // row.querySelector('.po-qty')?.focus();
+  /*** focus whichever element exists in the row */
+  const qtyInput = row.querySelector('.po-qty, .so-qty');
+  qtyInput?.focus();
 });
 
 let productFinderTimer = null;

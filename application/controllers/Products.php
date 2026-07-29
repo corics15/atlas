@@ -94,8 +94,26 @@ class Products extends MY_Controller
     $id = (int) $postData['id'];
 
     $this->form_validation->set_rules(
+      'supplier_id',
+      'Supplier',
+      'required|trim',
+      [
+        'required' => 'The %s field is mandatory.'
+      ]
+    );
+
+    $this->form_validation->set_rules(
+      'uom_id',
+      'UOM',
+      'required|trim',
+      [
+        'required' => 'The %s field is mandatory.'
+      ]
+    );
+
+    $this->form_validation->set_rules(
       'description',
-      'Description',
+      'Product Name',
       'required|trim',
       [
         'required' => 'The %s field is mandatory.'
@@ -109,6 +127,7 @@ class Products extends MY_Controller
     $data = [
       'supplier_id' => trim($postData['supplier_id']),
       'barcode' => trim($postData['barcode']),
+      'case_barcode' => trim($postData['case_barcode']),
       'description' => trim($postData['description']) <> '' ? strtoupper(trim($postData['description'])) : NULL,
       'uom_id' => $postData['uom_id'],
       'cost' => $postData['cost'],

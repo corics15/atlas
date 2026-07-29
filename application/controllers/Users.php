@@ -8,6 +8,8 @@ class Users extends MY_Controller
     parent::__construct();
 
     $this->load->model('User_model');
+    $this->load->model('Branch_model');
+
     $this->load->library('form_validation');
   }
 
@@ -26,6 +28,7 @@ class Users extends MY_Controller
     $this->data['keyword'] = $keyword;
     $this->data['users'] = $this->User_model->getAll($keyword);
     $this->data['recordCount'] = count($this->data['users']);
+    $this->data['branches'] = $this->Branch_model->getDropdown();
 
     $this->data['tableContent'] = $this->load->view(
       'users/table',
@@ -79,7 +82,7 @@ class Users extends MY_Controller
     $this->form_validation->set_rules(
       'username',
       'Username',
-      'required|min_length[5]|trim',
+      'required|min_length[4]|trim',
       array(
         'required'   => 'The %s field is mandatory.',
         'min_length' => 'The %s must be at least 5 characters long.',
@@ -99,11 +102,17 @@ class Users extends MY_Controller
       'required|trim'
     );
 
+    $this->form_validation->set_rules(
+      'branch_id',
+      'Branch',
+      'required'
+    );
+
     if (!$this->form_validation->run()) {
       return $this->validationResponse([
-          'username',
-          'first_name',
-          'last_name'
+        'username',
+        'first_name',
+        'last_name'
       ]);
     }
 
@@ -111,6 +120,7 @@ class Users extends MY_Controller
       'username'   => trim($postData['username']),
       'first_name' => strtoupper(trim($postData['first_name'])),
       'last_name'  => strtoupper(trim($postData['last_name'])),
+      'branch_id'  => $postData['branch_id'],
     ];
 
     if (empty($id)) {
