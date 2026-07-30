@@ -12,10 +12,10 @@ class Inventory_model extends CI_Model
     $this->load->model('Sales_invoice_model');
   }
 
+  /*** goods receiving */
   public function receive($grn, $details)
   {
     $this->validateGoodsReceiptPosting($grn);
-    // $this->updateQtyOnHand($details);
 
     foreach ($details as $detail) {
       $this->Branch_inventory_model->adjustBalance(
@@ -25,9 +25,20 @@ class Inventory_model extends CI_Model
       );
     }
 
+    // $this->writeStockLedger(
+    //   $grn,
+    //   $details
+    // );
+
     $this->writeStockLedger(
-      $grn,
-      $details
+      $grn['branch_id'],
+      'GRN',
+      $grn['id'],
+      $grn['grn_no'],
+      $details,
+      'qty_receive',
+      NULL,
+      'unit_cost'
     );
 
     /*** parked until Sales, Sales Returns, and Purchase Returns are completed. */
@@ -83,19 +94,25 @@ class Inventory_model extends CI_Model
 
     return $this->db
       ->select("
-          transaction_date,
-          transaction_type,
-          reference_no,
-          qty_in,
-          qty_out,
-          balance_after,
-          unit_cost,
-          remarks,
-          reference_id
+        sl.transaction_date,
+        sl.transaction_type,
+        sl.reference_no,
+        sl.qty_in,
+        sl.qty_out,
+        sl.balance_after,
+        sl.unit_cost,
+        sl.remarks,
+        sl.reference_id,
+        b.branch_name
       ")
-      ->from('t_stock_ledger')
-      ->where('product_id', $productId)
-      ->order_by('transaction_date ASC, id ASC')
+      ->from('t_stock_ledger sl')
+      ->join(
+        'm_branches b',
+        'b.id = sl.branch_id',
+        'left'
+      )
+      ->where('sl.product_id', $productId)
+      ->order_by('sl.transaction_date ASC, sl.id ASC')
       ->get()
       ->result();
   }
@@ -129,38 +146,99 @@ class Inventory_model extends CI_Model
 
   }
 
+  /*** post stock transfer */
   public function postStockTransfer($stockTransferId)
   {
-    $header = $this->Stock_transfer_model->get($stockTransferId);
-    $details = $this->Stock_transfer_model->getDetails($stockTransferId);
+    try {
 
-    foreach ($details as $detail) {
+      $header = $this->Stock_transfer_model->get($stockTransferId);
 
-      /*** deduct from source */
-      $this->Branch_inventory_model->adjustBalance(
-        $header->from_branch_id,
-        $detail->product_id,
-        -$detail->qty
-      );
+      if ($header->status != 'OPEN') {
+        throw new Exception(
+          "Stock Transfer is already {$header->status}."
+        );
+      }
 
-      /*** add to destination */
-      $this->Branch_inventory_model->adjustBalance(
-        $header->to_branch_id,
-        $detail->product_id,
-        $detail->qty
-      );
+      if (!$header) {
+        throw new Exception('Stock Transfer not found.');
+      }
+
+      $details = $this->Stock_transfer_model->getDetails($stockTransferId);
+
+      foreach ($details as $detail)
+      {
+        /*** deduct from source */
+        $this->Branch_inventory_model->adjustBalance(
+            $header->from_branch_id,
+            $detail->product_id,
+            -$detail->qty
+        );
+
+        $this->writeStockLedger(
+            $header->from_branch_id,
+            'TRANSFER',
+            $header->id,
+            $header->transfer_no,
+            [$detail],
+            NULL,
+            'qty'
+        );
+
+        /*** add to destination */
+        $this->Branch_inventory_model->adjustBalance(
+            $header->to_branch_id,
+            $detail->product_id,
+            $detail->qty
+        );
+
+        $this->writeStockLedger(
+            $header->to_branch_id,
+            'TRANSFER',
+            $header->id,
+            $header->transfer_no,
+            [$detail],
+            'qty',
+            NULL
+        );
+      }
+
+      /*** set status */
+      $this->db
+          ->where('id', $stockTransferId)
+          ->update(
+              't_stock_transfers',
+              [
+                'status' => 'POSTED',
+                'updated_by' => $this->session->userdata('user_id'),
+                'updated_on' => date('Y-m-d H:i:s')
+              ]
+          );
+
+      return [
+        'success' => TRUE,
+        'message' => ''
+      ];
+
+    } catch (Exception $ex) {
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage()
+      ];
     }
-
-    return [
-      'success' => TRUE,
-      'message' => ''
-    ];
   }
 
+  /*** post sales */
   public function postSales($salesInvoiceId)
   {
     $branchId = (int) $this->session->userdata('branch_id');
     $header = $this->Sales_invoice_model->get($salesInvoiceId);
+
+    if ($header->status != 'OPEN') {
+      return [
+        'success' => FALSE,
+        'message' => "Sales Invoice is already {$header->status}."
+      ];
+    }
 
     if (!$header) {
       return [
@@ -200,7 +278,56 @@ class Inventory_model extends CI_Model
         $detail->product_id,
         -$detail->qty
       );
+
+      $balance = $this->Branch_inventory_model->getBalance(
+        $branchId,
+        $detail->product_id
+      );
+
+      // $this->db->insert(
+      //   't_stock_ledger',
+      //   [
+      //     'branch_id'        => $branchId,
+      //     'transaction_type' => 'SI',
+      //     'reference_id'     => $header->id,
+      //     'reference_no'     => $header->si_no,
+      //     'product_id'       => $detail->product_id,
+      //     'qty_in'           => 0,
+      //     'qty_out'          => $detail->qty,
+      //     'balance_after'    => $balance->qty_on_hand,
+      //     'unit_cost'        => 0,   // we'll compute costing later
+      //     'remarks'          => NULL,
+      //     'entered_by'       => $this->session->userdata('user_id'),
+      //     'entered_on'       => date('Y-m-d H:i:s')
+      //   ]
+      // );
+
+      // if ($this->db->affected_rows() == 0) {
+      //   throw new Exception(
+      //     'Unable to write Stock Ledger.'
+      //   );
+      // }
+
+      $this->writeStockLedger($branchId, 'SI', $header->id, $header->si_no, [$detail], NULL, 'qty');
     }
+
+    $this->db
+        ->where('id', $salesInvoiceId)
+        ->update(
+            't_sales_invoices',
+            [
+              'status' => 'POSTED',
+              'updated_by' => $this->session->userdata('user_id'),
+              'updated_on' => date('Y-m-d H:i:s')
+            ]
+        );
+
+    if (!$this->db->affected_rows()) {
+      throw new Exception(
+        'Unable to update Sales Invoice status.'
+      );
+    }
+
     return [
       'success' => TRUE,
       'message' => ''
@@ -212,72 +339,7 @@ class Inventory_model extends CI_Model
 
   }
 
-  /*** private functions */
-  private function updateQtyOnHand($details)
-  {
-    $sql = "UPDATE m_products
-               SET qty_on_hand = qty_on_hand + ?,
-                   updated_by  = ?,
-                   updated_on  = CURRENT_TIMESTAMP
-             WHERE id = ?";
-
-    foreach ($details as $detail) {
-      $query = $this->db->query(
-        $sql,
-        [
-          $detail->qty_receive,
-          $this->session->userdata('user_id'),
-          $detail->product_id
-        ]
-      );
-
-      if (!$query) {
-        throw new Exception(
-          'Unable to update inventory quantity.'
-        );
-      }
-    }
-  }
-
-  // private function writeStockLedger(
-  //     $branchId,
-  //     $transactionType,
-  //     $referenceId,
-  //     $referenceNo,
-  //     $productId,
-  //     $qtyIn,
-  //     $qtyOut,
-  //     $balanceAfter,
-  //     $unitCost = 0,
-  //     $remarks = NULL
-  // )
-  // {
-  //     $query = $this->db->insert(
-  //       't_stock_ledger',
-  //       [
-  //         'branch_id'        => $branchId,
-  //         'transaction_type' => strtoupper($transactionType),
-  //         'reference_id'     => $referenceId,
-  //         'reference_no'     => $referenceNo,
-  //         'product_id'       => $productId,
-  //         'qty_in'           => $qtyIn,
-  //         'qty_out'          => $qtyOut,
-  //         'balance_after'    => $balanceAfter,
-  //         'unit_cost'        => $unitCost,
-  //         'remarks'          => $remarks,
-  //         'entered_by'       => $this->session->userdata('user_id'),
-  //         'entered_on'       => date('Y-m-d H:i:s')
-  //       ]
-  //     );
-
-  //     if (!$query) {
-  //       throw new Exception(
-  //         'Unable to write Stock Ledger.'
-  //       );
-  //     }
-  // }
-
-  private function writeStockLedger($grn, $details)
+  private function writeStockLedger_old($grn, $details)
   {
     $sql = "INSERT INTO t_stock_ledger
               (
@@ -299,13 +361,9 @@ class Inventory_model extends CI_Model
               )";
 
     foreach ($details as $detail) {
-      $balance = $this->db
-        ->select('qty_on_hand')
-        ->from('m_products')
-        ->where('id', $detail->product_id)
-        ->get()
-        ->row()
-        ->qty_on_hand;
+
+      $balance = $this->Branch_inventory_model->getBalance($grn['branch_id'], $detail->product_id);
+      $balance = $balance ? $balance->qty_on_hand : 0;
 
       $query = $this->db->query(
         $sql,
@@ -318,6 +376,65 @@ class Inventory_model extends CI_Model
           0,
           $balance,
           $detail->unit_cost,
+          $this->session->userdata('user_id')
+        ]
+      );
+
+      if (!$query) {
+        throw new Exception(
+          'Unable to write Stock Ledger.'
+        );
+      }
+    }
+  }
+
+  /*** write stock ledger */
+  private function writeStockLedger($branchId, $transactionType, $referenceId, $referenceNo, $details, $qtyInField, $qtyOutField, $unitCostField = NULL)
+  {
+    $sql = "INSERT INTO t_stock_ledger
+            (
+              branch_id,
+              transaction_type,
+              reference_id,
+              reference_no,
+              product_id,
+              qty_in,
+              qty_out,
+              balance_after,
+              unit_cost,
+              entered_by,
+              entered_on
+            )
+            VALUES
+            (
+              ?,?,?,?,?,?,?,?,?,?,
+              CURRENT_TIMESTAMP
+            )";
+
+    foreach ($details as $detail)
+    {
+      $balance = $this->Branch_inventory_model->getBalance(
+        $branchId,
+        $detail->product_id
+      );
+
+      $balance = $balance ? $balance->qty_on_hand : 0;
+      $qtyIn = $qtyInField ? $detail->{$qtyInField} : 0;
+      $qtyOut = $qtyOutField ? $detail->{$qtyOutField} : 0;
+      $unitCost = $unitCostField ? $detail->{$unitCostField} : 0;
+
+      $query = $this->db->query(
+        $sql,
+        [
+          $branchId,
+          strtoupper($transactionType),
+          $referenceId,
+          $referenceNo,
+          $detail->product_id,
+          $qtyIn,
+          $qtyOut,
+          $balance,
+          $unitCost,
           $this->session->userdata('user_id')
         ]
       );

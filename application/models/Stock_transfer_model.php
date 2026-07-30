@@ -101,8 +101,21 @@ class Stock_transfer_model extends CI_Model
 
       $this->db->trans_commit();
 
-      /*** post to t_branch_inventory */
-      $postResult = $this->Inventory_model->postStockTransfer($stockTransferId);
+      // /*** post to t_branch_inventory */
+      // $postResult = $this->Inventory_model->postStockTransfer($stockTransferId);
+      // if (!$postResult['success']) {
+      //   throw new Exception(
+      //     $postResult['message']
+      //   );
+      // }
+
+      $this->db
+        ->where('id', $stockTransferId)
+        ->update('t_stock_transfers',
+            [
+              'status' => 'OPEN'
+            ]
+          );
 
       return [
         'success' => TRUE,
@@ -116,13 +129,7 @@ class Stock_transfer_model extends CI_Model
       ];
 
     } catch (Exception $ex) {
-
       $this->db->trans_rollback();
-
-      log_message(
-        'error',
-        __METHOD__ . ' : ' . $ex->getMessage()
-      );
 
       return [
         'success' => FALSE,

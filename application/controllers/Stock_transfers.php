@@ -35,6 +35,11 @@ class Stock_transfers extends MY_Controller
         'text' => 'Edit',
         'icon' => 'fas fa-edit'
       ],
+      'post' => [
+        'id'   => 'btnPostStockTransfer',
+        'text' => 'Post',
+        'icon' => 'fas fa-check-circle'
+      ],
       'print' => [
         'id'   => 'btnPrintStockTransfer',
         'text' => 'Print',
@@ -111,6 +116,18 @@ class Stock_transfers extends MY_Controller
       $result['data']
     );
   }
+
+  public function post()
+  {
+    $ids = $this->getJsonRequest('ids');
+    $result = $this->Inventory_model->postStockTransfer($ids[0]);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data'] ?? []
+    );
+  }  
 
   public function cancel()
   {

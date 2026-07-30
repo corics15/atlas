@@ -13,6 +13,7 @@ class Inventory_adjustment_model extends CI_Model
     parent::__construct();
 
     $this->load->model('Stock_ledger_model');
+    $this->load->model('Branch_inventory_model');
   }
 
   public function getAll($filters = [])
@@ -52,6 +53,8 @@ class Inventory_adjustment_model extends CI_Model
 
   public function getDetails($adjustmentId)
   {
+    $branchId = (int) $this->session->userdata('branch_id');
+
     return $this->db
         ->select('
             d.id,
@@ -59,13 +62,18 @@ class Inventory_adjustment_model extends CI_Model
             p.barcode,
             p.description,
             u.uom,
-            p.qty_on_hand AS on_hand,
+            COALESCE(bi.qty_on_hand, 0) AS on_hand,
             d.adjustment_qty,
             d.remarks
         ')
         ->from('t_inventory_adjustment_details d')
         ->join('m_products p', 'p.id = d.product_id')
         ->join('m_uom u', 'u.id = p.uom_id')
+        ->join(
+          't_branch_inventory bi',
+          "bi.product_id = d.product_id AND bi.branch_id = {$branchId}",
+          'left'
+        )
         ->where('d.adjustment_id', $adjustmentId)
         ->order_by('d.id')
         ->get()
@@ -82,15 +90,14 @@ class Inventory_adjustment_model extends CI_Model
 
   public function getProductStock($productId)
   {
-    $row = $this->db
-        ->select('qty_on_hand')
-        ->from('m_products')
-        ->where('id', $productId)
-        ->where('is_active', 't')
-        ->get()
-        ->row();
+    $branchId = (int) $this->session->userdata('branch_id');
 
-    return $row ? (int) $row->qty_on_hand : 0;
+    $balance = $this->Branch_inventory_model->getBalance(
+      $branchId,
+      $productId
+    );
+
+    return $balance ? (int)$balance->qty_on_hand : 0;
   }
 
   public function save($data)
@@ -198,6 +205,8 @@ class Inventory_adjustment_model extends CI_Model
 
   public function post($adjustmentId, $postedBy)
   {
+    $branchId = (int) $this->session->userdata('branch_id');
+
     $this->db->trans_begin();
 
     try {
@@ -216,31 +225,51 @@ class Inventory_adjustment_model extends CI_Model
         throw new Exception('Only draft inventory adjustments can be posted.');
       }
 
+      // $details = $this->db
+      //     ->select('
+      //         d.*,
+      //         p.qty_on_hand
+      //     ')
+      //     ->from($this->detailTable . ' d')
+      //     ->join($this->productTable . ' p', 'p.id = d.product_id')
+      //     ->where('d.adjustment_id', $adjustmentId)
+      //     ->get()
+      //     ->result();
+
       $details = $this->db
-          ->select('
-              d.*,
-              p.qty_on_hand
-          ')
+          ->select('d.*')
           ->from($this->detailTable . ' d')
-          ->join($this->productTable . ' p', 'p.id = d.product_id')
           ->where('d.adjustment_id', $adjustmentId)
           ->get()
           ->result();
 
       if (empty($details)) {
-          throw new Exception('Inventory Adjustment has no detail items.');
+        throw new Exception('Inventory Adjustment has no detail items.');
       }
       /*** end validation */
 
       /*** load details */
       foreach ($details as $detail) {
-        $newBalance = $detail->qty_on_hand + $detail->adjustment_qty;
+        // $newBalance = $detail->qty_on_hand + $detail->adjustment_qty;
 
-        /*** update product stock */
-        $this->updateProductStock(
+        // /*** update product stock */
+        // $this->updateProductStock(
+        //   $detail->product_id,
+        //   $newBalance
+        // );
+
+        $this->Branch_inventory_model->adjustBalance(
+          $branchId,
           $detail->product_id,
-          $newBalance
+          $detail->adjustment_qty
         );
+
+        $balance = $this->Branch_inventory_model->getBalance(
+          $branchId,
+          $detail->product_id
+        );
+
+        $newBalance = $balance ? $balance->qty_on_hand : 0;
 
         /*** record stock ledger */
         $this->recordStockMovement(
@@ -283,11 +312,6 @@ class Inventory_adjustment_model extends CI_Model
 
     } catch (Exception $e) {
       $this->db->trans_rollback();
-
-      log_message(
-        'error',
-        __METHOD__ . ': ' . $e->getMessage()
-      );
 
       return [
         'success' => false,

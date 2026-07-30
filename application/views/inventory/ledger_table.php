@@ -2,6 +2,7 @@
   <tr>
     <th width="60" class="text-center">#</th>
     <th class="text-center">Date</th>
+    <th class="text-center">Branch</th>
     <th class="text-center">Type</th>
     <th class="text-center">Reference</th>
     <th class="text-right">In</th>
@@ -20,20 +21,21 @@
   <?php if (!empty($ledger)) : ?>
 
     <?php foreach ($ledger as $row) : ?>
-      <tr>
+      <tr data-transaction-type="<?= $row->transaction_type ?>">
         <td class="text-center"><?= $index.'.' ?></td>
         <td class="text-center"><?= date('m/d/Y h:i A', strtotime($row->transaction_date)); ?></td>
+        <td class="text-center"><?= htmlspecialchars($row->branch_name) ?></td>
 
         <td class="text-center">
           <?php
-          $badgeClass = [
-            'GRN'        => 'badge-success',
-            'SALE'       => 'badge-danger',
-            'ADJUSTMENT' => 'badge-warning',
-            'TRANSFER'   => 'badge-info',
-            'RETURN'     => 'badge-primary',
-            'COUNT'      => 'badge-secondary',
-          ];
+            $badgeClass = [
+              'GRN'        => 'badge-success',
+              'SALE'       => 'badge-danger',
+              'ADJUSTMENT' => 'badge-warning',
+              'TRANSFER'   => 'badge-info',
+              'RETURN'     => 'badge-primary',
+              'SI'         => 'badge-secondary',
+            ];
           ?>
 
           <span class="badge <?= $badgeClass[$row->transaction_type] ?? 'badge-light'; ?>">
@@ -45,16 +47,18 @@
           <?php
             switch ($row->transaction_type) {
               case 'GRN':
-                $url = 'goods_receipts/';
+                $url = 'goods_receipts/view/';
                 break;
-              
+              case 'TRANSFER':
+                $url = 'stock_transfers/edit/';
+                break;
               default: /*** ADJUSTMENT */
-                $url = 'inventory_adjustments/';
+                $url = 'inventory_adjustments/view/';
                 break;
             }
           ?>
           <a
-            href="<?= base_url($url.'view/'.$row->reference_id) ?>"
+            href="<?= base_url($url.$row->reference_id) ?>"
             class="text-olive text-wrap"
             data-toggle="tooltip" title="Open Transaction" target="_blank">
             <i class="fas fa-external-link-alt fa-xs mr-1"></i>
@@ -73,7 +77,7 @@
         <?php
             $balanceClass = '';
             if ($row->balance_after < 0) {
-              $balanceClass = 'text-danger font-weight-bold';
+              $balanceClass = 'text-danger';
             }
 
             $trend = '';
@@ -100,7 +104,7 @@
 
   <?php else : ?>
   <tr>
-    <td colspan="7" class="text-center">
+    <td colspan="8" class="text-center">
       No inventory transactions found.
     </td>
   </tr>
@@ -110,7 +114,7 @@
 <?php if (!empty($ledger)) : ?>
   <tfoot>
     <tr class="bg-light">
-      <td colspan="4" class="font-weight-500 text-right">
+      <td colspan="5" class="font-weight-500 text-right">
         TOTAL
       </td>
       <td class="font-weight-500 text-right text-success">

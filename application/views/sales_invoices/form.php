@@ -53,7 +53,7 @@
                   type="text"
                   id="txtSalesOrderNo"
                   class="form-control form-control-sm"
-                  value="<?= $isEdit ? htmlspecialchars($salesInvoice->so_no) : htmlspecialchars($salesOrder->so_no) ?>"
+                  value="<?= $isEdit ? htmlspecialchars($salesInvoice->so_no) : (!empty($salesOrder) ? htmlspecialchars($salesOrder->so_no) : '') ?>"
                   readonly>
             </div>
           </div>

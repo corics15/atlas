@@ -3,6 +3,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Product_model extends CI_Model
 {
+
+  public function __construct()
+  {
+    parent::__construct();
+
+    $this->load->model('Branch_inventory_model');
+  }
+
   public function getAll($keyword = '')
   {
     if (!empty($keyword)) {
@@ -15,18 +23,44 @@ class Product_model extends CI_Model
       ->group_end();
     }
 
-    return $this->db
+    $products = $this->db
         ->order_by('description ASC')
         ->get('v_products')
         ->result();
+
+    $branchId = (int)$this->session->userdata('branch_id');
+
+    foreach ($products as $product)
+    {
+      $balance = $this->Branch_inventory_model->getBalance(
+        $branchId,
+        $product->id
+      );
+
+      $product->qty_on_hand = $balance ? $balance->qty_on_hand : 0;
+    }
+
+    return $products;
   }
 
   public function get($id)
   {
-    return $this->db
+    $product = $this->db
         ->where('id', $id)
         ->get('v_products')
         ->row();
+
+    if ($product)
+    {
+      $balance = $this->Branch_inventory_model->getBalance(
+        (int) $this->session->userdata('branch_id'),
+        $id
+      );
+
+      $product->qty_on_hand = $balance ? $balance->qty_on_hand : 0;
+    }
+
+    return $product;
   }
 
   public function save($data, $id = null)

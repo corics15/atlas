@@ -69,11 +69,15 @@
                           value="<?= $detail->adjustment_qty ?>">
                     </td>
                   <?php else : ?>
-                    <td class="text-right"><?= $detail->adjustment_qty ?></td>
+                    <td class="text-right"><?= number_format($detail->adjustment_qty) ?></td>
                   <?php endif ?>
 
                   <td class="ia-new-balance text-right">
-                    <?= number_format($detail->on_hand + $detail->adjustment_qty) ?>
+                    <?php if ($isEditable): ?>
+                      <?= number_format($detail->on_hand + $detail->adjustment_qty) ?>
+                    <?php else: ?>
+                      <?= number_format($detail->on_hand) ?>
+                    <?php endif; ?>
                   </td>
 
                   <?php if ($isEditable): ?>

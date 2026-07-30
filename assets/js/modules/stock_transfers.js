@@ -15,6 +15,7 @@ const btnEditStockTransfer = document.getElementById('btnEditStockTransfer');
 const btnRefreshStockTransfer = document.getElementById('btnRefreshStockTransfer');
 const btnCancelStockTransfer = document.getElementById('btnCancelStockTransfer');
 const btnPrintStockTransfer = document.getElementById('btnPrintStockTransfer');
+const btnPostStockTransfer = document.getElementById('btnPostStockTransfer');
 
 let isEditMode = (hidStockTransferId?.value) ? true : false;
 let isDirty = false;
@@ -156,6 +157,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     Atlas.page.redirect(
       `stock_transfers/edit/${id}`
     );
+  });
+
+  /*** post */
+  btnPostStockTransfer?.addEventListener('click', async () => {
+    const ids = Atlas.table.selectedIds();
+
+    if (ids.length === 0) {
+      Atlas.toast.warning('Please select at least one Stock Transfer')
+      return false;
+    }
+
+    const result = await Atlas.dialog.confirm(
+      'Confirm Action',
+      'Post Stock Transfer?'
+    );
+
+    if (!result) {
+      return;
+    }
+
+    btnPostStockTransfer.disabled = true;
+
+    try {
+      const response = await Atlas.ajax.post(
+        'stock_transfers/post',
+        {
+          ids: ids
+        }
+      );
+
+      if (!response.success) {
+        Atlas.toast.error(response.message);
+        return;
+      }
+
+      Atlas.toast.success(response.message);
+      setTimeout(() => Atlas.page.refresh(), 1500);
+
+    } finally {
+      btnPostStockTransfer.disabled = false;
+    }
   });
 
   /*** cancel */

@@ -138,11 +138,12 @@ $config['atlas_menu'] = [
         'icon'  => 'fas fa-clipboard-list',
         'url'   => 'sales_orders'
       ],
-      [
-        'title' => 'New Sales Invoice',
-        'icon'  => 'fas fa-file-contract',
-        'url'   => 'sales_invoices/create'
-      ],
+      /*** below code removed, users should not manually create a Sales Invoice from the menu */
+      // [
+      //   'title' => 'New Sales Invoice',
+      //   'icon'  => 'fas fa-file-contract',
+      //   'url'   => 'sales_invoices/create'
+      // ],
       [
         'title' => 'Sales Invoice List',
         'icon'  => 'fas fa-receipt',

@@ -66,6 +66,10 @@ class Inventory extends MY_Controller
     $this->data['transaction_types'] = [
       'GRN',
       'ADJUSTMENT',
+      'SI',
+      'TRANSFER',
+      'PURCHASE RETURN',
+      'SALES RETURN'
     ];
 
     $filters = [
