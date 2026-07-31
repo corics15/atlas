@@ -8,6 +8,8 @@ class Stock_transfer_model extends CI_Model
   public function __construct()
   {
     parent::__construct();
+
+    $this->load->model('Inventory_model');
   }
 
   public function save($stockTransfer)
@@ -101,22 +103,6 @@ class Stock_transfer_model extends CI_Model
 
       $this->db->trans_commit();
 
-      // /*** post to t_branch_inventory */
-      // $postResult = $this->Inventory_model->postStockTransfer($stockTransferId);
-      // if (!$postResult['success']) {
-      //   throw new Exception(
-      //     $postResult['message']
-      //   );
-      // }
-
-      $this->db
-        ->where('id', $stockTransferId)
-        ->update('t_stock_transfers',
-            [
-              'status' => 'OPEN'
-            ]
-          );
-
       return [
         'success' => TRUE,
         'message' => empty($stockTransfer->id)
@@ -135,6 +121,38 @@ class Stock_transfer_model extends CI_Model
         'success' => FALSE,
         'message' => $ex->getMessage(),
         'data' => [],
+      ];
+    }
+  }
+
+  public function post($ids)
+  {
+    try {
+
+      if (empty($ids)) {
+        throw new Exception(
+          'Please select at least one Stock Transfer.'
+        );
+      }
+
+      $result = $this->Inventory_model->postStockTransfer($ids[0]);
+
+      if (!$result['success']) {
+        throw new Exception($result['message']);
+      }
+
+      return [
+        'success' => TRUE,
+        'message' => 'Stock Transfer posted successfully.',
+        'data'    => []
+      ];
+
+    } catch (Exception $ex) {
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data'    => []
       ];
     }
   }

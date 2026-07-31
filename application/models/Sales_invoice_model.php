@@ -333,43 +333,31 @@ class Sales_invoice_model extends CI_Model
       $this->db->trans_begin();
 
       foreach ($ids as $id) {
-        $invoice = $this->db
+        $salesInvoice = $this->db
             ->where('id', $id)
             ->get('t_sales_invoices')
             ->row();
 
-        if (!$invoice) {
+        if (!$salesInvoice) {
           throw new Exception(
             'Sales Invoice not found.'
           );
         }
 
-        if ($invoice->status != 'OPEN') {
+        if ($salesInvoice->status != 'OPEN') {
           throw new Exception(
-            "Sales Invoice {$invoice->si_no} is already {$invoice->status}."
+            "Sales Invoice {$salesInvoice->si_no} is already {$salesInvoice->status}."
           );
         }
 
-        /*** inventory deduction */
+        /*** update inventory */
         $result = $this->Inventory_model->postSales($id);
         if (!$result['success']) {
           throw new Exception($result['message']);
         }
-        /*** end inventory deduction */
+        /*** end update inventory */
 
         /*** post sales invoice */
-        $this->db
-            ->where('id', $id)
-            ->update(
-                't_sales_invoices',
-                [
-                  'status'     => 'POSTED',
-                  'updated_by' => $this->session->userdata('user_id'),
-                  'updated_on' => date('Y-m-d H:i:s')
-                ]
-            );
-        /*** end post sales invoice */
-
         $this->db
             ->where('id', $id)
             ->update(
@@ -382,6 +370,7 @@ class Sales_invoice_model extends CI_Model
                   'updated_on' => date('Y-m-d H:i:s')
                 ]
             );
+        /*** end post sales invoice */
       }
 
       if (!$this->db->trans_status()) {

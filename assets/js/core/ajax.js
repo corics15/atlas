@@ -1,5 +1,6 @@
 class AtlasAjax {
 
+  /*** post */
   async post(url, data = {}) {
     const options = {
       method: 'POST',
@@ -16,14 +17,24 @@ class AtlasAjax {
       options.body = JSON.stringify(data);
     }
 
-    const response = await fetch(
-      Atlas.config.baseUrl + url,
-      options
-    );
+    try {
+      const response = await fetch(
+        `Atlas.config.baseUrl${url}`,
+        options
+      );
+      return await response.json();
 
-    return await response.json();
+    } catch (e) {
+
+      return {
+        success: false,
+        message: 'Unable to communicate with the server.',
+        data: []
+      };
+    }
   }
 
+  /*** get */
   async get(url) {
     const response = await fetch(
       Atlas.config.baseUrl + url,

@@ -242,9 +242,12 @@ class Purchase_order_model extends CI_Model
         ->update(
             't_purchase_orders',
             [
-              'status'     => 'CANCELLED',
-              'updated_by' => $this->session->userdata('user_id'),
-              'updated_on' => date('Y-m-d H:i:s')
+            'status'          => 'CANCELLED',
+            'cancelled_by'    => $this->session->userdata('user_id'),
+            'cancelled_on'    => date('Y-m-d H:i:s'),
+            // 'cancel_reason'   => $cancelReason,   /*** TODO */
+            'updated_by'      => $this->session->userdata('user_id'),
+            'updated_on'      => date('Y-m-d H:i:s')
             ]
         );
 

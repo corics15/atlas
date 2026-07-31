@@ -499,29 +499,42 @@ class Goods_receipt_model extends CI_Model
 
   private function validateReceiveQuantities($details)
   {
-    foreach ($details as $detail) {
-      $row = $this->db
-        ->select('qty, qty_received')
-        ->from('t_purchase_order_details')
-        ->where('id', $detail->po_detail_id)
-        ->get()
-        ->row();
-
-      if (!$row) {
-        throw new Exception(
-          'Purchase Order detail not found.'
-        );
+      if (empty($details)) {
+        return;
       }
 
-      $remaining = $row->qty - $row->qty_received;
+      /*** collect all po_detail_ids from the details array */
+      $ids = array_map(function($d) {
+          return $d->po_detail_id;
+      }, $details);
 
-      if ($detail->qty_receive > $remaining) {
-        throw new Exception(
-          'Receive quantity exceeds the remaining quantity.'
-        );
+      /*** fetch all rows in 1 query */
+      $rows = $this->db
+          ->select('id, qty, qty_received')
+          ->from('t_purchase_order_details')
+          ->where_in('id', $ids)
+          ->get()
+          ->result();
+
+      $indexed = [];
+      foreach ($rows as $row) {
+        $indexed[$row->id] = $row;
       }
-    }
+
+      foreach ($details as $detail) {
+        if (!isset($indexed[$detail->po_detail_id])) {
+          throw new Exception('Purchase Order detail not found.');
+        }
+
+        $row = $indexed[$detail->po_detail_id];
+        $remaining = $row->qty - $row->qty_received;
+
+        if ($detail->qty_receive > $remaining) {
+          throw new Exception('Receive quantity exceeds the remaining quantity.');
+        }
+      }
   }
+
 
   private function validateDraftGoodsReceipt($id)
   {

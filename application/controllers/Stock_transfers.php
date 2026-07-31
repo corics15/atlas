@@ -120,14 +120,15 @@ class Stock_transfers extends MY_Controller
   public function post()
   {
     $ids = $this->getJsonRequest('ids');
-    $result = $this->Inventory_model->postStockTransfer($ids[0]);
+    // $result = $this->Inventory_model->postStockTransfer($ids[0]);
+    $result = $this->Stock_transfer_model->post($ids);
 
     return $this->jsonResponse(
       $result['success'],
       $result['message'],
       $result['data'] ?? []
     );
-  }  
+  }
 
   public function cancel()
   {
@@ -153,21 +154,6 @@ class Stock_transfers extends MY_Controller
         $result['data']
     );
   }
-
-  // public function getList()
-  // {
-  //   $result = [
-  //     'success' => TRUE,
-  //     'message' => '',
-  //     'data' => $this->Stock_transfer_model->getList()
-  //   ];
-
-  //   return $this->jsonResponse(
-  //       $result['success'],
-  //       $result['message'],
-  //       $result['data']
-  //   );
-  // }
 
   public function getById($id)
   {

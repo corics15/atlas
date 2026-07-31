@@ -47,12 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Atlas.modal.close('mdlOutletType');
         Atlas.toast.success(result.message);
-        setTimeout(() => {
-          Atlas.page.refresh();
-        }, 1500);
+        setTimeout(() => Atlas.page.refresh(), 1500);
       },
       onError: (result) => {
-        console.log(result);
+        console.log(result); /*** TODO REPLACE */
       }
     });
   });

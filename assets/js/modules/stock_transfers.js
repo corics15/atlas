@@ -168,6 +168,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       return false;
     }
 
+    if (ids.length > 1) {
+      Atlas.toast.warning('Please select only one Stock Transfer')
+      return false;
+    }
+
     const result = await Atlas.dialog.confirm(
       'Confirm Action',
       'Post Stock Transfer?'

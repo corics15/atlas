@@ -223,11 +223,6 @@ class Sales_order_model extends CI_Model
 
       $this->db->trans_rollback();
 
-      log_message(
-        'error',
-        __METHOD__ . ' : ' . $ex->getMessage()
-      );
-
       return [
         'success' => FALSE,
         'message' => $ex->getMessage(),
@@ -272,6 +267,8 @@ class Sales_order_model extends CI_Model
                   't_sales_orders',
                   [
                     'status'     => 'POSTED',
+                    'posted_by'  => $this->session->userdata('user_id'),
+                    'posted_on'  => date('Y-m-d H:i:s'),
                     'updated_by' => $this->session->userdata('user_id'),
                     'updated_on' => date('Y-m-d H:i:s')
                   ]
@@ -325,7 +322,7 @@ class Sales_order_model extends CI_Model
 
           if ($row->status !== 'OPEN') {
             throw new Exception(
-              "{$row->transfer_no} is already {$row->status}."
+              "Sales Order {$row->so_no} is already {$row->status}."
             );
           }
 
@@ -345,7 +342,7 @@ class Sales_order_model extends CI_Model
 
           if (!$this->db->affected_rows()) {
             throw new Exception(
-              "Unable to cancel {$row->transfer_no}."
+              "Unable to cancel {$row->so_no}."
             );
           }
       }

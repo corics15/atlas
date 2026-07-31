@@ -150,6 +150,8 @@ class Inventory_model extends CI_Model
   /*** post stock transfer */
   public function postStockTransfer($stockTransferId)
   {
+    $this->db->trans_begin();
+
     try {
 
       $header = $this->Stock_transfer_model->get($stockTransferId);
@@ -215,15 +217,28 @@ class Inventory_model extends CI_Model
               ]
           );
 
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception(
+          'Unable to post Stock Transfer.'
+        );
+      }
+
+      $this->db->trans_commit();
+
       return [
         'success' => TRUE,
-        'message' => ''
+        'message' => '',
+        'data' => [],
       ];
 
     } catch (Exception $ex) {
+
+      $this->db->trans_rollback();
+
       return [
         'success' => FALSE,
-        'message' => $ex->getMessage()
+        'message' => $ex->getMessage(),
+        'data' => [],
       ];
     }
   }
@@ -231,108 +246,85 @@ class Inventory_model extends CI_Model
   /*** post sales */
   public function postSales($salesInvoiceId)
   {
-    $branchId = (int) $this->session->userdata('branch_id');
-    $header = $this->Sales_invoice_model->get($salesInvoiceId);
+    $this->db->trans_begin();
 
-    if ($header->status != 'OPEN') {
-      return [
-        'success' => FALSE,
-        'message' => "Sales Invoice is already {$header->status}."
-      ];
-    }
-
-    if (!$header) {
-      return [
-        'success' => FALSE,
-        'message' => 'Sales Invoice not found.'
-      ];
-    }
-
-    $details = $this->Sales_invoice_model->getDetails($salesInvoiceId);
-
-    /*** quantity balance validation */
-    foreach ($details as $detail)
+    try
     {
-      $balance = $this->Branch_inventory_model->getBalance(
-        $branchId,
-        $detail->product_id
-      );
+      $branchId = (int) $this->session->userdata('branch_id');
+      $header = $this->Sales_invoice_model->get($salesInvoiceId);
 
-      $available = $balance ? $balance->qty_on_hand : 0;
-      if ($available < $detail->qty) {
+      if ($header->status != 'OPEN') {
         return [
           'success' => FALSE,
-          'message' =>
-            "Insufficient stock.\n\n" .
-            "{$detail->description}\n\n" .
-            "Available : {$available}\n" .
-            "Required  : {$detail->qty}"
+          'message' => "Sales Invoice is already {$header->status}."
         ];
       }
-    }
 
-    /*** deduct inventory */
-    foreach ($details as $detail)
-    {
-      $this->Branch_inventory_model->adjustBalance(
-        $branchId,
-        $detail->product_id,
-        -$detail->qty
-      );
+      if (!$header) {
+        return [
+          'success' => FALSE,
+          'message' => 'Sales Invoice not found.'
+        ];
+      }
 
-      $balance = $this->Branch_inventory_model->getBalance(
-        $branchId,
-        $detail->product_id
-      );
+      $details = $this->Sales_invoice_model->getDetails($salesInvoiceId);
 
-      // $this->db->insert(
-      //   't_stock_ledger',
-      //   [
-      //     'branch_id'        => $branchId,
-      //     'transaction_type' => 'SI',
-      //     'reference_id'     => $header->id,
-      //     'reference_no'     => $header->si_no,
-      //     'product_id'       => $detail->product_id,
-      //     'qty_in'           => 0,
-      //     'qty_out'          => $detail->qty,
-      //     'balance_after'    => $balance->qty_on_hand,
-      //     'unit_cost'        => 0,   // we'll compute costing later
-      //     'remarks'          => NULL,
-      //     'entered_by'       => $this->session->userdata('user_id'),
-      //     'entered_on'       => date('Y-m-d H:i:s')
-      //   ]
-      // );
-
-      // if ($this->db->affected_rows() == 0) {
-      //   throw new Exception(
-      //     'Unable to write Stock Ledger.'
-      //   );
-      // }
-
-      $this->writeStockLedger($branchId, 'SI', $header->id, $header->si_no, [$detail], NULL, 'qty');
-    }
-
-    $this->db
-        ->where('id', $salesInvoiceId)
-        ->update(
-            't_sales_invoices',
-            [
-              'status' => 'POSTED',
-              'updated_by' => $this->session->userdata('user_id'),
-              'updated_on' => date('Y-m-d H:i:s')
-            ]
+      /*** quantity balance validation */
+      foreach ($details as $detail)
+      {
+        $balance = $this->Branch_inventory_model->getBalance(
+          $branchId,
+          $detail->product_id
         );
 
-    if (!$this->db->affected_rows()) {
-      throw new Exception(
-        'Unable to update Sales Invoice status.'
-      );
-    }
+        $available = $balance ? $balance->qty_on_hand : 0;
+        if ($available < $detail->qty) {
+          return [
+            'success' => FALSE,
+            'message' =>
+              "Insufficient stock.\n\n" .
+              "{$detail->description}\n\n" .
+              "Available : {$available}\n" .
+              "Required  : {$detail->qty}"
+          ];
+        }
+      }
 
-    return [
-      'success' => TRUE,
-      'message' => ''
-    ];
+      /*** deduct inventory */
+      foreach ($details as $detail)
+      {
+        $this->Branch_inventory_model->adjustBalance(
+          $branchId,
+          $detail->product_id,
+          -$detail->qty
+        );
+
+        $this->writeStockLedger($branchId, 'SI', $header->id, $header->si_no, [$detail], NULL, 'qty');
+      }
+
+
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception(
+          'Unable to post Sales Invoice.'
+        );
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => ''
+      ];
+
+    } catch (Exception $ex) {
+
+        $this->db->trans_rollback();
+
+        return [
+          'success' => FALSE,
+          'message' => $ex->getMessage()
+        ];
+    }
   }
 
   /*** post sales return */
@@ -484,12 +476,12 @@ class Inventory_model extends CI_Model
 
     foreach ($details as $detail)
     {
-      $balance = $this->Branch_inventory_model->getBalance(
+      $balanceInventory = $this->Branch_inventory_model->getBalance(
         $branchId,
         $detail->product_id
       );
+      $balanceAfter = $balanceInventory ? $balanceInventory->qty_on_hand : 0;
 
-      $balance = $balance ? $balance->qty_on_hand : 0;
       $qtyIn = $qtyInField ? $detail->{$qtyInField} : 0;
       $qtyOut = $qtyOutField ? $detail->{$qtyOutField} : 0;
       $unitCost = $unitCostField ? $detail->{$unitCostField} : 0;
@@ -504,7 +496,7 @@ class Inventory_model extends CI_Model
           $detail->product_id,
           $qtyIn,
           $qtyOut,
-          $balance,
+          $balanceAfter,
           $unitCost,
           $this->session->userdata('user_id')
         ]
