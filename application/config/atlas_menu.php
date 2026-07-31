@@ -58,7 +58,7 @@ $config['atlas_menu'] = [
       [
         'title' => 'Outlet Types',
         'icon'  => 'fas fa-store',
-        'url'   => 'outlet_types'
+        'url'   => 'outlet-types'
       ],
     ]
   ],
@@ -74,18 +74,18 @@ $config['atlas_menu'] = [
       [
         'title' => 'New Purchase Order',
         'icon'  => 'fas fa-plus-circle',
-        'url'   => 'purchase_orders'
+        'url'   => 'purchase-orders'
       ],
 
       [
         'title' => 'Purchase Order List',
         'icon'  => 'fas fa-file-invoice',
-        'url'   => 'purchase_orders/list'
+        'url'   => 'purchase-orders/list'
       ],
       [
         'title' => 'Goods Receiving List',
         'icon'  => 'fas fa-dolly',
-        'url'   => 'goods_receipts'
+        'url'   => 'goods-receipts'
       ],
     ]
   ],
@@ -103,22 +103,22 @@ $config['atlas_menu'] = [
       [
         'title' => 'New Adjustment',
         'icon'  => 'fas fa-plus-circle',
-        'url'   => 'inventory_adjustments/create'
+        'url'   => 'inventory-adjustments/create'
       ],
       [
         'title' => 'Adjustment List',
         'icon'  => 'fas fa-sliders-h',
-        'url'   => 'inventory_adjustments'
+        'url'   => 'inventory-adjustments'
       ],
       [
         'title' => 'New Stock Transfer',
         'icon'  => 'fas fa-random',
-        'url'   => 'stock_transfers/create'
+        'url'   => 'stock-transfers/create'
       ],
       [
         'title' => 'Stock Transfer List',
         'icon'  => 'fas fa-exchange-alt',
-        'url'   => 'stock_transfers'
+        'url'   => 'stock-transfers'
       ],
     ]
   ],
@@ -131,24 +131,29 @@ $config['atlas_menu'] = [
       [
         'title' => 'New Sales Order',
         'icon'  => 'fas fa-plus-circle',
-        'url'   => 'sales_orders/create'
+        'url'   => 'sales-orders/create'
       ],
       [
         'title' => 'Sales Order List',
         'icon'  => 'fas fa-clipboard-list',
-        'url'   => 'sales_orders'
+        'url'   => 'sales-orders'
       ],
       /*** below code removed, users should not manually create a Sales Invoice from the menu */
       // [
       //   'title' => 'New Sales Invoice',
       //   'icon'  => 'fas fa-file-contract',
-      //   'url'   => 'sales_invoices/create'
+      //   'url'   => 'sales-invoices/create'
       // ],
       [
         'title' => 'Sales Invoice List',
         'icon'  => 'fas fa-receipt',
-        'url'   => 'sales_invoices'
+        'url'   => 'sales-invoices'
       ],
+      [
+        'title' => 'Sales Returns',
+        'icon'  => 'fas fa-exchange-alt',
+        'url'   => 'sales-returns'
+      ]
     ]
   ],
 

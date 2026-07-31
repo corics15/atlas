@@ -10,6 +10,7 @@ class Inventory_model extends CI_Model
     $this->load->model('Branch_inventory_model');
     $this->load->model('Stock_transfer_model');
     $this->load->model('Sales_invoice_model');
+    $this->load->model('Sales_return_model');
   }
 
   /*** goods receiving */
@@ -332,6 +333,76 @@ class Inventory_model extends CI_Model
       'success' => TRUE,
       'message' => ''
     ];
+  }
+
+  /*** post sales return */
+  public function postSalesReturn($salesReturnId)
+  {
+    $this->db->trans_begin();
+
+    try {
+
+      $branchId = (int)$this->session->userdata('branch_id');
+
+      $header = $this->Sales_return_model->get($salesReturnId);
+
+      if (!$header) {
+        return [
+          'success' => FALSE,
+          'message' => 'Sales Return not found.'
+        ];
+      }
+
+      if ($header->status != 'OPEN') {
+        return [
+          'success' => FALSE,
+          'message' => "Sales Return is already {$header->status}."
+        ];
+      }
+
+      $details = $this->Sales_return_model->getDetails($salesReturnId);
+      foreach ($details as $detail)
+      {
+
+        /*** update t_branch_inventory */
+        $this->Branch_inventory_model->adjustBalance(
+          $branchId,
+          $detail->product_id,
+          $detail->qty
+        );
+
+        /*** update stock ledger */
+        $this->writeStockLedger(
+            $branchId,
+            'SR',
+            $header->id,
+            $header->sr_no,
+            [$detail],
+            'qty',
+            NULL
+        );
+      }
+
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception('Unable to post Sales Return.');
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Sales Return posted.'
+      ];
+
+    } catch (Exception $ex) {
+
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage()
+      ];
+    }
   }
 
   public function reverseTransaction($transactionType, $referenceId)

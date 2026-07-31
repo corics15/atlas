@@ -25,23 +25,28 @@ class Sales_invoices extends MY_Controller
     $this->data['toolbar'] = [
       'edit' => [
         'id'   => 'btnEditSalesInvoice',
-        'text' => 'Edit',
+        'text' => 'Edit Invoice',
         'icon' => 'fas fa-edit'
       ],
       'post' => [
         'id'   => 'btnPostSalesInvoice',
-        'text' => 'Post',
+        'text' => 'Post Invoice',
         'icon' => 'fas fa-check-circle'
       ],
       'print' => [
         'id'   => 'btnPrintSalesInvoice',
-        'text' => 'Print',
+        'text' => 'Print Invoice',
         'icon' => 'fas fa-print'
       ],
       'cancel' => [
         'id'   => 'btnCancelSalesInvoice',
-        'text' => 'Cancel',
+        'text' => 'Cancel Invoice',
         'icon' => 'fas fa-ban'
+      ],
+      'create' => [
+        'id'   => 'btnCreateSalesReturn',
+        'text' => 'Create Sales Return',
+        'icon' => 'fas fa-exchange-alt'
       ],
       'refresh' => [
         'id'   => 'btnRefreshSalesInvoice',

@@ -36,21 +36,12 @@
       </button>
       <?php endif ?>
 
-      <?php /*** create item*/  if (!empty($toolbar['post'])) : ?>
+      <?php /*** post item*/  if (!empty($toolbar['post'])) : ?>
       <button
         id="<?= $toolbar['post']['id']; ?>"
         class="dropdown-item">
         <i class="<?= $toolbar['post']['icon']; ?>"></i>
         <?= $toolbar['post']['text']; ?>
-      </button>
-      <?php endif ?>
-
-      <?php /*** create item*/  if (!empty($toolbar['create'])) : ?>
-      <button
-        id="<?= $toolbar['create']['id']; ?>"
-        class="dropdown-item">
-        <i class="<?= $toolbar['create']['icon']; ?>"></i>
-        <?= $toolbar['create']['text']; ?>
       </button>
       <?php endif ?>
 
@@ -116,6 +107,15 @@
       <?= $toolbar['cancel']['text']; ?>
       </button>
       <?php endif ?>
+
+      <?php /*** create item*/  if (!empty($toolbar['create'])) : ?>
+      <button
+        id="<?= $toolbar['create']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['create']['icon']; ?>"></i>
+        <?= $toolbar['create']['text']; ?>
+      </button>
+      <?php endif ?>      
 
       <div class="dropdown-divider"></div>
 

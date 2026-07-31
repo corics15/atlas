@@ -33,7 +33,7 @@
               'SALE'       => 'badge-danger',
               'ADJUSTMENT' => 'badge-warning',
               'TRANSFER'   => 'badge-info',
-              'RETURN'     => 'badge-primary',
+              'SR'         => 'badge-primary',
               'SI'         => 'badge-secondary',
             ];
           ?>
@@ -51,6 +51,9 @@
                 break;
               case 'TRANSFER':
                 $url = 'stock_transfers/edit/';
+                break;
+              case 'SR':
+                $url = 'sales_returns/edit/';
                 break;
               default: /*** ADJUSTMENT */
                 $url = 'inventory_adjustments/view/';
