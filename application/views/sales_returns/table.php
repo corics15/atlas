@@ -19,7 +19,7 @@
 <tbody>
   <?php if (count($salesReturns) == 0): ?>
     <tr>
-      <td colspan="8" class="text-center text-muted py-3">
+      <td colspan="9" class="text-center text-muted py-3">
         No Sales Return found.
       </td>
     </tr>

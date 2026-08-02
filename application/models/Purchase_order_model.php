@@ -147,7 +147,7 @@ class Purchase_order_model extends CI_Model
   public function getAll($filters = [])
   {
     $this->db
-        ->select("p.id, p.po_no, p.po_date, s.supplier_name, p.status, COALESCE(SUM((d.qty * d.price) - d.discount), 0) AS total")
+        ->select("p.id, p.po_no, p.po_date, s.supplier_name, p.status, COALESCE(SUM((d.qty * d.price) - d.discount), 0) AS total, p.remarks")
         ->from('t_purchase_orders p')
         ->join(
           'm_suppliers s',
@@ -158,6 +158,15 @@ class Purchase_order_model extends CI_Model
           'd.purchase_order_id = p.id',
           'left'
         );
+
+    if (!empty($filters['keyword'])) {
+      $escaped = $this->db->escape_like_str($filters['keyword']);
+
+      $this->db->group_start()
+        ->where("p.po_no ILIKE '%{$escaped}%'")
+        ->or_where("s.supplier_name ILIKE '%{$escaped}%'")
+      ->group_end();
+    }
 
     if (!empty($filters['date_from'])) {
       $this->db->where(

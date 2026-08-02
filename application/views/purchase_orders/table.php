@@ -15,12 +15,9 @@
     <th class="text-center">PO No.</th>
     <th class="text-center">Date</th>
     <th>Supplier</th>
-    <th class="text-right">
-      Total
-    </th>
-    <th class="text-center">
-      Status
-    </th>
+    <th class="text-right">Total</th>
+    <th>Remarks</th>
+    <th class="text-center">Status</th>
   </tr>
 </thead>
 <tbody>
@@ -43,14 +40,29 @@
         </div>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('purchase_orders?id='.$po->id) ?>" class="text-olive text-wrap">
+        <a href="<?= base_url('purchase-orders?id='.$po->id) ?>" class="text-olive text-wrap">
           <?= htmlspecialchars($po->po_no) ?>
         </a>
       </td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($po->po_date))) ?></td>
-      <td><?= htmlspecialchars($po->supplier_name) ?></td>
-      <td class="text-right">
+      <td>
+        <?php
+          $supplierName = htmlspecialchars($po->supplier_name);
+          echo (mb_strlen($supplierName) > 30)
+            ? mb_strimwidth($supplierName, 0, 30, '...')
+            : $supplierName;
+        ?>
+      </td>
+      <td class="font-weight-500 text-right text-brown">
         <?= number_format($po->total,2) ?>
+      </td>
+      <td>
+        <?php
+          $remarks = htmlspecialchars($po->remarks);
+          echo (mb_strlen($remarks) > 30)
+            ? mb_strimwidth($remarks, 0, 30, '...')
+            : $remarks;
+        ?>
       </td>
       <td class="text-center">
         <?php
@@ -87,7 +99,7 @@
 
   <?php else: ?>
   <tr>
-    <td colspan="7" class="text-center">
+    <td colspan="7" class="text-center py-3">
       No records found.
     </td>
   </tr>

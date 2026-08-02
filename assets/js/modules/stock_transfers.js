@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       const result = await Atlas.ajax.post(
-        'stock_transfers/save',
+        'stock-transfers/save',
         stockTransfer
       );
 
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       hidStockTransferId.value = result.data.stock_transfer_id;
       isEditMode = true;
       isDirty = false;
-      setTimeout(() => Atlas.page.redirect(`stock_transfers/edit/${result.data.stock_transfer_id}`), 1500);
+      setTimeout(() => Atlas.page.redirect(`stock-transfers/edit/${result.data.stock_transfer_id}`), 1500);
     }
     finally {
       btnSaveStockTransfer.disabled = false;
@@ -140,11 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /*** new */
-  btnNewStockTransfer?.addEventListener('click', () => {
-    Atlas.page.redirect(
-      `stock_transfers/create`
-    );
-  });
+  btnNewStockTransfer?.addEventListener('click', () => Atlas.page.redirect(`stock-transfers/create`));
 
   /*** edit */
   btnEditStockTransfer?.addEventListener('click', () => {
@@ -154,9 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(
-      `stock_transfers/edit/${id}`
-    );
+    Atlas.page.redirect(`stock-transfers/edit/${id}`);
   });
 
   /*** post */
@@ -186,7 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       const response = await Atlas.ajax.post(
-        'stock_transfers/post',
+        'stock-transfers/post',
         {
           ids: ids
         }
@@ -230,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const result = await Atlas.ajax.post(
-      'stock_transfers/cancel',
+      'stock-transfers/cancel',
       {
         ids: ids,
         cancel_reason: reason
@@ -252,6 +246,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   /*** refresh */
   btnRefreshStockTransfer?.addEventListener('click', () => {
     Atlas.page.refresh();
+  });
+
+  /*** scanner barcode event */
+  document.addEventListener('keydown', async (e) => {
+    if (!e.target.classList.contains('atlas-barcode')) {
+      return;
+    }
+
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    e.preventDefault();
+
+    const row = e.target.closest('tr');
+
+    await Atlas.productFinder.lookup(
+      row,
+      e.target.value
+    );
+
+    markDirty();
   });
 
   selFromBranch?.addEventListener('change', () => {
@@ -302,7 +318,7 @@ const createDetailRow = () => {
         <div class="input-group">
           <input
             type="text"
-            class="form-control form-control-sm st-barcode"
+            class="form-control form-control-sm st-barcode atlas-barcode"
             placeholder="Barcode">
           <div class="input-group-append">
             <button
@@ -336,7 +352,7 @@ const addDetailRow = (markAsDirty = true) => {
   const tbody = document.getElementById('tblStockTransferDetails');
   tbody.insertAdjacentHTML('beforeend', createDetailRow());
   renumberRows();
-  setTimeout(() => tbody.lastElementChild.querySelector('.st-barcode').focus(), 500);
+  // setTimeout(() => tbody.lastElementChild.querySelector('.st-barcode').focus(), 500);
   if (markAsDirty) {
     markDirty();
   }

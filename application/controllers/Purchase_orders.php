@@ -79,6 +79,9 @@ class Purchase_orders extends MY_Controller
       ]
     );
 
+    $this->pageScript = 'purchase_order_list';
+
+    /*** filters */
     $this->data['statuses'] = [
       'OPEN',
       'PARTIAL',
@@ -87,22 +90,24 @@ class Purchase_orders extends MY_Controller
       'CLOSED',
     ];
 
-    $this->pageScript = 'purchase_order_list';
-
+    $keyword = trim($this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
     $filters = [
       'date_from' => trim($this->input->get('date_from')),
       'date_to' => trim($this->input->get('date_to')),
       'supplier_id' => trim($this->input->get('supplier_id')),
       'status' => trim($this->input->get('status')),
+      'keyword' => $keyword,
     ];
 
+    $this->data['suppliers'] = $this->Supplier_model->getDropdown();
     $this->data = array_merge(
       $this->data,
       $filters
     );
+    /*** end filters */
 
     $this->data['purchaseOrders'] = $this->Purchase_order_model->getAll($filters);
-    $this->data['suppliers'] = $this->Supplier_model->getDropdown();
     $this->data['recordCount'] = count($this->data['purchaseOrders']);
     $this->data['tableContent'] = $this->load->view(
       'purchase_orders/table',
@@ -113,7 +118,7 @@ class Purchase_orders extends MY_Controller
     $this->data['toolbar'] = [
       'edit' => [
         'id'   => 'btnEditPurchaseOrder',
-        'text' => 'Edit',
+        'text' => 'Edit PO',
         'icon' => 'fas fa-edit'
       ],
       'receive' => [
@@ -123,12 +128,12 @@ class Purchase_orders extends MY_Controller
       ],
       'print' => [
         'id'   => 'btnPrintPurchaseOrder',
-        'text' => 'Print',
+        'text' => 'Print PO',
         'icon' => 'fas fa-print'
       ],
       'cancel' => [
         'id'   => 'btnCancelPurchaseOrder',
-        'text' => 'Cancel',
+        'text' => 'Cancel PO',
         'icon' => 'fas fa-ban'
       ],
       'refresh' => [

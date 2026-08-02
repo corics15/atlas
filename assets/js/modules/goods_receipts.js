@@ -5,6 +5,7 @@ const btnPrintGoodsReceipt = document.getElementById('btnPrintGoodsReceipt');
 const btnRefreshGoodsReceipt = document.getElementById('btnRefreshGoodsReceipt');
 const btnPostGoodsReceipt = document.getElementById('btnPostGoodsReceipt');
 const btnCancelGoodsReceipt = document.getElementById('btnCancelGoodsReceipt');
+const btnCreatePurchaseReturn = document.getElementById('btnCreatePurchaseReturn');
 
 const hidGoodsReceiptId = document.getElementById('hidGoodsReceiptId');
 const txtRemarks = document.getElementById('txtRemarks');
@@ -28,6 +29,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /*** post */
   btnPostGoodsReceipt?.addEventListener('click', postGoodsReceipt);
+
+  /*** purchase return */
+  btnCreatePurchaseReturn?.addEventListener('click', () => {
+    const id = getSelectedGoodsReceiptId();
+    const status = Atlas.table.selected()[0]?.closest('tr').dataset.status;
+
+    if (!id) {
+      return;
+    }
+
+    if (status !== 'POSTED') {
+      Atlas.toast.warning('Only POSTED Goods Receipts can be returned.');
+      return;
+    }
+    Atlas.page.redirect(`purchase-returns/create/${id}`);
+    // if (status === 'POSTED') {
+    //   Atlas.page.redirect(`goods-receipts/view/${id}`);
+    // } else {
+    //   Atlas.page.redirect(`purchase-returns/create/${id}`);
+    // }
+  });
 
   /*** refresh */
   btnRefreshGoodsReceipt?.addEventListener('click', () => Atlas.page.refresh());
@@ -127,7 +149,7 @@ const saveGoodsReceipt = async () => {
     formData.append('details', JSON.stringify(details));
 
     const result = await Atlas.ajax.post(
-      'goods_receipts/save',
+      'goods-receipts/save',
       formData
     );
 
@@ -136,8 +158,9 @@ const saveGoodsReceipt = async () => {
       return;
     }
 
+    isDirty = false;
     Atlas.toast.success(result.message);
-    setTimeout(() => Atlas.page.redirect(`goods_receipts/view/${result.data.goods_receipt_id}`), 1500);
+    setTimeout(() => Atlas.page.redirect(`goods-receipts/view/${result.data.goods_receipt_id}`), 1500);
 
   } finally {
     btnSaveGoodsReceipt.disabled = false;
@@ -172,7 +195,7 @@ const saveChangesGoodsReceipt = async () => {
     }
 
     const result = await Atlas.ajax.post(
-      'goods_receipts/update',
+      'goods-receipts/update',
       grn
     );
 
@@ -192,9 +215,29 @@ const saveChangesGoodsReceipt = async () => {
 }
 
 const postGoodsReceipt = async () => {
+  /*** validate at least one received quantity */
+  const qtyInputs = document.querySelectorAll('.grn-qty');
+  let hasReceivedQty = false;
+  qtyInputs.forEach(input => {
+    if (Atlas.format.parseNumber(input.value) > 0) {
+      hasReceivedQty = true;
+    }
+  });
+  if (!hasReceivedQty) {
+    Atlas.toast.warning(
+      'Please enter a received quantity (Qty Rcvd) for at least one item before posting.'
+    );
+    return;
+  }
+  /*** end validate at least one received quantity */
+
   const result = await Atlas.dialog.confirm(
-    'Post Goods Receipt?',
-    'Inventory quantities will be updated. This action cannot be undone.'
+    'Confirm Action',
+    `<div class="text-brown text-center">
+      <p>Inventory quantities will be updated.<br>
+      This action cannot be undone.</p>
+      <p class="font-weight-500 text-danger">Post Goods Receipt?</p>
+    </div>`
   );
 
   if (!result) {
@@ -205,7 +248,7 @@ const postGoodsReceipt = async () => {
 
   try {
     const response = await Atlas.ajax.post(
-      'goods_receipts/post',
+      'goods-receipts/post',
       {
         id: Number(hidGoodsReceiptId.value)
       }
@@ -243,7 +286,7 @@ const cancelGoodsReceipt = async () => {
 
   try {
     const response = await Atlas.ajax.post(
-      'goods_receipts/cancel',
+      'goods-receipts/cancel',
       {
         id: Number(hidGoodsReceiptId.value)
       }

@@ -94,6 +94,10 @@ h3,
   text-transform: none !important;
 }
 
+.text-brown {
+  color: #a17035 !important;
+}
+
 ::placeholder {
   font-size: 0.8rem !important;
 }
@@ -259,6 +263,10 @@ span.badge {
 
 .text-indigo-2 {
   color: #4948d5 !important;
+}
+
+.badge-indigo-2 {
+  background-color: #4948d5 !important;
 }
 
 
@@ -580,6 +588,12 @@ textarea:focus {
 .btn:hover,
 .btn:focus {
   color: #745c0c !important;
+}
+
+/* Prevents text from breaking into multiple lines */
+.auto-width-toast .swal2-title {
+  white-space: nowrap;
+  display: inline-block;
 }
 
 

@@ -1,9 +1,9 @@
 class AtlasDialog {
 
-  async confirm(title, text) {
+  async confirm(title, html) {
     const result = await Swal.fire({
       title,
-      text,
+      html,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Yes',
@@ -57,7 +57,14 @@ class AtlasDialog {
       html: `
         <div class="text-center">
           <span>Document No.</span><br>
-          <div class="mt-2">${options.documentNo}</div>
+          <div class="mt-2 font-weight-bold">${options.documentNo}</div>
+
+          ${options.message ? `
+            <hr>
+            <div class="text-left small">
+              ${options.message}
+            </div>
+          ` : ''}
         </div>
       `,
       showCancelButton: true,

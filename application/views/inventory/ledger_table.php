@@ -35,6 +35,7 @@
               'TRANSFER'   => 'badge-info',
               'SR'         => 'badge-primary',
               'SI'         => 'badge-secondary',
+              'PR'         => 'badge-indigo-2',
             ];
           ?>
 
@@ -47,13 +48,16 @@
           <?php
             switch ($row->transaction_type) {
               case 'GRN':
-                $url = 'goods_receipts/view/';
+                $url = 'goods-receipts/view/';
                 break;
               case 'TRANSFER':
-                $url = 'stock_transfers/edit/';
+                $url = 'stock-transfers/edit/';
                 break;
               case 'SR':
-                $url = 'sales_returns/edit/';
+                $url = 'sales-returns/edit/';
+                break;
+              case 'PR':
+                $url = 'purchase-returns/edit/';
                 break;
               default: /*** ADJUSTMENT */
                 $url = 'inventory_adjustments/view/';

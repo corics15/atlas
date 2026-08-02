@@ -87,6 +87,11 @@ $config['atlas_menu'] = [
         'icon'  => 'fas fa-dolly',
         'url'   => 'goods-receipts'
       ],
+      [
+        'title' => 'Purchase Returns',
+        'icon'  => 'fas fa-exchange-alt',
+        'url'   => 'purchase-returns'
+      ],
     ]
   ],
 

@@ -3,9 +3,18 @@
 <section class="content">
   <div class="container-fluid">
     <div class="card">
+
       <?php //*** Purchase Order */ ?>
       <div class="card-header">
-        <h3 class="card-title">Order Header</h3>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="card-title">
+            Order Header
+          </h3>
+
+          <?php /*** status class set in purchase_orders.js */ ?>
+          <div class="ls-wider" style="font-weight:500"></div>
+        </div>
       </div>
 
       <div class="card-body">
@@ -84,7 +93,7 @@
                 <tr>
                   <td>
                     <div class="input-group">
-                      <input type="text" class="form-control form-control-sm po-barcode" placeholder="Barcode">
+                      <input type="text" class="form-control form-control-sm po-barcode atlas-barcode" placeholder="Barcode">
                       <div class="input-group-append">
                         <button
                           type="button"

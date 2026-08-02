@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(`sales_returns/edit/${id}`);
+    Atlas.page.redirect(`sales-returns/edit/${id}`);
   });
 
   /*** save */
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
 
       const salesReturn = {
-        id: Atlas.format.integer(document.getElementById('hidSalesReturnId').value || 0),
+        id: Atlas.format.integer(document.getElementById('hidSalesReturnId').value),
         sales_invoice_id: Atlas.format.integer(document.getElementById('hidSalesInvoiceId').value),
         return_date: document.getElementById('dtSalesReturnDate').value,
         customer_id: Atlas.format.integer(document.getElementById('selCustomer').value),
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       const result = await Atlas.ajax.post(
-        'sales_returns/save',
+        'sales-returns/save',
         salesReturn
       );
 
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       Atlas.toast.success(result.message);
       document.getElementById('hidSalesReturnId').value = result.data.sales_return_id;
-      setTimeout(() => Atlas.page.redirect(`sales_returns/edit/${result.data.sales_return_id}`), 1500);
+      setTimeout(() => Atlas.page.redirect(`sales-returns/edit/${result.data.sales_return_id}`), 1500);
       isEditMode = true;
       isDirty = false;
 
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       const response = await Atlas.ajax.post(
-        'sales_returns/post',
+        'sales-returns/post',
         {
           ids: ids
         }
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const result = await Atlas.ajax.post(
-      'sales_returns/cancel',
+      'sales-returns/cancel',
       {
         ids: ids,
         cancel_reason: reason
@@ -275,7 +275,7 @@ const printSalesReturn = () => {
   }
 
   Atlas.print.post(
-    'sales_returns/print',
+    'sales-returns/print',
     ids
   );
 };

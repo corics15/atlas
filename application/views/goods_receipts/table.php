@@ -8,7 +8,7 @@
     </th>
     <th width="140" class="text-center">GRN No.</th>
     <th width="120" class="text-center">Date</th>
-    <th width="140" class="text-center">PO No.</th>
+    <th width="160" class="text-center">PO No.</th>
     <th>Supplier</th>
     <th class="text-center">Status</th>
     <th>Remarks</th>
@@ -27,7 +27,7 @@
   <?php else: ?>
 
     <?php foreach ($goodsReceipts as $row): ?>
-    <tr data-id="<?= $row->id; ?>">
+    <tr data-id="<?= $row->id; ?>" data-status="<?= $row->status ?>">
       <td class="text-center">
         <div class="custom-control custom-checkbox ml-2 mt-1">
           <input type="checkbox" class="custom-control-input chkGoodsReceipt" id="chkGoodsReceipt-<?= $row->id ?>" value="<?= $row->id ?>">
@@ -35,12 +35,14 @@
         </div>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('goods_receipts/view/'.$row->id) ?>" class="text-olive text-wrap">
+        <a href="<?= base_url('goods-receipts/view/'.$row->id) ?>" class="text-olive text-wrap">
           <?= htmlspecialchars($row->grn_no); ?>
         </a>
       </td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($row->grn_date))); ?></td>
-      <td class="text-center"><?= htmlspecialchars($row->po_no); ?></td>
+      <td class="text-center">
+        <a href="<?= base_url('purchase-orders?id=').$row->po_id  ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas fa-xs mr-1"></i><?= htmlspecialchars($row->po_no) ?></a>
+      </td>
       <td><?= htmlspecialchars($row->supplier_name); ?></td>
       <td class="text-center">
         <?php
@@ -58,7 +60,14 @@
           echo $status;
         ?>
       </td>
-      <td><?= htmlspecialchars($row->remarks); ?></td>
+      <td>
+        <?php
+          $remarks = htmlspecialchars($row->remarks);
+          echo (mb_strlen($remarks) > 30)
+            ? mb_strimwidth($remarks, 0, 30, '...')
+            : $remarks;
+        ?>
+      </td>
     </tr>
     <?php endforeach; ?>
 

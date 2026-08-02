@@ -20,6 +20,7 @@ class Product_finder extends MY_Controller
     );
   }
 
+  /*** replaced by lookup function */
   public function barcode($barcode = '')
   {
     $product = $this->Product_model->getByBarcode(urldecode($barcode));
@@ -49,4 +50,24 @@ class Product_finder extends MY_Controller
       $result
     );
   }
+
+  public function lookup()
+  {
+    $keyword = trim($this->input->get('q'));
+    $result = $this->Product_finder_model->lookup($keyword);
+
+    if (!$result) {
+      return $this->jsonResponse(
+        false,
+        'Product not found.'
+      );
+    }
+
+    return $this->jsonResponse(
+      true,
+      '',
+      $result
+    );
+  }
+
 }

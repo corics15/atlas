@@ -39,9 +39,13 @@ class Goods_receipts extends MY_Controller
       'print' => [
         'id'   => 'btnPrintGoodsReceipt',
         'icon' => 'fas fa-print',
-        'text' => 'Print'
+        'text' => 'Print GRN'
       ],
-
+      'create' => [
+        'id'   => 'btnCreatePurchaseReturn',
+        'text' => 'Create Purchase Return',
+        'icon' => 'fas fa-exchange-alt'
+      ],
       'refresh' => [
         'id'   => 'btnRefreshGoodsReceipt',
         'icon' => 'fas fa-sync-alt',

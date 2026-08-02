@@ -57,6 +57,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  /*** scanner barcode event */
+  document.addEventListener('keydown', async (e) => {
+    if (!e.target.classList.contains('atlas-barcode')) {
+      return;
+    }
+
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    e.preventDefault();
+
+    const row = e.target.closest('tr');
+
+    await Atlas.productFinder.lookup(
+      row,
+      e.target.value
+    );
+
+    markDirty();
+  });
+
   /*** save */
   btnSaveSalesOrder?.addEventListener('click', async () => {
 
@@ -94,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       const result = await Atlas.ajax.post(
-        'sales_orders/save',
+        'sales-orders/save',
         salesOrder
       );
 
@@ -107,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       hidSalesOrderId.value = result.data.sales_order_id;
       isEditMode = true;
       isDirty = false;
-      setTimeout(() => Atlas.page.redirect(`sales_orders/edit/${result.data.sales_order_id}`), 1500);
+      setTimeout(() => Atlas.page.redirect(`sales-orders/edit/${result.data.sales_order_id}`), 1500);
     }
     finally {
       btnSaveSalesOrder.disabled = false;
@@ -122,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(`sales_orders/edit/${id}`);
+    Atlas.page.redirect(`sales-orders/edit/${id}`);
   });
 
   /*** post */
@@ -136,7 +158,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const result = await Atlas.dialog.confirm(
       'Confirm Action',
-      'Post Sales Order?'
+      `<div class="text-brown text-center">
+        <p>Inventory quantities will be updated.<br>
+        This action cannot be undone.</p>
+        <p class="font-weight-500 text-danger">Post Sales Order?</p>
+      </div>`
     );
 
     if (!result) {
@@ -147,7 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       const response = await Atlas.ajax.post(
-        'sales_orders/post',
+        'sales-orders/post',
         {
           ids: ids
         }
@@ -186,7 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(`sales_invoices/create/${ids[0]}`);
+    Atlas.page.redirect(`sales-invoices/create/${ids[0]}`);
   });
 
   /*** print */
@@ -217,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const result = await Atlas.ajax.post(
-      'sales_orders/cancel',
+      'sales-orders/cancel',
       {
         ids: ids,
         cancel_reason: reason
@@ -299,7 +325,7 @@ const createDetailRow = () => {
         <div class="input-group">
           <input
             type="text"
-            class="form-control form-control-sm so-barcode"
+            class="form-control form-control-sm so-barcode atlas-barcode"
             placeholder="Barcode">
           <div class="input-group-append">
             <button

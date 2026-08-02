@@ -4,6 +4,7 @@
   <div class="container-fluid">
 
     <?php $this->load->view('goods_receipts/form'); ?>
+
     <div class="card">
 
       <div class="card-header">
@@ -20,7 +21,6 @@
             <?php $this->load->view('goods_receipts/details_table'); ?>
 
           </table>
-
         </div>
       </div>
     </div>

@@ -47,4 +47,50 @@ class Product_finder_model extends CI_Model
       ->get()
       ->result();
   }
+
+  public function lookup($keyword)
+  {
+    $keyword = trim($keyword);
+    $branchId = (int)$this->session->userdata('branch_id');
+
+    return $this->db
+        ->select("
+            p.id,
+            p.barcode,
+            s.supplier_name,
+            p.description,
+            u.uom,
+            p.srp,
+            COALESCE(bi.qty_on_hand, 0) qty_on_hand
+        ")
+        ->from('m_products p')
+        ->join(
+            't_branch_inventory bi',
+            "bi.product_id = p.id AND bi.branch_id = {$branchId}",
+            'left'
+        )
+        ->join(
+            'm_suppliers s',
+            's.id = p.supplier_id'
+        )
+        ->join(
+            'm_uom u',
+            'u.id = p.uom_id'
+        )
+        ->group_start()
+            ->where('p.barcode', $keyword) /*** exact barcode */
+            ->or_where('p.description ILIKE', "%{$keyword}%")
+            ->or_where('s.supplier_name ILIKE', "%{$keyword}%")
+        ->group_end()
+        ->order_by("
+            CASE
+                WHEN p.barcode = ".$this->db->escape($keyword)." THEN 0
+                ELSE 1
+            END,
+            p.description
+        ", FALSE)
+        ->limit(50)
+        ->get()
+        ->result();
+  }
 }

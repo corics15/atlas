@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const result = await Atlas.ajax.post(
-      `outlet_types/activate/${id}`
+      `outlet-types/activate/${id}`
     );
 
     if (result.success) {
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const result = await Atlas.ajax.post(
-      'outlet_types/deactivate/' + id
+      'outlet-types/deactivate/' + id
     );
 
     if (result.success) {

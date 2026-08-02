@@ -136,13 +136,26 @@ class Goods_receipt_model extends CI_Model
         ->get('t_goods_receipts')
         ->row_array();
 
+      /*** validate source Purchase Order */
+      $purchaseOrder = $this->Purchase_order_model->get($grn['po_id']);
+
+      if (!$purchaseOrder) {
+        throw new Exception('Source Purchase Order not found.');
+      }
+
+      if (!in_array($purchaseOrder['header']->status, ['OPEN', 'PARTIAL'])) {
+        throw new Exception(
+          "Cannot post Goods Receipt. Purchase Order {$purchaseOrder['header']->po_no} is {$purchaseOrder['header']->status}."
+        );
+      }
+
       $details = $this->db
                   ->select("
-                    po_detail_id,
-                    product_id,
-                    qty_received AS qty_receive,
-                    qty_ordered,
-                    unit_cost
+                      po_detail_id,
+                      product_id,
+                      qty_received AS qty_receive,
+                      qty_ordered,
+                      unit_cost
                   ")
                   ->from('t_goods_receipt_details')
                   ->where('grn_id', $request['id'])
@@ -282,19 +295,18 @@ class Goods_receipt_model extends CI_Model
   public function getDetails($grnId)
   {
     return $this->db
-        ->select('
-            d.*,
-            p.barcode,
-            p.description,
-            u.uom
-        ')
-        ->from('t_goods_receipt_details d')
-        ->join('m_products p', 'p.id = d.product_id')
-        ->join('m_uom u', 'u.id = p.uom_id')
-        ->where('d.grn_id', $grnId)
-        ->order_by('d.id')
-        ->get()
-        ->result();
+              ->select("
+                  d.*,
+                  p.barcode,
+                  p.description,
+                  u.uom")
+              ->from('t_goods_receipt_details d')
+              ->join('m_products p', 'p.id = d.product_id')
+              ->join('m_uom u', 'u.id = p.uom_id')
+              ->where('d.grn_id', $grnId)
+              ->order_by('d.id')
+              ->get()
+              ->result();
   }
 
   /*** check if a DRAFT already exists for a certain PO id */
@@ -499,40 +511,56 @@ class Goods_receipt_model extends CI_Model
 
   private function validateReceiveQuantities($details)
   {
-      if (empty($details)) {
-        return;
+    if (empty($details)) {
+      return;
+    }
+
+    /*** validate at least one received quantity */
+    $hasReceivedQty = FALSE;
+
+    foreach ($details as $detail) {
+      if ((float)$detail->qty_receive > 0) {
+        $hasReceivedQty = TRUE;
+        break;
+      }
+    }
+
+    if (!$hasReceivedQty) {
+      throw new Exception(
+        'Please enter a received quantity for at least one item.'
+      );
+    }
+
+    /*** collect all po_detail_ids from the details array */
+    $ids = array_map(function($d) {
+        return $d->po_detail_id;
+    }, $details);
+
+    /*** fetch all rows in 1 query */
+    $rows = $this->db
+        ->select('id, qty, qty_received')
+        ->from('t_purchase_order_details')
+        ->where_in('id', $ids)
+        ->get()
+        ->result();
+
+    $indexed = [];
+    foreach ($rows as $row) {
+      $indexed[$row->id] = $row;
+    }
+
+    foreach ($details as $detail) {
+      if (!isset($indexed[$detail->po_detail_id])) {
+        throw new Exception('Purchase Order detail not found.');
       }
 
-      /*** collect all po_detail_ids from the details array */
-      $ids = array_map(function($d) {
-          return $d->po_detail_id;
-      }, $details);
+      $row = $indexed[$detail->po_detail_id];
+      $remaining = $row->qty - $row->qty_received;
 
-      /*** fetch all rows in 1 query */
-      $rows = $this->db
-          ->select('id, qty, qty_received')
-          ->from('t_purchase_order_details')
-          ->where_in('id', $ids)
-          ->get()
-          ->result();
-
-      $indexed = [];
-      foreach ($rows as $row) {
-        $indexed[$row->id] = $row;
+      if ($detail->qty_receive > $remaining) {
+        throw new Exception('Receive quantity exceeds the remaining quantity.');
       }
-
-      foreach ($details as $detail) {
-        if (!isset($indexed[$detail->po_detail_id])) {
-          throw new Exception('Purchase Order detail not found.');
-        }
-
-        $row = $indexed[$detail->po_detail_id];
-        $remaining = $row->qty - $row->qty_received;
-
-        if ($detail->qty_receive > $remaining) {
-          throw new Exception('Receive quantity exceeds the remaining quantity.');
-        }
-      }
+    }
   }
 
 

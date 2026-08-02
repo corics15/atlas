@@ -19,7 +19,7 @@ class AtlasAjax {
 
     try {
       const response = await fetch(
-        `Atlas.config.baseUrl${url}`,
+        `${Atlas.config.baseUrl}${url}`,
         options
       );
       return await response.json();
@@ -28,7 +28,7 @@ class AtlasAjax {
 
       return {
         success: false,
-        message: 'Unable to communicate with the server.',
+        message: 'An unexpected error occured, please contact your System Administrator.',
         data: []
       };
     }

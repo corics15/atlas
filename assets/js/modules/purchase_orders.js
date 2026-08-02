@@ -44,8 +44,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  /*** scanner barcode event */
   document.addEventListener('keydown', async (e) => {
-    if (!e.target.classList.contains('po-barcode')) {
+    if (!e.target.classList.contains('atlas-barcode')) {
       return;
     }
 
@@ -54,23 +55,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     e.preventDefault();
-    const barcode = e.target.value.trim();
-
-    if (!barcode) {
-      return;
-    }
-
-    const result = await Atlas.ajax.get(
-      `product_finder/barcode/${encodeURIComponent(barcode)}`
-    );
-
-    if (!result.success) {
-      Atlas.toast.error(result.message);
-      return;
-    }
 
     const row = e.target.closest('tr');
-    populateProductRow(row, result.data);
+
+    await Atlas.productFinder.lookup(
+      row,
+      e.target.value
+    );
 
     markDirty();
   });
@@ -171,8 +162,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       const url = isEditMode
-        ? 'purchase_orders/update'
-        : 'purchase_orders/save';
+        ? 'purchase-orders/update'
+        : 'purchase-orders/save';
 
       const result = await Atlas.ajax.post(url, po);
 
@@ -182,22 +173,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       txtPONo.value = result.data.po_no;
-      isEditMode = true;
+      // isEditMode = true;
       purchaseOrderId = result.data.purchase_order_id;
 
-      btnSavePurchaseOrder.innerHTML = 'Save Changes';
-
+      Atlas.toast.success(result.message);
+      setTimeout(() => Atlas.page.redirect(`purchase-orders?id=${result.data.purchase_order_id}`), 1200);
+      isEditMode = true;
       isDirty = false;
-      const action = await Atlas.dialog.saved({
-        title: 'Purchase Order',
-        documentNo: result.data.po_no,
-        confirmText: 'New',
-        cancelText: 'Continue Editing'
-      });
 
-      if (action === 'new') {
-        await resetPurchaseOrder();
-      }
+      // btnSavePurchaseOrder.innerHTML = 'Save Changes';
+
+      // isDirty = false;
+      // const action = await Atlas.dialog.saved({
+      //   title: 'Purchase Order',
+      //   documentNo: result.data.po_no,
+      //   confirmText: 'New',
+      //   cancelText: 'Continue Editing'
+      // });
+
+      // if (action === 'new') {
+      //   await resetPurchaseOrder();
+      // }
 
     } finally {
       btnSavePurchaseOrder.disabled = false;
@@ -259,7 +255,7 @@ const createDetailRow = () => {
     <tr>
       <td>
         <div class="input-group">
-          <input type="text" class="form-control form-control-sm po-barcode" placeholder="Barcode">
+          <input type="text" class="form-control form-control-sm po-barcode atlas-barcode" placeholder="Barcode">
           <div class="input-group-append">
             <button
               type="button"
@@ -414,6 +410,34 @@ const populateHeader = (header) => {
 
   $('#selTerms').val(header.terms_id).trigger('change');
   txtRemarks.value = header.remarks ?? '';
+  console.log(header)
+
+  let statusClass = ``;
+  switch (header.status) {
+    case 'COMPLETED':
+      statusClass = 'text-success';
+      break;
+    case 'OPEN':
+      statusClass = 'text-secondary';
+      break;
+    case 'OPEN':
+      statusClass = 'text-success';
+      break;
+    case 'PARTIAL':
+      statusClass = 'text-warning';
+      break;
+    case 'COMPLETED':
+      statusClass = 'text-primary';
+      break;
+    case 'CLOSED':
+      statusClass = 'text-secondary';
+      break;
+    default: /*** CANCELLED */
+      statusClass = 'text-danger';
+      break;
+  }
+  document.querySelector('.ls-wider').innerHTML = `[${header.status}]`;
+  document.querySelector('.ls-wider').classList.add(statusClass);
 }
 
 const enableEditMode = (header) => {

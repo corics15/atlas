@@ -63,7 +63,7 @@ class Sales_returns extends MY_Controller
   public function create($salesInvoiceId = null)
   {
     if (!$salesInvoiceId) {
-        show_404();
+      show_404();
     }
 
     $salesInvoice = $this->Sales_return_model->getSalesInvoice($salesInvoiceId);
@@ -136,7 +136,7 @@ class Sales_returns extends MY_Controller
   public function cancel()
   {
     $ids = $this->getJsonRequest('ids');
-    $cancelReason = $this->input->post('cancel_reason');
+    $cancelReason = $this->getJsonRequest('cancel_reason');
     $result = $this->Sales_return_model->cancel($ids, $cancelReason);
 
     return $this->jsonResponse(

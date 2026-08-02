@@ -31,19 +31,58 @@
         </div>
 
       </div>
+
+        <?php
+          switch (htmlspecialchars($goodsReceipt->po_status)) {
+            case 'OPEN':
+              $status = '<span class="badge badge-success">OPEN</span>';
+              break;
+
+            case 'PARTIAL':
+              $status = '<span class="badge badge-warning">PARTIAL</span>';
+              break;
+
+            case 'COMPLETED':
+              $status = '<span class="badge badge-primary">COMPLETED</span>';
+              break;
+
+            case 'CLOSED':
+              $status = '<span class="badge badge-secondary">CLOSED</span>';
+              break;
+
+            case 'CANCELLED':
+              $status = '<span class="badge badge-danger">CANCELLED</span>';
+              break;
+
+            default:
+              $status = '<span class="badge badge-light">UNKNOWN</span>';
+              break;
+          }
+        ?>
+
       <div class="card-body">
         <table class="table table-sm table-borderless">
           <tr>
             <th width="180">GRN No.</th>
-            <td><?= htmlspecialchars($goodsReceipt->grn_no) ?></td>
+            <td class="font-weight-500 text-brown"><?= htmlspecialchars($goodsReceipt->grn_no) ?></td>
           </tr>
           <tr>
             <th>Date</th>
             <td><?= date('m/d/Y', strtotime(htmlspecialchars($goodsReceipt->grn_date))) ?></td>
           </tr>
           <tr>
-            <th>Purchase Order</th>
-            <td><?= htmlspecialchars($goodsReceipt->po_no) ?></td>
+            <th>PO NO.</th>
+            <td>
+              <a href="<?= base_url('purchase-orders?id=').$goodsReceipt->po_id  ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($goodsReceipt->po_no) ?></a>
+            </td>
+          </tr>
+          <tr>
+            <th>PO Remarks</th>
+            <td><?= htmlspecialchars($goodsReceipt->po_remarks) ?></td>
+          </tr>
+          <tr>
+            <th>PO Status</th>
+            <td><?= $status ?></td>
           </tr>
           <tr>
             <th>Supplier</th>
@@ -75,8 +114,8 @@
                 <th width="150" class="text-center">Barcode</th>
                 <th>Description</th>
                 <th width="80" class="text-center">UOM</th>
-                <th width="110" class="text-right">Ordered</th>
-                <th width="110" class="text-right">Received</th>
+                <th width="110" class="text-right">Qty Ordered</th>
+                <th width="110" class="text-right">Qty Rcvd</th>
                 <th width="120" class="text-right">Unit Cost</th>
                 <th width="120" class="text-right">Amount</th>
               </tr>
@@ -91,44 +130,30 @@
                 </tr>
               <?php else: ?>
 
-              <?php foreach ($details as $index => $item): ?>
-                <?php
-                  $amount = $item->qty_received * $item->unit_cost;
-                  $grandTotal += $amount;
-                ?>
-                <tr data-grn-detail-id="<?= $item->id ?>" data-ordered-qty="<?= (float)$item->qty_ordered ?>">
-                  <td class="text-right">
-                    <?= $index + 1 ?>.
-                  </td>
-                  <td class="text-center">
-                    <?= htmlspecialchars($item->barcode) ?>
-                  </td>
-                  <td>
-                    <?= htmlspecialchars($item->description) ?>
-                  </td>
-                  <td class="text-center">
-                    <?= htmlspecialchars($item->uom) ?>
-                  </td>
-                  <td class="text-right">
-                    <?= number_format($item->qty_ordered) ?>
-                  </td>
-                  <td>
-                    <input type="number"
-                          class="form-control form-control-sm text-right grn-qty"
-                          name="qty_received[]"
-                          value="<?= (float)$item->qty_received ?>"
-                          min="0"
-                          max="<?= (float)$item->qty_ordered ?>"
-                          step="any">
-                  </td>
-                  <td class="text-right">
-                    <?= number_format($item->unit_cost, 2) ?>
-                  </td>
-                  <td class="text-right">
-                    <?= number_format($amount, 2) ?>
-                  </td>
-                </tr>
-                <?php endforeach; ?>
+                <?php foreach ($details as $index => $item): ?>
+                  <?php
+                    $amount = $item->qty_ordered * $item->unit_cost;
+                    $grandTotal += $amount;
+                  ?>
+                  <tr data-grn-detail-id="<?= $item->id ?>" data-ordered-qty="<?= (float)$item->qty_ordered ?>">
+                    <td class="text-right"><?= $index + 1 ?>.</td>
+                    <td class="text-center"><?= htmlspecialchars($item->barcode) ?></td>
+                    <td><?= htmlspecialchars($item->description) ?></td>
+                    <td class="text-center"><?= htmlspecialchars($item->uom) ?></td>
+                    <td class="text-right"><?= number_format($item->qty_ordered) ?></td>
+                    <td>
+                      <input type="number"
+                            class="form-control form-control-sm text-right grn-qty"
+                            name="qty_received[]"
+                            value="<?= (float)$item->qty_received ?>"
+                            min="0"
+                            max="<?= (float)$item->qty_ordered ?>"
+                            step="any">
+                    </td>
+                    <td class="text-right"><?= number_format($item->unit_cost, 2) ?></td>
+                    <td class="text-right"><?= number_format($amount, 2) ?></td>
+                  </tr>
+                  <?php endforeach; ?>
 
               <?php endif; ?>
             </tbody>
@@ -154,7 +179,7 @@
                 </button>
               </div>
 
-              <?php if ($goodsReceipt->status === 'DRAFT') : ?>
+              <?php //if ($goodsReceipt->status === 'DRAFT') : ?>
                 <div>
                   <button id="btnPostGoodsReceipt" class="btn btn-default btn-sm"><i class="fa fa-check"></i>
                     Post
@@ -168,7 +193,7 @@
                     Save Changes
                   </button>
                 </div>
-              <?php endif ?>
+              <?php //endif ?>
             </div>
           </div>
 

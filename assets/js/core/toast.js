@@ -8,7 +8,11 @@ class AtlasToast {
       theme: 'bootstrap-4-dark',
       toast: true,
       position: 'top-end',
-      timer: 3000
+      timer: 6000,
+      width: 'auto',
+      customClass: {
+        popup: 'auto-width-toast'
+      }
     });
   }
 
@@ -20,7 +24,11 @@ class AtlasToast {
       theme: 'bootstrap-4-dark',
       toast: true,
       position: 'top-end',
-      timer: 3000
+      timer: 6000,
+      width: 'auto',
+      customClass: {
+        popup: 'auto-width-toast'
+      }
     });
   }
 
@@ -31,7 +39,11 @@ class AtlasToast {
       theme: 'bootstrap-4-dark',
       toast: true,
       position: 'top-end',
-      timer: 3000
+      timer: 6000,
+      width: 'auto',
+      customClass: {
+        popup: 'auto-width-toast'
+      }
     });
   }
 

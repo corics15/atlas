@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRefreshInventoryAdjustment = document.getElementById('btnRefreshInventoryAdjustment');
   const btnPrintInventoryAdjustment = document.getElementById('btnPrintInventoryAdjustment');
 
-  btnNewInventoryAdjustment?.addEventListener('click', () => Atlas.page.redirect(`inventory_adjustments/create`));
+  btnNewInventoryAdjustment?.addEventListener('click', () => Atlas.page.redirect(`inventory-adjustments/create`));
 
   /*** add */
   btnAddProductInventoryAdjustment?.addEventListener('click', () => {
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.page.redirect(`inventory_adjustments/view/${adjustmentId}`)
+    Atlas.page.redirect(`inventory-adjustments/view/${adjustmentId}`)
   });
 
   /*** save */
@@ -225,7 +225,7 @@ const saveInventoryAdjustment = async () => {
   };
 
   const response = await Atlas.ajax.post(
-    'inventory_adjustments/save',
+    'inventory-adjustments/save',
     payload
   );
 
@@ -235,7 +235,7 @@ const saveInventoryAdjustment = async () => {
   }
 
   Atlas.toast.success(response.message);
-  setTimeout(() => Atlas.page.redirect(`inventory_adjustments`), 1500);
+  setTimeout(() => Atlas.page.redirect(`inventory-adjustments`), 1500);
 };
 
 const populateProductRow = async (row, product) => {
@@ -248,7 +248,7 @@ const populateProductRow = async (row, product) => {
   row.querySelector('.ia-new-balance').textContent = '0';
 
   const response = await Atlas.ajax.post(
-    'inventory_adjustments/get_product_stock',
+    'inventory-adjustments/get_product_stock',
     {
       product_id: product.id
     }

@@ -53,29 +53,29 @@ $route['default_controller'] = 'dashboard';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = true;
 
-$route['users/save'] = 'users/save';
-$route['users/get/(:num)'] = 'users/get/$1';
-$route['users/deactivate/(:num)'] = 'users/deactivate/$1';
-$route['users/activate/(:num)'] = 'users/activate/$1';
-$route['users/reset-password/(:num)'] = 'users/resetPassword/$1';
+// $route['users/save'] = 'users/save';
+// $route['users/get/(:num)'] = 'users/get/$1';
+// $route['users/deactivate/(:num)'] = 'users/deactivate/$1';
+// $route['users/activate/(:num)'] = 'users/activate/$1';
+// $route['users/reset-password/(:num)'] = 'users/resetPassword/$1';
 
-$route['salesmen'] = 'salesmen';
-$route['salesmen/save'] = 'salesmen/save';
-$route['salesmen/get/(:num)'] = 'salesmen/get/$1';
-$route['salesmen/activate/(:num)']   = 'salesmen/activate/$1';
-$route['salesmen/deactivate/(:num)'] = 'salesmen/deactivate/$1';
+// $route['salesmen'] = 'salesmen';
+// $route['salesmen/save'] = 'salesmen/save';
+// $route['salesmen/get/(:num)'] = 'salesmen/get/$1';
+// $route['salesmen/activate/(:num)']   = 'salesmen/activate/$1';
+// $route['salesmen/deactivate/(:num)'] = 'salesmen/deactivate/$1';
 
-$route['suppliers/get/(:num)'] = 'suppliers/get/$1';
-$route['suppliers/save'] = 'suppliers/save';
-$route['suppliers/activate/(:num)'] = 'suppliers/activate/$1';
-$route['suppliers/deactivate/(:num)'] = 'suppliers/deactivate/$1';
+// $route['suppliers/get/(:num)'] = 'suppliers/get/$1';
+// $route['suppliers/save'] = 'suppliers/save';
+// $route['suppliers/activate/(:num)'] = 'suppliers/activate/$1';
+// $route['suppliers/deactivate/(:num)'] = 'suppliers/deactivate/$1';
 
-$route['products/get/(:num)'] = 'products/get/$1';
-$route['products/save'] = 'products/save';
-$route['products/activate/(:num)'] = 'products/activate/$1';
-$route['products/deactivate/(:num)'] = 'products/deactivate/$1';
+// $route['products/get/(:num)'] = 'products/get/$1';
+// $route['products/save'] = 'products/save';
+// $route['products/activate/(:num)'] = 'products/activate/$1';
+// $route['products/deactivate/(:num)'] = 'products/deactivate/$1';
 
-$route['uom/get/(:num)'] = 'uom/get/$1';
-$route['uom/save'] = 'uom/save';
-$route['uom/activate/(:num)'] = 'uom/activate/$1';
-$route['uom/deactivate/(:num)'] = 'uom/deactivate/$1';
+// $route['uom/get/(:num)'] = 'uom/get/$1';
+// $route['uom/save'] = 'uom/save';
+// $route['uom/activate/(:num)'] = 'uom/activate/$1';
+// $route['uom/deactivate/(:num)'] = 'uom/deactivate/$1';

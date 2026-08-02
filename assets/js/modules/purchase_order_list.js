@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnPrintPurchaseOrder = document.getElementById('btnPrintPurchaseOrder');
   const btnCancelPurchaseOrder = document.getElementById('btnCancelPurchaseOrder');
   const btnRefreshPurchaseOrder = document.getElementById('btnRefreshPurchaseOrder');
+
   const chkSelectAllPurchaseOrder = document.getElementById('chkSelectAllPurchaseOrder');
 
   Atlas.select.init('#selSupplierFilter');
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /*** new purchase order */
   btnNewPurchaseOrder.addEventListener('click', () => {
-    Atlas.page.redirect('purchase_orders');
+    Atlas.page.redirect('purchase-orders');
   });
 
   /*** edit purchase order */
@@ -30,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.page.redirect('purchase_orders', { id: id });
+    Atlas.page.redirect('purchase-orders', { id: id });
   });
 
   /*** receive goods */
@@ -41,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.page.redirect('goods_receipts/create', { po: id });
+    Atlas.page.redirect('goods-receipts/create', { po: id });
   });
 
   /*** refresh purchase order */
@@ -87,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const result = await Atlas.ajax.post(
-      'purchase_orders/cancel',
+      'purchase-orders/cancel',
       formData
     );
 

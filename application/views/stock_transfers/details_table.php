@@ -13,7 +13,7 @@
             <thead class="thead-orange">
               <tr>
                 <th width="40" class="text-center">#</th>
-                <th width="170" class="text-center">Barcode</th>
+                <th width="170" class="text-center">Scan/Input Barcode</th>
                 <th>Description</th>
                 <th width="120" class="text-right">Available</th>
                 <th width="120" class="text-right">Transfer Qty</th>
@@ -36,7 +36,7 @@
                       <div class="input-group">
                         <input
                           type="text"
-                          class="form-control form-control-sm st-barcode"
+                          class="form-control form-control-sm st-barcode atlas-barcode"
                           placeholder="Barcode"
                           value="<?= htmlspecialchars($detail->barcode) ?>">
                         <div class="input-group-append">
@@ -80,7 +80,7 @@
                     <div class="input-group">
                       <input
                         type="text"
-                        class="form-control form-control-sm st-barcode"
+                        class="form-control form-control-sm st-barcode atlas-barcode"
                         placeholder="Barcode">
                       <div class="input-group-append">
                         <button

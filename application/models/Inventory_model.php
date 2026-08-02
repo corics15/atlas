@@ -397,6 +397,90 @@ class Inventory_model extends CI_Model
     }
   }
 
+  /*** post purchase return */
+  public function postPurchaseReturn($purchaseReturnId)
+  {
+    $this->db->trans_begin();
+
+    try {
+
+      $branchId = (int)$this->session->userdata('branch_id');
+
+      $header = $this->Purchase_return_model->get($purchaseReturnId);
+
+      if (!$header) {
+        return [
+          'success' => FALSE,
+          'message' => 'Purchase Return not found.'
+        ];
+      }
+
+      if ($header->status != 'OPEN') {
+        return [
+          'success' => FALSE,
+          'message' => "Purchase Return is already {$header->status}."
+        ];
+      }
+
+      $details = $this->Purchase_return_model->getDetails($purchaseReturnId);
+
+      foreach ($details as $detail) {
+
+        /*** validate available stock */
+        $inventory = $this->Branch_inventory_model->getBalance(
+            $branchId,
+            $detail->product_id
+        );
+
+        $qtyOnHand = $inventory ? $inventory->qty_on_hand : 0;
+
+        if ($qtyOnHand < $detail->qty) {
+          throw new Exception(
+            "{$detail->description} has insufficient stock."
+          );
+        }
+
+        /*** deduct branch inventory */
+        $this->Branch_inventory_model->adjustBalance(
+            $branchId,
+            $detail->product_id,
+            -$detail->qty
+        );
+
+        /*** stock ledger */
+        $this->writeStockLedger(
+            $branchId,
+            'PR',
+            $header->id,
+            $header->pr_no,
+            [$detail],
+            'qty',
+            NULL
+        );
+      }
+
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception('Unable to post Purchase Return.');
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Purchase Return posted.'
+      ];
+
+    } catch (Exception $ex) {
+
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage()
+      ];
+    }
+  }
+
   public function reverseTransaction($transactionType, $referenceId)
   {
 

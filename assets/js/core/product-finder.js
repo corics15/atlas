@@ -133,6 +133,46 @@ class AtlasProductFinder {
     this.highlight(0);
   }
 
+  async lookup(row, lookupValue) {
+    lookupValue = lookupValue.trim();
+
+    if (!lookupValue.length) {
+      return false;
+    }
+
+    const result = await Atlas.ajax.get(
+      `product-finder/lookup?q=${encodeURIComponent(lookupValue)}`
+    );
+
+    switch (result.data.length) {
+      case 0:
+        Atlas.toast.warning(result.message);
+        return false;
+
+      case 1:
+        populateProductRow(row, result.data[0]);
+
+        const barcodeInput = row.querySelector('.po-barcode, .so-barcode');
+
+        if (barcodeInput) {
+          barcodeInput.value = '';
+        }
+
+        row.querySelector('.po-qty, .so-qty')?.focus();
+        return true;
+
+      default:
+        this.currentRow = row;
+        $('#mdlProductFinder').modal('show');
+        const search = document.getElementById('searchInput');
+        search.value = lookupValue;
+
+        await this.search(lookupValue);
+        setTimeout(() => search.focus(), 300);
+        return true;
+    }
+  }
+
   hide() {
     this.currentRow = null;
     this.selectedIndex = -1;
@@ -236,7 +276,7 @@ document.addEventListener('click', (e) => {
   Atlas.productFinder.hide();
   // row.querySelector('.po-qty')?.focus();
   /*** focus whichever element exists in the row */
-  const qtyInput = row.querySelector('.po-qty, .so-qty');
+  const qtyInput = row.querySelector('.po-qty, .so-qty, .st-qty');
   qtyInput?.focus();
 });
 

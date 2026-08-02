@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(`sales_invoices/edit/${id}`);
+    Atlas.page.redirect(`sales-invoices/edit/${id}`);
   });
 
   /*** save */
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
 
       const result = await Atlas.ajax.post(
-        'sales_invoices/save',
+        'sales-invoices/save',
         salesInvoice
       );
 
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       hidSalesInvoiceId.value = result.data.sales_invoice_id;
       isEditMode = true;
       isDirty = false;
-      setTimeout(() => Atlas.page.redirect(`sales_invoices/edit/${result.data.sales_invoice_id}`), 1500);
+      setTimeout(() => Atlas.page.redirect(`sales-invoices/edit/${result.data.sales_invoice_id}`), 1500);
     }
     finally {
       btnSaveSalesInvoice.disabled = false;
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       const response = await Atlas.ajax.post(
-        'sales_invoices/post',
+        'sales-invoices/post',
         {
           ids: ids
         }
@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const result = await Atlas.ajax.post(
-      'sales_invoices/cancel',
+      'sales-invoices/cancel',
       {
         ids: ids,
         cancel_reason: reason

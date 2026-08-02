@@ -19,15 +19,17 @@
       value="<?= $purchaseOrder['header']->supplier_id ?>">
 
     <div class="form-row">
+
       <div class="form-group col-md-3">
         <label for="txtGRNNo">GRN No.</label>
         <input
           type="text"
           id="txtGRNNo"
           class="form-control form-control-sm"
-          value="(Auto Generated)"
+          value="AUTO-GENERATED"
           readonly>
       </div>
+
       <div class="form-group col-md-3">
         <label for="dtGRNDate">GRN Date</label>
         <input
@@ -36,6 +38,7 @@
           class="form-control form-control-sm"
           value="<?= date('Y-m-d') ?>">
       </div>
+
       <div class="form-group col-md-6">
         <label for="txtSupplier">Supplier</label>
         <input
@@ -45,6 +48,7 @@
           value="<?= htmlspecialchars($purchaseOrder['header']->supplier_name) ?>"
           readonly>
       </div>
+
     </div>
     <div class="form-row">
       <div class="form-group col-md-3">
@@ -56,7 +60,22 @@
           value="<?= htmlspecialchars($purchaseOrder['header']->po_no) ?>"
           readonly>
       </div>
+
+      <?php /*** this field for visual only */ ?>
       <div class="form-group col-md-9">
+        <label for="txtPORemarks">PO Remarks</label>
+        <input
+          type="text"
+          id="txtPORemarks"
+          class="form-control form-control-sm text-uppercase"
+          value="<?= htmlspecialchars($purchaseOrder['header']->remarks) ?>"
+          readonly>
+      </div>
+
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-12">
         <label for="txtRemarks">Remarks</label>
         <input
           type="text"

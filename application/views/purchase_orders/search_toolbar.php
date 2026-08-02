@@ -53,6 +53,17 @@
       </select>
     </div>
 
+    <div style="min-width:160px;">
+      <label for="txtGenericSearch">Search</label>
+      <input
+        id="txtGenericSearch"
+        type="text"
+        name="keyword"
+        value="<?= htmlspecialchars($keyword ?? ''); ?>"
+        class="form-control form-control-sm"
+        placeholder="<?= $searchPlaceHolder ?? 'Search...' ?>">
+    </div>
+
     <div>
       <button
         type="submit"

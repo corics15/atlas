@@ -244,35 +244,35 @@ class Sales_order_model extends CI_Model
 
       foreach ($ids as $id) {
 
-          $salesOrder = $this->db
-              ->where('id', $id)
-              ->get('t_sales_orders')
-              ->row();
+        $salesOrder = $this->db
+            ->where('id', $id)
+            ->get('t_sales_orders')
+            ->row();
 
-          if (!$salesOrder) {
-            throw new Exception(
-              'Sales Order not found.'
+        if (!$salesOrder) {
+          throw new Exception(
+            'Sales Order not found.'
+          );
+        }
+
+        if ($salesOrder->status !== 'OPEN') {
+          throw new Exception(
+            "Sales Order {$salesOrder->so_no} is already {$salesOrder->status}."
+          );
+        }
+
+        $this->db
+            ->where('id', $id)
+            ->update(
+                't_sales_orders',
+                [
+                  'status'     => 'POSTED',
+                  'posted_by'  => $this->session->userdata('user_id'),
+                  'posted_on'  => date('Y-m-d H:i:s'),
+                  'updated_by' => $this->session->userdata('user_id'),
+                  'updated_on' => date('Y-m-d H:i:s')
+                ]
             );
-          }
-
-          if ($salesOrder->status !== 'OPEN') {
-            throw new Exception(
-              "Sales Order {$salesOrder->so_no} is already {$salesOrder->status}."
-            );
-          }
-
-          $this->db
-              ->where('id', $id)
-              ->update(
-                  't_sales_orders',
-                  [
-                    'status'     => 'POSTED',
-                    'posted_by'  => $this->session->userdata('user_id'),
-                    'posted_on'  => date('Y-m-d H:i:s'),
-                    'updated_by' => $this->session->userdata('user_id'),
-                    'updated_on' => date('Y-m-d H:i:s')
-                  ]
-              );
       }
 
       if (!$this->db->trans_status()) {
