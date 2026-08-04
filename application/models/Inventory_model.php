@@ -13,61 +13,6 @@ class Inventory_model extends CI_Model
     $this->load->model('Sales_return_model');
   }
 
-  /*** goods receiving */
-  public function receive($grn, $details)
-  {
-    $this->validateGoodsReceiptPosting($grn);
-
-    foreach ($details as $detail) {
-      $this->Branch_inventory_model->adjustBalance(
-        $grn['branch_id'],
-        $detail->product_id,
-        $detail->qty_receive
-      );
-    }
-
-    // $this->writeStockLedger(
-    //   $grn,
-    //   $details
-    // );
-
-    $this->writeStockLedger(
-      $grn['branch_id'],
-      'GRN',
-      $grn['id'],
-      $grn['grn_no'],
-      $details,
-      'qty_receive',
-      NULL,
-      'unit_cost'
-    );
-
-    /*** parked until Sales, Sales Returns, and Purchase Returns are completed. */
-    // foreach ($details as $detail) {
-    //   $balance = $this->Branch_inventory_model
-    //       ->getBalance(
-    //         // $grn['branch_id'], /*** parked at the moment */
-    //         1,
-    //         $detail->product_id
-    //       );
-
-    //   $this->writeStockLedger(
-    //     // $grn['branch_id'], /*** parked at the moment */
-    //     1,
-    //     'GRN',
-    //     $grn['id'],
-    //     $grn['grn_no'],
-    //     $detail->product_id,
-    //     $detail->qty_receive,
-    //     0,
-    //     $balance->qty_on_hand,
-    //     $detail->unit_cost
-    //   );
-    // }
-
-    $this->markGoodsReceiptAsPosted($grn);
-  }
-
   public function getStockLedger($productId, $filters = [])
   {
     if (!empty($filters['date_from'])) {
@@ -137,9 +82,31 @@ class Inventory_model extends CI_Model
         ->result();
   }
 
-  public function postGoodsReceipt($goodsReceiptId)
+  /*** post post goods receipt */
+  public function postGoodsReceipt($grn, $details)
   {
+    $this->validateGoodsReceiptPosting($grn);
 
+    foreach ($details as $detail) {
+      $this->Branch_inventory_model->adjustBalance(
+        $grn['branch_id'],
+        $detail->product_id,
+        $detail->qty_receive
+      );
+    }
+
+    $this->writeStockLedger(
+      $grn['branch_id'],
+      'GRN',
+      $grn['id'],
+      $grn['grn_no'],
+      $details,
+      'qty_receive',
+      NULL,
+      'unit_cost'
+    );
+
+    $this->markGoodsReceiptAsPosted($grn);
   }
 
   public function postInventoryAdjustment($adjustmentId)
@@ -481,62 +448,172 @@ class Inventory_model extends CI_Model
     }
   }
 
-  public function reverseTransaction($transactionType, $referenceId)
+  /*** post delivery receipt */
+  public function postDeliveryReceipt($deliveryReceiptId)
   {
+    $this->db->trans_begin();
 
-  }
+    try
+    {
+      $header = $this->Delivery_receipt_model->get($deliveryReceiptId);
 
-  private function writeStockLedger_old($grn, $details)
-  {
-    $sql = "INSERT INTO t_stock_ledger
-              (
-                transaction_type,
-                reference_id,
-                reference_no,
-                product_id,
-                qty_in,
-                qty_out,
-                balance_after,
-                unit_cost,
-                entered_by,
-                entered_on
-              )
-            VALUES
-              (
-                ?,?,?,?,?,?,?,?,
-                ?,CURRENT_TIMESTAMP
-              )";
+      if (!$header) {
+        return [
+          'success' => FALSE,
+          'message' => 'Delivery Receipt not found.'
+        ];
+      }
 
-    foreach ($details as $detail) {
+      if ($header->status != 'OPEN') {
+        return [
+          'success' => FALSE,
+          'message' => "Delivery Receipt is already {$header->status}."
+        ];
+      }
 
-      $balance = $this->Branch_inventory_model->getBalance($grn['branch_id'], $detail->product_id);
-      $balance = $balance ? $balance->qty_on_hand : 0;
+      $branchId = (int)$header->branch_id;
+      $details = $this->Delivery_receipt_model->getDetails($deliveryReceiptId);
 
-      $query = $this->db->query(
-        $sql,
-        [
-          'GRN',
-          $grn['id'],
-          $grn['grn_no'],
-          $detail->product_id,
-          $detail->qty_receive,
-          0,
-          $balance,
-          $detail->unit_cost,
-          $this->session->userdata('user_id')
-        ]
-      );
+      /*** quantity validation */
+      foreach ($details as $detail)
+      {
+        $balance = $this->Branch_inventory_model->getBalance(
+            $branchId,
+            $detail->product_id
+        );
 
-      if (!$query) {
-        throw new Exception(
-          'Unable to write Stock Ledger.'
+        $available = $balance ? $balance->qty_on_hand : 0;
+        if ($available < $detail->qty) {
+          return [
+            'success' => FALSE,
+            'message' =>
+                "Insufficient stock.\n\n" .
+                "{$detail->description}\n\n" .
+                "Available : {$available}\n" .
+                "Required  : {$detail->qty}"
+          ];
+        }
+      }
+
+      /*** deduct inventory */
+      foreach ($details as $detail)
+      {
+        $this->Branch_inventory_model->adjustBalance(
+            $branchId,
+            $detail->product_id,
+            -$detail->qty
+        );
+
+        $this->writeStockLedger(
+            $branchId,
+            'DR',
+            $header->id,
+            $header->dr_no,
+            [$detail],
+            NULL,
+            'qty'
         );
       }
+
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception(
+          'Unable to post Delivery Receipt.'
+        );
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => ''
+      ];
+
+    }
+    catch (Exception $ex) {
+
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage()
+      ];
+    }
+  }
+
+  /*** reverse transaction */
+  public function reverseTransaction($transactionType, $referenceId)
+  {
+    try {
+
+      switch ($transactionType) {
+        case 'DR':
+          $header = $this->Delivery_receipt_model->get($referenceId);
+          $details = $this->Delivery_receipt_model->getDetails($referenceId);
+          $referenceNo = $header->dr_no;
+          break;
+
+        /*
+        case 'PR':
+            ...
+            break;
+
+        case 'SI':
+            ...
+            break;
+        */
+
+        default:
+          throw new Exception('Unsupported transaction type.');
+
+      }
+
+      $branchId = (int)$header->branch_id;
+
+      foreach ($details as $detail)
+      {
+        /*** restore inventory */
+        $this->Branch_inventory_model->adjustBalance(
+            $branchId,
+            $detail->product_id,
+            $detail->qty_reverse
+        );
+
+        /*** write reversal ledger */
+        $this->writeStockLedger(
+            $branchId,
+            $transactionType . '-CANCEL',
+            $header->id,
+            $referenceNo,
+            [$detail],
+            NULL,
+            'qty_reverse'
+        );
+      }
+
+      if (!$this->db->trans_status()) {
+        throw new Exception(
+          'Unable to reverse inventory transaction.'
+        );
+      }
+
+      return [
+        'success' => TRUE,
+        'message' => ''
+      ];
+
+    }
+    catch (Exception $ex) {
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage()
+      ];
+
     }
   }
 
   /*** write stock ledger */
-  private function writeStockLedger($branchId, $transactionType, $referenceId, $referenceNo, $details, $qtyInField, $qtyOutField, $unitCostField = NULL)
+  public function writeStockLedger($branchId, $transactionType, $referenceId, $referenceNo, $details, $qtyInField, $qtyOutField, $unitCostField = NULL)
   {
     $sql = "INSERT INTO t_stock_ledger
             (
@@ -642,6 +719,55 @@ class Inventory_model extends CI_Model
       throw new Exception(
         'Unable to update Goods Receipt inventory status.'
       );
+    }
+  }
+
+  private function writeStockLedger_old($grn, $details)
+  {
+    $sql = "INSERT INTO t_stock_ledger
+              (
+                transaction_type,
+                reference_id,
+                reference_no,
+                product_id,
+                qty_in,
+                qty_out,
+                balance_after,
+                unit_cost,
+                entered_by,
+                entered_on
+              )
+            VALUES
+              (
+                ?,?,?,?,?,?,?,?,
+                ?,CURRENT_TIMESTAMP
+              )";
+
+    foreach ($details as $detail) {
+
+      $balance = $this->Branch_inventory_model->getBalance($grn['branch_id'], $detail->product_id);
+      $balance = $balance ? $balance->qty_on_hand : 0;
+
+      $query = $this->db->query(
+        $sql,
+        [
+          'GRN',
+          $grn['id'],
+          $grn['grn_no'],
+          $detail->product_id,
+          $detail->qty_receive,
+          0,
+          $balance,
+          $detail->unit_cost,
+          $this->session->userdata('user_id')
+        ]
+      );
+
+      if (!$query) {
+        throw new Exception(
+          'Unable to write Stock Ledger.'
+        );
+      }
     }
   }
 }

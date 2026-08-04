@@ -24,12 +24,13 @@ class Product_model extends CI_Model
     }
 
     $products = $this->db
-        ->order_by('description ASC')
+        ->order_by('updated_on DESC NULLS LAST, description ASC', null, false)
         ->get('v_products')
         ->result();
 
     $branchId = (int)$this->session->userdata('branch_id');
 
+    /*** override qty_on_hand in table m_products, use qty_on_hand on t_branch_inventory instead */
     foreach ($products as $product)
     {
       $balance = $this->Branch_inventory_model->getBalance(

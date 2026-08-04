@@ -84,11 +84,29 @@ class Sales_order_model extends CI_Model
 
     return $this->db
       ->select("
-          so.*,
-          c.customer_name,
-          concat(s.first_name, ' ', s.last_name) AS salesman_name,
-          t.terms_name
-      ")
+            so.*,
+            c.customer_name,
+            concat(s.first_name, ' ', s.last_name) AS salesman_name,
+            t.terms_name,
+            (
+                SELECT COUNT(*)
+                FROM t_sales_order_details sod
+                LEFT JOIN (
+                    SELECT
+                        drd.sales_order_detail_id,
+                        SUM(drd.qty) AS qty_delivered
+                    FROM t_delivery_receipt_details drd
+                    INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
+                    WHERE dr.status = 'POSTED'
+                    GROUP BY drd.sales_order_detail_id
+                ) dr
+                    ON dr.sales_order_detail_id = sod.id
+                WHERE sod.sales_order_id = so.id
+                AND (
+                  sod.qty - COALESCE(dr.qty_delivered, 0)
+                ) > 0
+            ) AS remaining_items
+        ")
       ->from('t_sales_orders so')
       ->join(
           'm_customers c',

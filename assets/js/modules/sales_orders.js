@@ -12,6 +12,7 @@ const txtSalesOrderRemarks = document.getElementById('txtSalesOrderRemarks');
 
 const tblSalesOrderDetails = document.getElementById('tblSalesOrderDetails');
 
+const btnNewSalesOrder = document.getElementById('btnNewSalesOrder');
 const btnSaveSalesOrder = document.getElementById('btnSaveSalesOrder');
 const btnEditSalesOrder = document.getElementById('btnEditSalesOrder');
 const btnCancelSalesOrder = document.getElementById('btnCancelSalesOrder');
@@ -19,6 +20,7 @@ const btnRefreshSalesOrder = document.getElementById('btnRefreshSalesOrder');
 const btnPrintSalesOrder = document.getElementById('btnPrintSalesOrder');
 const btnPostSalesOrder = document.getElementById('btnPostSalesOrder');
 const btnCreateSalesInvoice = document.getElementById('btnCreateSalesInvoice');
+const btnCreateDeliveryReceipt = document.getElementById('btnCreateDeliveryReceipt');
 
 let isDirty = false;
 let isLoading = true;
@@ -78,6 +80,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     markDirty();
   });
+
+  /*** new */
+  btnNewSalesOrder?.addEventListener('click', () => Atlas.page.redirect(`sales-orders/create/`));
 
   /*** save */
   btnSaveSalesOrder?.addEventListener('click', async () => {
@@ -156,18 +161,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       return false;
     }
 
-    const result = await Atlas.dialog.confirm(
-      'Confirm Action',
-      `<div class="text-brown text-center">
-        <p>Inventory quantities will be updated.<br>
-        This action cannot be undone.</p>
-        <p class="font-weight-500 text-danger">Post Sales Order?</p>
-      </div>`
-    );
+    // const result = await Atlas.dialog.confirm(
+    //   'Confirm Action',
+    //   `<div class="text-brown text-center">
+    //     <p>Inventory quantities will be updated.<br>
+    //     This action cannot be undone.</p>
+    //     <p class="font-weight-500 text-danger">Post Sales Order?</p>
+    //   </div>`
+    // );
 
-    if (!result) {
-      return;
-    }
+    // if (!result) {
+    //   return;
+    // }
 
     btnPostSalesOrder.disabled = true;
 
@@ -213,6 +218,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     Atlas.page.redirect(`sales-invoices/create/${ids[0]}`);
+  });
+
+  /*** create delivery receipt */
+  btnCreateDeliveryReceipt?.addEventListener('click', () => {
+    const id = getSelectedSalesOrderId();
+
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+
+    if (!row) {
+      return;
+    }
+
+    if (row.dataset.status !== 'POSTED') {
+      Atlas.toast.warning('Only POSTED Sales Orders can create a Delivery Receipt.');
+      return;
+    }
+
+    if (Atlas.format.parseNumber(row.dataset.remainingItems) === 0) {
+      Atlas.toast.warning('This Sales Order is already fully delivered.');
+      return;
+    }
+
+    Atlas.page.redirect(`delivery-receipts/create/${id}`);
   });
 
   /*** print */

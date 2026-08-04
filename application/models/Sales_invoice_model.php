@@ -494,6 +494,85 @@ class Sales_invoice_model extends CI_Model
     return $row->remaining_count > 0;
   }
 
+  public function getDeliveryReceipt($deliveryReceiptId)
+  {
+    return $this->db
+        ->select("
+            dr.*,
+            dr.dr_no,
+            so.so_no,
+            c.customer_name,
+            CONCAT(s.first_name,' ',s.last_name) AS salesman_name,
+            t.terms_name
+        ")
+        ->from('t_delivery_receipts dr')
+        ->join(
+            't_sales_orders so',
+            'so.id = dr.sales_order_id'
+        )
+        ->join(
+            'm_customers c',
+            'c.id = dr.customer_id',
+            'left'
+        )
+        ->join(
+            'm_salesmen s',
+            's.id = so.salesman_id',
+            'left'
+        )
+        ->join(
+            'm_terms t',
+            't.id = so.terms_id',
+            'left'
+        )
+        ->where('dr.id', $deliveryReceiptId)
+        ->where('dr.status', 'POSTED')
+        ->get()
+        ->row();
+  }
+
+  public function getDeliveryReceiptDetails($deliveryReceiptId)
+  {
+    $branchId = (int)$this->session->userdata('branch_id');
+
+    return $this->db->query("SELECT
+                                drd.id AS delivery_receipt_detail_id,
+                                drd.sales_order_detail_id,
+                                drd.product_id,
+                                drd.qty - COALESCE(inv.qty_invoiced, 0) AS qty,
+                                p.barcode,
+                                p.description,
+                                COALESCE(
+                                    bi.qty_on_hand,
+                                    0
+                                ) AS qty_available,
+                                u.uom
+                              FROM t_delivery_receipt_details drd
+                              INNER JOIN m_products p ON p.id = drd.product_id
+                              LEFT JOIN t_branch_inventory bi ON bi.product_id = drd.product_id AND bi.branch_id = ?
+                              LEFT JOIN m_uom u ON u.id = p.uom_id
+                              LEFT JOIN (
+                                  SELECT
+                                      sid.sales_order_detail_id,
+                                      SUM(sid.qty) qty_invoiced
+                                  FROM t_sales_invoice_details sid
+                                  INNER JOIN t_sales_invoices si ON si.id = sid.sales_invoice_id
+                                  WHERE si.status <> 'CANCELLED'
+                                  GROUP BY sid.sales_order_detail_id
+                              ) inv
+                                  ON inv.sales_order_detail_id = drd.sales_order_detail_id
+                              WHERE drd.delivery_receipt_id = ?
+                              AND (
+                                drd.qty - COALESCE(inv.qty_invoiced, 0)
+                              ) > 0
+                              ORDER BY drd.id
+                            ",
+                            [
+                                $branchId,
+                                $deliveryReceiptId
+                            ])->result();
+  }
+
   private function generateInvoiceNo()
   {
     return 'SI-' . date('YmdHis');

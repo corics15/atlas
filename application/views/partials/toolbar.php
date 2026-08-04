@@ -115,7 +115,16 @@
         <i class="<?= $toolbar['create']['icon']; ?>"></i>
         <?= $toolbar['create']['text']; ?>
       </button>
-      <?php endif ?>      
+      <?php endif ?>
+
+      <?php /*** create DR item*/  if (!empty($toolbar['create-dr'])) : ?>
+      <button
+        id="<?= $toolbar['create-dr']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['create-dr']['icon']; ?>"></i>
+        <?= $toolbar['create-dr']['text']; ?>
+      </button>
+      <?php endif ?>
 
       <div class="dropdown-divider"></div>
 

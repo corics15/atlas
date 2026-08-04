@@ -45,7 +45,7 @@
         </div>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('inventory_adjustments/view/'.$row->id) ?>" class="text-olive text-wrap">
+        <a href="<?= base_url('inventory-adjustments/view/'.$row->id) ?>" class="text-olive text-wrap">
           <?= htmlspecialchars($row->adjustment_no); ?>
         </a>
       </td>

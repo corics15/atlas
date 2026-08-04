@@ -30,12 +30,14 @@
           <?php
             $badgeClass = [
               'GRN'        => 'badge-success',
-              'SALE'       => 'badge-danger',
+              'SALE'       => 'badge-turquoise',
               'ADJUSTMENT' => 'badge-warning',
               'TRANSFER'   => 'badge-info',
               'SR'         => 'badge-primary',
               'SI'         => 'badge-secondary',
               'PR'         => 'badge-indigo-2',
+              'DR'         => 'badge-avocado-green',
+              'DR-CANCEL'  => 'badge-danger',
             ];
           ?>
 
@@ -59,8 +61,12 @@
               case 'PR':
                 $url = 'purchase-returns/edit/';
                 break;
+              case 'DR':
+              case 'DR-CANCEL':
+                $url = 'delivery-receipts/edit/';
+                break;
               default: /*** ADJUSTMENT */
-                $url = 'inventory_adjustments/view/';
+                $url = 'inventory-adjustments/view/';
                 break;
             }
           ?>
@@ -111,7 +117,7 @@
 
   <?php else : ?>
   <tr>
-    <td colspan="8" class="text-center">
+    <td colspan="8" class="text-center py-3">
       No inventory transactions found.
     </td>
   </tr>

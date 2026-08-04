@@ -21,6 +21,9 @@
               case 'OPEN':
                 $statusClass = 'text-secondary';
                 break;
+              case 'COMPLETED':
+                $statusClass = 'text-primary';
+                break;
               default:
                 $statusClass = 'text-danger';
                 break;

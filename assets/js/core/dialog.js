@@ -21,7 +21,7 @@ class AtlasDialog {
     const result = await Swal.fire({
       icon: options.icon || 'warning',
       title: options.title,
-      text: options.text || '',
+      html: options.html || '',
       input: 'textarea',
       inputLabel: options.inputLabel || '',
       inputPlaceholder: options.inputPlaceholder || '',

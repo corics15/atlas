@@ -269,6 +269,14 @@ span.badge {
   background-color: #4948d5 !important;
 }
 
+.badge-avocado-green {
+  background-color: #99a125 !important;
+}
+
+.badge-turquoise {
+  background-color: #3fc7c1 !important;
+}
+
 
 /** checkboxes */
 .custom-control-input:checked~.custom-control-label::before {

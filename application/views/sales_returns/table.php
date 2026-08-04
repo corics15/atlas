@@ -39,10 +39,13 @@
         <?= date('m/d/Y', strtotime($row->return_date)) ?>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('sales_returns/edit/').$row->id ?>" class="text-wrap text-olive"><?= $row->sr_no ?></a>
+        <a href="<?= base_url('sales-returns/edit/').$row->id ?>" class="text-wrap text-olive"><?= $row->sr_no ?></a>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('sales_invoices/edit/').$row->sales_invoice_id  ?>" class="text-wrap text-olive"><?= $row->si_no ?></a>
+        <a href="<?= base_url('sales-invoices/edit/').$row->sales_invoice_id  ?>" class="text-wrap text-olive" target="_blank">
+          <i class="fas fa-external-link-alt fa-xs mr-1"></i>
+          <?= $row->si_no ?>
+        </a>
       </td>
       <td>
         <?= htmlspecialchars($row->customer_name) ?>

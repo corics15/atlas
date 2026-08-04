@@ -168,7 +168,7 @@ class Goods_receipt_model extends CI_Model
 
       $this->validateReceiveQuantities($details);
 
-      $this->Inventory_model->receive($grn, $details);
+      $this->Inventory_model->postGoodsReceipt($grn, $details);
       $this->updatePurchaseOrderDetails($details);
       $this->updatePurchaseOrderStatus($grn['po_id']);
 

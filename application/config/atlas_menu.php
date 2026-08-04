@@ -150,12 +150,17 @@ $config['atlas_menu'] = [
       //   'url'   => 'sales-invoices/create'
       // ],
       [
+        'title' => 'Delivery Receipts',
+        'icon'  => 'fas fa-truck',
+        'url'   => 'delivery-receipts'
+      ],
+      [
         'title' => 'Sales Invoice List',
         'icon'  => 'fas fa-receipt',
         'url'   => 'sales-invoices'
       ],
       [
-        'title' => 'Sales Returns',
+        'title' => 'Sales Return List',
         'icon'  => 'fas fa-exchange-alt',
         'url'   => 'sales-returns'
       ]

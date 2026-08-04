@@ -17,7 +17,7 @@ class Sales_returns extends MY_Controller
 
   public function index()
   {
-    $this->setPage('Sales Returns');
+    $this->setPage('Sales Return List');
     $this->pageScript = 'sales_returns';
     $this->data['salesReturns'] = $this->Sales_return_model->getAll();
     $this->data['recordCount'] = count($this->data['salesReturns']);

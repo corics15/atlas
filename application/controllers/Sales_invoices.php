@@ -17,7 +17,7 @@ class Sales_invoices extends MY_Controller
 
   public function index()
   {
-    $this->setPage('Sales Invoices');
+    $this->setPage('Sales Invoice List');
     $this->pageScript = 'sales_invoices';
     $this->data['salesInvoices'] = $this->Sales_invoice_model->getAll();
     $this->data['recordCount'] = count($this->data['salesInvoices']);
@@ -65,7 +65,43 @@ class Sales_invoices extends MY_Controller
     $this->render('sales_invoices/index');
   }
 
-  public function create($salesOrderId = null)
+  public function create($deliveryReceiptId = null)
+  {
+    $this->setPage('New Sales Invoice');
+    $this->pageScript = 'sales_invoices';
+    $this->data['customers'] = $this->Customer_model->getDropdown();
+    $this->data['salesmen'] = $this->Salesman_model->getDropdown();
+    $this->data['terms'] = $this->Term_model->getDropdown();
+    $this->data['deliveryReceiptId'] = $deliveryReceiptId;
+
+    if ($deliveryReceiptId) {
+
+      $deliveryReceipt = $this->Sales_invoice_model ->getDeliveryReceipt($deliveryReceiptId);
+
+      if (!$deliveryReceipt) {
+        $this->data['error_message'] = 'Delivery Receipt not found or not POSTED.';
+
+        $this->render('sales_invoices/create');
+        return;
+      }
+
+      $this->data['deliveryReceipt'] = $deliveryReceipt;
+      $details = $this->Sales_invoice_model->getDeliveryReceiptDetails($deliveryReceiptId);
+
+      if (empty($details)) {
+        $this->data['error_message'] = 'This Delivery Receipt has already been fully invoiced.';
+
+        $this->render('sales_invoices/create');
+        return;
+      }
+
+      $this->data['details'] = $details;
+    }
+
+    $this->render('sales_invoices/create');
+  }
+
+  public function create_old($salesOrderId = null)
   {
     $this->setPage('New Sales Invoice');
     $this->pageScript = 'sales_invoices';

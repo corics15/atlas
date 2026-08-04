@@ -27,18 +27,23 @@ class Sales_orders extends MY_Controller
     $this->data['toolbar'] = [
       'edit' => [
         'id'   => 'btnEditSalesOrder',
-        'text' => 'Edit',
+        'text' => 'Edit SO',
         'icon' => 'fas fa-edit'
       ],
       'post' => [
         'id'   => 'btnPostSalesOrder',
-        'text' => 'Post',
+        'text' => 'Post SO',
         'icon' => 'fas fa-check-circle'
       ],
       'create' => [
         'id'   => 'btnCreateSalesInvoice',
-        'text' => 'Create Invoice',
+        'text' => 'Create Sales Invoice',
         'icon' => 'fas fa-file-contract'
+      ],
+      'create-dr' => [
+        'id'   => 'btnCreateDeliveryReceipt',
+        'text' => 'Create Delivery Receipt',
+        'icon' => 'fas fa-truck',
       ],
       'print' => [
         'id'   => 'btnPrintSalesOrder',

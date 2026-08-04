@@ -225,17 +225,6 @@ class Inventory_adjustment_model extends CI_Model
         throw new Exception('Only draft inventory adjustments can be posted.');
       }
 
-      // $details = $this->db
-      //     ->select('
-      //         d.*,
-      //         p.qty_on_hand
-      //     ')
-      //     ->from($this->detailTable . ' d')
-      //     ->join($this->productTable . ' p', 'p.id = d.product_id')
-      //     ->where('d.adjustment_id', $adjustmentId)
-      //     ->get()
-      //     ->result();
-
       $details = $this->db
           ->select('d.*')
           ->from($this->detailTable . ' d')
@@ -250,13 +239,6 @@ class Inventory_adjustment_model extends CI_Model
 
       /*** load details */
       foreach ($details as $detail) {
-        // $newBalance = $detail->qty_on_hand + $detail->adjustment_qty;
-
-        // /*** update product stock */
-        // $this->updateProductStock(
-        //   $detail->product_id,
-        //   $newBalance
-        // );
 
         $this->Branch_inventory_model->adjustBalance(
           $branchId,

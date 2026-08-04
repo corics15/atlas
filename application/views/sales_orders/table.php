@@ -12,6 +12,7 @@
     <th>Salesman</th>
     <th class="text-center">Terms</th>
     <th>Remarks</th>
+    <th class="text-center">Remaining</th>
     <th width="110" class="text-center">Status</th>
   </tr>
 </thead>
@@ -28,7 +29,8 @@
     <tr
       class="stock-transfer-row"
       data-id="<?= $row->id ?>"
-      data-status="<?= $row->status ?>">
+      data-status="<?= $row->status ?>"
+      data-remaining-items="<?= $row->remaining_items ?>">
       <td class="text-center">
         <div class="custom-control custom-checkbox ml-2 mt-1">
           <input type="checkbox" class="custom-control-input chkSalesOrder" id="chkSalesOrder-<?= $row->id ?>" value="<?= $row->id ?>">
@@ -39,7 +41,7 @@
         <?= date('m/d/Y', strtotime($row->order_date)) ?>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('sales_orders/edit/').$row->id ?>" class="text-wrap text-olive"><?= $row->so_no ?></a>
+        <a href="<?= base_url('sales-orders/edit/').$row->id ?>" class="text-wrap text-olive"><?= $row->so_no ?></a>
       </td>
       <td>
         <?= htmlspecialchars($row->customer_name) ?>
@@ -51,7 +53,16 @@
         <?= htmlspecialchars($row->terms_name) ?>
       </td>
       <td>
-        <?= htmlspecialchars($row->remarks) ?>
+        <?php
+          $remarks = htmlspecialchars($row->remarks);
+          echo (mb_strlen($remarks) > 30)
+            ? mb_strimwidth($remarks, 0, 30, '...')
+            : $remarks;
+        ?>
+      </td>
+
+      <td class="text-center">
+        <?= number_format($row->remaining_items, 0) ?>
       </td>
 
       <td class="text-center">
@@ -59,19 +70,18 @@
           $badge = 'secondary';
 
           switch ($row->status) {
-
             case 'OPEN':
               $badge = 'secondary';
               break;
-          
             case 'POSTED':
               $badge = 'success';
               break;
-
+            case 'COMPLETED':
+              $badge = 'primary';
+              break;
             case 'CANCELLED':
               $badge = 'danger';
               break;
-          
           }
           ?>
         <span class="badge badge-<?= $badge ?>">
