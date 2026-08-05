@@ -38,6 +38,13 @@ class Inventory_model extends CI_Model
       );
     }
 
+    if (!empty($filters['branch_id'])) {
+      $this->db->where(
+        'sl.branch_id',
+        $filters['branch_id']
+      );
+    }
+
     return $this->db
       ->select("
         sl.transaction_date,

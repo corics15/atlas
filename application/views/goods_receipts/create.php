@@ -23,6 +23,20 @@
           </table>
         </div>
       </div>
+
+      <div class="card-body">
+        <div class="row justify-content-end">
+          <div class="col-md-2">
+            <button
+              type="button"
+              id="btnSaveGoodsReceipt"
+              class="btn btn-sm btn-default btn-block">
+                Save Draft
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>

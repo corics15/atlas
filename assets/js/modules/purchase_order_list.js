@@ -19,9 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateToolbarState();
 
   /*** new purchase order */
-  btnNewPurchaseOrder.addEventListener('click', () => {
-    Atlas.page.redirect('purchase-orders');
-  });
+  btnNewPurchaseOrder.addEventListener('click', () => Atlas.page.redirect('purchase-orders'));
 
   /*** edit purchase order */
   btnEditPurchaseOrder.addEventListener('click', () => {
@@ -46,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /*** refresh purchase order */
-  btnRefreshPurchaseOrder.addEventListener('click', () => Atlas.page.refresh());
+  btnRefreshPurchaseOrder.addEventListener('click', () => Atlas.page.redirect(`purchase-orders/list`));
 
   /*** cancel purchase order */
   btnCancelPurchaseOrder.addEventListener('click', async () => {

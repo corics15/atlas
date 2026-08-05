@@ -192,25 +192,29 @@ const validateInventoryAdjustment = () => {
   }
 
   for (const row of rows) {
-    const txtAdjustment = row.querySelector('.ia-adjustment');
-    const adjustment = parseFloat(txtAdjustment.value) || 0;
+    const el = row.querySelector('.ia-adjustment');
+
+    /** if it's an input, use its value; if it's a td, use its textContent */
+    const adjustment = Atlas.format.parseNumber(el instanceof HTMLInputElement ? el.value : el.textContent) || 0;
 
     if (adjustment === 0) {
+      Atlas.toast.warning('Adjustment quantity cannot be zero.');
 
-      Atlas.toast.warning(
-        'Adjustment quantity cannot be zero.'
-      );
+      /*** Only focus/select if it's an input */
+      if (el instanceof HTMLInputElement) {
+        el.focus();
+        el.select();
+      }
 
-      txtAdjustment.focus();
       row.scrollIntoView({
         behavior: 'smooth',
         block: 'center'
       });
-      txtAdjustment.select();
 
       return false;
     }
   }
+
   return true;
 };
 
@@ -309,12 +313,16 @@ const postInventoryAdjustment = async () => {
     return;
   }
 
-  const confirmed = await Atlas.dialog.confirm(
-    'Post Inventory Adjustment?',
-    'This action cannot be undone.'
+  const result = await Atlas.dialog.confirm(
+    'Confirm Action',
+    `<div class="text-brown text-center">
+      <p>Inventory quantities will be updated.<br>
+      This action cannot be undone.</p>
+      <p class="font-weight-500 text-danger">Post Inventory Adjustment?</p>
+    </div>`
   );
 
-  if (!confirmed) {
+  if (!result) {
     return;
   }
 

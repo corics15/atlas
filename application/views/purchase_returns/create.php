@@ -27,23 +27,37 @@
 
         <?php else : ?>
 
-        <div class="card-header">
-          <h3 class="card-title">
-            Purchase Return Details
-          </h3>
-        </div>
-
-        <div class="card-body p-0">
-          <div class="table-responsive table-scroll">
-
-            <table class="table table-sm table-bordered table-hover" id="tblPurchaseReturnDetails">
-
-              <?php $this->load->view('purchase_returns/details_table'); ?>
-
-            </table>
-
+          <div class="card-header">
+            <h3 class="card-title">
+              Purchase Return Details
+            </h3>
           </div>
-        </div>
+
+          <div class="card-body p-0">
+            <div class="table-responsive table-scroll">
+
+              <table class="table table-sm table-bordered table-hover" id="tblPurchaseReturnDetails">
+
+                <?php $this->load->view('purchase_returns/details_table'); ?>
+
+              </table>
+
+            </div>
+          </div>
+
+            <div class="card-body">
+              <div class="row justify-content-end">
+                <div class="col-md-2">
+                  <button
+                    type="button"
+                    id="btnSavePurchaseReturn"
+                    class="btn btn-sm btn-default btn-block">
+                      Save Purchase Return
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
         <?php endif ?>
 

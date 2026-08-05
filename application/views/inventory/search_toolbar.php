@@ -36,6 +36,22 @@
       </select>
     </div>
 
+    <div style="min-width:150px;">
+      <label for="selSLBranch">Branch</label>
+      <select
+          id="selSLBranch"
+          name="branch_id"
+          class="form-control form-control-sm custom-select">
+          <?php foreach ($branches as $branch): ?>
+            <option
+              value="<?= $branch->id ?>"
+              <?= $selectedBranchId == $branch->id ? 'selected' : '' ?>>
+              <?= htmlspecialchars($branch->branch_name) ?>
+            </option>
+          <?php endforeach; ?>
+      </select>
+    </div>
+
     <div class="">
       <button
         type="submit"

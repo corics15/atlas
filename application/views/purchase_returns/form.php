@@ -3,7 +3,7 @@
 
     <div class="d-flex justify-content-between align-items-center">
       <h3 class="card-title">
-        Purchase Return Header
+        Purchase Return Information
       </h3>
 
       <?php if (isset($purchaseReturn)) : ?>
@@ -49,78 +49,53 @@
         id="hidSupplierId"
         value="<?= isset($goodsReceipt) ? $goodsReceipt->supplier_id : '' ?>">
 
-    <div class="form-row">
-      <div class="form-group col-md-3">
-        <label for="txtPRNo">PR No.</label>
-        <input
-          type="text"
-          id="txtPRNo"
-          class="form-control form-control-sm"
-          value="<?= isset($purchaseReturn) ? $purchaseReturn->pr_no : 'AUTO-GENERATED' ?>"
-          readonly>
-      </div>
-      <div class="form-group col-md-3">
-        <label for="dtReturnDate">Return Date</label>
-        <input
-          type="date"
-          id="dtReturnDate"
-          class="form-control form-control-sm"
-          value="<?= isset($purchaseReturn) ? $purchaseReturn->return_date : date('Y-m-d') ?>">
-      </div>
-      <div class="form-group col-md-6">
-        <label for="txtSupplier">Supplier</label>
-        <input
-          type="text"
-          id="txtSupplier"
-          class="form-control form-control-sm"
-          value="<?= htmlspecialchars($goodsReceipt->supplier_name) ?>"
-          readonly>
-      </div>
-    </div>
-
-    <div class="row">
-
-      <div class="col-md-12">
-        <div class="form-group">
-          <label for="txtGoodsReceiptRemarks">GRN Remarks</label>
+    <?php /*** header */ ?>
+    <input type="hidden" id="txtPRNo" value="">
+    <table class="table table-sm table-borderless">
+      <tr>
+        <th width="180">PR No.</th>
+        <td class="font-weight-500 text-brown" id="tdRefNo">
+          <?= isset($purchaseReturn) ? $purchaseReturn->pr_no : 'AUTO-GENERATED' ?>
+        </td>
+      </tr>
+      <tr>
+        <th>GRN No.</th>
+        <td>
+          <a href="<?= base_url('goods-receipts/view/').$goodsReceipt->id ?>" class="text-wrap text-olive" target="_blank">
+            <i class="fa-external-link-alt fas fa-xs mr-1"></i>
+            <?= htmlspecialchars($goodsReceipt->grn_no) ?>
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <th>GRN Remarks</th>
+        <td>
+          <?= htmlspecialchars($goodsReceipt->remarks)?>
+        </td>
+      </tr>
+      <tr>
+        <th>Supplier</th>
+        <td>
+          <?= htmlspecialchars($goodsReceipt->supplier_name) ?>
+        </td>
+      </tr>
+      <tr>
+        <th>Return Date</th>
+        <td>
           <input
-            id="txtGoodsReceiptRemarks"
-            class="form-control form-control-sm text-uppercase"
-            value="<?= htmlspecialchars($goodsReceipt->remarks)?>"
-            readonly>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="row">
-
-      <div class="col-md-12">
-        <div class="form-group">
-          <label for="txtPurchaseReturnRemarks">Remarks</label>
-          <input
-            id="txtPurchaseReturnRemarks"
-            class="form-control form-control-sm text-uppercase"
-            value="<?= isset($purchaseReturn) ? htmlspecialchars($purchaseReturn->remarks) : '' ?>">
-        </div>
-      </div>
-
-    </div>
-
-    <?php if (empty($error_message)) : ?>
-    <hr>
-
-    <div class="row justify-content-end">
-      <div class="col-md-2">
-        <button
-          type="button"
-          id="btnSavePurchaseReturn"
-          class="btn btn-sm btn-default btn-block">
-            Save Purchase Return
-        </button>
-      </div>
-    </div>
-    <?php endif ?>
+            type="date"
+            id="dtReturnDate"
+            class="form-control form-control-sm w-auto"
+            value="<?= isset($purchaseReturn) ? $purchaseReturn->return_date : date('Y-m-d') ?>">
+        </td>
+      </tr>
+      <tr>
+        <th>Remarks</th>
+        <td>
+          <input id="txtPurchaseReturnRemarks" class="form-control form-control-sm text-uppercase" placeholder="Enter Remarks..." value="<?= isset($purchaseReturn) ? htmlspecialchars($purchaseReturn->remarks) : '' ?>">
+        </td>
+      </tr>
+    </table>
 
   </div>
 </div>

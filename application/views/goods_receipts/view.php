@@ -32,33 +32,33 @@
 
       </div>
 
-        <?php
-          switch (htmlspecialchars($goodsReceipt->po_status)) {
-            case 'OPEN':
-              $status = '<span class="badge badge-success">OPEN</span>';
-              break;
+      <?php
+        switch (htmlspecialchars($goodsReceipt->po_status)) {
+          case 'OPEN':
+            $status = '<span class="badge badge-success">OPEN</span>';
+            break;
 
-            case 'PARTIAL':
-              $status = '<span class="badge badge-warning">PARTIAL</span>';
-              break;
+          case 'PARTIAL':
+            $status = '<span class="badge badge-warning">PARTIAL</span>';
+            break;
 
-            case 'COMPLETED':
-              $status = '<span class="badge badge-primary">COMPLETED</span>';
-              break;
+          case 'COMPLETED':
+            $status = '<span class="badge badge-primary">COMPLETED</span>';
+            break;
 
-            case 'CLOSED':
-              $status = '<span class="badge badge-secondary">CLOSED</span>';
-              break;
+          case 'CLOSED':
+            $status = '<span class="badge badge-secondary">CLOSED</span>';
+            break;
 
-            case 'CANCELLED':
-              $status = '<span class="badge badge-danger">CANCELLED</span>';
-              break;
+          case 'CANCELLED':
+            $status = '<span class="badge badge-danger">CANCELLED</span>';
+            break;
 
-            default:
-              $status = '<span class="badge badge-light">UNKNOWN</span>';
-              break;
-          }
-        ?>
+          default:
+            $status = '<span class="badge badge-light">UNKNOWN</span>';
+            break;
+        }
+      ?>
 
       <div class="card-body">
         <table class="table table-sm table-borderless">
@@ -67,14 +67,14 @@
             <td class="font-weight-500 text-brown"><?= htmlspecialchars($goodsReceipt->grn_no) ?></td>
           </tr>
           <tr>
-            <th>Date</th>
-            <td><?= date('m/d/Y', strtotime(htmlspecialchars($goodsReceipt->grn_date))) ?></td>
-          </tr>
-          <tr>
             <th>PO NO.</th>
             <td>
               <a href="<?= base_url('purchase-orders?id=').$goodsReceipt->po_id  ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($goodsReceipt->po_no) ?></a>
             </td>
+          </tr>
+          <tr>
+            <th>GRN Date</th>
+            <td><?= date('m/d/Y', strtotime(htmlspecialchars($goodsReceipt->grn_date))) ?></td>
           </tr>
           <tr>
             <th>PO Remarks</th>

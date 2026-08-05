@@ -7,8 +7,7 @@
           Adjustment Details
         </h3>
 
-        <div class="card-tools">
-
+         <div class="card-tools">
           <?php if ($isEditable): ?>
             <button
               type="button"
@@ -18,10 +17,11 @@
             Add Product
             </button>
           <?php endif ?>
-
         </div>
       </div>
+
       <div class="card-body p-0">
+        <div class="font-sm p-2 text-lightblue text-right"><span class="font-weight-500">NOTE:</span> Enter "-" to decrease, e.g. -5</div>
         <div class="table-responsive table-scroll">
           <table class="table table-sm table-bordered table-hover">
 
@@ -66,10 +66,10 @@
                           type="number"
                           step="any"
                           class="form-control form-control-sm text-right ia-adjustment"
-                          value="<?= $detail->adjustment_qty ?>">
+                          value="<?= number_format($detail->adjustment_qty, 0) ?>">
                     </td>
                   <?php else : ?>
-                    <td class="text-right"><?= number_format($detail->adjustment_qty) ?></td>
+                    <td class="text-right ia-adjustment"><?= number_format($detail->adjustment_qty) ?></td>
                   <?php endif ?>
 
                   <td class="ia-new-balance text-right">
@@ -109,7 +109,7 @@
         </div>
       </div>
 
-      <?php if ($isEditable): ?>
+      <?php //if ($isEditable): ?>
 
         <div class="card-footer-custom">
 
@@ -145,7 +145,7 @@
 
         </div>
 
-      <?php endif ?>
+      <?php //endif ?>
     </div>
   </div>
 </section>

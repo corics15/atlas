@@ -9,7 +9,7 @@
 
         <div class="d-flex justify-content-between align-items-center">
           <h3 class="card-title">
-            Order Header
+            Order Information
           </h3>
 
           <?php /*** status class set in purchase_orders.js */ ?>
@@ -17,54 +17,61 @@
         </div>
       </div>
 
+      <?php /*** header */ ?>
       <div class="card-body">
-        <?php //*** PO Info + Supplier */ ?>
-        <div class="form-row">
+        <div class="row">
+          <div class="col-md-6">
 
-          <div class="form-group col-md-3">
-            <label for="txtPONo">PO No.</label>
-            <input type="text" id="txtPONo" class="form-control form-control-sm" value="AUTO-GENERATED" readonly>
-          </div>
+            <input type="hidden" id="txtPONo" value="">
+            <table class="table table-sm table-borderless">
+              <tr>
+                <th width="180">PO No.</th>
+                <td class="font-weight-500 text-brown" id="tdRefNo">AUTO-GENERATED</td>
+              </tr>
+              <tr>
+                <th>PO Date</th>
+                <td>
+                  <input type="date" id="txtPODate" class="form-control form-control-sm w-auto" value="<?= date('Y-m-d'); ?>">
+                </td>
+              </tr>
+              <tr>
+                <th>Supplier</th>
+                <td>
+                  <select id="selSupplier" class="form-control form-control-sm w-auto">
+                    <option value="">Select Supplier</option>
+                    <?php foreach ($suppliers as $supplier): ?>
+                      <option value="<?= $supplier->id; ?>" data-terms-id="<?= $supplier->terms_id; ?>">
+                        <?= htmlspecialchars($supplier->supplier_name); ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <th>Terms</th>
+                <td>
+                  <select id="selTerms" class="form-control form-control-sm">
+                    <option value="">Select Terms</option>
+                    <?php foreach ($terms as $term): ?>
+                      <option value="<?= $term->id; ?>">
+                        <?= htmlspecialchars($term->terms_name); ?>
+                      </option>
+                    <?php endforeach; ?>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <th>Remarks</th>
+                <td>
+                  <input type="text" id="txtRemarks" class="form-control form-control-sm text-uppercase" placeholder="Enter remarks">
+                </td>
+              </tr>
+            </table>
 
-          <div class="form-group col-md-3">
-            <label for="txtPODate">Date</label>
-            <input type="date" id="txtPODate" class="form-control form-control-sm" value="<?= date('Y-m-d'); ?>">
-          </div>
-
-          <div class="form-group col-md-6">
-            <label for="selSupplier">Supplier</label>
-            <select id="selSupplier" class="form-control form-control-sm">
-              <option value="">Select Supplier</option>
-              <?php foreach ($suppliers as $supplier): ?>
-                <option value="<?= $supplier->id; ?>" data-terms-id="<?= $supplier->terms_id; ?>">
-                  <?= htmlspecialchars($supplier->supplier_name); ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-        </div>
-
-        <?php //*** Terms + Credit Limit + Remarks */ ?>
-        <div class="form-row">
-          <div class="form-group col-md-3">
-            <label for="selTerms">Terms</label>
-            <select id="selTerms" class="form-control form-control-sm">
-              <option value="">Select Terms</option>
-              <?php foreach ($terms as $term): ?>
-                <option value="<?= $term->id; ?>">
-                  <?= htmlspecialchars($term->terms_name); ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="form-group col-md-9">
-            <label for="txtRemarks">Remarks</label>
-            <input type="text" id="txtRemarks" class="form-control form-control-sm text-uppercase" placeholder="Enter remarks">
           </div>
         </div>
       </div>
+
     </div>
 
     <?php /*** order details */ ?>

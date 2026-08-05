@@ -27,15 +27,6 @@
       </button>
       <?php endif ?>
 
-      <?php  /*** receive items */ if (!empty($toolbar['receive'])) : ?>
-      <button
-        id="<?= $toolbar['receive']['id']; ?>"
-        class="dropdown-item">
-          <i class="<?= $toolbar['receive']['icon']; ?>"></i>
-        <?= $toolbar['receive']['text']; ?>
-      </button>
-      <?php endif ?>
-
       <?php /*** post item*/  if (!empty($toolbar['post'])) : ?>
       <button
         id="<?= $toolbar['post']['id']; ?>"
@@ -107,6 +98,15 @@
       <?= $toolbar['cancel']['text']; ?>
       </button>
       <?php endif ?>
+
+      <?php  /*** receive items */ if (!empty($toolbar['receive'])) : ?>
+      <button
+        id="<?= $toolbar['receive']['id']; ?>"
+        class="dropdown-item">
+          <i class="<?= $toolbar['receive']['icon']; ?>"></i>
+        <?= $toolbar['receive']['text']; ?>
+      </button>
+      <?php endif ?>      
 
       <?php /*** create DR item*/  if (!empty($toolbar['create-dr'])) : ?>
       <button

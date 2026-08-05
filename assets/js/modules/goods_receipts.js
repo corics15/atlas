@@ -44,11 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     Atlas.page.redirect(`purchase-returns/create/${id}`);
-    // if (status === 'POSTED') {
-    //   Atlas.page.redirect(`goods-receipts/view/${id}`);
-    // } else {
-    //   Atlas.page.redirect(`purchase-returns/create/${id}`);
-    // }
   });
 
   /*** refresh */

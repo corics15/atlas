@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     selectAll: '#chkSelectAllStockTransfer',
   });
 
+  /*** always select main branch */
+  $('#selFromBranch').val(1).trigger('change.select2');
+
   /*** event for product search on selected */
   document.addEventListener('keydown', async (e) => {
     if (!e.target.classList.contains('st-barcode')) {
@@ -52,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const result = await Atlas.ajax.get(`product_finder/barcode/${encodeURIComponent(barcode)}`)
+    const result = await Atlas.ajax.get(`product-finder/barcode/${encodeURIComponent(barcode)}`)
     if (!result.success) {
       Atlas.toast.error(result.message);
       return;
@@ -169,7 +172,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const result = await Atlas.dialog.confirm(
       'Confirm Action',
-      'Post Stock Transfer?'
+      `<div class="text-brown text-center">
+        <p>Inventory quantities will be updated.<br>
+        This action cannot be undone.</p>
+        <p class="font-weight-500 text-danger">Post Stock Transfer?</p>
+      </div>`
     );
 
     if (!result) {
@@ -363,7 +370,7 @@ const populateProductRow = (row, product) => {
   row.querySelector('.st-barcode').value = product.barcode;
   row.querySelector('.st-description').textContent = product.description;
   row.querySelector('.st-uom').textContent = product.uom;
-  row.querySelector('.st-available').textContent = '-';
+  row.querySelector('.st-available').textContent = Atlas.format.parseNumber(product.qty_on_hand);
   setTimeout(() => row.querySelector('.st-qty').focus(), 500);
   markDirty();
 

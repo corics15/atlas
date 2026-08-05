@@ -135,7 +135,7 @@ class Goods_receipts extends MY_Controller
     $draft = $this->Goods_receipt_model->getDraftByPurchaseOrder($poId);
 
     if ($draft) {
-      redirect('goods_receipts/view/' . $draft['id']);
+      redirect('goods-receipts/view/' . $draft['id']);
       return;
     }
 

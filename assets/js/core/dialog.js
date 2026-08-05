@@ -11,7 +11,7 @@ class AtlasDialog {
       allowOutsideClick: false,
       allowEscapeKey: false,
       allowEnterKey: false,
-      theme: 'bootstrap-4-dark'
+      theme: 'bootstrap-4-dark',
     });
 
     return result.isConfirmed;

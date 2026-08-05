@@ -8,6 +8,7 @@ class Inventory extends MY_Controller
     parent::__construct();
     $this->load->model('Product_model');
     $this->load->model('Inventory_model');
+    $this->load->model('Branch_model');
   }
 
   public function index()
@@ -76,12 +77,15 @@ class Inventory extends MY_Controller
       'date_from' => trim($this->input->get('date_from')),
       'date_to' => trim($this->input->get('date_to')),
       'transType' => trim($this->input->get('transType')),
+      'branch_id' => $this->input->get('branch_id') ?: $this->session->userdata('branch_id')
     ];
     $this->data = array_merge(
       $this->data,
       $filters
     );
     $this->data['ledger'] = $this->Inventory_model->getStockLedger($productId, $filters);
+    $this->data['branches'] = $this->Branch_model->getDropdown();
+    $this->data['selectedBranchId'] = $filters['branch_id'];
 
     $this->data['tableContent'] = $this->load->view(
       'inventory/ledger_table',
@@ -109,14 +113,28 @@ class Inventory extends MY_Controller
     $fromDate = $this->input->post('from_date', TRUE);
     $toDate = $this->input->post('to_date', TRUE);
     $transactionType = $this->input->post('transaction_type', TRUE);
+    $branch_id = $this->input->post('branch_id', TRUE);
 
     $data['product'] = $this->Product_model->get($productId);
 
+    $filters = [
+      'date_from' => $fromDate,
+      'date_to'   => $toDate,
+      'transType' => $transactionType,
+      'branch_id' => $branch_id,
+    ];
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
     $data['ledger'] = $this->Inventory_model->getStockLedger(
       $productId,
-      $fromDate,
-      $toDate,
-      $transactionType
+      $filters
+      // $fromDate,
+      // $toDate,
+      // $transactionType
     );
 
     $data['title'] = 'Stock Ledger';

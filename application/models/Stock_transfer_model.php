@@ -250,29 +250,40 @@ class Stock_transfer_model extends CI_Model
 
   public function getDetails($id)
   {
-    return $this->db
-        ->select("
-            d.*,
-            p.barcode,
-            p.description,
-            u.uom
-        ")
-        ->from('t_stock_transfer_details d')
-        ->join(
-            'm_products p',
-            'p.id = d.product_id'
-        )
-        ->join(
-            'm_uom u',
-            'u.id = p.uom_id'
-        )
-        ->where(
-            'stock_transfer_id',
-            $id
-        )
-        ->order_by('d.id')
-        ->get()
-        ->result();
+      return $this->db
+          ->select("
+              d.*,
+              p.barcode,
+              p.description,
+              u.uom,
+              COALESCE(inv.qty_on_hand, 0) AS qty_on_hand
+          ")
+          ->from('t_stock_transfer_details d')
+          ->join(
+              't_stock_transfers st',
+              'st.id = d.stock_transfer_id'
+          )
+          ->join(
+              'm_products p',
+              'p.id = d.product_id'
+          )
+          ->join(
+              'm_uom u',
+              'u.id = p.uom_id'
+          )
+          ->join(
+              't_branch_inventory inv',
+              'inv.product_id = d.product_id
+              AND inv.branch_id = st.from_branch_id',
+              'left'
+          )
+          ->where(
+              'd.stock_transfer_id',
+              $id
+          )
+          ->order_by('d.id')
+          ->get()
+          ->result();
   }
 
   public function getAll($filters = [])

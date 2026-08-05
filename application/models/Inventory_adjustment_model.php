@@ -148,7 +148,7 @@ class Inventory_adjustment_model extends CI_Model
           }
 
           if ($adjustment->status !== 'DRAFT') {
-            throw new Exception('Only draft inventory adjustments can be modified.');
+            throw new Exception('Only DRAFT Inventory Adjustments can be modified.');
           }
 
           $this->db
@@ -183,17 +183,14 @@ class Inventory_adjustment_model extends CI_Model
 
       return [
         'success' => true,
-        'message' => 'Inventory adjustment saved as DRAFT.',
+        'message' => empty($data['adjustment_id'])
+                      ? 'Inventory Adjustment saved as DRAFT.'
+                      : 'DRAFT Inventory Adjustment updated.',
         'data'    => []
       ];
 
     } catch (Exception $e) {
         $this->db->trans_rollback();
-
-        log_message(
-          'error',
-          __METHOD__ . ': ' . $e->getMessage()
-        );
 
         return [
           'success' => false,
@@ -222,7 +219,7 @@ class Inventory_adjustment_model extends CI_Model
       }
 
       if ($adjustment->status !== 'DRAFT') {
-        throw new Exception('Only draft inventory adjustments can be posted.');
+        throw new Exception('Only DRAFT Inventory Adjustments can be POSTED.');
       }
 
       $details = $this->db
@@ -237,7 +234,7 @@ class Inventory_adjustment_model extends CI_Model
       }
       /*** end validation */
 
-      /*** load details */
+      /*** update inventory */
       foreach ($details as $detail) {
 
         $this->Branch_inventory_model->adjustBalance(
@@ -320,7 +317,7 @@ class Inventory_adjustment_model extends CI_Model
       }
 
       if ($adjustment->status !== 'DRAFT') {
-        throw new Exception('Only draft inventory adjustments can be cancelled.');
+        throw new Exception('Only DRAFT inventory adjustments can be cancelled.');
       }
 
       /*** mark cancelled */
@@ -354,11 +351,6 @@ class Inventory_adjustment_model extends CI_Model
 
     } catch (Exception $e) {
       $this->db->trans_rollback();
-
-      log_message(
-          'error',
-          __METHOD__ . ': ' . $e->getMessage()
-      );
 
       return [
         'success' => false,

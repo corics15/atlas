@@ -1,4 +1,5 @@
 const txtPONo = document.getElementById('txtPONo');
+const tdRefNo = document.getElementById('tdRefNo');
 const txtPODate = document.getElementById('txtPODate');
 const selTerms = document.getElementById('selTerms');
 const txtRemarks = document.getElementById('txtRemarks');
@@ -142,9 +143,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         po_no: txtPONo.value,
         po_date: txtPODate.value,
         supplier_id: selSupplier.value,
-        terms_id: Number(selTerms.value),
+        terms_id: Atlas.format.parseNumber(selTerms.value),
         remarks: txtRemarks.value,
-        total_amount: Number(lblTotal.textContent),
+        total_amount: Atlas.format.parseNumber(lblTotal.textContent),
         details: []
       };
 
@@ -153,11 +154,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
         po.details.push({
-          product_id: Number(row.dataset.productId),
-          qty: Number(row.querySelector('.po-qty').value),
-          price: Number(row.querySelector('.po-price').value),
-          discount: Number(row.querySelector('.po-discount').value),
-          amount: Number(row.querySelector('.po-total').textContent)
+          product_id: Atlas.format.parseNumber(row.dataset.productId),
+          qty: Atlas.format.parseNumber(row.querySelector('.po-qty').value),
+          price: Atlas.format.parseNumber(row.querySelector('.po-price').value),
+          discount: Atlas.format.parseNumber(row.querySelector('.po-discount').value),
+          amount: Atlas.format.parseNumber(row.querySelector('.po-total').textContent)
         });
       });
 
@@ -173,6 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       txtPONo.value = result.data.po_no;
+      tdRefNo.innerHTML = result.data.po_no;
       // isEditMode = true;
       purchaseOrderId = result.data.purchase_order_id;
 
@@ -180,20 +182,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       setTimeout(() => Atlas.page.redirect(`purchase-orders?id=${result.data.purchase_order_id}`), 1200);
       isEditMode = true;
       isDirty = false;
-
-      // btnSavePurchaseOrder.innerHTML = 'Save Changes';
-
-      // isDirty = false;
-      // const action = await Atlas.dialog.saved({
-      //   title: 'Purchase Order',
-      //   documentNo: result.data.po_no,
-      //   confirmText: 'New',
-      //   cancelText: 'Continue Editing'
-      // });
-
-      // if (action === 'new') {
-      //   await resetPurchaseOrder();
-      // }
 
     } finally {
       btnSavePurchaseOrder.disabled = false;
@@ -348,9 +336,10 @@ const validatePurchaseOrder = () => {
     }
     hasProduct = true;
 
-    const qty = Number(row.querySelector('.po-qty').value);
-    const price = Number(row.querySelector('.po-price').value);
-    const discount = Number(row.querySelector('.po-discount').value);
+    const qty = Atlas.format.parseNumber(row.querySelector('.po-qty').value);
+    const price = Atlas.format.parseNumber(row.querySelector('.po-price').value);
+    const discount = Atlas.format.parseNumber(row.querySelector('.po-discount').value);
+    console.log(qty, price, discount)
 
     if (qty <= 0) {
       Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
@@ -384,7 +373,7 @@ const loadPurchaseOrder = async (id) => {
   isLoading = true;
 
   const result = await Atlas.ajax.get(
-    'purchase_orders/get/' + id
+    'purchase-orders/get/' + id
   );
 
   if (!result.success) {
@@ -404,13 +393,13 @@ const loadPurchaseOrder = async (id) => {
 
 const populateHeader = (header) => {
   txtPONo.value = header.po_no;
+  tdRefNo.innerHTML = header.po_no;
   txtPODate.value = header.po_date;
 
   $('#selSupplier').val(header.supplier_id).trigger('change');
 
   $('#selTerms').val(header.terms_id).trigger('change');
   txtRemarks.value = header.remarks ?? '';
-  console.log(header)
 
   let statusClass = ``;
   switch (header.status) {
@@ -419,9 +408,6 @@ const populateHeader = (header) => {
       break;
     case 'OPEN':
       statusClass = 'text-secondary';
-      break;
-    case 'OPEN':
-      statusClass = 'text-success';
       break;
     case 'PARTIAL':
       statusClass = 'text-warning';

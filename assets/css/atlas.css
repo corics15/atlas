@@ -604,5 +604,20 @@ textarea:focus {
   display: inline-block;
 }
 
+/* Apply blur only to modal backdrops */
+.swal2-container.swal2-center,
+.swal2-container.swal2-top,
+.swal2-container.swal2-bottom {
+  backdrop-filter: blur(4px);
+}
+
+/* Do NOT blur toast containers */
+.swal2-container.swal2-top-end,
+.swal2-container.swal2-top-start,
+.swal2-container.swal2-bottom-end,
+.swal2-container.swal2-bottom-start {
+  backdrop-filter: none;
+}
+
 
 /** end custom css */

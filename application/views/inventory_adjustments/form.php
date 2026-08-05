@@ -9,7 +9,7 @@
 
         <div class="d-flex justify-content-between align-items-center">
           <h3 class="card-title">
-            Adjustment Header
+            Adjustment Information
           </h3>
 
           <?php
@@ -32,12 +32,13 @@
 
       <?php else : ?>
         <h3 class="card-title">
-          Adjustment Header
+          Adjustment Information
         </h3>
       <?php endif; ?>
 
       </div>
 
+<?php if (false) : ?>
       <div class="card-body">
         <div class="row">
 
@@ -80,6 +81,35 @@
 
         </div>
       </div>
+<?php endif ?>
+
+    <div class="card-body">
+      <table class="table table-sm table-borderless">
+        <tr>
+          <th width="180">Adjustment No.</th>
+          <td class="font-weight-500 text-brown" id="tdRefNo">
+            <?= isset($inventoryAdjustment) ? htmlspecialchars($inventoryAdjustment->adjustment_no) : 'AUTO-GENERATED'; ?>
+          </td>
+        </tr>
+        <tr>
+          <th>Adjustment Date</th>
+          <td>
+            <input
+              type="date"
+              id="dtAdjustmentDate"
+              class="form-control form-control-sm w-auto"
+              value="<?= isset($inventoryAdjustment) ? $inventoryAdjustment->adjustment_date : date('Y-m-d'); ?>">
+          </td>
+        </tr>
+        <tr>
+          <th>Remarks</th>
+          <td>
+            <input id="txtAdjustmentRemarks" class="form-control form-control-sm text-uppercase" placeholder="Enter Remarks..." value="<?= isset($inventoryAdjustment) ? htmlspecialchars($inventoryAdjustment->remarks) : '' ?>">
+          </td>
+        </tr>
+      </table>
+    </div>
+
     </div>
   </div>
 </section>

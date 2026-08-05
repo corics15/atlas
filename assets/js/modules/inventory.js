@@ -60,12 +60,8 @@ const printStockLedger = () => {
       product_id: hidProductId.value,
       from_date: txtFromDate.value,
       to_date: txtToDate.value,
-      transaction_type: selSLTransactionType.value
+      transaction_type: selSLTransactionType.value,
+      branch_id: selSLBranch.value,
     }
   );
 };
-
-btnPrintStockLedger?.addEventListener(
-  'click',
-  printStockLedger
-);
