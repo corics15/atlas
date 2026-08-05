@@ -20,23 +20,28 @@ class Delivery_receipts extends MY_Controller
     $this->data['toolbar'] = [
       'edit' => [
           'id' => 'btnEditDeliveryReceipt',
-          'text' => 'Edit',
+          'text' => 'Edit DR',
           'icon' => 'fas fa-edit'
       ],
       'post' => [
           'id' => 'btnPostDeliveryReceipt',
-          'text' => 'Post',
+          'text' => 'Post DR',
           'icon' => 'fas fa-check-circle'
       ],
       'print' => [
           'id' => 'btnPrintDeliveryReceipt',
-          'text' => 'Print',
+          'text' => 'Print DR',
           'icon' => 'fas fa-print'
       ],
       'cancel' => [
           'id' => 'btnCancelDeliveryReceipt',
-          'text' => 'Cancel',
+          'text' => 'Cancel DR',
           'icon' => 'fas fa-ban'
+      ],
+      'create' => [
+        'id'   => 'btnCreateSalesInvoice',
+        'text' => 'Create Sales Invoice',
+        'icon' => 'fas fa-file-contract'
       ],
       'refresh' => [
           'id' => 'btnRefreshDeliveryReceipt',
@@ -57,41 +62,6 @@ class Delivery_receipts extends MY_Controller
 
     $this->render('delivery_receipts/index');
   }
-
-  // public function queue()
-  // {
-  //   $this->setPage(
-  //     'Delivery Queue',
-  //   );
-
-  //   $this->data['toolbar'] = [
-  //     'create' => [
-  //       'id'   => 'btnCreateDeliveryReceipt',
-  //       'text' => 'Create Delivery Receipt',
-  //       'icon' => 'fas fa-truck',
-  //     ],
-  //     'refresh' => [
-  //       'id'   => 'btnRefreshDeliveryReceipt',
-  //       'text' => 'Refresh',
-  //       'icon' => 'fas fa-sync',
-  //     ]
-  //   ];
-
-  //   $this->pageScript = 'delivery_receipts';
-  //   $this->data['salesOrders'] = $this->Delivery_receipt_model->getSalesOrdersForDelivery();
-  //   $this->data['recordCount'] = count($this->data['salesOrders']);
-  //   $this->data['dr'] = false;
-  //   $this->data['dq'] = true;
-
-  //   $this->data['tableContent'] =
-  //       $this->load->view(
-  //           'delivery_receipts/table',
-  //           $this->data,
-  //           TRUE
-  //       );
-
-  //   $this->render('delivery_receipts/index');
-  // }
 
   public function create($salesOrderId)
   {
@@ -157,6 +127,38 @@ class Delivery_receipts extends MY_Controller
       $result['success'],
       $result['message'],
       $result['data']
+    );
+  }
+
+  public function print()
+  {
+    $ids = $this->input->post('ids');
+
+    if (!$ids) {
+      show_404();
+    }
+
+    $documents = [];
+
+    foreach ($ids as $id) {
+        $header = $this->Delivery_receipt_model->get($id);
+
+        if (!$header) {
+            continue;
+        }
+
+        $documents[] = (object)[
+          'header'  => $header,
+          'details' => $this->Delivery_receipt_model->getDetails($id)
+        ];
+    }
+
+    $this->load->view(
+      'delivery_receipts/print',
+      [
+        'documents' => $documents,
+        'title'     => 'DELIVERY RECEIPT'
+      ]
     );
   }
 

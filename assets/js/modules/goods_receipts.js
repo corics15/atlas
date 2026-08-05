@@ -337,7 +337,7 @@ const printGoodsReceipt = () => {
     return;
   }
 
-  Atlas.print.post('goods_receipts/print', ids);
+  Atlas.print.post('goods-receipts/print', ids);
 };
 
 const markDirty = () => {

@@ -12,50 +12,6 @@ class Delivery_receipt_model extends CI_Model
     $this->load->model('Branch_inventory_model');
   }
 
-  // public function getSalesOrdersForDelivery()
-  // {
-  //   return $this->db->query("SELECT
-  //                               so.id,
-  //                               so.so_no,
-  //                               so.order_date,
-  //                               c.customer_name,
-  //                               COUNT(*) FILTER (
-  //                                   WHERE (
-  //                                     sod.qty - COALESCE(dr.qty_delivered, 0)
-  //                                   ) > 0
-  //                               ) AS remaining_items,
-  //                               so.status AS so_status
-  //                           FROM t_sales_orders so
-  //                           INNER JOIN m_customers c ON c.id = so.customer_id
-  //                           INNER JOIN t_sales_order_details sod ON sod.sales_order_id = so.id
-  //                           LEFT JOIN (
-  //                               SELECT
-  //                                   drd.sales_order_detail_id,
-  //                                   SUM(drd.qty) AS qty_delivered
-  //                               FROM t_delivery_receipt_details drd
-  //                               INNER JOIN t_delivery_receipts dr
-  //                                   ON dr.id = drd.delivery_receipt_id
-  //                               WHERE dr.status = 'POSTED'
-  //                               GROUP BY drd.sales_order_detail_id
-  //                           ) dr
-  //                               ON dr.sales_order_detail_id = sod.id
-  //                           WHERE so.status = 'POSTED'
-  //                           GROUP BY
-  //                               so.id,
-  //                               so.so_no,
-  //                               so.order_date,
-  //                               c.customer_name
-  //                           HAVING COUNT(*) FILTER (
-  //                             WHERE (
-  //                               sod.qty - COALESCE(dr.qty_delivered, 0)
-  //                             ) > 0
-  //                           ) > 0
-  //                           ORDER BY
-  //                             so.order_date DESC,
-  //                             so.so_no DESC
-  //                           ")->result();
-  // }
-
   public function getSalesOrder($salesOrderId)
   {
     return $this->db
@@ -63,9 +19,7 @@ class Delivery_receipt_model extends CI_Model
             so.*,
             c.customer_name,
             CONCAT(s.first_name,' ',s.last_name) AS salesman_name,
-            t.terms_name,
-            so.remarks AS so_remarks,
-            so.status AS so_status
+            t.terms_name
         ")
         ->from('t_sales_orders so')
         ->join('m_customers c','c.id=so.customer_id')
@@ -626,7 +580,7 @@ class Delivery_receipt_model extends CI_Model
                   'status'       => 'CANCELLED',
                   'cancelled_by' => $this->session->userdata('user_id'),
                   'cancelled_on' => date('Y-m-d H:i:s'),
-                  'cancel_reason' => $cancelReason,
+                  'cancel_reason' => trim($cancelReason) <> '' ? strtoupper(trim($cancelReason)) : NULL,
                   'updated_by'   => $this->session->userdata('user_id'),
                   'updated_on'   => date('Y-m-d H:i:s')
                 ]

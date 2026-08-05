@@ -108,21 +108,21 @@
       </button>
       <?php endif ?>
 
-      <?php /*** create item*/  if (!empty($toolbar['create'])) : ?>
-      <button
-        id="<?= $toolbar['create']['id']; ?>"
-        class="dropdown-item">
-        <i class="<?= $toolbar['create']['icon']; ?>"></i>
-        <?= $toolbar['create']['text']; ?>
-      </button>
-      <?php endif ?>
-
       <?php /*** create DR item*/  if (!empty($toolbar['create-dr'])) : ?>
       <button
         id="<?= $toolbar['create-dr']['id']; ?>"
         class="dropdown-item">
         <i class="<?= $toolbar['create-dr']['icon']; ?>"></i>
         <?= $toolbar['create-dr']['text']; ?>
+      </button>
+      <?php endif ?>
+
+      <?php /*** create item*/  if (!empty($toolbar['create'])) : ?>
+      <button
+        id="<?= $toolbar['create']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['create']['icon']; ?>"></i>
+        <?= $toolbar['create']['text']; ?>
       </button>
       <?php endif ?>
 

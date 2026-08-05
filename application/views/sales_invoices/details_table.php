@@ -18,7 +18,6 @@
                   <th width="120" class="text-right">Available</th>
                   <th width="120" class="text-right">Qty</th>
                   <th width="80" class="text-center">UOM</th>
-                  <th width="40"></th>
                 </tr>
               </thead>
 
@@ -42,13 +41,6 @@
                             class="form-control form-control-sm so-barcode"
                             placeholder="Barcode"
                             value="<?= htmlspecialchars($detail->barcode) ?>" readonly>
-                          <div class="input-group-append">
-                            <button
-                              type="button"
-                              class="btn btn-sm btn-outline-muted btn-product-finder no-event">
-                            <i class="fas fa-search font-smr"></i>
-                            </button>
-                          </div>
                         </div>
                       </td>
                       <td class="so-description">
@@ -62,13 +54,10 @@
                           type="number"
                           step="any"
                           class="form-control form-control-sm text-right so-qty"
-                          value="<?= number_format($detail->qty, 0) ?>">
+                          value="<?= number_format($detail->qty, 0) ?>" readonly>
                       </td>
                       <td class="so-uom text-center">
                         <?= htmlspecialchars($detail->uom) ?>
-                      </td>
-                      <td class="text-center">
-                        <i class="fas fa-trash text-muted pointer btn-delete-row no-event"></i>
                       </td>
                     </tr>
                   <?php endforeach; ?>

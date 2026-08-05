@@ -76,7 +76,7 @@ class Sales_invoices extends MY_Controller
 
     if ($deliveryReceiptId) {
 
-      $deliveryReceipt = $this->Sales_invoice_model ->getDeliveryReceipt($deliveryReceiptId);
+      $deliveryReceipt = $this->Sales_invoice_model->getDeliveryReceipt($deliveryReceiptId);
 
       if (!$deliveryReceipt) {
         $this->data['error_message'] = 'Delivery Receipt not found or not POSTED.';
@@ -85,7 +85,8 @@ class Sales_invoices extends MY_Controller
         return;
       }
 
-      $this->data['deliveryReceipt'] = $deliveryReceipt;
+      $this->data['header'] = $deliveryReceipt;
+      $this->data['isEdit'] = false;
       $details = $this->Sales_invoice_model->getDeliveryReceiptDetails($deliveryReceiptId);
 
       if (empty($details)) {
@@ -140,12 +141,13 @@ class Sales_invoices extends MY_Controller
     $this->data['customers'] = $this->Customer_model->getDropdown();
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
-    $this->data['salesInvoice'] = $this->Sales_invoice_model->get($id);
+    $this->data['header'] = $this->Sales_invoice_model->get($id);
 
-    if (!$this->data['salesInvoice']) {
+    if (!$this->data['header']) {
       show_404();
     }
 
+    $this->data['isEdit'] = true;
     $this->data['details'] = $this->Sales_invoice_model->getDetails($id);
     $this->data['salesInvoiceId'] = $id;
 

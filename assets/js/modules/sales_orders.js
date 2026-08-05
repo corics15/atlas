@@ -19,7 +19,6 @@ const btnCancelSalesOrder = document.getElementById('btnCancelSalesOrder');
 const btnRefreshSalesOrder = document.getElementById('btnRefreshSalesOrder');
 const btnPrintSalesOrder = document.getElementById('btnPrintSalesOrder');
 const btnPostSalesOrder = document.getElementById('btnPostSalesOrder');
-const btnCreateSalesInvoice = document.getElementById('btnCreateSalesInvoice');
 const btnCreateDeliveryReceipt = document.getElementById('btnCreateDeliveryReceipt');
 
 let isDirty = false;
@@ -195,29 +194,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } finally {
       btnPostSalesOrder.disabled = false;
     }
-  });
-
-  /*** create sales invoice */
-  btnCreateSalesInvoice?.addEventListener('click', () => {
-    const ids = Atlas.table.selectedIds();
-
-    if (ids.length !== 1) {
-      Atlas.toast.warning('Please select one Sales Order.');
-      return;
-    }
-
-    const row = document.querySelector(`tr[data-id="${ids[0]}"]`);
-
-    if (!row) {
-      return;
-    }
-
-    if (row.dataset.status !== 'POSTED') {
-      Atlas.toast.warning('Only POSTED Sales Orders can be invoiced.');
-      return;
-    }
-
-    Atlas.page.redirect(`sales-invoices/create/${ids[0]}`);
   });
 
   /*** create delivery receipt */
@@ -519,7 +495,7 @@ const printSalesOrder = () => {
   }
 
   Atlas.print.post(
-    'sales_orders/print',
+    'sales-orders/print',
     ids
   );
 };

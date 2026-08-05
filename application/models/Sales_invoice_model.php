@@ -63,12 +63,20 @@ class Sales_invoice_model extends CI_Model
             so.so_no,
             c.customer_name,
             concat(s.first_name, ' ', s.last_name) AS salesman_name,
-            t.terms_name
+            t.terms_name,
+            dr.dr_no,
+            dr.delivery_date,
+            dr.status AS dr_status,
+            dr.remarks AS dr_remarks
         ")
         ->from('t_sales_invoices si')
         ->join(
             't_sales_orders so',
             'so.id = si.sales_order_id'
+        )
+        ->join(
+            't_delivery_receipts dr',
+            'dr.id = si.delivery_receipt_id'
         )
         ->join(
             'm_customers c',
@@ -208,10 +216,12 @@ class Sales_invoice_model extends CI_Model
       $this->db->trans_begin();
 
       if (empty($salesInvoice->id)) {
+        /*** insert header */
         $header = [
           'si_no'          => $this->generateInvoiceNo(),
           'invoice_date'   => $salesInvoice->invoice_date,
           'sales_order_id' => $salesInvoice->sales_order_id,
+          'delivery_receipt_id' => $salesInvoice->delivery_receipt_id,
           'customer_id'    => $salesInvoice->customer_id,
           'salesman_id'    => $salesInvoice->salesman_id,
           'terms_id'       => $salesInvoice->terms_id,
@@ -226,6 +236,28 @@ class Sales_invoice_model extends CI_Model
 
         $salesInvoiceId = $this->db->insert_id();
         $invoiceNo = $header['si_no'];
+
+        /*** insert details */
+        foreach ($salesInvoice->details as $detail)
+        {
+          if ($detail->qty <= 0) {
+            continue;
+          }
+
+          $this->db->insert(
+            't_sales_invoice_details',
+            [
+              'sales_invoice_id'      => $salesInvoiceId,
+              'sales_order_detail_id' => $detail->sales_order_detail_id,
+              'product_id'            => $detail->product_id,
+              'qty'                   => $detail->qty,
+              'unit_price'            => 0,
+              'discount_percent'      => 0,
+              'discount_amount'       => 0,
+              'remarks'               => NULL
+            ]
+          );
+        }
       }
 
       else {
@@ -247,6 +279,7 @@ class Sales_invoice_model extends CI_Model
           );
         }
 
+        /*** update header only */
         $this->db
             ->where('id', $salesInvoice->id)
             ->update(
@@ -259,38 +292,20 @@ class Sales_invoice_model extends CI_Model
                 ]
             );
 
-        $salesInvoiceId = $salesInvoice->id;
-        $invoiceNo = $invoice->si_no;
+        $exists = $this->db
+            ->where('id', $salesInvoice->id)
+            ->where('status', 'OPEN')
+            ->count_all_results('t_sales_invoices');
 
-        $this->db
-            ->where(
-              'sales_invoice_id',
-              $salesInvoiceId
-            )
-            ->delete(
-              't_sales_invoice_details'
-            );
-      }
-
-      foreach ($salesInvoice->details as $detail)
-      {
-        if ($detail->qty <= 0) {
-          continue;
+        if ($exists == 0) {
+          throw new Exception(
+            'Sales Invoice can no longer be updated.'
+          );
         }
 
-        $this->db->insert(
-          't_sales_invoice_details',
-          [
-            'sales_invoice_id'      => $salesInvoiceId,
-            'sales_order_detail_id' => $detail->sales_order_detail_id,
-            'product_id'            => $detail->product_id,
-            'qty'                   => $detail->qty,
-            'unit_price'            => 0,
-            'discount_percent'      => 0,
-            'discount_amount'       => 0,
-            'remarks'               => NULL
-          ]
-        );
+        $salesInvoiceId = $salesInvoice->id;
+        $invoiceNo = $invoice->si_no;
+        /** end header update */
       }
 
       if ($this->db->trans_status() === FALSE)
@@ -350,12 +365,12 @@ class Sales_invoice_model extends CI_Model
           );
         }
 
-        /*** update inventory */
-        $result = $this->Inventory_model->postSales($id);
-        if (!$result['success']) {
-          throw new Exception($result['message']);
-        }
-        /*** end update inventory */
+        // /*** update inventory */
+        // $result = $this->Inventory_model->postSales($id);
+        // if (!$result['success']) {
+        //   throw new Exception($result['message']);
+        // }
+        // /*** end update inventory */
 
         /*** post sales invoice */
         $this->db
@@ -503,7 +518,10 @@ class Sales_invoice_model extends CI_Model
             so.so_no,
             c.customer_name,
             CONCAT(s.first_name,' ',s.last_name) AS salesman_name,
-            t.terms_name
+            t.terms_name,
+            c.credit_limit,
+            so.salesman_id,
+            t.id AS terms_id
         ")
         ->from('t_delivery_receipts dr')
         ->join(

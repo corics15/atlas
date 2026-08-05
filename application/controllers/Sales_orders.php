@@ -35,11 +35,6 @@ class Sales_orders extends MY_Controller
         'text' => 'Post SO',
         'icon' => 'fas fa-check-circle'
       ],
-      'create' => [
-        'id'   => 'btnCreateSalesInvoice',
-        'text' => 'Create Sales Invoice',
-        'icon' => 'fas fa-file-contract'
-      ],
       'create-dr' => [
         'id'   => 'btnCreateDeliveryReceipt',
         'text' => 'Create Delivery Receipt',

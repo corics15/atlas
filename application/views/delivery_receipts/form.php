@@ -35,7 +35,7 @@
         <div class="row">
           <div class="col-md-6">
             <?php
-              switch (htmlspecialchars($header->so_status)) {
+              switch (htmlspecialchars($header->status)) {
                 case 'OPEN':
                   $status = '<span class="badge badge-secondary">OPEN</span>';
                   break;
@@ -73,7 +73,7 @@
               </tr>
               <tr>
                 <th>SO Remarks</th>
-                <td><?= htmlspecialchars($header->so_remarks) ?></td>
+                <td><?= htmlspecialchars($isEdit ? $header->so_remarks : $header->remarks) ?></td>
               </tr>
               <tr>
                 <th>SO Status</th>
@@ -82,13 +82,13 @@
               <tr>
                 <th>Delivery Date</th>
                 <td>
-                  <input type="date" id="dtDeliveryDate" class="form-control form-control-sm" placeholder="Delivery remarks..." value="<?= isset($deliveryReceiptId) ? $header->delivery_date : date('Y-m-d'); ?>">
+                  <input type="date" id="dtDeliveryDate" class="form-control form-control-sm" value="<?= isset($deliveryReceiptId) ? $header->delivery_date : date('Y-m-d'); ?>">
                 </td>
               </tr>
               <tr>
                 <th>Remarks</th>
                 <td>
-                  <input type="text" id="txtDeliveryReceiptRemarks" class="form-control form-control-sm text-uppercase" placeholder="Delivery remarks..." value="<?= htmlspecialchars($header->remarks ?? '') ?>">
+                  <input type="text" id="txtDeliveryReceiptRemarks" class="form-control form-control-sm text-uppercase" placeholder="Delivery remarks..." value="<?= $isEdit ? htmlspecialchars($header->remarks) : '' ?>">
                 </td>
               </tr>
             </table>

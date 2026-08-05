@@ -509,7 +509,7 @@ const printStockTransfer = () => {
   }
 
   Atlas.print.post(
-    'stock_transfers/print',
+    'stock-transfers/print',
     ids
   );
 };

@@ -9,6 +9,11 @@ const txtCreditLimit = document.getElementById('txtCreditLimit');
 
 const hidSalesOrderId = document.getElementById('hidSalesOrderId');
 const hidSalesInvoiceId = document.getElementById('hidSalesInvoiceId');
+const hidSalemanId = document.getElementById('hidSalemanId');
+const hidCustomerId = document.getElementById('hidCustomerId');
+const hidSalesmanId = document.getElementById('hidSalesmanId');
+const hidTermsId = document.getElementById('hidTermsId');
+const hidCreditLimit = document.getElementById('hidCreditLimit');
 
 let isDirty = false;
 let isLoading = true;
@@ -54,13 +59,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const salesInvoice = {
         id: hidSalesInvoiceId?.value ?? '',
-        sales_order_id: hidSalesOrderId.value,
+        sales_order_id: Atlas.format.parseNumber(hidSalesOrderId.value),
+        delivery_receipt_id: Atlas.format.parseNumber(hidDeliveryReceiptId.value),
         invoice_date: dtInvoiceDate.value,
-        customer_id: selCustomer.value,
-        salesman_id: selSalesman.value,
-        terms_id: selTerms.value,
-        credit_limit: Atlas.format.parseNumber(txtCreditLimit.value),
-        remarks: txtSalesOrderRemarks.value,
+        customer_id: Atlas.format.parseNumber(hidCustomerId.value),
+        salesman_id: Atlas.format.parseNumber(hidSalesmanId.value),
+        terms_id: Atlas.format.parseNumber(hidTermsId.value),
+        credit_limit: Atlas.format.parseNumber(hidCreditLimit.value),
+        remarks: txtSalesInvoiceRemarks.value,
         details: []
       };
 
@@ -71,11 +77,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         /*** only push rows whose quantity is greater than zero */
-        const qty = Atlas.format.integer(row.querySelector('.so-qty').value);
+        const qty = Atlas.format.parseNumber(row.querySelector('.so-qty').value);
         if (qty > 0) {
           salesInvoice.details.push({
-            product_id: Atlas.format.integer(row.dataset.productId),
-            sales_order_detail_id: Atlas.format.integer(row.dataset.salesOrderDetailId),
+            product_id: Atlas.format.parseNumber(row.dataset.productId),
+            sales_order_detail_id: Atlas.format.parseNumber(row.dataset.salesOrderDetailId),
             qty: qty
           });
         }
@@ -282,7 +288,7 @@ const printSalesInvoice = () => {
   }
 
   Atlas.print.post(
-    'sales_invoices/print',
+    'sales-invoices/print',
     ids
   );
 };

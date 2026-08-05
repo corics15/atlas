@@ -5,6 +5,9 @@ const btnNewDeliveryReceipt = document.getElementById('btnNewDeliveryReceipt');
 const btnPostDeliveryReceipt = document.getElementById('btnPostDeliveryReceipt');
 const btnRefreshDeliveryReceipt = document.getElementById('btnRefreshDeliveryReceipt');
 const btnCancelDeliveryReceipt = document.getElementById('btnCancelDeliveryReceipt');
+const btnCreateSalesInvoice = document.getElementById('btnCreateSalesInvoice');
+const btnPrintDeliveryReceipt = document.getElementById('btnPrintDeliveryReceipt');
+
 
 const hidSalesOrderId = document.getElementById('hidSalesOrderId');
 const hidDeliveryReceiptId = document.getElementById('hidDeliveryReceiptId');
@@ -89,24 +92,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** new */
   btnNewDeliveryReceipt?.addEventListener('click', () => Atlas.page.redirect('delivery-receipts/queue'));
-
-  // /*** create delivery receipt */
-  // btnCreateDeliveryReceipt?.addEventListener('click', () => {
-  //   const id = getSelectedDeliveryReceiptId();
-
-  //   const row = document.querySelector(`tr[data-id="${id}"]`);
-
-  //   if (!row) {
-  //     return;
-  //   }
-
-  //   if (row.dataset.status !== 'POSTED') {
-  //     Atlas.toast.warning('Only POSTED Delivery Receipts can be invoiced.');
-  //     return;
-  //   }
-
-  //   Atlas.page.redirect(`delivery-receipts/create/${id}`);
-  // });
 
   /*** edit */
   btnEditDeliveryReceipt?.addEventListener('click', () => {
@@ -196,8 +181,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => Atlas.page.refresh(), 1500);
   });
 
+  /*** create sales invoice */
+  btnCreateSalesInvoice?.addEventListener('click', () => {
+    const ids = Atlas.table.selectedIds();
+
+    if (ids.length !== 1) {
+      Atlas.toast.warning('Please select one Delivery Receipt.');
+      return;
+    }
+
+    const row = document.querySelector(`tr[data-id="${ids[0]}"]`);
+
+    if (!row) {
+      return;
+    }
+
+    if (row.dataset.status !== 'POSTED') {
+      Atlas.toast.warning('Only POSTED Delivery Receipts can be invoiced.');
+      return;
+    }
+
+    Atlas.page.redirect(`sales-invoices/create/${ids[0]}`);
+  });
+
   /*** refresh */
   btnRefreshDeliveryReceipt?.addEventListener('click', () => Atlas.page.refresh());
+
+  /*** print */
+  btnPrintDeliveryReceipt?.addEventListener('click', printDeliveryReceipt);
 
 });
 
@@ -229,6 +240,20 @@ const getSelectedDeliveryReceiptId = () => {
   }
 
   return checked[0].value;
+};
+
+const printDeliveryReceipt = () => {
+  const ids = Atlas.table.selectedIds();
+
+  if (ids.length === 0) {
+    Atlas.toast.warning('Please select at least one Delivery Receipt.');
+    return;
+  }
+
+  Atlas.print.post(
+    'delivery-receipts/print',
+    ids
+  );
 };
 
 const markDirty = () => {

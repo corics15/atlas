@@ -6,8 +6,8 @@
         <label class="custom-control-label" for="chkSelectAllGoodsReceipt"></label>
       </div>
     </th>
-    <th width="140" class="text-center">GRN No.</th>
     <th width="120" class="text-center">Date</th>
+    <th width="140" class="text-center">GRN No.</th>
     <th width="160" class="text-center">PO No.</th>
     <th>Supplier</th>
     <th class="text-center">Status</th>

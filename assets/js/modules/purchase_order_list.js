@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.print.post('purchase_orders/print', ids);
+    Atlas.print.post('purchase-orders/print', ids);
   });
 
 });
