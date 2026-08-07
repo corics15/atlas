@@ -35,12 +35,22 @@ class Inventory_adjustment_model extends CI_Model
         'adjustment_date >=',
         $filters['date_from']
       );
+    } else {
+      $this->db->where(
+        'adjustment_date >=',
+        date('Y-m-01')
+      );
     }
 
     if (!empty($filters['date_to'])) {
       $this->db->where(
         'adjustment_date <=',
         $filters['date_to']
+      );
+    } else {
+      $this->db->where(
+        'adjustment_date <=',
+        date('Y-m-d')
       );
     }
 

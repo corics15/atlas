@@ -251,9 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnPrintStockTransfer?.addEventListener('click', printStockTransfer);
 
   /*** refresh */
-  btnRefreshStockTransfer?.addEventListener('click', () => {
-    Atlas.page.refresh();
-  });
+  btnRefreshStockTransfer?.addEventListener('click', () => Atlas.page.redirect(`stock-transfers`));
 
   /*** scanner barcode event */
   document.addEventListener('keydown', async (e) => {

@@ -6,7 +6,7 @@
       <input
         type="date"
         name="date_from"
-        value="<?= htmlspecialchars($date_from ?: date('Y-m-d')); ?>"
+        value="<?= htmlspecialchars($date_from ?: date('Y-m-01')); ?>"
         class="form-control form-control-sm">
     </div>
 

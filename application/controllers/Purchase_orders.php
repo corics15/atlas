@@ -149,6 +149,7 @@ class Purchase_orders extends MY_Controller
   public function cancel()
   {
     $ids = $this->input->post('ids');
+    $cancelReason = $this->input->post('cancel_reason');
 
     if (!is_array($ids) || empty($ids)) {
       return $this->jsonResponse(
@@ -157,13 +158,13 @@ class Purchase_orders extends MY_Controller
       );
     }
 
-    $result = $this->Purchase_order_model->cancelMany($ids);
+    $result = $this->Purchase_order_model->cancelMany($ids, $cancelReason);
 
     return $this->jsonResponse(
       $result['success'],
       $result['message'],
       $result['data']
-  );
+    );
   }
 
   public function print()

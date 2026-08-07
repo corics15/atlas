@@ -7,7 +7,7 @@
 
         <div class="align-items-md-end align-items-start d-flex flex-column flex-md-row justify-content-between">
 
-          <?php $this->load->view('partials/search_toolbar'); ?>
+          <?php $this->load->view('goods_receipts/search_toolbar'); ?>
           <?php $this->load->view('partials/toolbar'); ?>
 
         </div>

@@ -30,12 +30,22 @@ class Purchase_return_model extends CI_Model
         'pr.return_date >=',
         $filters['date_from']
       );
+    } else {
+      $this->db->where(
+        'pr.return_date >=',
+        date('Y-m-01')
+      );
     }
 
     if (!empty($filters['date_to'])) {
       $this->db->where(
         'pr.return_date <=',
         $filters['date_to']
+      );
+    } else {
+      $this->db->where(
+        'pr.return_date <=',
+        date('Y-m-d')
       );
     }
 

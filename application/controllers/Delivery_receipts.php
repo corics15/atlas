@@ -17,6 +17,26 @@ class Delivery_receipts extends MY_Controller
       'Delivery Receipts',
     );
 
+    /*** filters */
+    $this->data['statuses'] = [
+      'OPEN',
+      'POSTED',
+      'CANCELLED',
+    ];
+    $filters = [
+      'date_from' => trim($this->input->get('date_from')),
+      'date_to' => trim($this->input->get('date_to')),
+      'keyword' => trim($this->input->get('keyword')),
+      'status' => trim($this->input->get('status')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $keyword = trim($this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+    $this->data['searchPlaceHolder'] = 'Search...';
+
     $this->data['toolbar'] = [
       'edit' => [
           'id' => 'btnEditDeliveryReceipt',
@@ -50,7 +70,7 @@ class Delivery_receipts extends MY_Controller
         ]
     ];
 
-    $this->data['deliveryReceipts'] = $this->Delivery_receipt_model->getAll();
+    $this->data['deliveryReceipts'] = $this->Delivery_receipt_model->getAll($filters);
     $this->data['recordCount'] = count($this->data['deliveryReceipts']);
     $this->pageScript = 'delivery_receipts';
     $this->data['tableContent']

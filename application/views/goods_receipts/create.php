@@ -25,16 +25,39 @@
       </div>
 
       <div class="card-body">
-        <div class="row justify-content-end">
-          <div class="col-md-2">
-            <button
-              type="button"
-              id="btnSaveGoodsReceipt"
-              class="btn btn-sm btn-default btn-block">
-                Save Draft
-            </button>
+        <?php if (!$error_message) : ?>
+          <div class="row justify-content-end">
+            <div class="col-md-2">
+              <button
+                type="button"
+                id="btnSaveGoodsReceipt"
+                class="btn btn-sm btn-default btn-block">
+                  Save Draft
+              </button>
+            </div>
           </div>
-        </div>
+
+        <?php else : ?>
+
+          <div class="row">
+            <div class="col-auto">
+              <div class="alert alert-default-warning" role="alert">
+                <h5 class="alert-heading">
+                  <i class="fas fa-exclamation-triangle mr-1"></i>
+                  Notice
+                </h5>
+                <p><?= $error_message ?></p>
+                <hr>
+                <a href="<?= base_url('purchase-orders/list') ?>"
+                  class="btn btn-link btn-sm btn-no-underline">
+                    <i class="fas fa-arrow-circle-left mr-1"></i>
+                    Back to Purchase Order List
+                </a>
+              </div>
+            </div>
+          </div>
+
+        <?php endif; ?>
       </div>
 
     </div>

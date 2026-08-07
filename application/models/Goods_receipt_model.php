@@ -221,8 +221,9 @@ class Goods_receipt_model extends CI_Model
         ->where('id', $id)
         ->update('t_goods_receipts', [
             'status'     => 'CANCELLED',
-            'updated_by' => $this->session->userdata('user_id'),
-            'updated_on' => date('Y-m-d H:i:s')
+            'cancelled_by' =>  $this->session->userdata('user_id'),
+            'cancelled_on' => date('Y-m-d H:i:s'),
+            'cancel_reason' => $request['cancel_reason'] <> '' ? strtoupper(trim($request['cancel_reason'])) : NULL,
         ]);
 
       if (!$this->db->trans_status()) {
@@ -268,12 +269,29 @@ class Goods_receipt_model extends CI_Model
         'grn_date >=',
         $filters['date_from']
       );
+    } else {
+      $this->db->where(
+        'grn_date >=',
+        date('Y-m-01')
+      );
     }
 
     if (!empty($filters['date_to'])) {
       $this->db->where(
         'grn_date <=',
         $filters['date_to']
+      );
+    } else {
+      $this->db->where(
+        'grn_date <=',
+        date('Y-m-d')
+      );
+    }
+
+    if (!empty($filters['status'])) {
+      $this->db->where(
+        'status',
+        $filters['status']
       );
     }
 
@@ -562,7 +580,6 @@ class Goods_receipt_model extends CI_Model
       }
     }
   }
-
 
   private function validateDraftGoodsReceipt($id)
   {

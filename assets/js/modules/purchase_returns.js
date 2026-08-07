@@ -225,9 +225,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnPrintPurchaseReturn?.addEventListener('click', printPurchaseReturn);
 
   /*** refresh */
-  btnRefreshPurchaseReturn?.addEventListener('click', () => Atlas.page.refresh());
-
-
+  btnRefreshPurchaseReturn?.addEventListener('click', () => Atlas.page.redirect(`purchase-returns`));
 
 });
 

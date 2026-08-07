@@ -78,7 +78,14 @@
     <div class="card mt-3">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title">Order Details</h3>
+        <div class="ml-auto">
+          <a href="<?= base_url('purchase-orders/list') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
+          <button type="button" class="btn btn-sm btn-link" id="btnReceiveGoods"><i class="fa fa-dolly mr-2"></i>Receive Goods</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnPrintPurchaseOrder"><i class="fa fa-print mr-2"></i>Print</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCancelPurchaseOrder"><i class="fas fa-ban mr-2"></i>Cancel</button>
+        </div>
       </div>
+
       <div class="card-body p-0">
         <div class="table-responsive table-scroll">
           <table class="table table-sm table-hover mb-0">
@@ -150,6 +157,7 @@
       <div class="card-body">
         <div class="form-row">
           <div class="col-md-9"></div>
+
           <div class="col-md-3">
             <table class="table table-sm mb-3">
               <tr>
@@ -157,7 +165,17 @@
                 <td id="lblTotal" class="text-right">0.00</td>
               </tr>
             </table>
-            <button id="btnSavePurchaseOrder" class="btn btn-default btn-sm btn-block">Save Purchase Order</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="col-md-9"></div>
+              <div class="col-md-3">
+                <button id="btnSavePurchaseOrder" class="btn btn-default btn-sm btn-block">Save Purchase Order</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

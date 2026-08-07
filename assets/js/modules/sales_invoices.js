@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /*** refresh */
-  btnRefreshSalesInvoice?.addEventListener('click', () => Atlas.page.refresh());
+  btnRefreshSalesInvoice?.addEventListener('click', () => Atlas.page.redirect(`sales-invoices`));
 
 });
 

@@ -11,36 +11,76 @@ class Sales_return_model extends CI_Model
     $this->load->model('Inventory_model');
   }
 
-  public function getAll()
+  public function getAll($filters = [])
   {
+    if (!empty($filters['keyword'])) {
+      $escaped = $this->db->escape_like_str($filters['keyword']);
+
+      $this->db->group_start()
+          ->where("sr.sr_no ILIKE '%{$escaped}%'")
+          ->or_where("inv.si_no ILIKE '%{$escaped}%'")
+          ->or_where("c.customer_name ILIKE '%{$escaped}%'")
+          ->group_end();
+    }
+
+    if (!empty($filters['date_from'])) {
+      $this->db->where(
+        'sr.return_date >=',
+        $filters['date_from']
+      );
+    } else {
+      $this->db->where(
+        'sr.return_date >=',
+        date('Y-m-01')
+      );
+    }
+
+    if (!empty($filters['date_to'])) {
+      $this->db->where(
+        'sr.return_date <=',
+        $filters['date_to']
+      );
+    } else {
+      $this->db->where(
+        'sr.return_date <=',
+        date('Y-m-d')
+      );
+    }
+
+    if (!empty($filters['status'])) {
+      $this->db->where(
+        'sr.status',
+        $filters['status']
+      );
+    }
     return $this->db
         ->select("
-            si.*,
+            sr.*,
             inv.si_no,
             inv.id AS sales_invoice_id,
             c.customer_name,
             concat(s.first_name, ' ', s.last_name) AS salesman_name,
             t.terms_name
         ")
-        ->from('t_sales_returns si')
+        ->from('t_sales_returns sr')
         ->join(
             't_sales_invoices inv',
-            'inv.id = si.sales_invoice_id',
+            'inv.id = sr.sales_invoice_id',
             'left'
         )
         ->join(
             'm_customers c',
-            'c.id = si.customer_id',
+            'c.id = sr.customer_id',
             'left'
         )
         ->join(
             'm_salesmen s',
-            's.id = si.salesman_id',
+            's.id = sr.salesman_id',
             'left'
         )
         ->join(
             'm_terms t',
-            't.id = si.terms_id',
+            't.id = sr.terms_id',
             'left'
         )
         ->order_by(
@@ -48,7 +88,7 @@ class Sales_return_model extends CI_Model
             'DESC'
         )
         ->order_by(
-            'si.id',
+            'sr.id',
             'DESC'
         )
         ->get()

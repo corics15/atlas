@@ -57,8 +57,29 @@ class Sales_orders extends MY_Controller
       ]
     ];
 
+    /*** filters */
+    $this->data['statuses'] = [
+      'OPEN',
+      'POSTED',
+      'COMPLETED',
+      'CANCELLED',
+    ];
+    $filters = [
+      'date_from' => trim($this->input->get('date_from')),
+      'date_to' => trim($this->input->get('date_to')),
+      'keyword' => trim($this->input->get('keyword')),
+      'status' => trim($this->input->get('status')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $keyword = trim($this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+    $this->data['searchPlaceHolder'] = 'Search...';
+
     $this->pageScript = 'sales_orders';
-    $this->data['salesOrders'] = $this->Sales_order_model->getAll();
+    $this->data['salesOrders'] = $this->Sales_order_model->getAll($filters);
     $this->data['recordCount'] = count($this->data['salesOrders']);
 
     $this->data['tableContent'] =

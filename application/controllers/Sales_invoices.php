@@ -19,8 +19,6 @@ class Sales_invoices extends MY_Controller
   {
     $this->setPage('Sales Invoice List');
     $this->pageScript = 'sales_invoices';
-    $this->data['salesInvoices'] = $this->Sales_invoice_model->getAll();
-    $this->data['recordCount'] = count($this->data['salesInvoices']);
 
     $this->data['toolbar'] = [
       'edit' => [
@@ -54,6 +52,29 @@ class Sales_invoices extends MY_Controller
         'icon' => 'fas fa-sync'
       ]
     ];
+
+    /*** filters */
+    $this->data['statuses'] = [
+      'OPEN',
+      'POSTED',
+      'CANCELLED',
+    ];
+    $filters = [
+      'date_from' => trim($this->input->get('date_from')),
+      'date_to' => trim($this->input->get('date_to')),
+      'keyword' => trim($this->input->get('keyword')),
+      'status' => trim($this->input->get('status')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $keyword = trim($this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+    $this->data['searchPlaceHolder'] = 'Search...';
+
+    $this->data['salesInvoices'] = $this->Sales_invoice_model->getAll($filters);
+    $this->data['recordCount'] = count($this->data['salesInvoices']);
 
     $this->data['tableContent'] =
         $this->load->view(

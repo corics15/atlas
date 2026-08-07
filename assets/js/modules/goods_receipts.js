@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /*** refresh */
-  btnRefreshGoodsReceipt?.addEventListener('click', () => Atlas.page.refresh());
+  btnRefreshGoodsReceipt?.addEventListener('click', () => Atlas.page.redirect(`goods-receipts`));
 
   Atlas.table.init({
     checkbox: '.chkGoodsReceipt',
@@ -245,7 +245,7 @@ const postGoodsReceipt = async () => {
     const response = await Atlas.ajax.post(
       'goods-receipts/post',
       {
-        id: Number(hidGoodsReceiptId.value)
+        id: window.goodsReceiptId
       }
     );
 
@@ -255,8 +255,7 @@ const postGoodsReceipt = async () => {
     }
 
     Atlas.toast.success(response.message);
-    setTimeout(() => Atlas.page.refresh(), 1500);
-
+    // setTimeout(() => Atlas.page.refresh(), 1500);
   } finally {
     btnPostGoodsReceipt.disabled = false;
   }
@@ -268,12 +267,18 @@ const cancelGoodsReceipt = async () => {
     return;
   }
 
-  const confirmed = await Atlas.dialog.confirm(
-    'Cancel Goods Receipt?',
-    'Are you sure you want to cancel this Goods Receipt?'
-  );
+  const reason = await Atlas.dialog.textarea({
+    icon: 'warning',
+    title: `Cancel Goods Receipt?`,
+    text: 'Please provide the reason for cancellation.',
+    // inputLabel: 'Cancellation Reason',
+    inputPlaceholder: 'Enter cancellation reason...',
+    required: false, /*** set to true if you want this to be required */
+    requiredMessage: 'Cancellation reason is required.',
+    confirmText: 'Confirm Cancellation'
+  });
 
-  if (!confirmed) {
+  if (reason === null) {
     return;
   }
 
@@ -283,7 +288,8 @@ const cancelGoodsReceipt = async () => {
     const response = await Atlas.ajax.post(
       'goods-receipts/cancel',
       {
-        id: Number(hidGoodsReceiptId.value)
+        id: Atlas.format.parseNumber(hidGoodsReceiptId.value),
+        cancel_reason: reason,
       }
     );
 
@@ -293,9 +299,7 @@ const cancelGoodsReceipt = async () => {
     }
 
     Atlas.toast.success(response.message);
-
     setTimeout(() => Atlas.page.refresh(), 1500);
-
   } finally {
     btnCancelGoodsReceipt.disabled = false;
   }
@@ -323,13 +327,16 @@ const getSelectedGoodsReceiptId = () => {
 };
 
 const printGoodsReceipt = () => {
-  const ids = Atlas.table.selectedIds();
+  let ids = Atlas.table.selectedIds();
 
-  if (ids.length === 0) {
-    Atlas.toast.warning(
-      'Please select at least one Goods Receipt'
-    );
-    return;
+  if (!ids || ids.length === 0) {
+    if (window.goodsReceiptId) {
+      ids = [window.goodsReceiptId];
+
+    } else {
+      Atlas.toast.warning('Please select at least one Goods Receipt');
+      return;
+    }
   }
 
   Atlas.print.post('goods-receipts/print', ids);

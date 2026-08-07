@@ -16,17 +16,22 @@ class Goods_receipts extends MY_Controller
   {
     $this->setPage('Goods Receiving List');
 
+    /*** filters */
+    $this->data['statuses'] = [
+      'DRAFT',
+      'POSTED',
+      'CANCELLED',
+    ];
     $filters = [
       'date_from' => trim($this->input->get('date_from')),
       'date_to' => trim($this->input->get('date_to')),
       'keyword' => trim($this->input->get('keyword')),
+      'status' => trim($this->input->get('status')),
     ];
-
     $this->data = array_merge(
       $this->data,
       $filters
     );
-
     $keyword = trim($this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
 
@@ -100,7 +105,6 @@ class Goods_receipts extends MY_Controller
   public function cancel()
   {
     $request = $this->getJsonRequest();
-
     $result = $this->Goods_receipt_model->cancel($request);
 
     return $this->jsonResponse(
@@ -113,7 +117,6 @@ class Goods_receipts extends MY_Controller
   public function post()
   {
     $request = $this->getJsonRequest();
-
     $result = $this->Goods_receipt_model->post($request);
 
     return $this->jsonResponse(
@@ -141,6 +144,11 @@ class Goods_receipts extends MY_Controller
 
     $this->data['poId'] = $poId;
     $this->data['purchaseOrder'] = $this->Purchase_order_model->get($poId);
+
+    $this->data['error_message'] = NULL;
+    if (!in_array($this->data['purchaseOrder']['header']->status, ['OPEN', 'PARTIAL'])) {
+      $this->data['error_message'] = 'Only OPEN or PARTIAL Purchase Orders can receive goods.';
+    }
 
     if (!$this->data['purchaseOrder']) {
       show_404();

@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   btnPrintSalesReturn?.addEventListener('click', printSalesReturn);
 
   /*** refresh */
-  btnRefreshSalesReturn?.addEventListener('click', () => Atlas.page.refresh());
+  btnRefreshSalesReturn?.addEventListener('click', () => Atlas.page.redirect(`sales-returns`));
 
 });
 

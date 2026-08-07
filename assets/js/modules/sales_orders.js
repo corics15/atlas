@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /*** refresh */
-  btnRefreshSalesOrder?.addEventListener('click', () => Atlas.page.refresh());
+  btnRefreshSalesOrder?.addEventListener('click', () => Atlas.page.redirect(`sales-orders`));
 
   /*** remove row event on details table */
   document.addEventListener('click', e => {

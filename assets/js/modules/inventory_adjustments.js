@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   /*** refresh */
-  btnRefreshInventoryAdjustment?.addEventListener('click', () => Atlas.page.refresh())
+  btnRefreshInventoryAdjustment?.addEventListener('click', () => Atlas.page.redirect(`inventory-adjustments`))
 
 });
 

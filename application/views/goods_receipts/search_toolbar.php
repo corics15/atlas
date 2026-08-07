@@ -6,7 +6,7 @@
       <input
         type="date"
         name="date_from"
-        value="<?= htmlspecialchars($date_from ?: date('Y-m-d')); ?>"
+        value="<?= htmlspecialchars($date_from ?: date('Y-m-01')); ?>"
         class="form-control form-control-sm">
     </div>
 
@@ -17,6 +17,23 @@
         name="date_to"
         value="<?= htmlspecialchars($date_to ?: date('Y-m-d')); ?>"
         class="form-control form-control-sm">
+    </div>
+
+    <div style="min-width:150px;">
+      <label for="selGenericStatus">Status</label>
+      <select
+        id="selGenericStatus"
+        name="status"
+        class="form-control form-control-sm custom-select">
+        <option value="">All</option>
+        <?php foreach ($statuses as $item): ?>
+          <option
+            value="<?= $item; ?>"
+            <?= ($status == $item) ? 'selected' : ''; ?>>
+            <?= $item; ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
     </div>
 
     <div class="">

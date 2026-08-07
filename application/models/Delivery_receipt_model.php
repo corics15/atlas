@@ -128,15 +128,47 @@ class Delivery_receipt_model extends CI_Model
                               ])->result();
   }
 
-  public function getAll($keyword = '')
+  public function getAll($filters = [])
   {
-    if (!empty($keyword)) {
-      $escaped = $this->db->escape_like_str($keyword);
+    if (!empty($filters['keyword'])) {
+      $escaped = $this->db->escape_like_str($filters['keyword']);
 
       $this->db->group_start()
           ->where("dr.dr_no ILIKE '%{$escaped}%'")
+          ->or_where("so.so_no ILIKE '%{$escaped}%'")
           ->or_where("c.customer_name ILIKE '%{$escaped}%'")
           ->group_end();
+    }
+
+    if (!empty($filters['date_from'])) {
+      $this->db->where(
+        'dr.delivery_date >=',
+        $filters['date_from']
+      );
+    } else {
+      $this->db->where(
+        'dr.delivery_date >=',
+        date('Y-m-01')
+      );
+    }
+
+    if (!empty($filters['date_to'])) {
+      $this->db->where(
+        'dr.delivery_date <=',
+        $filters['date_to']
+      );
+    } else {
+      $this->db->where(
+        'dr.delivery_date <=',
+        date('Y-m-d')
+      );
+    }
+
+    if (!empty($filters['status'])) {
+      $this->db->where(
+        'dr.status',
+        $filters['status']
+      );
     }
 
     return $this->db

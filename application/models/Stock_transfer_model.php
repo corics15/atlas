@@ -303,12 +303,22 @@ class Stock_transfer_model extends CI_Model
         'transfer_date >=',
         $filters['date_from']
       );
+    } else {
+      $this->db->where(
+        'transfer_date >=',
+        date('Y-m-01')
+      );
     }
 
     if (!empty($filters['date_to'])) {
       $this->db->where(
         'transfer_date <=',
         $filters['date_to']
+      );
+    } else {
+      $this->db->where(
+        'transfer_date <=',
+        date('Y-m-d')
       );
     }
 

@@ -100,10 +100,16 @@
 
     <?php /*** details */ ?>
     <div class="card">
-      <div class="card-header">
+      <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title">
           Items Received
         </h3>
+        <div class="ml-auto">
+          <a href="<?= base_url('goods-receipts') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
+          <button type="button" class="btn btn-sm btn-link" id="btnPostGoodsReceipt"><i class="fa fa-check mr-2"></i>Post</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnPrintGoodsReceipt"><i class="fa fa-print mr-2"></i>Print</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCancelGoodsReceipt"><i class="fas fa-ban mr-2"></i>Cancel</button>
+        </div>
       </div>
       <div class="card-body p-0">
         <div class="table-responsive table-scroll">
@@ -166,38 +172,8 @@
     <div class="card mt-3">
       <div class="card-body">
         <div class="row align-items-center">
-
-          <div class="col-md-8">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <a href="<?= site_url('goods_receipts'); ?>" class="btn btn-default btn-sm"><i class="fas fa-arrow-left"></i>
-                  Back
-                </a>
-
-                <button id="btnPrintGoodsReceipt" class="btn btn-default btn-sm"><i class="fa fa-print"></i>
-                  Print
-                </button>
-              </div>
-
-              <?php //if ($goodsReceipt->status === 'DRAFT') : ?>
-                <div>
-                  <button id="btnPostGoodsReceipt" class="btn btn-default btn-sm"><i class="fa fa-check"></i>
-                    Post
-                  </button>
-
-                  <button id="btnCancelGoodsReceipt" class="btn btn-default btn-sm"><i class="fa fa-ban"></i>
-                    Cancel
-                  </button>
-
-                  <button id="btnSaveChangesGoodsReceipt" class="btn btn-default btn-sm"></i>
-                    Save Changes
-                  </button>
-                </div>
-              <?php //endif ?>
-            </div>
-          </div>
-
-          <div class="col-md-4">
+          <div class="col-md-9"></div>
+          <div class="col-md-3">
             <table class="table table-sm mb-0">
               <tr>
                 <td class="total-text text-right">
@@ -211,11 +187,24 @@
               </tr>
             </table>
           </div>
-
         </div>
+
+        <div class="row">
+          <div class="col-md-9"></div>
+          <div class="col-md-3">
+            <button id="btnSaveChangesGoodsReceipt" class="btn btn-default btn-sm btn-block"></i>
+              Save Goods Receipt
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
     <input type="hidden" id="hidGoodsReceiptId" value="<?= $goodsReceipt->id ?>">
 
   </div>
 </section>
+
+<script>
+  window.goodsReceiptId = <?= (int) ($goodsReceipt->id ?? 0); ?>;
+</script>

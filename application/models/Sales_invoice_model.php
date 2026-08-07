@@ -11,8 +11,49 @@ class Sales_invoice_model extends CI_Model
     $this->load->model('Inventory_model');
   }
 
-  public function getAll()
+  public function getAll($filters = [])
   {
+    if (!empty($filters['keyword'])) {
+      $escaped = $this->db->escape_like_str($filters['keyword']);
+
+      $this->db->group_start()
+          ->where("si.si_no ILIKE '%{$escaped}%'")
+          ->or_where("so.so_no ILIKE '%{$escaped}%'")
+          ->or_where("c.customer_name ILIKE '%{$escaped}%'")
+          ->group_end();
+    }
+
+    if (!empty($filters['date_from'])) {
+      $this->db->where(
+        'si.invoice_date >=',
+        $filters['date_from']
+      );
+    } else {
+      $this->db->where(
+        'si.invoice_date >=',
+        date('Y-m-01')
+      );
+    }
+
+    if (!empty($filters['date_to'])) {
+      $this->db->where(
+        'si.invoice_date <=',
+        $filters['date_to']
+      );
+    } else {
+      $this->db->where(
+        'si.invoice_date <=',
+        date('Y-m-d')
+      );
+    }
+
+    if (!empty($filters['status'])) {
+      $this->db->where(
+        'si.status',
+        $filters['status']
+      );
+    }
+
     return $this->db
         ->select("
             si.*,

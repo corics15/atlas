@@ -188,6 +188,72 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  /*** print footer */
+  btnPrintPurchaseOrder.addEventListener('click', () => {
+    if (window.purchaseOrderId > 0) {
+      ids = []
+      ids.push(window.purchaseOrderId)
+
+      Atlas.print.post('purchase-orders/print', ids);
+    } else {
+      Atlas.toast.warning(`Create a Purchase Order first.`)
+    }
+  });
+
+  /*** receive goods footer */
+  btnReceiveGoods.addEventListener('click', () => {
+    if (window.purchaseOrderId > 0)
+      Atlas.page.redirect('goods-receipts/create', { po: window.purchaseOrderId })
+    else Atlas.toast.warning(`Create a Purchase Order first.`);
+  });
+
+  /*** cancel purchase order footer */
+  btnCancelPurchaseOrder.addEventListener('click', async () => {
+    if (window.purchaseOrderId === 0) {
+      Atlas.toast.warning(`Create a Purchase Order first.`);
+      return;
+    }
+
+    if (btnCancelPurchaseOrder.dataset.status !== 'OPEN') {
+      Atlas.toast.warning(
+        'Only OPEN Purchase Orders can be CANCELLED.'
+      );
+      return;
+    }
+
+    const reason = await Atlas.dialog.textarea({
+      icon: 'warning',
+      title: `Cancel Purchase Order?`,
+      text: 'Please provide the reason for cancellation.',
+      // inputLabel: 'Cancellation Reason',
+      inputPlaceholder: 'Enter cancellation reason...',
+      required: false, /*** set to true if you want this to be required */
+      requiredMessage: 'Cancellation reason is required.',
+      confirmText: 'Confirm Cancellation'
+    });
+
+    if (reason === null) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('ids[]', window.purchaseOrderId);
+    formData.append('cancel_reason', reason);
+
+    const result = await Atlas.ajax.post(
+      'purchase-orders/cancel',
+      formData
+    );
+
+    if (!result.success) {
+      Atlas.toast.error(result.message);
+      return;
+    }
+
+    Atlas.toast.success(result.message);
+    // setTimeout(() => Atlas.page.refresh(), 500);
+  });
+
   if (window.purchaseOrderId > 0) {
     await loadPurchaseOrder(window.purchaseOrderId);
   }
@@ -424,16 +490,13 @@ const populateHeader = (header) => {
   }
   document.querySelector('.ls-wider').innerHTML = `[${header.status}]`;
   document.querySelector('.ls-wider').classList.add(statusClass);
+  document.getElementById('btnCancelPurchaseOrder').setAttribute('data-status', header.status)
 }
 
 const enableEditMode = (header) => {
   isEditMode = true;
   purchaseOrderId = header.id;
 
-  btnSavePurchaseOrder.innerHTML =
-    header.status === 'OPEN'
-      ? 'Save Changes'
-      : 'Locked';
   btnSavePurchaseOrder.disabled = header.status !== 'OPEN';
   txtPONo.value = header.po_no;
 }

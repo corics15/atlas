@@ -1,6 +1,25 @@
-/* google fonts */
-@import url('https://fonts.googleapis.com/css?family=Roboto Condensed:400,500&display=swap');
-@import url('https://fonts.googleapis.com/css?family=Montserrat:600&display=swap');
+/* Roboto Condensed */
+@font-face {
+  font-family: 'Roboto Condensed';
+  src: url('../fonts/RobotoCondensed-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto Condensed';
+  src: url('../fonts/RobotoCondensed-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+/* Montserrat */
+@font-face {
+  font-family: 'Montserrat';
+  src: url('../fonts/Montserrat-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
 
 /* Base body font */
 body {
@@ -596,6 +615,21 @@ textarea:focus {
 .btn:hover,
 .btn:focus {
   color: #745c0c !important;
+}
+
+.btn-link,
+.btn-link i {
+  box-shadow: none !important;
+  color: #1a6d27 !important;
+}
+
+.btn-link:hover i {
+  color: #745c0c !important;
+}
+
+.btn-link:active,
+.btn-link:focus {
+  color: #1a6d27 !important;
 }
 
 /* Prevents text from breaking into multiple lines */

@@ -71,15 +71,46 @@ class Sales_order_model extends CI_Model
                           )->result();
   }
 
-  public function getAll($keyword = '')
+  public function getAll($filters = [])
   {
-    if (!empty($keyword)) {
-      $escaped = $this->db->escape_like_str($keyword);
+    if (!empty($filters['keyword'])) {
+      $escaped = $this->db->escape_like_str($filters['keyword']);
 
       $this->db->group_start()
           ->where("so.so_no ILIKE '%{$escaped}%'")
           ->or_where("c.customer_name ILIKE '%{$escaped}%'")
           ->group_end();
+    }
+
+    if (!empty($filters['date_from'])) {
+      $this->db->where(
+        'so.order_date >=',
+        $filters['date_from']
+      );
+    } else {
+      $this->db->where(
+        'so.order_date >=',
+        date('Y-m-01')
+      );
+    }
+
+    if (!empty($filters['date_to'])) {
+      $this->db->where(
+        'so.order_date <=',
+        $filters['date_to']
+      );
+    } else {
+      $this->db->where(
+        'so.order_date <=',
+        date('Y-m-d')
+      );
+    }
+
+    if (!empty($filters['status'])) {
+      $this->db->where(
+        'so.status',
+        $filters['status']
+      );
     }
 
     return $this->db

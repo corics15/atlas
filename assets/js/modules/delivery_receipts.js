@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /*** refresh */
-  btnRefreshDeliveryReceipt?.addEventListener('click', () => Atlas.page.refresh());
+  btnRefreshDeliveryReceipt?.addEventListener('click', () => Atlas.page.redirect(`delivery-receipts`));
 
   /*** print */
   btnPrintDeliveryReceipt?.addEventListener('click', printDeliveryReceipt);

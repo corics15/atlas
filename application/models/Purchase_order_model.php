@@ -173,12 +173,22 @@ class Purchase_order_model extends CI_Model
         'p.po_date >=',
         $filters['date_from']
       );
+    } else {
+      $this->db->where(
+        'p.po_date >=',
+        date('Y-m-01')
+      );
     }
 
     if (!empty($filters['date_to'])) {
       $this->db->where(
         'p.po_date <=',
         $filters['date_to']
+      );
+    } else {
+      $this->db->where(
+        'p.po_date <=',
+        date('Y-m-d')
       );
     }
 
@@ -212,7 +222,7 @@ class Purchase_order_model extends CI_Model
         ->result();
   }
 
-  public function cancel($id)
+  public function cancel($id, $cancelReason = NULL)
   {
     $purchaseOrder = $this->db
         ->select('id, po_no, status')
@@ -254,7 +264,7 @@ class Purchase_order_model extends CI_Model
             'status'          => 'CANCELLED',
             'cancelled_by'    => $this->session->userdata('user_id'),
             'cancelled_on'    => date('Y-m-d H:i:s'),
-            // 'cancel_reason'   => $cancelReason,   /*** TODO */
+            'cancel_reason'   => $cancelReason <> '' ? strtoupper(trim($cancelReason)) : NULL,
             'updated_by'      => $this->session->userdata('user_id'),
             'updated_on'      => date('Y-m-d H:i:s')
             ]
@@ -278,7 +288,7 @@ class Purchase_order_model extends CI_Model
     ];
   }
 
-  public function cancelMany(array $ids)
+  public function cancelMany(array $ids, $cancelReason = null)
   {
     $purchaseOrders = $this->db
         ->select('id, status')
@@ -318,6 +328,9 @@ class Purchase_order_model extends CI_Model
             't_purchase_orders',
             [
               'status'     => 'CANCELLED',
+              'cancelled_by'    => $this->session->userdata('user_id'),
+              'cancelled_on'    => date('Y-m-d H:i:s'),
+              'cancel_reason'   => $cancelReason <> '' ? strtoupper(trim($cancelReason)) : NULL,
               'updated_by' => $this->session->userdata('user_id'),
               'updated_on' => date('Y-m-d H:i:s')
             ]

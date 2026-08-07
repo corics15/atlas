@@ -40,6 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const status = getSelectedPurchaseOrderStatus();
+    if (!['OPEN', 'PARTIAL'].includes(status)) {
+      Atlas.toast.warning('Only OPEN or PARTIAL Purchase Orders can receive goods.');
+      return;
+    }
+
     Atlas.page.redirect('goods-receipts/create', { po: id });
   });
 
@@ -96,10 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     Atlas.toast.success(result.message);
-
-    setTimeout(() => {
-      Atlas.page.refresh();
-    }, 500);
+    setTimeout(() => Atlas.page.refresh(), 500);
   });
 
   /*** print */
