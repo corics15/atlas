@@ -428,8 +428,8 @@ class Inventory_model extends CI_Model
             $header->id,
             $header->pr_no,
             [$detail],
-            'qty',
-            NULL
+            NULL,
+            'qty'
         );
       }
 

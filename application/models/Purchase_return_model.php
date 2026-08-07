@@ -479,8 +479,6 @@ class Purchase_return_model extends CI_Model
                     'cancel_reason'   => trim($cancelReason) <> '' ? strtoupper(trim($cancelReason)) : NULL,
                     'cancelled_by'    => $this->session->userdata('user_id'),
                     'cancelled_on'    => date('Y-m-d H:i:s'),
-                    'updated_by'      => $this->session->userdata('user_id'),
-                    'updated_on'      => date('Y-m-d H:i:s')
                   ]
               );
       }

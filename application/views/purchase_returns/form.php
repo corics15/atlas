@@ -34,20 +34,9 @@
   </div>
   <div class="card-body">
 
-    <input
-        type="hidden"
-        id="hidGoodsReceiptId"
-        value="<?= isset($goodsReceipt) ? $goodsReceipt->id : '' ?>">
-
-    <input
-        type="hidden"
-        id="hidPurchaseReturnId"
-        value="<?= isset($purchaseReturn) ? $purchaseReturn->id : '' ?>">
-
-    <input
-        type="hidden"
-        id="hidSupplierId"
-        value="<?= isset($goodsReceipt) ? $goodsReceipt->supplier_id : '' ?>">
+    <input type="hidden" id="hidGoodsReceiptId" value="<?= isset($goodsReceipt) ? $goodsReceipt->id : '' ?>">
+    <input type="hidden" id="hidPurchaseReturnId" value="<?= isset($purchaseReturn) ? $purchaseReturn->id : '' ?>">
+    <input type="hidden" id="hidSupplierId" value="<?= isset($goodsReceipt) ? $goodsReceipt->supplier_id : '' ?>">
 
     <?php /*** header */ ?>
     <input type="hidden" id="txtPRNo" value="">
@@ -99,3 +88,6 @@
 
   </div>
 </div>
+<script>
+  window.purchaseReturnId = <?= isset($purchaseReturn) ? (int) $purchaseReturn->id : 0; ?>;
+</script>

@@ -12,8 +12,8 @@
         <p><?= $error_message ?></p>
         <hr>
         <a href="<?= base_url('sales_orders') ?>"
-          class="btn btn-default btn-sm btn-no-underline">
-            <i class="fas fa-arrow-left mr-1"></i>
+          class="btn btn-link btn-sm btn-no-underline">
+            <i class="fas fa-arrow-circle-left mr-1"></i>
             Back to Sales Orders
         </a>
       </div>

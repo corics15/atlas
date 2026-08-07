@@ -122,10 +122,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       Atlas.toast.success(result.message);
-      // setTimeout(() => Atlas.page.redirect(`purchase-returns/edit/${result.data.purchase_return_id}`), 1200);
       document.getElementById('hidPurchaseReturnId').value = result.data.purchase_return_id;
-      // setTimeout(() => Atlas.page.redirect(`purchase-returns/edit/${result.data.purchase_return_id}`), 1200);
-      setTimeout(() => Atlas.page.redirect(`purchase-returns`), 1200);
+      setTimeout(() => Atlas.page.redirect(`purchase-returns/edit/${result.data.purchase_return_id}`), 1200);
 
       isEditMode = true;
       isDirty = false;
@@ -139,11 +137,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** post */
   btnPostPurchaseReturn?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (ids.length === 0) {
-      Atlas.toast.warning('Please select at least one Purchase Return')
-      return false;
+    if (!ids || ids.length === 0) {
+      if (window.purchaseReturnId === 0) {
+        Atlas.toast.warning('New Purchase Return, not yet saved');
+        return false;
+      } else if (window.purchaseReturnId) {
+        ids = [window.purchaseReturnId];
+      } else {
+        Atlas.toast.warning('Please select at least one Purchase Return');
+        return false;
+      }
     }
 
     const result = await Atlas.dialog.confirm(
@@ -184,11 +189,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** cancel */
   btnCancelPurchaseReturn?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (!ids.length) {
-      Atlas.toast.warning('Please select at least one Purchase Return.');
-      return;
+    if (!ids || ids.length === 0) {
+      if (window.purchaseReturnId === 0) {
+        Atlas.toast.warning('New Purchase Return, not yet saved');
+        return false;
+      } else if (window.purchaseReturnId) {
+        ids = [window.purchaseReturnId];
+      } else {
+        Atlas.toast.warning('Please select at least one Purchase Return');
+        return false;
+      }
     }
 
     const reason = await Atlas.dialog.textarea({
@@ -295,17 +307,21 @@ const validatePurchaseReturn = () => {
 };
 
 const printPurchaseReturn = () => {
-  const ids = Atlas.table.selectedIds();
+  let ids = Atlas.table.selectedIds();
 
-  if (ids.length === 0) {
-    Atlas.toast.warning('Please select at least one Purchase Return.');
-    return;
+  if (!ids || ids.length === 0) {
+    if (window.purchaseReturnId === 0) {
+      Atlas.toast.warning('New Purchase Return, not yet saved');
+      return;
+    } else if (window.purchaseReturnId) {
+      ids = [window.purchaseReturnId];
+    } else {
+      Atlas.toast.warning('Please select at least one Purchase Return');
+      return;
+    }
   }
 
-  Atlas.print.post(
-    'purchase-returns/print',
-    ids
-  );
+  Atlas.print.post('purchase-returns/print', ids);
 };
 
 const markDirty = () => {
