@@ -19,6 +19,13 @@
 <script src="<?= atlas_asset('assets/js/core/table.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/product-finder.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/format.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/atlas.ui.js'); ?>"></script>
+
+<script>
+  $(function () {
+    Atlas.ui.init();
+  });
+</script>
 
 <?php if (!empty($pageScript)) : ?>
   <script src="<?= atlas_asset('assets/js/modules/' . $pageScript . '.js'); ?>"></script>

@@ -12,29 +12,30 @@ class Inventory_adjustments extends MY_Controller
 
   public function index()
   {
-    $this->setPage('Inventory Adjustment List');
+    $this->setPage('Inventory Adjustment List',
+      [
+        'id'   => 'btnNewInventoryAdjustment',
+        'icon' => 'fa fa-plus',
+        'text' => 'New Adjustment',
+      ]
+    );
     $this->pageScript = 'inventory_adjustments';
 
     $this->data['toolbar'] = [
-      'new' => [
-        'id'   => 'btnNewInventoryAdjustment',
-        'icon' => 'fas fa-plus',
-        'text' => 'New'
-      ],
       'edit' => [
         'id'   => 'btnEditInventoryAdjustment',
         'icon' => 'fas fa-edit',
-        'text' => 'Open'
+        'text' => 'Edit Adjustment'
       ],
       'cancel' => [
         'id'   => 'btnCancelInventoryAdjustment',
         'icon' => 'fas fa-ban',
-        'text' => 'Cancel'
+        'text' => 'Cancel Adjustment'
       ],
       'post' => [
         'id'   => 'btnPostInventoryAdjustment',
         'icon' => 'fas fa-check-circle',
-        'text' => 'Post'
+        'text' => 'Post Adjustment'
       ],
       'print' => [
         'id'   => 'btnPrintInventoryAdjustment',

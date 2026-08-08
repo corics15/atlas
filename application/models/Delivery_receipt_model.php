@@ -19,7 +19,8 @@ class Delivery_receipt_model extends CI_Model
             so.*,
             c.customer_name,
             CONCAT(s.first_name,' ',s.last_name) AS salesman_name,
-            t.terms_name
+            t.terms_name,
+            so.status AS so_status
         ")
         ->from('t_sales_orders so')
         ->join('m_customers c','c.id=so.customer_id')
@@ -43,27 +44,34 @@ class Delivery_receipt_model extends CI_Model
                               sod.qty AS qty_ordered,
                               COALESCE(inv.qty_on_hand,0) qty_available,
                               COALESCE(dr.qty_delivered,0) qty_delivered,
-                              (
-                                sod.qty
-                                -
-                                COALESCE(dr.qty_delivered,0)
-                              ) qty_remaining
+                              COALESCE(res.qty_reserved,0) qty_reserved,
+                              (sod.qty - COALESCE(dr.qty_delivered, 0)) qty_remaining,
+                              (sod.qty - COALESCE(dr.qty_delivered, 0) - COALESCE(res.qty_reserved, 0)) qty_available_to_deliver
                           FROM t_sales_order_details sod
                           INNER JOIN m_products p ON p.id=sod.product_id
                           LEFT JOIN m_uom u ON u.id=p.uom_id
-                          LEFT JOIN t_branch_inventory inv ON inv.product_id=p.id
-                            AND inv.branch_id = ?
+                          LEFT JOIN t_branch_inventory inv ON inv.product_id=p.id AND inv.branch_id = ?
                           LEFT JOIN
                           (
-                              SELECT
-                                  drd.sales_order_detail_id,
-                                  SUM(drd.qty) qty_delivered
-                              FROM t_delivery_receipt_details drd
-                              INNER JOIN t_delivery_receipts dr ON dr.id=drd.delivery_receipt_id
-                              WHERE dr.status='POSTED'
-                              GROUP BY drd.sales_order_detail_id
-                          ) dr
-                              ON dr.sales_order_detail_id=sod.id
+                            SELECT
+                                drd.sales_order_detail_id,
+                                SUM(drd.qty) qty_delivered
+                            FROM t_delivery_receipt_details drd
+                            INNER JOIN t_delivery_receipts dr ON dr.id=drd.delivery_receipt_id
+                            WHERE dr.status = 'POSTED'
+                            GROUP BY drd.sales_order_detail_id
+                          ) dr ON dr.sales_order_detail_id = sod.id
+                          LEFT JOIN
+                          (
+                            SELECT
+                                drd.sales_order_detail_id,
+                                SUM(drd.qty) AS qty_reserved
+                            FROM t_delivery_receipt_details drd
+                            INNER JOIN t_delivery_receipts dr
+                                ON dr.id = drd.delivery_receipt_id
+                            WHERE dr.status = 'OPEN'
+                            GROUP BY drd.sales_order_detail_id
+                          ) res ON res.sales_order_detail_id = sod.id
                           WHERE sod.sales_order_id = ?
                           ORDER BY sod.id
                         ",
@@ -71,6 +79,37 @@ class Delivery_receipt_model extends CI_Model
                           $branchId,
                           $salesOrderId
                         ])->result();
+  }
+
+  public function getDetails($deliveryReceiptId)
+  {
+      $branchId = (int)$this->session->userdata('branch_id');
+
+      return $this->db->query("SELECT
+                                  drd.id,
+                                  drd.sales_order_detail_id,
+                                  drd.product_id,
+                                  p.barcode,
+                                  p.description,
+                                  u.uom,
+                                  sod.qty AS qty_ordered,
+                                  drd.qty AS qty_delivered,
+                                  COALESCE(inv.qty_on_hand,0) AS qty_available,
+                                  0 AS qty_remaining,
+                                  0 AS qty_available_to_deliver,
+                                  drd.qty AS qty_reverse -- used for cancellation events
+                                FROM t_delivery_receipt_details drd
+                                INNER JOIN t_sales_order_details sod ON sod.id = drd.sales_order_detail_id
+                                INNER JOIN m_products p ON p.id = drd.product_id
+                                LEFT JOIN m_uom u ON u.id = p.uom_id
+                                LEFT JOIN t_branch_inventory inv ON inv.product_id = drd.product_id AND inv.branch_id = ?
+                                WHERE drd.delivery_receipt_id = ?
+                                ORDER BY drd.id
+                              ",
+                              [
+                                $branchId,
+                                $deliveryReceiptId
+                              ])->result();
   }
 
   public function get($id)
@@ -96,36 +135,6 @@ class Delivery_receipt_model extends CI_Model
         ->where('dr.id', $id)
         ->get()
         ->row();
-  }
-
-  public function getDetails($deliveryReceiptId)
-  {
-      $branchId = (int)$this->session->userdata('branch_id');
-
-      return $this->db->query("SELECT
-                                  drd.id,
-                                  drd.sales_order_detail_id,
-                                  drd.product_id,
-                                  p.barcode,
-                                  p.description,
-                                  u.uom,
-                                  sod.qty AS qty_ordered,
-                                  drd.qty AS qty_delivered,
-                                  COALESCE(inv.qty_on_hand,0) AS qty_available,
-                                  0 AS qty_remaining,
-                                  drd.qty AS qty_reverse -- used for cancellation events
-                                FROM t_delivery_receipt_details drd
-                                INNER JOIN t_sales_order_details sod ON sod.id = drd.sales_order_detail_id
-                                INNER JOIN m_products p ON p.id = drd.product_id
-                                LEFT JOIN m_uom u ON u.id = p.uom_id
-                                LEFT JOIN t_branch_inventory inv ON inv.product_id = drd.product_id AND inv.branch_id = ?
-                                WHERE drd.delivery_receipt_id = ?
-                                ORDER BY drd.id
-                              ",
-                              [
-                                $branchId,
-                                $deliveryReceiptId
-                              ])->result();
   }
 
   public function getAll($filters = [])
@@ -239,20 +248,33 @@ class Delivery_receipt_model extends CI_Model
           }
 
           /*** validate DELIVER vs ORDERED quantity */
-          $salesOrderDetail = $this->db
-              ->where('id', $detail->sales_order_detail_id)
-              ->get('t_sales_order_details')
-              ->row();
+          // $salesOrderDetail = $this->db
+          //     ->where('id', $detail->sales_order_detail_id)
+          //     ->get('t_sales_order_details')
+          //     ->row();
 
-          if (!$salesOrderDetail) {
-            throw new Exception('Invalid Sales Order detail.');
-          }
+          // if (!$salesOrderDetail) {
+          //   throw new Exception('Invalid Sales Order detail.');
+          // }
 
-          if ((float)$detail->qty > (float)$salesOrderDetail->qty) {
+          // if ((float)$detail->qty > (float)$salesOrderDetail->qty) {
+          //   throw new Exception(
+          //     'Delivered quantity cannot exceed ordered quantity.'
+          //   );
+          // }
+
+          /*** validate DELIVER vs AVAILABLE TO DELIVER quantity */
+          $availableToDeliver = $this->getAvailableToDeliver(
+            $detail->sales_order_detail_id,
+            empty($deliveryReceipt->id) ? 0 : $deliveryReceipt->id
+          );
+
+          if ((float)$detail->qty > $availableToDeliver) {
             throw new Exception(
-              'Delivered quantity cannot exceed ordered quantity.'
+              "{$detail->description} exceeds the available quantity to deliver."
             );
           }
+          /*** end validate */
 
           $hasQty = TRUE;
 
@@ -405,40 +427,53 @@ class Delivery_receipt_model extends CI_Model
       /*** validate each detail */
       foreach ($details as $detail)
       {
-        /*** remaining quantity */
-        $remaining = $this->db
-            ->query("SELECT
-                      sod.qty
-                      -
-                      COALESCE(
-                        (
-                          SELECT SUM(drd2.qty)
-                          FROM t_delivery_receipt_details drd2
-                          INNER JOIN t_delivery_receipts dr2 ON dr2.id = drd2.delivery_receipt_id
-                          WHERE dr2.status = 'POSTED'
-                          AND drd2.sales_order_detail_id = ?
-                        ),
-                        0
-                      ) AS qty_remaining
-                    FROM t_sales_order_details sod
-                    WHERE sod.id = ?
-                  ", [
-                    $detail->sales_order_detail_id,
-                    $detail->sales_order_detail_id
-                  ])
-                  ->row();
+        // /*** remaining quantity */
+        // $remaining = $this->db
+        //     ->query("SELECT
+        //               sod.qty
+        //               -
+        //               COALESCE(
+        //                 (
+        //                   SELECT SUM(drd2.qty)
+        //                   FROM t_delivery_receipt_details drd2
+        //                   INNER JOIN t_delivery_receipts dr2 ON dr2.id = drd2.delivery_receipt_id
+        //                   WHERE dr2.status = 'POSTED'
+        //                   AND drd2.sales_order_detail_id = ?
+        //                 ),
+        //                 0
+        //               ) AS qty_remaining
+        //             FROM t_sales_order_details sod
+        //             WHERE sod.id = ?
+        //           ",  [
+        //                 $detail->sales_order_detail_id,
+        //                 $detail->sales_order_detail_id
+        //               ])
+        //           ->row();
 
-        if (!$remaining) {
+        // if (!$remaining) {
+        //   throw new Exception(
+        //     'Invalid Sales Order detail.'
+        //   );
+        // }
+
+        // if ((float)$detail->qty > (float)$remaining->qty_remaining) {
+        //   throw new Exception(
+        //     'Remaining quantity has changed. Please recreate the Delivery Receipt.'
+        //   );
+        // }
+
+        /*** validate AVAILABLE TO DELIVER */
+        $availableToDeliver = $this->getAvailableToDeliver(
+          $detail->sales_order_detail_id,
+          $id
+        );
+
+        if ((float)$detail->qty > $availableToDeliver) {
           throw new Exception(
-            'Invalid Sales Order detail.'
+            'Available quantity to deliver has changed. Please recreate the Delivery Receipt.'
           );
         }
-
-        if ((float)$detail->qty > (float)$remaining->qty_remaining) {
-          throw new Exception(
-            'Remaining quantity has changed. Please recreate the Delivery Receipt.'
-          );
-        }
+        /*** end validate */
 
         /*** inventory validation */
         $inventory = $this->db
@@ -518,19 +553,18 @@ class Delivery_receipt_model extends CI_Model
                                       ])->row();
 
       if ((int)$remaining->remaining_items === 0) {
-
           $this->db
               ->where(
-                  'id',
-                  $deliveryReceipt->sales_order_id
+                'id',
+                $deliveryReceipt->sales_order_id
               )
               ->update(
-                  't_sales_orders',
-                  [
-                    'status'     => 'COMPLETED',
-                    'updated_by' => $this->session->userdata('user_id'),
-                    'updated_on' => date('Y-m-d H:i:s')
-                  ]
+                't_sales_orders',
+                [
+                  'status'     => 'COMPLETED',
+                  'updated_by' => $this->session->userdata('user_id'),
+                  'updated_on' => date('Y-m-d H:i:s')
+                ]
               );
       }
       /*** end update Sales Order status */
@@ -584,7 +618,8 @@ class Delivery_receipt_model extends CI_Model
           );
         }
 
-        if ($header->status != 'POSTED') {
+        /*** allow OPEN or POSTED DRs */
+        if (!in_array($header->status, ['OPEN', 'POSTED'])) {
           throw new Exception(
             "Delivery Receipt {$header->dr_no} is already {$header->status}."
           );
@@ -595,12 +630,14 @@ class Delivery_receipt_model extends CI_Model
         * Reverse stock ledger
         * Reopen Sales Order
         */
-        $result = $this->Inventory_model->reverseTransaction('DR', $id);
+        if ($header->status === 'POSTED') {
+          $result = $this->Inventory_model->reverseTransaction('DR', $id);
 
-        if (!$result['success']) {
-          throw new Exception(
-            $result['message']
-          );
+          if (!$result['success']) {
+            throw new Exception(
+              $result['message']
+            );
+          }
         }
         /*** end restore */
 
@@ -619,40 +656,42 @@ class Delivery_receipt_model extends CI_Model
             );
 
             /*** recalculate Sales Order status */
-            $remaining = $this->db->query("SELECT COUNT(*) AS remaining_items
-                                            FROM t_sales_order_details sod
-                                            LEFT JOIN (
-                                                SELECT
-                                                    drd.sales_order_detail_id,
-                                                    SUM(drd.qty) AS qty_delivered
-                                                FROM t_delivery_receipt_details drd
-                                                INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
-                                                WHERE dr.status = 'POSTED'
-                                                GROUP BY drd.sales_order_detail_id
-                                            ) dr
-                                                ON dr.sales_order_detail_id = sod.id
-                                            WHERE sod.sales_order_id = ?
-                                              AND (
-                                                    sod.qty - COALESCE(dr.qty_delivered, 0)
-                                                  ) > 0
-                                        ", [
-                                            $header->sales_order_id
-                                        ])->row();
+            if ($header->status === 'POSTED') {
+              $remaining = $this->db->query("SELECT COUNT(*) AS remaining_items
+                                              FROM t_sales_order_details sod
+                                              LEFT JOIN (
+                                                  SELECT
+                                                      drd.sales_order_detail_id,
+                                                      SUM(drd.qty) AS qty_delivered
+                                                  FROM t_delivery_receipt_details drd
+                                                  INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
+                                                  WHERE dr.status = 'POSTED'
+                                                  GROUP BY drd.sales_order_detail_id
+                                              ) dr
+                                                  ON dr.sales_order_detail_id = sod.id
+                                              WHERE sod.sales_order_id = ?
+                                                AND (
+                                                      sod.qty - COALESCE(dr.qty_delivered, 0)
+                                                    ) > 0
+                                          ", [
+                                              $header->sales_order_id
+                                          ])->row();
 
-            $this->db
-                ->where('id', $header->sales_order_id)
-                ->update(
-                    't_sales_orders',
-                    [
-                      'status' => (
-                        (int)$remaining->remaining_items > 0
-                      )
-                          ? 'POSTED'
-                          : 'COMPLETED',
-                      'updated_by' => $this->session->userdata('user_id'),
-                      'updated_on' => date('Y-m-d H:i:s')
-                    ]
-                );
+              $this->db
+                  ->where('id', $header->sales_order_id)
+                  ->update(
+                      't_sales_orders',
+                      [
+                        'status' => (
+                          (int)$remaining->remaining_items > 0
+                        )
+                            ? 'POSTED'
+                            : 'COMPLETED',
+                        'updated_by' => $this->session->userdata('user_id'),
+                        'updated_on' => date('Y-m-d H:i:s')
+                      ]
+                  );
+            }
             /*** end recalculate Sales Order status */
       }
 
@@ -688,4 +727,127 @@ class Delivery_receipt_model extends CI_Model
     return 'DR-' . date('YmdHis');
   }
 
+  private function getAvailableToDeliver($salesOrderDetailId, $excludeDeliveryReceiptId = 0)
+  {
+      $row = $this->db->query("SELECT
+                                  sod.qty - COALESCE(posted.qty_delivered, 0) - COALESCE(reserved.qty_reserved, 0)AS qty_available_to_deliver
+                                FROM t_sales_order_details sod
+                                LEFT JOIN
+                                (
+                                  SELECT
+                                      drd.sales_order_detail_id,
+                                      SUM(drd.qty) AS qty_delivered
+                                  FROM t_delivery_receipt_details drd
+                                  INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
+                                  WHERE dr.status = 'POSTED'
+                                  GROUP BY drd.sales_order_detail_id
+                                ) posted ON posted.sales_order_detail_id = sod.id
+                                LEFT JOIN
+                                (
+                                  SELECT
+                                      drd.sales_order_detail_id,
+                                      SUM(drd.qty) AS qty_reserved
+                                  FROM t_delivery_receipt_details drd
+                                  INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
+                                  WHERE dr.status = 'OPEN'
+                                    AND dr.id <> ?
+                                  GROUP BY drd.sales_order_detail_id
+                                ) reserved ON reserved.sales_order_detail_id = sod.id
+                                WHERE sod.id = ?
+                                ",
+                                [
+                                  (int)$excludeDeliveryReceiptId,
+                                  (int)$salesOrderDetailId
+                                ]
+                              )->row();
+
+    return $row ? (float)$row->qty_available_to_deliver : 0;
+  }
+
+  private function getDeliveryAvailability_deleteme($salesOrderId, $excludeDeliveryReceiptId = 0)
+  {
+    $branchId = (int)$this->session->userdata('branch_id');
+
+    return $this->db->query("SELECT
+                              sod.id AS sales_order_detail_id,
+                              sod.product_id,
+                              p.barcode,
+                              p.description,
+                              u.uom,
+                              sod.qty AS qty_ordered,
+                              COALESCE(inv.qty_on_hand,0) AS qty_available,
+                              COALESCE(posted.qty_delivered,0) AS qty_delivered,
+                              COALESCE(reserved.qty_reserved,0) AS qty_reserved,
+                              (sod.qty - COALESCE(posted.qty_delivered, 0)) AS qty_remaining,
+                              (sod.qty - COALESCE(posted.qty_delivered, 0) - COALESCE(reserved.qty_reserved, 0)) AS qty_available_to_deliver
+                              FROM t_sales_order_details sod
+                              INNER JOIN m_products p ON p.id = sod.product_id
+                              LEFT JOIN m_uom u ON u.id = p.uom_id
+                              LEFT JOIN t_branch_inventory inv ON inv.product_id = p.id AND inv.branch_id = ?
+                              LEFT JOIN
+                              (
+                                SELECT
+                                    drd.sales_order_detail_id,
+                                    SUM(drd.qty) AS qty_delivered
+                                FROM t_delivery_receipt_details drd
+                                INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
+                                WHERE dr.status = 'POSTED'
+                                GROUP BY drd.sales_order_detail_id
+                              ) posted ON posted.sales_order_detail_id = sod.id
+                              LEFT JOIN
+                              (
+                                SELECT
+                                    drd.sales_order_detail_id,
+                                    SUM(drd.qty) AS qty_reserved
+                                FROM t_delivery_receipt_details drd
+                                INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
+                                WHERE dr.status = 'OPEN' AND dr.id <> ?
+                                GROUP BY drd.sales_order_detail_id
+                              ) reserved ON reserved.sales_order_detail_id = sod.id
+                              WHERE sod.sales_order_id = ?
+                              ORDER BY sod.id
+                            ",
+                            [
+                              $branchId,
+                              $excludeDeliveryReceiptId,
+                              $salesOrderId
+                            ])->result();
+  }
+
+  public function getSalesOrderDetails_deleteme($salesOrderId)
+  {
+    $branchId = (int)$this->session->userdata('branch_id');
+
+    return $this->db->query("SELECT
+                              sod.id AS sales_order_detail_id,
+                              sod.product_id,
+                              p.barcode,
+                              p.description,
+                              u.uom,
+                              sod.qty AS qty_ordered,
+                              COALESCE(inv.qty_on_hand,0) qty_available,
+                              COALESCE(dr.qty_delivered,0) qty_delivered,
+                              (sod.qty - COALESCE(dr.qty_delivered, 0)) qty_remaining
+                          FROM t_sales_order_details sod
+                          INNER JOIN m_products p ON p.id=sod.product_id
+                          LEFT JOIN m_uom u ON u.id=p.uom_id
+                          LEFT JOIN t_branch_inventory inv ON inv.product_id=p.id AND inv.branch_id = ?
+                          LEFT JOIN
+                          (
+                            SELECT
+                                drd.sales_order_detail_id,
+                                SUM(drd.qty) qty_delivered
+                            FROM t_delivery_receipt_details drd
+                            INNER JOIN t_delivery_receipts dr ON dr.id=drd.delivery_receipt_id
+                            WHERE dr.status = 'POSTED'
+                            GROUP BY drd.sales_order_detail_id
+                          ) dr ON dr.sales_order_detail_id = sod.id
+                          WHERE sod.sales_order_id = ?
+                          ORDER BY sod.id
+                        ",
+                        [
+                          $branchId,
+                          $salesOrderId
+                        ])->result();
+  }
 }

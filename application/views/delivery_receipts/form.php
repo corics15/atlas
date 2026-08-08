@@ -35,7 +35,7 @@
         <div class="row">
           <div class="col-md-6">
             <?php
-              switch (htmlspecialchars($header->status)) {
+              switch (htmlspecialchars($header->so_status)) {
                 case 'OPEN':
                   $status = '<span class="badge badge-secondary">OPEN</span>';
                   break;

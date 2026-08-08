@@ -99,33 +99,33 @@ class Sales_return_model extends CI_Model
   {
     return $this->db
         ->select("
-            si.*,
+            sr.*,
             inv.si_no,
             c.customer_name,
             concat(s.first_name, ' ', s.last_name) AS salesman_name,
             t.terms_name
         ")
-        ->from('t_sales_returns si')
+        ->from('t_sales_returns sr')
         ->join(
             't_sales_invoices inv',
-            'inv.id = si.sales_invoice_id'
+            'inv.id = sr.sales_invoice_id'
         )
         ->join(
             'm_customers c',
-            'c.id = si.customer_id',
+            'c.id = sr.customer_id',
             'left'
         )
         ->join(
             'm_salesmen s',
-            's.id = si.salesman_id',
+            's.id = sr.salesman_id',
             'left'
         )
         ->join(
             'm_terms t',
-            't.id = si.terms_id',
+            't.id = sr.terms_id',
             'left'
         )
-        ->where('si.id', $id)
+        ->where('sr.id', $id)
         ->get()
         ->row();
   }

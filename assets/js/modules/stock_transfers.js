@@ -158,11 +158,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** post */
   btnPostStockTransfer?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (ids.length === 0) {
-      Atlas.toast.warning('Please select at least one Stock Transfer')
-      return false;
+    if (!ids || ids.length === 0) {
+      if (window.stockTransferId === 0) {
+        Atlas.toast.warning('New Stock Transfer, not yet saved yet.');
+        return;
+      } else if (window.stockTransferId) {
+        ids = [window.stockTransferId];
+      } else {
+        Atlas.toast.warning('Please select at least one Stock Transfer');
+        return false;
+      }
     }
 
     if (ids.length > 1) {
@@ -208,11 +215,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** cancel */
   btnCancelStockTransfer?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (!ids.length) {
-      Atlas.toast.warning('Please select at least one Stock Transfer.');
-      return;
+    if (!ids || ids.length === 0) {
+      if (window.stockTransferId === 0) {
+        Atlas.toast.warning('New Stock Transfer, not yet saved yet.');
+        return;
+      } else if (window.stockTransferId) {
+        ids = [window.stockTransferId];
+      } else {
+        Atlas.toast.warning('Please select at least one Stock Transfer');
+        return false;
+      }
     }
 
     const reason = await Atlas.dialog.textarea({
@@ -504,19 +518,21 @@ const refreshBranchOptions = () => {
 };
 
 const printStockTransfer = () => {
-  const ids = Atlas.table.selectedIds();
+  let ids = Atlas.table.selectedIds();
 
-  if (ids.length === 0) {
-    Atlas.toast.warning(
-      'Please select at least one Stock Transfer.'
-    );
-    return;
+  if (!ids || ids.length === 0) {
+    if (window.stockTransferId === 0) {
+      Atlas.toast.warning('New Stock Transfer, not yet saved yet.');
+      return;
+    } else if (window.stockTransferId) {
+      ids = [window.stockTransferId];
+    } else {
+      Atlas.toast.warning('Please select at least one Stock Transfer');
+      return false;
+    }
   }
 
-  Atlas.print.post(
-    'stock-transfers/print',
-    ids
-  );
+  Atlas.print.post('stock-transfers/print', ids);
 };
 
 const markDirty = () => {

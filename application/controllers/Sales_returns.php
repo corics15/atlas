@@ -124,9 +124,7 @@ class Sales_returns extends MY_Controller
     $this->data['salesInvoice'] = $this->Sales_return_model->getSalesInvoice(
         $this->data['salesReturn']->sales_invoice_id
     );
-
     $this->data['details'] = $this->Sales_return_model->getDetails($id);
-
     $this->render('sales_returns/create');
   }
 

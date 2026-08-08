@@ -110,11 +110,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** post */
   btnPostSalesReturn?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (ids.length === 0) {
-      Atlas.toast.warning('Please select at least one Sales Return')
-      return false;
+    if (!ids || ids.length === 0) {
+      if (window.salesReturnId === 0) {
+        Atlas.toast.warning('New Sales Return, not saved yet.');
+        return false;
+      } else if (window.salesReturnId) {
+        ids = [window.salesReturnId];
+      } else {
+        Atlas.toast.warning('Please select at least one Sales Return');
+        return false;
+      }
     }
 
     const result = await Atlas.dialog.confirm(
@@ -151,11 +158,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** cancel */
   btnCancelSalesReturn?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (!ids.length) {
-      Atlas.toast.warning('Please select at least one Sales Return.');
-      return;
+    if (!ids || ids.length === 0) {
+      if (window.salesReturnId === 0) {
+        Atlas.toast.warning('New Sales Return, not saved yet.');
+        return false;
+      } else if (window.salesReturnId) {
+        ids = [window.salesReturnId];
+      } else {
+        Atlas.toast.warning('Please select at least one Sales Return');
+        return false;
+      }
     }
 
     const reason = await Atlas.dialog.textarea({
@@ -267,11 +281,18 @@ const validateSalesReturn = () => {
 };
 
 const printSalesReturn = () => {
-  const ids = Atlas.table.selectedIds();
+  let ids = Atlas.table.selectedIds();
 
-  if (ids.length === 0) {
-    Atlas.toast.warning('Please select at least one Sales Return.');
-    return;
+  if (!ids || ids.length === 0) {
+    if (window.salesReturnId === 0) {
+      Atlas.toast.warning('New Sales Return, not saved yet.');
+      return;
+    } else if (window.salesReturnId) {
+      ids = [window.salesReturnId];
+    } else {
+      Atlas.toast.warning('Please select at least one Sales Return');
+      return;
+    }
   }
 
   Atlas.print.post(

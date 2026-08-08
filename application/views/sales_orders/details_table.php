@@ -3,8 +3,17 @@
 
     <?php /*** sales order details */ ?>
     <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Sales Order Details</h3>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">
+          Sales Order Details
+        </h3>
+        <div class="ml-auto">
+          <a href="<?= base_url('sales-orders') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
+          <button type="button" class="btn btn-sm btn-link" id="btnPostSalesOrder"><i class="fa fa-check mr-2"></i>Post</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCreateDeliveryReceipt"><i class="fa fa-truck mr-2"></i>Create Delivery Receipt</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnPrintSalesOrder"><i class="fa fa-print mr-2"></i>Print</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCancelSalesOrder"><i class="fas fa-ban mr-2"></i>Cancel</button>
+        </div>
       </div>
 
       <div class="card-body p-0">
@@ -15,11 +24,11 @@
                 <th width="40" class="text-center">#</th>
                 <th width="170" class="text-center">Scan/Input Barcode</th>
                 <th>Description</th>
+                <th width="80" class="text-center">UOM</th>
                 <th width="120" class="text-right">Available</th>
-                <th width="120" class="text-right">Qty</th>
                 <th width="120" class="text-right">Fulfilled</th>
                 <th width="120" class="text-right">Remaining</th>
-                <th width="80" class="text-center">UOM</th>
+                <th width="120" class="text-right">Qty</th>
                 <th width="40"></th>
               </tr>
             </thead>
@@ -50,11 +59,12 @@
                         </div>
                       </div>
                     </td>
-                    <td class="so-description">
-                      <?= htmlspecialchars($detail->description) ?>
-                    </td>
-                    <td class="so-available text-right">
-                      <?= number_format($detail->qty_available, 0) ?>
+                    <td class="so-description"><?= htmlspecialchars($detail->description) ?></td>
+                    <td class="so-uom text-center"><?= htmlspecialchars($detail->uom) ?></td>
+                    <td class="so-available text-right"><?= number_format($detail->qty_available, 0) ?></td>
+                    <td class="text-right"><?= number_format($detail->qty_fulfilled, 0) ?></td>
+                    <td class="text-right <?= ($detail->qty_remaining == 0) ? 'text-success font-weight-500' : '' ?>" <?= ($detail->qty_remaining == 0) ? 'title="Fully Invoiced"' : '' ?>>
+                      <?= number_format($detail->qty_remaining, 0) ?>
                     </td>
                     <td class="text-right">
                       <input
@@ -62,18 +72,6 @@
                         step="any"
                         class="form-control form-control-sm text-right so-qty"
                         value="<?= number_format($detail->qty) ?>">
-                    </td>
-
-                    <td class="text-right">
-                      <?= number_format($detail->qty_fulfilled, 0) ?>
-                    </td>
-
-                    <td class="text-right <?= ($detail->qty_remaining == 0) ? 'text-success font-weight-500' : '' ?>" <?= ($detail->qty_remaining == 0) ? 'title="Fully Invoiced"' : '' ?>>
-                      <?= number_format($detail->qty_remaining, 0) ?>
-                    </td>
-
-                    <td class="so-uom text-center">
-                      <?= htmlspecialchars($detail->uom) ?>
                     </td>
                     <td class="text-center">
                       <i class="fas fa-trash text-danger pointer btn-delete-row"></i>
@@ -89,10 +87,7 @@
                   </td>
                   <td>
                     <div class="input-group">
-                      <input
-                        type="text"
-                        class="form-control form-control-sm so-barcode atlas-barcode"
-                        placeholder="Barcode">
+                      <input type="text" class="form-control form-control-sm so-barcode atlas-barcode" placeholder="Barcode">
                       <div class="input-group-append">
                         <button
                           type="button"
@@ -103,7 +98,10 @@
                     </div>
                   </td>
                   <td class="so-description"></td>
+                  <td class="so-uom text-center"></td>
                   <td class="so-available text-right">-</td>
+                  <td></td>
+                  <td></td>
                   <td class="text-right">
                     <input
                       type="number"
@@ -111,12 +109,7 @@
                       class="form-control form-control-sm text-right so-qty"
                       value="">
                   </td>
-                  <td></td>
-                  <td></td>
-                  <td class="so-uom text-center"></td>
-                  <td class="text-center">
-                    <i class="fas fa-trash text-danger pointer btn-delete-row"></i>
-                  </td>
+                  <td class="text-center"><i class="fas fa-trash text-danger pointer btn-delete-row"></i></td>
                 </tr>
 
               <?php endif; ?>
@@ -141,3 +134,9 @@
 
   </div>
 </section>
+
+<script>
+  window.salesOrderId = <?= (int) ($salesOrderId ?? 0); ?>;
+  window.status = '<?= isset($salesOrder) ? $salesOrder->status : ''; ?>';
+  window.remainingItems = <?= isset($salesOrder) ? (int) $salesOrder->remaining_items : 0; ?>;
+</script>

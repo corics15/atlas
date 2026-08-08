@@ -151,13 +151,6 @@ class AtlasProductFinder {
 
       case 1:
         populateProductRow(row, result.data[0]);
-
-        const barcodeInput = row.querySelector('.po-barcode, .so-barcode');
-
-        if (barcodeInput) {
-          barcodeInput.value = '';
-        }
-
         row.querySelector('.po-qty, .so-qty')?.focus();
         return true;
 

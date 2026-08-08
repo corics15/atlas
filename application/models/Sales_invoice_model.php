@@ -406,13 +406,6 @@ class Sales_invoice_model extends CI_Model
           );
         }
 
-        // /*** update inventory */
-        // $result = $this->Inventory_model->postSales($id);
-        // if (!$result['success']) {
-        //   throw new Exception($result['message']);
-        // }
-        // /*** end update inventory */
-
         /*** post sales invoice */
         $this->db
             ->where('id', $id)
@@ -613,10 +606,11 @@ class Sales_invoice_model extends CI_Model
                               LEFT JOIN (
                                   SELECT
                                       sid.sales_order_detail_id,
-                                      SUM(sid.qty) qty_invoiced
+                                      SUM(sid.qty) AS qty_invoiced
                                   FROM t_sales_invoice_details sid
                                   INNER JOIN t_sales_invoices si ON si.id = sid.sales_invoice_id
                                   WHERE si.status <> 'CANCELLED'
+                                    AND si.delivery_receipt_id = ?
                                   GROUP BY sid.sales_order_detail_id
                               ) inv
                                   ON inv.sales_order_detail_id = drd.sales_order_detail_id
@@ -627,8 +621,9 @@ class Sales_invoice_model extends CI_Model
                               ORDER BY drd.id
                             ",
                             [
-                                $branchId,
-                                $deliveryReceiptId
+                              $branchId,
+                              $deliveryReceiptId,
+                              $deliveryReceiptId
                             ])->result();
   }
 

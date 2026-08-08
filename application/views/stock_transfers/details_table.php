@@ -3,8 +3,16 @@
 
     <?php /*** stock details */ ?>
     <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">Stock Details</h3>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">
+          Stock Details
+        </h3>
+        <div class="ml-auto">
+          <a href="<?= base_url('stock-transfers') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
+          <button type="button" class="btn btn-sm btn-link" id="btnPostStockTransfer"><i class="fa fa-check mr-2"></i>Post</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnPrintStockTransfer"><i class="fa fa-print mr-2"></i>Print</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCancelStockTransfer"><i class="fas fa-ban mr-2"></i>Cancel</button>
+        </div>
       </div>
 
       <div class="card-body p-0">
@@ -128,3 +136,7 @@
 
   </div>
 </section>
+
+<script>
+  window.stockTransferId = <?= (int) ($stockTransferId ?? 0); ?>;
+</script>

@@ -196,7 +196,9 @@ class Inventory_adjustment_model extends CI_Model
         'message' => empty($data['adjustment_id'])
                       ? 'Inventory Adjustment saved as DRAFT.'
                       : 'DRAFT Inventory Adjustment updated.',
-        'data'    => []
+        'data'    => [
+          'adjustment_id' => $adjustmentId
+        ]
       ];
 
     } catch (Exception $e) {

@@ -8,8 +8,8 @@
         <?php if (!empty($pageButton)) : ?>
           <button
             id="<?= $pageButton['id']; ?>"
-            class="btn btn-sm btn-default">
-          <i class="<?= $pageButton['icon']; ?>"></i>
+            class="btn btn-sm btn-link">
+          <i class="<?= $pageButton['icon']; ?> mr-2"></i>
             <?= $pageButton['text']; ?>
           </button>
         <?php endif; ?>

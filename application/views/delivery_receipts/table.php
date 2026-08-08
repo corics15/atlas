@@ -14,6 +14,7 @@
       <th width="150" class="text-center">SO No.</th>
       <th width="120" class="text-center">Delivery Date</th>
       <th>Customer</th>
+      <th>Remarks</th>
       <th width="120" class="text-center">Status</th>
   </tr>
 </thead>
@@ -22,7 +23,7 @@
   <?php if (empty($deliveryReceipts)): ?>
 
   <tr>
-      <td colspan="6" class="text-center text-muted py-3">
+      <td colspan="7" class="text-center text-muted py-3">
         No Delivery Receipts found.
       </td>
   </tr>
@@ -71,7 +72,22 @@
           <?= date('m/d/Y', strtotime($row->delivery_date)); ?>
         </td>
 
-        <td><?= htmlspecialchars($row->customer_name); ?></td>
+        <td>
+          <?php
+            $customerName = htmlspecialchars($row->customer_name);
+            echo (mb_strlen($customerName) > 30)
+              ? mb_strimwidth($customerName, 0, 30, '...')
+              : $customerName;
+          ?>
+        </td>
+        <td>
+          <?php
+            $remarks = htmlspecialchars($row->remarks);
+            echo (mb_strlen($remarks) > 30)
+              ? mb_strimwidth($remarks, 0, 30, '...')
+              : $remarks;
+          ?>
+        </td>
         <td class="text-center"><?= $status; ?></td>
       </tr>
 

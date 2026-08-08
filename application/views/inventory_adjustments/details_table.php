@@ -1,27 +1,25 @@
 <section class="content">
   <div class="container-fluid">
     <div class="card">
-      <div class="card-header">
-
+      <div class="card-header d-flex justify-content-between align-items-center">
         <h3 class="card-title">
           Adjustment Details
         </h3>
+        <div class="ml-auto">
+          <a href="<?= base_url('inventory-adjustments') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
 
-         <div class="card-tools">
           <?php if ($isEditable): ?>
-            <button
-              type="button"
-              id="btnAddProductInventoryAdjustment"
-              class="btn btn-sm btn-default">
-            <i class="fas fa-plus mr-1"></i>
-            Add Product
-            </button>
+            <button type="button" id="btnAddProductInventoryAdjustment" class="btn btn-sm btn-link"> <i class="fas fa-plus mr-2"></i> Add Product </button>
           <?php endif ?>
+
+          <button type="button" class="btn btn-sm btn-link" id="btnPostInventoryAdjustment"><i class="fa fa-check mr-2"></i>Post</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnPrintInventoryAdjustment"><i class="fa fa-print mr-2"></i>Print</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCancelInventoryAdjustment"><i class="fas fa-ban mr-2"></i>Cancel</button>
         </div>
       </div>
 
       <div class="card-body p-0">
-        <div class="font-sm p-2 text-lightblue text-right"><span class="font-weight-500">NOTE:</span> Enter "-" to decrease, e.g. -5</div>
+        <div class="font-sm px-4 py-2 text-lightblue text-right"><span class="font-weight-500">NOTE:</span> Enter "-" to decrease, e.g. -5, otherwise 5</div>
         <div class="table-responsive table-scroll">
           <table class="table table-sm table-bordered table-hover">
 
@@ -106,46 +104,18 @@
             </tbody>
 
           </table>
+
+          <div class="d-flex justify-content-end pb-3 pr-3">
+            <div class="col-md-2">
+              <button type="button" id="btnSaveInventoryAdjustment" class="btn btn-default btn-sm btn-block">Save Adjustment</button>
+            </div>
+          </div>
         </div>
       </div>
-
-      <?php //if ($isEditable): ?>
-
-        <div class="card-footer-custom">
-
-          <div class="d-flex justify-content-between align-items-center">
-            <button
-              type="button"
-              id="btnSaveInventoryAdjustmentx"
-              class="btn btn-default btn-sm mr-2">
-              Back
-            </button>
-            <button
-              type="button"
-              id="btnPostInventoryAdjustment"
-              class="btn btn-default btn-sm mr-2">
-              Post Adjustment
-            </button>
-            <button
-              type="button"
-              id="btnCancelInventoryAdjustment"
-              class="btn btn-default btn-sm">
-              Cancel Adjustment
-            </button>
-          </div>
-
-          <div>
-            <button
-              type="button"
-              id="btnSaveInventoryAdjustment"
-              class="btn btn-default btn-sm">
-              Save Adjustment
-            </button>
-          </div>
-
-        </div>
-
-      <?php //endif ?>
     </div>
   </div>
 </section>
+
+<script>
+  window.inventoryAdjustmentId = <?= isset($inventoryAdjustment) ? $inventoryAdjustment->id : 0; ?>;
+</script>

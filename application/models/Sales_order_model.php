@@ -11,7 +11,25 @@ class Sales_order_model extends CI_Model
             so.*,
             c.customer_name,
             concat(s.first_name, ' ', s.last_name) AS salesman_name,
-            t.terms_name
+            t.terms_name,
+            (
+                SELECT COUNT(*)
+                FROM t_sales_order_details sod
+                LEFT JOIN (
+                    SELECT
+                        drd.sales_order_detail_id,
+                        SUM(drd.qty) AS qty_delivered
+                    FROM t_delivery_receipt_details drd
+                    INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
+                    WHERE dr.status = 'POSTED'
+                    GROUP BY drd.sales_order_detail_id
+                ) dr
+                    ON dr.sales_order_detail_id = sod.id
+                WHERE sod.sales_order_id = so.id
+                AND (
+                  sod.qty - COALESCE(dr.qty_delivered, 0)
+                ) > 0
+            ) AS remaining_items
         ")
         ->from('t_sales_orders so')
         ->join(
@@ -318,8 +336,6 @@ class Sales_order_model extends CI_Model
                   'status'     => 'POSTED',
                   'posted_by'  => $this->session->userdata('user_id'),
                   'posted_on'  => date('Y-m-d H:i:s'),
-                  'updated_by' => $this->session->userdata('user_id'),
-                  'updated_on' => date('Y-m-d H:i:s')
                 ]
             );
       }
@@ -383,9 +399,7 @@ class Sales_order_model extends CI_Model
                     'status'         => 'CANCELLED',
                     'cancelled_by'   => $this->session->userdata('user_id'),
                     'cancelled_on'   => date('Y-m-d H:i:s'),
-                    'cancel_reason'  => $cancelReason,
-                    'updated_by'     => $this->session->userdata('user_id'),
-                    'updated_on'     => date('Y-m-d H:i:s')
+                    'cancel_reason'  => $cancelReason <> '' ? strtoupper(trim($cancelReason)) : NULL,
                   ]
               );
 

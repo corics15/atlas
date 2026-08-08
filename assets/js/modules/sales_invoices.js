@@ -110,11 +110,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** post */
   btnPostSalesInvoice?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (ids.length === 0) {
-      Atlas.toast.warning('Please select at least one Sales Invoice')
-      return false;
+    if (!ids || ids.length === 0) {
+      if (window.salesInvoiceId === 0) {
+        Atlas.toast.warning('New Sales Invoice, not saved yet.');
+        return false;
+      } else if (window.salesInvoiceId) {
+        ids = [window.salesInvoiceId];
+      } else {
+        Atlas.toast.warning('Please select at least one Sales Invoice');
+        return false;
+      }
     }
 
     const result = await Atlas.dialog.confirm(
@@ -151,11 +158,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** cancel */
   btnCancelSalesInvoice?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (!ids.length) {
-      Atlas.toast.warning('Please select at least one Sales Invoice.');
-      return;
+    if (!ids || ids.length === 0) {
+      if (window.salesInvoiceId === 0) {
+        Atlas.toast.warning('New Sales Invoice, not saved yet.');
+        return false;
+      } else if (window.salesInvoiceId) {
+        ids = [window.salesInvoiceId];
+      } else {
+        Atlas.toast.warning('Please select at least one Sales Invoice');
+        return false;
+      }
     }
 
     const reason = await Atlas.dialog.textarea({
@@ -191,14 +205,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   /*** print */
   btnPrintSalesInvoice?.addEventListener('click', printSalesInvoice);
 
-  /*** sales return */
+  /*** create sales return */
   document.getElementById('btnCreateSalesReturn')?.addEventListener('click', () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (ids.length !== 1) {
-      Atlas.toast.warning(
-        'Please select one Sales Invoice.'
-      );
+    if (!ids || ids.length !== 1) {
+      if (window.salesInvoiceId === 0) {
+        Atlas.toast.warning('New Sales Invoice, not saved yet.');
+        return;
+      }
+
+      if (!window.salesInvoiceId) {
+        Atlas.toast.warning('Please select one Sales Invoice.');
+        return;
+      }
+
+      Atlas.page.redirect(`sales-returns/create/${window.salesInvoiceId}`);
       return;
     }
     Atlas.page.redirect(`sales-returns/create/${ids[0]}`)
@@ -280,11 +302,18 @@ const validateSalesInvoice = () => {
 };
 
 const printSalesInvoice = () => {
-  const ids = Atlas.table.selectedIds();
+  let ids = Atlas.table.selectedIds();
 
-  if (ids.length === 0) {
-    Atlas.toast.warning('Please select at least one Sales Invoice.');
-    return;
+  if (!ids || ids.length === 0) {
+    if (window.salesInvoiceId === 0) {
+      Atlas.toast.warning('New Sales Invoice, not saved yet.');
+      return;
+    } else if (window.salesInvoiceId) {
+      ids = [window.salesInvoiceId];
+    } else {
+      Atlas.toast.warning('Please select at least one Sales Invoice');
+      return;
+    }
   }
 
   Atlas.print.post(

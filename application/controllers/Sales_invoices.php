@@ -94,6 +94,7 @@ class Sales_invoices extends MY_Controller
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
     $this->data['deliveryReceiptId'] = $deliveryReceiptId;
+    $this->data['isEdit'] = false;
 
     if ($deliveryReceiptId) {
 
@@ -107,7 +108,6 @@ class Sales_invoices extends MY_Controller
       }
 
       $this->data['header'] = $deliveryReceipt;
-      $this->data['isEdit'] = false;
       $details = $this->Sales_invoice_model->getDeliveryReceiptDetails($deliveryReceiptId);
 
       if (empty($details)) {

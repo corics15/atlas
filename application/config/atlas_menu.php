@@ -24,37 +24,31 @@ $config['atlas_menu'] = [
         'icon'  => 'fas fa-users',
         'url'   => 'customers'
       ],
-
       [
         'title' => 'Suppliers',
         'icon'  => 'fas fa-truck',
         'url'   => 'suppliers'
       ],
-
       [
         'title' => 'Products',
         'icon'  => 'fas fa-boxes',
         'url'   => 'products'
       ],
-
       [
         'title' => 'UOM',
         'icon'  => 'fas fa-ruler',
         'url'   => 'uom'
       ],
-
       [
         'title' => 'Terms',
         'icon'  => 'fas fa-file-invoice',
         'url'   => 'terms'
       ],
-
       [
         'title' => 'Salesmen',
         'icon'  => 'fas fa-user-tie',
         'url'   => 'salesmen'
       ],
-
       [
         'title' => 'Outlet Types',
         'icon'  => 'fas fa-store',
@@ -71,12 +65,6 @@ $config['atlas_menu'] = [
     'icon'  => 'fas fa-file-signature',
 
     'children' => [
-      [
-        'title' => 'New Purchase Order',
-        'icon'  => 'fas fa-plus-circle',
-        'url'   => 'purchase-orders'
-      ],
-
       [
         'title' => 'Purchase Order List',
         'icon'  => 'fas fa-file-invoice',
@@ -106,19 +94,9 @@ $config['atlas_menu'] = [
         'url'   => 'inventory'
       ],
       [
-        'title' => 'New Adjustment',
-        'icon'  => 'fas fa-plus-circle',
-        'url'   => 'inventory-adjustments/create'
-      ],
-      [
         'title' => 'Adjustment List',
         'icon'  => 'fas fa-sliders-h',
         'url'   => 'inventory-adjustments'
-      ],
-      [
-        'title' => 'New Stock Transfer',
-        'icon'  => 'fas fa-random',
-        'url'   => 'stock-transfers/create'
       ],
       [
         'title' => 'Stock Transfer List',
@@ -133,11 +111,6 @@ $config['atlas_menu'] = [
     'icon'  => 'fas fa-shopping-cart',
 
     'children' => [
-      [
-        'title' => 'New Sales Order',
-        'icon'  => 'fas fa-plus-circle',
-        'url'   => 'sales-orders/create'
-      ],
       [
         'title' => 'Sales Order List',
         'icon'  => 'fas fa-clipboard-list',

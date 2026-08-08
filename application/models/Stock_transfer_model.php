@@ -191,9 +191,7 @@ class Stock_transfer_model extends CI_Model
                     'status'         => 'CANCELLED',
                     'cancelled_by'   => $this->session->userdata('user_id'),
                     'cancelled_on'   => date('Y-m-d H:i:s'),
-                    'cancel_reason'  => $cancelReason,
-                    'updated_by'     => $this->session->userdata('user_id'),
-                    'updated_on'     => date('Y-m-d H:i:s')
+                    'cancel_reason'  => $cancelReason <> '' ? strtoupper(trim($cancelReason)) : NULL,
                   ]
               );
 

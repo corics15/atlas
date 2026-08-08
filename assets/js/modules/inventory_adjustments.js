@@ -239,7 +239,7 @@ const saveInventoryAdjustment = async () => {
   }
 
   Atlas.toast.success(response.message);
-  setTimeout(() => Atlas.page.redirect(`inventory-adjustments`), 1500);
+  setTimeout(() => Atlas.page.redirect(`inventory-adjustments/view/${response.data.adjustment_id}`), 1500);
 };
 
 const populateProductRow = async (row, product) => {
@@ -291,8 +291,15 @@ const getSelectedInventoryAdjustmentId = () => {
   );
 
   if (checkedRows.length === 0) {
-    Atlas.toast.warning('Please select an Inventory Adjustment.');
-    return null;
+    if (window.inventoryAdjustmentId === 0) {
+      Atlas.toast.warning('New Inventory Adjustment, not saved yet.');
+      return null;
+    } else if (window.inventoryAdjustmentId) {
+      return Atlas.format.integer(window.inventoryAdjustmentId);
+    } else {
+      Atlas.toast.warning('Please select an Inventory Adjustment.');
+      return null;
+    }
   }
 
   if (checkedRows.length > 1) {
@@ -300,17 +307,22 @@ const getSelectedInventoryAdjustmentId = () => {
     return null;
   }
 
-  return parseInt(
-    checkedRows[0].closest('tr').dataset.id,
-    10
-  );
+  return Atlas.format.integer(checkedRows[0].closest('tr').dataset.id);
 };
 
 const postInventoryAdjustment = async () => {
-  const adjustmentId = getSelectedInventoryAdjustmentId();
+  let adjustmentId = getSelectedInventoryAdjustmentId();
 
   if (!adjustmentId) {
-    return;
+    if (window.inventoryAdjustmentId === 0) {
+      Atlas.toast.warning('New Inventory Adjustment, not saved yet.');
+      return;
+    } else if (window.inventoryAdjustmentId) {
+      adjustmentId = Atlas.format.integer(window.inventoryAdjustmentId);
+    } else {
+      Atlas.toast.warning('Please select an Inventory Adjustment.');
+      return;
+    }
   }
 
   const result = await Atlas.dialog.confirm(

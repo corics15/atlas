@@ -38,77 +38,33 @@
 
       </div>
 
-<?php if (false) : ?>
+      <?php /*** header */ ?>
       <div class="card-body">
-        <div class="row">
-
-          <div class="col-md-3">
-            <div class="form-group">
-              <label for="txtAdjustmentNo">Adjustment No.</label>
-              <input
-                type="text"
-                id="txtAdjustmentNo"
-                class="form-control form-control-sm"
-                value="<?= isset($inventoryAdjustment) ? htmlspecialchars($inventoryAdjustment->adjustment_no) : 'AUTO-GENERATED'; ?>"
-                readonly>
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="form-group">
-              <label for="dtAdjustmentDate">Adjustment Date</label>
+        <table class="table table-sm table-borderless">
+          <tr>
+            <th width="180">Adjustment No.</th>
+            <td class="font-weight-500 text-brown" id="tdRefNo">
+              <?= isset($inventoryAdjustment) ? htmlspecialchars($inventoryAdjustment->adjustment_no) : 'AUTO-GENERATED'; ?>
+            </td>
+          </tr>
+          <tr>
+            <th>Adjustment Date</th>
+            <td>
               <input
                 type="date"
                 id="dtAdjustmentDate"
-                class="form-control form-control-sm"
+                class="form-control form-control-sm w-auto"
                 value="<?= isset($inventoryAdjustment) ? $inventoryAdjustment->adjustment_date : date('Y-m-d'); ?>">
-            </div>
-          </div>
-
-        </div>
-
-        <div class="row">
-
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="txtAdjustmentRemarks">Remarks</label>
-              <textarea
-                id="txtAdjustmentRemarks"
-                class="form-control form-control-sm text-uppercase"
-                rows="3"><?= isset($inventoryAdjustment) ? htmlspecialchars($inventoryAdjustment->remarks) : ''; ?></textarea>
-            </div>
-          </div>
-
-        </div>
+            </td>
+          </tr>
+          <tr>
+            <th>Remarks</th>
+            <td>
+              <input id="txtAdjustmentRemarks" class="form-control form-control-sm text-uppercase" placeholder="Enter Remarks..." value="<?= isset($inventoryAdjustment) ? htmlspecialchars($inventoryAdjustment->remarks) : '' ?>">
+            </td>
+          </tr>
+        </table>
       </div>
-<?php endif ?>
-
-    <div class="card-body">
-      <table class="table table-sm table-borderless">
-        <tr>
-          <th width="180">Adjustment No.</th>
-          <td class="font-weight-500 text-brown" id="tdRefNo">
-            <?= isset($inventoryAdjustment) ? htmlspecialchars($inventoryAdjustment->adjustment_no) : 'AUTO-GENERATED'; ?>
-          </td>
-        </tr>
-        <tr>
-          <th>Adjustment Date</th>
-          <td>
-            <input
-              type="date"
-              id="dtAdjustmentDate"
-              class="form-control form-control-sm w-auto"
-              value="<?= isset($inventoryAdjustment) ? $inventoryAdjustment->adjustment_date : date('Y-m-d'); ?>">
-          </td>
-        </tr>
-        <tr>
-          <th>Remarks</th>
-          <td>
-            <input id="txtAdjustmentRemarks" class="form-control form-control-sm text-uppercase" placeholder="Enter Remarks..." value="<?= isset($inventoryAdjustment) ? htmlspecialchars($inventoryAdjustment->remarks) : '' ?>">
-          </td>
-        </tr>
-      </table>
-    </div>
 
     </div>
   </div>

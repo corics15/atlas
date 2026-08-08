@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           sales_order_detail_id: Atlas.format.parseNumber(row.dataset.salesOrderDetailId),
           product_id: Atlas.format.parseNumber(row.dataset.productId),
           qty: Atlas.format.parseNumber(row.querySelector('.dr-deliver-qty').value),
+          description: row.dataset.description,
         });
 
       });
@@ -106,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** post */
   btnPostDeliveryReceipt?.addEventListener('click', async () => {
-    const id = getSelectedDeliveryReceiptId();
+    let id = getSelectedDeliveryReceiptId();
 
     if (!id) {
       return;
@@ -141,11 +142,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** cancel */
   btnCancelDeliveryReceipt?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (!ids.length) {
-      Atlas.toast.warning('Please select at least one Delivery Receipt.');
-      return;
+    if (!ids || ids.length === 0) {
+      if (window.deliveryReceiptId === 0) {
+        Atlas.toast.warning('New Delivery Receipt, not saved yet.');
+        return false;
+      } else if (window.deliveryReceiptId) {
+        ids = [window.deliveryReceiptId];
+      } else {
+        Atlas.toast.warning('Please select at least one Delivery Receipt');
+        return false;
+      }
     }
 
     const reason = await Atlas.dialog.textarea({
@@ -183,16 +191,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** create sales invoice */
   btnCreateSalesInvoice?.addEventListener('click', () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
+    let row = null;
 
-    if (ids.length !== 1) {
-      Atlas.toast.warning('Please select one Delivery Receipt.');
-      return;
+    if (ids && ids.length === 1) {
+      row = document.querySelector(`tr[data-id="${ids[0]}"]`);
     }
 
-    const row = document.querySelector(`tr[data-id="${ids[0]}"]`);
-
     if (!row) {
+      if (window.deliveryReceiptId === 0) {
+        Atlas.toast.warning('New Delivery Receipt, not save yet.');
+        return;
+      }
+
+      if (!window.deliveryReceiptId) {
+        Atlas.toast.warning('Please select one Delivery Receipt.');
+        return;
+      }
+
+      // Use global values
+      const status = window.status;
+
+      if (status !== 'POSTED') {
+        Atlas.toast.warning('Only POSTED Delivery Receipts can be invoiced.');
+        return;
+      }
+
+      Atlas.page.redirect(`sales-invoices/create/${window.deliveryReceiptId}`);
       return;
     }
 
@@ -225,10 +250,15 @@ const getSelectedDeliveryReceiptId = () => {
   const checked = Atlas.table.selected();
 
   if (checked.length === 0) {
-    Atlas.toast.warning(
-      'Please select an item from the list.'
-    );
-    return null;
+    if (window.deliveryReceiptId === 0) {
+      Atlas.toast.warning('New Delivery Receipt, not saved yet.');
+      return null;
+    } else if (window.deliveryReceiptId) {
+      return Atlas.format.integer(window.deliveryReceiptId, 10);
+    } else {
+      Atlas.toast.warning('Please select a Delivery Receipt.');
+      return null;
+    }
   }
 
   if (checked.length > 1) {
@@ -243,11 +273,18 @@ const getSelectedDeliveryReceiptId = () => {
 };
 
 const printDeliveryReceipt = () => {
-  const ids = Atlas.table.selectedIds();
+  let ids = Atlas.table.selectedIds();
 
-  if (ids.length === 0) {
-    Atlas.toast.warning('Please select at least one Delivery Receipt.');
-    return;
+  if (!ids || ids.length === 0) {
+    if (window.deliveryReceiptId === 0) {
+      Atlas.toast.warning('New Delivery Receipt, not saved yet.');
+      return;
+    } else if (window.deliveryReceiptId) {
+      ids = [window.deliveryReceiptId];
+    } else {
+      Atlas.toast.warning('Please select at least one Delivery Receipt');
+      return;
+    }
   }
 
   Atlas.print.post(

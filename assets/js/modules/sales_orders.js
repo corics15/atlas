@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** scanner barcode event */
   document.addEventListener('keydown', async (e) => {
+    console.log(e.target.classList)
     if (!e.target.classList.contains('atlas-barcode')) {
       return;
     }
@@ -71,12 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     e.preventDefault();
 
     const row = e.target.closest('tr');
-
-    await Atlas.productFinder.lookup(
-      row,
-      e.target.value
-    );
-
+    await Atlas.productFinder.lookup(row, e.target.value);
     markDirty();
   });
 
@@ -153,25 +149,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** post */
   btnPostSalesOrder?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (ids.length === 0) {
-      Atlas.toast.warning('Please select at least one Sales Order')
-      return false;
+    if (!ids || ids.length === 0) {
+      if (window.salesOrderId === 0) {
+        Atlas.toast.warning('New Sales Order, not yet saved yet.');
+        return;
+      } else if (window.salesOrderId) {
+        ids = [window.salesOrderId];
+      } else {
+        Atlas.toast.warning('Please select at least one Sales Order');
+        return false;
+      }
     }
-
-    // const result = await Atlas.dialog.confirm(
-    //   'Confirm Action',
-    //   `<div class="text-brown text-center">
-    //     <p>Inventory quantities will be updated.<br>
-    //     This action cannot be undone.</p>
-    //     <p class="font-weight-500 text-danger">Post Sales Order?</p>
-    //   </div>`
-    // );
-
-    // if (!result) {
-    //   return;
-    // }
 
     btnPostSalesOrder.disabled = true;
 
@@ -199,10 +189,33 @@ document.addEventListener('DOMContentLoaded', async () => {
   /*** create delivery receipt */
   btnCreateDeliveryReceipt?.addEventListener('click', () => {
     const id = getSelectedSalesOrderId();
-
-    const row = document.querySelector(`tr[data-id="${id}"]`);
+    let row = document.querySelector(`tr[data-id="${id}"]`);
 
     if (!row) {
+      if (window.salesOrderId === 0) {
+        Atlas.toast.warning('New Sales Order, not saved yet.');
+        return;
+      }
+
+      if (!window.salesOrderId) {
+        Atlas.toast.warning('Please select a Sales Order.');
+        return;
+      }
+
+      const status = window.status;
+      const remainingItems = window.remainingItems;
+
+      if (status !== 'POSTED') {
+        Atlas.toast.warning('Only POSTED Sales Orders can create a Delivery Receipt.');
+        return;
+      }
+
+      if (Atlas.format.integer(remainingItems) === 0) {
+        Atlas.toast.warning('This Sales Order is already fully delivered.');
+        return;
+      }
+
+      Atlas.page.redirectRemember(`delivery-receipts/create/${window.salesOrderId}`);
       return;
     }
 
@@ -211,12 +224,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    if (Atlas.format.parseNumber(row.dataset.remainingItems) === 0) {
+    if (Atlas.format.integer(row.dataset.remainingItems) === 0) {
       Atlas.toast.warning('This Sales Order is already fully delivered.');
       return;
     }
 
-    Atlas.page.redirect(`delivery-receipts/create/${id}`);
+    Atlas.page.redirectRemember(`delivery-receipts/create/${id}`);
   });
 
   /*** print */
@@ -224,11 +237,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** cancel */
   btnCancelSalesOrder?.addEventListener('click', async () => {
-    const ids = Atlas.table.selectedIds();
+    let ids = Atlas.table.selectedIds();
 
-    if (!ids.length) {
-      Atlas.toast.warning('Please select at least one Sales Order.');
-      return;
+    if (!ids || ids.length === 0) {
+      if (window.salesOrderId === 0) {
+        Atlas.toast.warning('New Sales Order, not yet saved yet.');
+        return;
+      } else if (window.salesOrderId) {
+        ids = [window.salesOrderId];
+      } else {
+        Atlas.toast.warning('Please select at least one Sales Order');
+        return false;
+      }
     }
 
     const reason = await Atlas.dialog.textarea({
@@ -327,10 +347,7 @@ const createDetailRow = () => {
       <td class="so-row-no text-center"></td>
       <td>
         <div class="input-group">
-          <input
-            type="text"
-            class="form-control form-control-sm so-barcode atlas-barcode"
-            placeholder="Barcode">
+          <input type="text" class="form-control form-control-sm so-barcode atlas-barcode" placeholder="Barcode">
           <div class="input-group-append">
             <button
               type="button"
@@ -340,10 +357,11 @@ const createDetailRow = () => {
           </div>
         </div>
       </td>
-
       <td class="so-description"></td>
+      <td class="so-uom text-center"></td>
       <td class="so-available text-right">-</td>
-
+      <td></td>
+      <td></td>
       <td>
         <input
           type="number"
@@ -351,9 +369,6 @@ const createDetailRow = () => {
           class="form-control form-control-sm text-right so-qty"
           value="">
       </td>
-      <td></td>
-      <td></td>
-      <td class="so-uom text-center"></td>
       <td class="text-center">
         <i class="fas fa-trash text-danger pointer btn-delete-row"></i>
       </td>
@@ -365,7 +380,7 @@ const populateProductRow = (row, product) => {
   /*** check duplicate rows */
   const duplicate = [...tblSalesOrderDetails.rows].find(r =>
     r !== row &&
-    Number(r.dataset.productId) === Number(product.id)
+    Atlas.format.integer(r.dataset.productId) === Atlas.format.integer(product.id)
   );
   if (duplicate) {
     Atlas.toast.warning('Product already exists.');
@@ -464,16 +479,21 @@ const removeDetailRow = (row) => {
 };
 
 const getSelectedSalesOrderId = () => {
-  const checked = Atlas.table.selected();
+  const checkedRow = Atlas.table.selected();
 
-  if (checked.length === 0) {
-    Atlas.toast.warning(
-      'Please select a Sales Order.'
-    );
-    return null;
+  if (checkedRow.length === 0) {
+    if (window.salesOrderId === 0) {
+      Atlas.toast.warning('New Sales Order, not saved yet.');
+      return null;
+    } else if (window.salesOrderId) {
+      return Atlas.format.integer(window.salesOrderId, 10);
+    } else {
+      Atlas.toast.warning('Please select a Sales Order.');
+      return null;
+    }
   }
 
-  if (checked.length > 1) {
+  if (checkedRow.length > 1) {
     Atlas.toast.warning(
       'Please select only one Sales Order.'
     );
@@ -481,23 +501,25 @@ const getSelectedSalesOrderId = () => {
     return null;
   }
 
-  return checked[0].value;
+  return checkedRow[0].value;
 };
 
 const printSalesOrder = () => {
-  const ids = Atlas.table.selectedIds();
+  let ids = Atlas.table.selectedIds();
 
-  if (ids.length === 0) {
-    Atlas.toast.warning(
-      'Please select at least one Sales Order.'
-    );
-    return;
+  if (!ids || ids.length === 0) {
+    if (window.salesOrderId === 0) {
+      Atlas.toast.warning('New Sales Order, not yet saved yet.');
+      return;
+    } else if (window.salesOrderId) {
+      ids = [window.salesOrderId];
+    } else {
+      Atlas.toast.warning('Please select at least one Sales Order');
+      return false;
+    }
   }
 
-  Atlas.print.post(
-    'sales-orders/print',
-    ids
-  );
+  Atlas.print.post('sales-orders/print', ids);
 };
 
 const markDirty = () => {

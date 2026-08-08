@@ -35,7 +35,7 @@ class AtlasPage {
   remember() {
     sessionStorage.setItem(
       'atlas_return_url',
-      location.pathname + location.search
+      location.href
     );
   }
 

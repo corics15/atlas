@@ -84,7 +84,6 @@
           <th width="10%">UOM</th>
           <th width="12%">On Hand</th>
           <th width="12%">Adjustment</th>
-          <th>Remarks</th>
         </tr>
       </thead>
       <tbody>
@@ -114,9 +113,6 @@
           </td>
           <td style="text-align:right;">
             <?= number_format($item->adjustment_qty) ?>
-          </td>
-          <td>
-            <?= htmlspecialchars($item->remarks) ?>
           </td>
         </tr>
         <?php endforeach; ?>
