@@ -9,6 +9,7 @@ class Sales_invoice_model extends CI_Model
     parent::__construct();
 
     $this->load->model('Inventory_model');
+    $this->load->model('Document_number_model');
   }
 
   public function getAll($filters = [])
@@ -259,7 +260,7 @@ class Sales_invoice_model extends CI_Model
       if (empty($salesInvoice->id)) {
         /*** insert header */
         $header = [
-          'si_no'          => $this->generateInvoiceNo(),
+          'si_no'          => $this->Document_number_model->generate('SI'),
           'invoice_date'   => $salesInvoice->invoice_date,
           'sales_order_id' => $salesInvoice->sales_order_id,
           'delivery_receipt_id' => $salesInvoice->delivery_receipt_id,
@@ -625,11 +626,6 @@ class Sales_invoice_model extends CI_Model
                               $deliveryReceiptId,
                               $deliveryReceiptId
                             ])->result();
-  }
-
-  private function generateInvoiceNo()
-  {
-    return 'SI-' . date('YmdHis');
   }
 
 }

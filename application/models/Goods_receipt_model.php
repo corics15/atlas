@@ -9,6 +9,7 @@ class Goods_receipt_model extends CI_Model
     parent::__construct();
 
     $this->load->model('Inventory_model');
+    $this->load->model('Document_number_model');
   }
 
   /*** initial status is DRAFT */
@@ -337,16 +338,10 @@ class Goods_receipt_model extends CI_Model
                 ->row_array();
   }
 
-  public function generateGrnNo()
-  {
-    // Temporary implementation, temporary generate
-    return 'GRN-' . date('YmdHis');
-  }
-
   /*** private functions */
   private function insertHeader($grn)
   {
-    $grnNo = $this->generateGrnNo();
+    $grnNo = $this->Document_number_model->generate('GRN');
     $branchId = (int) $this->session->userdata('branch_id');
 
     $remarks = trim($grn['remarks']) <> ''

@@ -141,6 +141,22 @@ $config['atlas_menu'] = [
   ],
 
   [
+    'header' => 'REPORTS',
+  ],
+  [
+    'title' => 'Reports',
+    'icon'  => 'fas fa-chart-bar',
+
+    'children' => [
+      [
+        'title' => 'Sales per Supplier',
+        'icon'  => 'fas fa-truck',
+        'url'   => 'reports/sales-per-supplier'
+      ],
+    ]
+  ],
+
+  [
     'header' => 'ADMINISTRATION',
   ],
   [
@@ -153,11 +169,15 @@ $config['atlas_menu'] = [
         'icon'  => 'fas fa-cog',
         'url'   => 'company'
       ],
-
       [
         'title' => 'Users',
         'icon'  => 'fas fa-user-cog',
         'url'   => 'users'
+      ],
+      [
+        'title' => 'Document Numbering',
+        'icon'  => 'fas fa-list-ol',
+        'url'   => 'document-numbering'
       ],
     ]
   ],

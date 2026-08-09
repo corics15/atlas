@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*** activate */
   btnActivateSalesman.addEventListener('click', async () => {
     const id = getSelectedSalesmanId();
 
@@ -123,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  /*** deactivate */
   btnDeactivateSalesman.addEventListener('click', async () => {
     const id = getSelectedSalesmanId();
 
@@ -153,7 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnRefreshSalesmen.addEventListener('click', () => Atlas.page.refresh());
+  /*** refresh */
+  btnRefreshSalesmen.addEventListener('click', () => Atlas.page.redirect(`salesmen`));
 
 });
 

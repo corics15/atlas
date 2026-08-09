@@ -14,6 +14,7 @@ class Inventory_adjustment_model extends CI_Model
 
     $this->load->model('Stock_ledger_model');
     $this->load->model('Branch_inventory_model');
+    $this->load->model('Document_number_model');
   }
 
   public function getAll($filters = [])
@@ -128,7 +129,7 @@ class Inventory_adjustment_model extends CI_Model
       if (empty($data['adjustment_id'])) {
 
           /*** new document */
-          $headerData['adjustment_no'] = $this->generateAdjustmentNo();
+          $headerData['adjustment_no'] = $this->Document_number_model->generate('IA');
           $headerData['status']        = 'DRAFT';
           $headerData['entered_by']    = $data['entered_by'];
 

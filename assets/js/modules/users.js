@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*** deactivate */
   btnDeactivateUser.addEventListener('click', async () => {
     const id = getSelectedUserId();
 
@@ -122,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  /*** activate */
   btnActivateUser.addEventListener('click', async () => {
     const id = getSelectedUserId();
 
@@ -152,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  /*** reset password */
   btnResetPassword.addEventListener('click', async () => {
     const id = getSelectedUserId();
 
@@ -183,7 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnRefreshUsers.addEventListener('click', () => Atlas.page.refresh());
+  /*** refresh */
+  btnRefreshUsers.addEventListener('click', () => Atlas.page.redirect(`users`));
 });
 
 const getSelectedUserId = () => {

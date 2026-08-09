@@ -10,6 +10,7 @@ class Stock_transfer_model extends CI_Model
     parent::__construct();
 
     $this->load->model('Inventory_model');
+    $this->load->model('Document_number_model');
   }
 
   public function save($stockTransfer)
@@ -21,7 +22,7 @@ class Stock_transfer_model extends CI_Model
 
         /*** insert header */
         $header = [
-          'transfer_no'    => $this->generateTransferNo(),
+          'transfer_no'    => $this->Document_number_model->generate('ST'),
           'transfer_date'  => $stockTransfer->transfer_date,
           'from_branch_id' => $stockTransfer->from_branch_id,
           'to_branch_id'   => $stockTransfer->to_branch_id,
@@ -353,9 +354,4 @@ class Stock_transfer_model extends CI_Model
         ->result();
   }
 
-  public function generateTransferNo()
-  {
-    // Temporary implementation, temporary generate
-    return 'ST-' . date('YmdHis');
-  }
 }

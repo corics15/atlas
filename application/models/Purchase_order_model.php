@@ -4,6 +4,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Purchase_order_model extends CI_Model
 {
 
+  public function __construct()
+  {
+    parent::__construct();
+
+    $this->load->model('Document_number_model');
+  }
+
   public function save($po)
   {
     $this->validate($po);
@@ -88,12 +95,6 @@ class Purchase_order_model extends CI_Model
           'data' => null
       ];
     }
-  }
-
-  public function generatePONumber()
-  {
-    // Temporary implementation, temporary generate
-    return 'PO-' . date('YmdHis');
   }
 
   public function get($id)
@@ -437,7 +438,7 @@ class Purchase_order_model extends CI_Model
   /*** private functions */
   private function insertHeader($po)
   {
-    $poNo = $this->generatePONumber();
+    $poNo = $this->Document_number_model->generate('PO');
     $remarks = trim($po->remarks) <> '' ? strtoupper(trim($po->remarks)) : NULL;
 
     $sql = "INSERT INTO t_purchase_orders

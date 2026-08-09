@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /*** refresh */
-  btnRefreshOutletType.addEventListener('click', () => Atlas.page.refresh());
+  btnRefreshOutletType.addEventListener('click', () => Atlas.page.redirect(`outlet-types`));
 
 });
 

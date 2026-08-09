@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*** activate */
   btnActivateSupplier.addEventListener('click', async () => {
     const id = getSelectedSupplierId();
 
@@ -137,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  /*** deactivate */
   btnDeactivateSupplier.addEventListener('click', async () => {
     const id = getSelectedSupplierId();
 
@@ -167,7 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnRefreshSupplier.addEventListener('click', () => Atlas.page.refresh());
+  /*** refresh */
+  btnRefreshSupplier.addEventListener('click', () => Atlas.page.redirect(`suppliers`));
 
 });
 

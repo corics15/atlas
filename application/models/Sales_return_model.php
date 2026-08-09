@@ -9,6 +9,7 @@ class Sales_return_model extends CI_Model
     parent::__construct();
 
     $this->load->model('Inventory_model');
+    $this->load->model('Document_number_model');
   }
 
   public function getAll($filters = [])
@@ -248,7 +249,7 @@ class Sales_return_model extends CI_Model
 
       if (empty($salesReturn->id)) {
         $header = [
-          'sr_no'            => $this->generateReturnNo(),
+          'sr_no'            => $this->Document_number_model->generate('SR'),
           'return_date'      => $salesReturn->return_date,
           'sales_invoice_id' => $salesReturn->sales_invoice_id,
           'customer_id'    => $salesReturn->customer_id,
@@ -505,11 +506,6 @@ class Sales_return_model extends CI_Model
           'data'    => []
         ];
     }
-  }
-
-  private function generateReturnNo()
-  {
-    return 'SR-' . date('YmdHis');
   }
 
 }

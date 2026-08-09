@@ -142,9 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnRefreshUom.addEventListener('click', () => {
-    Atlas.page.refresh();
-  });
+  btnRefreshUom.addEventListener('click', () => Atlas.page.redirect(`uom`));
 });
 
 const getSelectedUomId = () => {

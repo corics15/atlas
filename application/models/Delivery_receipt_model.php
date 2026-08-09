@@ -10,6 +10,7 @@ class Delivery_receipt_model extends CI_Model
 
     $this->load->model('Inventory_model');
     $this->load->model('Branch_inventory_model');
+    $this->load->model('Document_number_model');
   }
 
   public function getSalesOrder($salesOrderId)
@@ -215,7 +216,7 @@ class Delivery_receipt_model extends CI_Model
 
         /*** insert header */
         $header = [
-          'dr_no'           => $this->generateDrNo(),
+          'dr_no'           => $this->Document_number_model->generate('DR'),
           'delivery_date'   => $deliveryReceipt->delivery_date,
           'sales_order_id'  => (int)$deliveryReceipt->sales_order_id,
           'customer_id'     => (int)$deliveryReceipt->customer_id,
@@ -246,22 +247,6 @@ class Delivery_receipt_model extends CI_Model
           if ((float)$detail->qty <= 0) {
             continue;
           }
-
-          /*** validate DELIVER vs ORDERED quantity */
-          // $salesOrderDetail = $this->db
-          //     ->where('id', $detail->sales_order_detail_id)
-          //     ->get('t_sales_order_details')
-          //     ->row();
-
-          // if (!$salesOrderDetail) {
-          //   throw new Exception('Invalid Sales Order detail.');
-          // }
-
-          // if ((float)$detail->qty > (float)$salesOrderDetail->qty) {
-          //   throw new Exception(
-          //     'Delivered quantity cannot exceed ordered quantity.'
-          //   );
-          // }
 
           /*** validate DELIVER vs AVAILABLE TO DELIVER quantity */
           $availableToDeliver = $this->getAvailableToDeliver(
@@ -427,41 +412,6 @@ class Delivery_receipt_model extends CI_Model
       /*** validate each detail */
       foreach ($details as $detail)
       {
-        // /*** remaining quantity */
-        // $remaining = $this->db
-        //     ->query("SELECT
-        //               sod.qty
-        //               -
-        //               COALESCE(
-        //                 (
-        //                   SELECT SUM(drd2.qty)
-        //                   FROM t_delivery_receipt_details drd2
-        //                   INNER JOIN t_delivery_receipts dr2 ON dr2.id = drd2.delivery_receipt_id
-        //                   WHERE dr2.status = 'POSTED'
-        //                   AND drd2.sales_order_detail_id = ?
-        //                 ),
-        //                 0
-        //               ) AS qty_remaining
-        //             FROM t_sales_order_details sod
-        //             WHERE sod.id = ?
-        //           ",  [
-        //                 $detail->sales_order_detail_id,
-        //                 $detail->sales_order_detail_id
-        //               ])
-        //           ->row();
-
-        // if (!$remaining) {
-        //   throw new Exception(
-        //     'Invalid Sales Order detail.'
-        //   );
-        // }
-
-        // if ((float)$detail->qty > (float)$remaining->qty_remaining) {
-        //   throw new Exception(
-        //     'Remaining quantity has changed. Please recreate the Delivery Receipt.'
-        //   );
-        // }
-
         /*** validate AVAILABLE TO DELIVER */
         $availableToDeliver = $this->getAvailableToDeliver(
           $detail->sales_order_detail_id,
@@ -719,12 +669,6 @@ class Delivery_receipt_model extends CI_Model
           'data'    => []
         ];
     }
-  }
-
-  public function generateDrNo()
-  {
-    // temporary implementation
-    return 'DR-' . date('YmdHis');
   }
 
   private function getAvailableToDeliver($salesOrderDetailId, $excludeDeliveryReceiptId = 0)

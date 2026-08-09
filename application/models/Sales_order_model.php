@@ -4,6 +4,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Sales_order_model extends CI_Model
 {
 
+  public function __construct()
+  {
+    parent::__construct();
+
+    $this->load->model('Document_number_model');
+  }
+
   public function get($id)
   {
     return $this->db
@@ -189,7 +196,7 @@ class Sales_order_model extends CI_Model
 
         /*** insert header */
         $header = [
-          'so_no' => $this->generateSoNo(),
+          'so_no' => $this->Document_number_model->generate('SO'),
           'order_date' => $postData->order_date,
           'customer_id' => (int) $postData->customer_id,
           'salesman_id' => (int) $postData->salesman_id,
@@ -429,9 +436,4 @@ class Sales_order_model extends CI_Model
     }
   }
 
-  public function generateSoNo()
-  {
-    // Temporary implementation, temporary generate
-    return 'SO-' . date('YmdHis');
-  }
 }

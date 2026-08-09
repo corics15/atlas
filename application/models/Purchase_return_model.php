@@ -10,6 +10,7 @@ class Purchase_return_model extends CI_Model
 
     $this->load->model('Inventory_model');
     $this->load->model('Goods_receipt_model');
+    $this->load->model('Document_number_model');
   }
 
   public function getAll($filters = [])
@@ -229,12 +230,10 @@ class Purchase_return_model extends CI_Model
 
       if (empty($purchaseReturn->id)) {
         $header = [
-          'pr_no'            => $this->generateReturnNo(),
+          'pr_no'            => $this->Document_number_model->generate('PR'),
           'return_date'      => $purchaseReturn->return_date,
           'goods_receipt_id' => $purchaseReturn->goods_receipt_id,
           'supplier_id'    => $purchaseReturn->supplier_id,
-          // 'terms_id'       => $purchaseReturn->terms_id,
-          // 'credit_limit'   => $purchaseReturn->credit_limit,
           'remarks'        => trim($purchaseReturn->remarks) <> '' ? strtoupper(trim($purchaseReturn->remarks)) : NULL,
           'status'         => 'OPEN',
           'entered_by'     => $this->session->userdata('user_id'),
@@ -507,11 +506,6 @@ class Purchase_return_model extends CI_Model
           'data'    => []
         ];
     }
-  }
-
-  private function generateReturnNo()
-  {
-    return 'PR-' . date('YmdHis');
   }
 
 }

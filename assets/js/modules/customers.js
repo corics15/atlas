@@ -168,9 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  btnRefreshCustomer.addEventListener('click', () => {
-    Atlas.page.refresh();
-  });
+  btnRefreshCustomer.addEventListener('click', () => Atlas.page.redirect(`customers`));
 });
 
 const getSelectedCustomerId = () => {
