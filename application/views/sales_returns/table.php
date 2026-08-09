@@ -6,9 +6,9 @@
         <label class="custom-control-label" for="chkSelectAllSalesReturn"></label>
       </div>
     </th>
+    <th class="text-center">Date</th>
     <th class="text-center">SR No.</th>
     <th class="text-center">SI No.</th>
-    <th class="text-center">Date</th>
     <th>Customer</th>
     <th>Salesman</th>
     <th class="text-center">Terms</th>
@@ -36,6 +36,9 @@
         </div>
       </td>
       <td class="text-center">
+        <?= date('m/d/Y', strtotime($row->return_date)) ?>
+      </td>
+      <td class="text-center">
         <a href="<?= base_url('sales-returns/edit/').$row->id ?>" class="text-wrap text-olive"><?= $row->sr_no ?></a>
       </td>
       <td class="text-center">
@@ -44,9 +47,6 @@
           <?= $row->si_no ?>
         </a>
       </td>
-      <td class="text-center">
-        <?= date('m/d/Y', strtotime($row->return_date)) ?>
-      </td>      
       <td>
         <?= htmlspecialchars($row->customer_name) ?>
       </td>

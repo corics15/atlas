@@ -12,8 +12,8 @@
         </label>
       </div>
     </th>
-    <th width="160" class="text-center">Adjustment No.</th>
     <th width="120" class="text-center">Date</th>
+    <th width="160" class="text-center">Adjustment No.</th>
     <th>Remarks</th>
     <th width="120" class="text-center">Status</th>
   </tr>
@@ -44,12 +44,12 @@
           </label>
         </div>
       </td>
+      <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($row->adjustment_date))); ?></td>
       <td class="text-center">
         <a href="<?= base_url('inventory-adjustments/view/'.$row->id) ?>" class="text-olive text-wrap">
           <?= htmlspecialchars($row->adjustment_no); ?>
         </a>
       </td>
-      <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($row->adjustment_date))); ?></td>
       <td><?= htmlspecialchars($row->remarks); ?></td>
       <td class="text-center">
         <?php

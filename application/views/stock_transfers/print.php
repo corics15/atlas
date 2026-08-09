@@ -1,6 +1,6 @@
 <?php foreach ($documents as $i => $document): ?>
 
-  <?php $this->load->view('reports/header'); ?>
+  <?php $this->load->view('partials/reports/header'); ?>
 
   <?php
     $header  = $document->header;
@@ -102,4 +102,4 @@
 
 <?php endforeach; ?>
 
-<?php $this->load->view('reports/scripts'); ?>
+<?php $this->load->view('partials/reports/scripts'); ?>

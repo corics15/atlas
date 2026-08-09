@@ -8,7 +8,7 @@
     <meta charset="utf-8">
     <title><?= htmlspecialchars($title) ?></title>
     <link rel="shortcut icon" href="<?= atlas_asset($app['shortcut_ico']) ?>" type="image/x-icon">
-    <?php $this->load->view('reports/styles'); ?>
+    <?php $this->load->view('partials/reports/styles'); ?>
   </head>
 
   <body>

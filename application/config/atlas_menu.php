@@ -165,7 +165,7 @@ $config['atlas_menu'] = [
 
     'children' => [
       [
-        'title' => 'Settings',
+        'title' => 'Company',
         'icon'  => 'fas fa-cog',
         'url'   => 'company'
       ],

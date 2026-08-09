@@ -10,9 +10,9 @@
         </div>
       </th>
 
+      <th width="120" class="text-center">Delivery Date</th>
       <th width="140" class="text-center">DR No.</th>
       <th width="150" class="text-center">SO No.</th>
-      <th width="120" class="text-center">Delivery Date</th>
       <th>Customer</th>
       <th>Remarks</th>
       <th width="120" class="text-center">Status</th>
@@ -57,6 +57,10 @@
         </td>
 
         <td class="text-center">
+          <?= date('m/d/Y', strtotime($row->delivery_date)); ?>
+        </td>        
+
+        <td class="text-center">
           <a href="<?= base_url('delivery-receipts/edit/' . $row->id); ?>" class="text-wrap text-olive">
             <?= htmlspecialchars($row->dr_no); ?>
           </a>
@@ -66,10 +70,6 @@
           <a href="<?= base_url('sales-orders/edit/' . $row->so_id); ?>" class="text-wrap text-olive" target="_blank">
             <i class="fa-external-link-alt fas fa-xs mr-1"></i><?= htmlspecialchars($row->so_no); ?>
           </a>
-        </td>
-
-        <td class="text-center">
-          <?= date('m/d/Y', strtotime($row->delivery_date)); ?>
         </td>
 
         <td>

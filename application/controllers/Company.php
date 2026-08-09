@@ -13,11 +13,8 @@ class Company extends MY_Controller
   public function index()
   {
     $this->setPage('Settings');
-
     $this->pageScript = 'company';
-
     $this->data['company'] = $this->Company_model->get();
-
     $this->render('company/index');
   }
 }
