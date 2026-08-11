@@ -15,10 +15,11 @@
     <table class="report-borderless">
       <tr>
         <td width="90">
-          <?php if (!empty($app['logo'])) : ?>
-          <img
-            src="<?= atlas_asset($company->logo); ?>"
-            width="70">
+          <?php if (!empty($company->logo)) : ?>
+            <img
+              src="<?= atlas_asset($company->logo); ?>"
+              width="200"
+              alt="<?= htmlspecialchars($company->company_name); ?>">
           <?php endif; ?>
         </td>
         <td class="text-center">
@@ -37,7 +38,8 @@
           </div>
         </td>
         <td width="220">
-          <table class="summary-table">
+          <?php if (false) : ?>
+          <table class="summary-tablex" cellpadding="0" cellspacing="0">
             <tr>
               <td width="90">
                 Printed By
@@ -65,6 +67,7 @@
             </tr>
             <?php } ?>
           </table>
+          <?php endif ?>
         </td>
       </tr>
     </table>

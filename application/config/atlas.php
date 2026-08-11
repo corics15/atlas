@@ -10,6 +10,7 @@ $config['atlas'] = [
   'company_short' => 'ONE-D',
   'developer'     => 'O R H T E J',
   'timezone'      => 'Asia/Manila',
-  'shortcut_ico'  => 'assets/images/favicon.ico',
+  // 'shortcut_ico'  => 'assets/images/favicon.ico',
+  'shortcut_ico'  => 'assets/images/atlas.ico',
   'default_password' => 'p1234567890d',
 ];

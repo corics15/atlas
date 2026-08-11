@@ -19,7 +19,15 @@
 
   <?php /*** logo */ ?>
   <div class="d-flex justify-content-center mt-2">
-    <i class="fas fa-cubes fa-2x text-olive"> </i>
+    <img src="<?= base_url('assets/images/atlas-sidebar-logo-sm.png'); ?>" alt="ATLAS"
+      class="brand-image" style="
+        width: 100%;
+        max-width: 210px;
+        height: 42px;
+        object-fit: contain;
+        opacity: 1;
+      ">
+
   </div>
 
   <?php /*** brand */ ?>

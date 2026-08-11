@@ -22,13 +22,23 @@ class AtlasAjax {
         `${Atlas.config.baseUrl}${url}`,
         options
       );
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message:
+            'Unable to complete your request. Please try again or contact your System Administrator.',
+          data: []
+        };
+      }
+
       return await response.json();
 
     } catch (e) {
 
       return {
         success: false,
-        message: 'An unexpected error occured, please contact your System Administrator.',
+        message: 'An unexpected error occurred, please contact your System Administrator.',
         data: []
       };
     }

@@ -14,8 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const numberLength = Number(row.querySelector('.dn-number-length')?.value) || 1;
     const nextNumber = Number(row.querySelector('.dn-next-number')?.value) || 1;
 
-    const currentYear =
-      new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
     let year = '';
 
@@ -43,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const updatePreview = (row) => {
-
     const preview = row.querySelector('.dn-preview');
 
     if (!preview) {
@@ -90,11 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
     button.disabled = true;
 
     try {
-      const result =
-        await Atlas.ajax.post(
-          'document-numbering/update',
-          data
-        );
+      const result = await Atlas.ajax.post(
+        'document-numbering/update',
+        data
+      );
 
       if (!result.success) {
         Atlas.toast.error(result.message);

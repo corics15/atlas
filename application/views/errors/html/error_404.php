@@ -1,64 +1,112 @@
-<?php
-defined('BASEPATH') OR exit('No direct script access allowed');
-?><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>404 Page Not Found</title>
-<style type="text/css">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="<?= config_item('base_url').'assets/images/atlas.ico' ?>" type="image/x-icon">
+    <title>Page Not Found | ATLAS</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-::selection { background-color: #E13300; color: white; }
-::-moz-selection { background-color: #E13300; color: white; }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
 
-body {
-	background-color: #fff;
-	margin: 40px;
-	font: 13px/20px normal Helvetica, Arial, sans-serif;
-	color: #4F5155;
-}
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px;
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Arial,
+          sans-serif;
+        background: #f4f6f9;
+        color: #343a40;
+      }
 
-a {
-	color: #003399;
-	background-color: transparent;
-	font-weight: normal;
-}
+      .error-card {
+        width: 100%;
+        max-width: 560px;
+        padding: 40px;
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow:
+          0 4px 18px rgba(0, 0, 0, 0.08);
+        text-align: center;
+      }
 
-h1 {
-	color: #444;
-	background-color: transparent;
-	border-bottom: 1px solid #D0D0D0;
-	font-size: 19px;
-	font-weight: normal;
-	margin: 0 0 14px 0;
-	padding: 14px 15px 10px 15px;
-}
+      .error-code {
+        margin-bottom: 10px;
+        font-size: 64px;
+        line-height: 1;
+        font-weight: 700;
+        color: #6c757d;
+      }
 
-code {
-	font-family: Consolas, Monaco, Courier New, Courier, monospace;
-	font-size: 12px;
-	background-color: #f9f9f9;
-	border: 1px solid #D0D0D0;
-	color: #002166;
-	display: block;
-	margin: 14px 0 14px 0;
-	padding: 12px 10px 12px 10px;
-}
+      h1 {
+        margin: 0 0 12px;
+        font-size: 24px;
+        font-weight: 600;
+      }
 
-#container {
-	margin: 10px;
-	border: 1px solid #D0D0D0;
-	box-shadow: 0 0 8px #D0D0D0;
-}
+      p {
+        margin: 0;
+        color: #6c757d;
+        line-height: 1.6;
+      }
 
-p {
-	margin: 12px 15px 12px 15px;
-}
-</style>
-</head>
-<body>
-	<div id="container">
-		<h1><?php echo $heading; ?></h1>
-		<?php echo $message; ?>
-	</div>
-</body>
+      .back-link {
+        display: inline-block;
+        margin-top: 25px;
+        padding: 9px 18px;
+        border-radius: 4px;
+        background: #007bff;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .back-link:hover {
+        background: #0069d9;
+        color: #ffffff;
+      }
+
+      .error-image {
+        display: block;
+
+        width: 100%;
+        max-width: 360px;
+        height: auto;
+
+        margin: 0 auto 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="error-card">
+      <img src="<?= config_item('base_url').'assets/images/errors/404.png'; ?>" alt="Page not found" class="error-image">
+      <div class="error-code">
+        404
+      </div>
+      <h1>
+        Page Not Found
+      </h1>
+      <p>
+        The page or record you requested
+        could not be found.
+      </p>
+      <a href="javascript:void(0)" onclick="history.back()" class="back-link">
+        Back to ATLAS
+      </a>
+    </div>
+  </body>
 </html>

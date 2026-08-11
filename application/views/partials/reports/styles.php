@@ -175,4 +175,9 @@
     page-break-after: always;
     break-after: page;
   }
+
+  .summary-table td {
+    padding: 0 4px;
+    line-height: 1.2;
+  }
 </style>

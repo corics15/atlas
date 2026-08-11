@@ -100,6 +100,12 @@
     </table>
   </div>
 
+  <div style="text-align:right;font-size:10px;margin-top:20px;">
+    Printed By:
+    <?= htmlspecialchars($this->session->userdata('username')) ?>
+    <?= date('m/d/Y h:i A') ?>
+  </div>
+
   <?php if ($i < count($documents) - 1): ?>
     <div class="page-break"></div>
   <?php endif; ?>

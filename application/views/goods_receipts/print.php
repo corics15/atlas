@@ -33,6 +33,7 @@
         $details      = $document->details;
       ?>
 
+      <?php if (false) : ?>
       <h2 class="text-center" style="margin-bottom:1px">
         <?= htmlspecialchars($company->company_name) ?>
       </h2>
@@ -42,10 +43,19 @@
         <?= $contactNo ?><br>
         <?= htmlspecialchars($company->tin_no) ?>
       </div>
+      <?php endif ?>
 
-      <h3 class="text-center">
-        GOODS RECEIPT NOTE
-      </h3>
+      <?php
+        /*** report header */
+        $this->load->view(
+          'partials/reports/header',
+          [
+            'title'  => 'Goods Receipt',
+            'period' => null
+          ]
+        );
+      ?>
+
       <table style="margin-bottom:15px;border:none;">
         <tr>
           <td style="border:none;width:70%;">

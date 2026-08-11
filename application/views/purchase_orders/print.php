@@ -26,14 +26,17 @@
     <?php foreach ($documents as $index => $document): ?>
 
       <?php $header = $document->header; ?>
-      <h2 class="text-center" style="margin-bottom:1px">
-        <?= htmlspecialchars($company->company_name) ?>
-      </h2>
-      <div class="text-center" style="font-size:12px !important">
-        <?= htmlspecialchars($company->address) ?><br>
-        <?= $contactNo ?><br>
-        <?= htmlspecialchars($company->tin_no) ?><br>
-      </div>
+
+      <?php
+        /*** report header */
+        $this->load->view(
+          'partials/reports/header',
+          [
+            'title'  => 'Purchase Order',
+            'period' => null
+          ]
+        );
+      ?>
 
       <h3 class="text-center">
         PURCHASE ORDER
@@ -76,6 +79,7 @@
       <table>
         <thead>
           <tr>
+            <th class="text-center" width="5%">#</th>
             <th>Description</th>
             <th width="8%">UOM</th>
             <th width="8%" class="text-right">Qty</th>
@@ -87,11 +91,13 @@
         <tbody>
           <?php
             $total = 0;
+            $index = 1;
             foreach($document->details as $detail):
               $amount = ($detail->qty * $detail->price) - $detail->discount;
               $total += $amount;
             ?>
           <tr>
+            <td class="text-center"><?= $index ?>.</td>
             <td><?= htmlspecialchars($detail->description) ?></td>
             <td class="text-center">
               <?= htmlspecialchars($detail->uom) ?>
@@ -109,9 +115,9 @@
               <?= number_format($amount,2) ?>
             </td>
           </tr>
-          <?php endforeach; ?>
+          <?php $index++; endforeach; ?>
           <tr>
-            <td colspan="5" class="text-right">
+            <td colspan="6" class="text-right">
               <strong>Grand Total</strong>
             </td>
             <td class="text-right">
