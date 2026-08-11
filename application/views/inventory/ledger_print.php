@@ -1,5 +1,5 @@
 <?php
-  $this->load->view('reports/header');
+  $this->load->view('partials/reports/header');
 
   $totalIn = 0;
   $totalOut = 0;
@@ -129,6 +129,6 @@
 </table>
 
 <?php
-  $this->load->view('reports/footer');
-  $this->load->view('reports/scripts');
+  $this->load->view('partials/reports/footer');
+  $this->load->view('partials/reports/scripts');
 ?>

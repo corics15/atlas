@@ -46,6 +46,19 @@ class Inventory extends MY_Controller
     $this->data['recordCount'] = count($this->data['inventoryInquiry']);
     $this->data['searchPlaceHolder'] = 'Search Barcode, Descr, Supplier...';
 
+    /*** inventory summary */
+    $totalQty = 0;
+    $totalAmount = 0;
+
+    foreach ($this->data['inventoryInquiry'] as $row) {
+      $totalQty += (float) $row->qty_on_hand;
+      $totalAmount += (float) $row->inventory_value;
+    }
+
+    $this->data['totalQty'] = $totalQty;
+    $this->data['totalAmount'] = $totalAmount;
+    /*** end inventory summary */
+
     $this->data['tableContent'] = $this->load->view(
       'inventory/inventory_table',
       $this->data,
