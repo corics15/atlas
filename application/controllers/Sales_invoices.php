@@ -54,16 +54,17 @@ class Sales_invoices extends MY_Controller
     ];
 
     /*** filters */
+    $filter = $this->decodeFilter($this->input->get('filter'));
     $this->data['statuses'] = [
       'OPEN',
       'POSTED',
       'CANCELLED',
     ];
     $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to' => trim($this->input->get('date_to')),
-      'keyword' => trim($this->input->get('keyword')),
-      'status' => trim($this->input->get('status')),
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
     ];
     $this->data = array_merge(
       $this->data,
@@ -157,6 +158,15 @@ class Sales_invoices extends MY_Controller
 
   public function edit($id)
   {
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $id = (int) $id;
+
     $this->setPage('Edit Sales Invoice');
     $this->pageScript = 'sales_invoices';
     $this->data['customers'] = $this->Customer_model->getDropdown();

@@ -1,3 +1,81 @@
-body.login-page.swal2-height-auto {
-  height: 100vh !important;
+body.login-page {
+  background:
+    linear-gradient(135deg,
+      #f4f6f9 0%,
+      #e9ecef 100%);
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.login-box {
+  width: 400px;
+}
+
+.login-box .card {
+  border: 0;
+  border-radius: 12px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.login-card-body {
+  padding: 2.5rem;
+}
+
+.login-brand {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-brand img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.login-brand h3 {
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.login-brand p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.login-form-control {
+  height: 42px;
+  border-radius: 6px;
+}
+
+.login-submit {
+  height: 42px;
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.login-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #adb5bd;
+  font-size: 0.75rem;
+}
+
+.login-password-toggle {
+  height: 42px;
+  border-radius: 0 6px 6px 0;
+}
+
+.login-password-toggle:focus {
+  box-shadow: none;
+}
+
+.login-password-toggle i {
+  width: 18px;
 }

@@ -105,9 +105,9 @@ h3,
 }
 
 /** custom css */
-/* body.login-page.swal2-height-auto {
-  height: 100vh !important;
-} */
+.content-header h1 {
+  color: rgba(91, 91, 85) !important
+}
 
 .text-uppercase::placeholder {
   text-transform: none !important;
@@ -532,7 +532,7 @@ label {
   transition: box-shadow 0.2s ease-in-out;
 }
 
-.btn {
+.btn:not(.btn-tool) {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 

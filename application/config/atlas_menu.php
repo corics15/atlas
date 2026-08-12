@@ -7,7 +7,7 @@ $config['atlas_menu'] = [
   ],
   [
     'title' => 'Dashboard',
-    'icon'  => 'fas fa-tachometer-alt',
+    'icon'  => 'fas fa-fire',
     'url'   => 'dashboard'
   ],
 

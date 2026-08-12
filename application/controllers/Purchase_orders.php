@@ -90,13 +90,15 @@ class Purchase_orders extends MY_Controller
       'CLOSED',
     ];
 
-    $keyword = trim($this->input->get('keyword'));
+    /*** filters */
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
     $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to' => trim($this->input->get('date_to')),
-      'supplier_id' => trim($this->input->get('supplier_id')),
-      'status' => trim($this->input->get('status')),
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'supplier_id' => trim($filter['supplier_id'] ?? $this->input->get('supplier_id')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
       'keyword' => $keyword,
     ];
 

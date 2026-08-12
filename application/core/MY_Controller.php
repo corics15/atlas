@@ -92,4 +92,67 @@ class MY_Controller extends CI_Controller
 
     return $request[$key] ?? $default;
   }
+
+  protected function decodeFilter($encoded)
+  {
+    if (empty($encoded)) {
+      return [];
+    }
+
+    $decoded = base64_decode(
+      strtr($encoded, '-_', '+/'),
+      TRUE
+    );
+
+    if ($decoded === FALSE) {
+      return [];
+    }
+
+    $json = json_decode($decoded, TRUE);
+
+    return is_array($json) ? $json : [];
+  }
+
+  protected function encodeFilter($data)
+  {
+    return rtrim(
+      strtr(
+        base64_encode(json_encode($data)),
+        '+/',
+        '-_'
+      ),
+      '='
+    );
+  }
+
+  protected function encodeId($id)
+  {
+    return rtrim(
+      strtr(
+        base64_encode((string) $id),
+        '+/',
+        '-_'
+      ),
+      '='
+    );
+  }
+
+  protected function decodeId($encoded)
+  {
+    if (empty($encoded)) {
+      return NULL;
+    }
+
+    $decoded = base64_decode(
+      strtr($encoded, '-_', '+/'),
+      TRUE
+    );
+
+    if ($decoded === FALSE || !ctype_digit($decoded)) {
+      return NULL;
+    }
+
+    return (int) $decoded;
+  }
+
 }

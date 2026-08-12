@@ -2,6 +2,7 @@
 <script src="<?= base_url('assets/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js'); ?>"></script>
 <script src="<?= base_url('assets/adminlte/dist/js/adminlte.min.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/adminlte/plugins/select2/js/select2.full.min.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/adminlte/plugins/chart.js/Chart.min.js'); ?>"></script>
 <script src="<?= base_url('assets/plugins/sweetalert2/sweetalert2.all.min.js'); ?>"></script>
 
 <script src="<?= atlas_asset('assets/js/core/ajax.js'); ?>"></script>

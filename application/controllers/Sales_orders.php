@@ -58,6 +58,7 @@ class Sales_orders extends MY_Controller
     ];
 
     /*** filters */
+    $filter = $this->decodeFilter($this->input->get('filter'));
     $this->data['statuses'] = [
       'OPEN',
       'POSTED',
@@ -65,10 +66,10 @@ class Sales_orders extends MY_Controller
       'CANCELLED',
     ];
     $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to' => trim($this->input->get('date_to')),
-      'keyword' => trim($this->input->get('keyword')),
-      'status' => trim($this->input->get('status')),
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
     ];
     $this->data = array_merge(
       $this->data,
