@@ -8,7 +8,7 @@
   $currentController = $CI->router->fetch_class();
   $currentMethod = $CI->router->fetch_method();
 
-  $currentRoute = $currentController;
+  $currentRoute = str_replace('_', '-', $currentController);
 
   if ($currentMethod !== 'index') {
     $currentRoute .= '/' . $currentMethod;
@@ -70,7 +70,7 @@
         class="nav nav-pills nav-sidebar flex-column"
         data-widget="treeview"
         role="menu"
-        data-accordion="false">
+        data-accordion="true">
         <?php foreach ($menu as $item): ?>
 
           <?php /*** section header */ ?>
