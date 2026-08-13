@@ -58,16 +58,16 @@
 
         <td class="text-center">
           <?= date('m/d/Y', strtotime($row->delivery_date)); ?>
-        </td>        
+        </td>
 
         <td class="text-center">
-          <a href="<?= base_url('delivery-receipts/edit/' . $row->id); ?>" class="text-wrap text-olive">
+          <a href="<?= $row->url ?>" class="text-wrap text-olive">
             <?= htmlspecialchars($row->dr_no); ?>
           </a>
         </td>
 
         <td class="text-center">
-          <a href="<?= base_url('sales-orders/edit/' . $row->so_id); ?>" class="text-wrap text-olive" target="_blank">
+          <a href="<?= $row->so_url ?>" class="text-wrap text-olive" target="_blank">
             <i class="fa-external-link-alt fas fa-xs mr-1"></i><?= htmlspecialchars($row->so_no); ?>
           </a>
         </td>

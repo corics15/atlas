@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.page.redirect(`inventory/ledger/${id}`);
+    Atlas.page.redirect(`inventory/ledger/${Atlas.id.encode(id)}`);
   });
 
   btnRefreshProduct.addEventListener('click', () => Atlas.page.redirect(`products`));

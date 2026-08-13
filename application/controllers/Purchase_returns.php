@@ -26,14 +26,14 @@ class Purchase_returns extends MY_Controller
       'CLOSED',
     ];
 
-    $keyword = trim($this->input->get('keyword'));
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
-
     $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to' => trim($this->input->get('date_to')),
-      'supplier_id' => trim($this->input->get('supplier_id')),
-      'status' => trim($this->input->get('status')),
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'supplier_id' => trim($filter['supplier_id'] ?? $this->input->get('supplier_id')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
       'keyword' => $keyword,
     ];
 
@@ -46,6 +46,11 @@ class Purchase_returns extends MY_Controller
     /*** end filters */
 
     $this->data['purchaseReturns'] = $this->Purchase_return_model->getAll($filters);
+    foreach ($this->data['purchaseReturns'] as $pr) {
+      $pr->gr_url = base_url('goods-receipts/view/' . $this->encodeId($pr->goods_receipt_id));
+      $pr->url = base_url('purchase-returns/edit/' . $this->encodeId($pr->id));
+    }
+
     $this->data['recordCount'] = count($this->data['purchaseReturns']);
 
     $this->data['toolbar'] = [
@@ -116,13 +121,22 @@ class Purchase_returns extends MY_Controller
 
   public function edit($purchaseReturnId)
   {
+    $decodedId = $this->decodeId($purchaseReturnId);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $id = (int) $id;
+
     $this->setPage('Edit Purchase Return');
     $this->pageScript = 'purchase_returns';
 
     $this->data['suppliers'] = $this->Supplier_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
 
-    $this->data['purchaseReturn'] = $this->Purchase_return_model->get($purchaseReturnId);
+    $this->data['purchaseReturn'] = $this->Purchase_return_model->get($id);
 
     if (!$this->data['purchaseReturn']) {
       show_404();
@@ -131,8 +145,9 @@ class Purchase_returns extends MY_Controller
     $this->data['goodsReceipt'] = $this->Purchase_return_model->getGoodsReceipt(
       $this->data['purchaseReturn']->goods_receipt_id
     );
+    $this->data['goodsReceipt']->url = base_url('goods-receipts/view/' . $this->encodeId($this->data['purchaseReturn']->goods_receipt_id));
 
-    $this->data['details'] = $this->Purchase_return_model->getDetails($purchaseReturnId);
+    $this->data['details'] = $this->Purchase_return_model->getDetails($id);
 
     $this->render('purchase_returns/create');
   }

@@ -1,4 +1,4 @@
-<form>
+<form data-atlas-filter>
   <div class="d-flex flex-wrap align-items-end mb-3" style="gap:12px;">
 
     <div style="min-width:160px;">

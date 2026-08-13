@@ -43,6 +43,10 @@ class Inventory extends MY_Controller
     ];
 
     $this->data['inventoryInquiry'] = $this->Inventory_model->getAll($filters);
+    foreach ($this->data['inventoryInquiry'] as $iq) {
+      $iq->url = base_url('inventory/ledger/' . $this->encodeId($iq->product_id));
+    }
+
     $this->data['recordCount'] = count($this->data['inventoryInquiry']);
     $this->data['searchPlaceHolder'] = 'Search Barcode, Descr, Supplier...';
 
@@ -69,6 +73,15 @@ class Inventory extends MY_Controller
 
   public function ledger($productId)
   {
+    $decodedId = $this->decodeId($productId);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $productId = (int) $id;
+
     $this->setPage('Stock Ledger');
     $this->pageScript = 'inventory';
     $this->data['product'] = $this->Product_model->get($productId);

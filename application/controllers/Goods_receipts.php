@@ -22,21 +22,27 @@ class Goods_receipts extends MY_Controller
       'POSTED',
       'CANCELLED',
     ];
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
     $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to' => trim($this->input->get('date_to')),
-      'keyword' => trim($this->input->get('keyword')),
-      'status' => trim($this->input->get('status')),
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
     ];
     $this->data = array_merge(
       $this->data,
       $filters
     );
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
 
     $this->pageScript = 'goods_receipts';
     $this->data['goodsReceipts'] = $this->Goods_receipt_model->getAll($filters);
+    foreach ($this->data['goodsReceipts'] as $gr) {
+      $gr->url = base_url('goods-receipts/view/' . $this->encodeId($gr->id));
+      $gr->po_url = base_url('purchase-orders?id=' . $this->encodeId($gr->po_id));
+    }
+
     $this->data['recordCount'] = count($this->data['goodsReceipts']);
     $this->data['searchPlaceHolder'] = 'Search GRN, PO, Supplier...';
 
@@ -161,13 +167,23 @@ class Goods_receipts extends MY_Controller
 
   public function view($id = 0)
   {
-    $goodsReceipt = $this->Goods_receipt_model->get($id);
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $goodsReceiptId = (int) $id;
+
+    $goodsReceipt = $this->Goods_receipt_model->get($goodsReceiptId);
+    $goodsReceipt->url = base_url('purchase-orders?id=' . $this->encodeId($goodsReceipt->po_id));
 
     if (!$goodsReceipt)
         show_404();
 
     $this->data['goodsReceipt'] = $goodsReceipt;
-    $this->data['details'] = $this->Goods_receipt_model->getDetails($id);
+    $this->data['details'] = $this->Goods_receipt_model->getDetails($goodsReceiptId);
 
     $this->data['isEditable'] = false;
 

@@ -19,6 +19,7 @@ class Sales_invoice_model extends CI_Model
 
       $this->db->group_start()
           ->where("si.si_no ILIKE '%{$escaped}%'")
+          ->or_where("dr.dr_no ILIKE '%{$escaped}%'")
           ->or_where("so.so_no ILIKE '%{$escaped}%'")
           ->or_where("c.customer_name ILIKE '%{$escaped}%'")
           ->group_end();
@@ -58,6 +59,8 @@ class Sales_invoice_model extends CI_Model
     return $this->db
         ->select("
             si.*,
+            dr.dr_no,
+            dr.id AS dr_id,
             so.so_no,
             so.id AS so_id,
             c.customer_name,
@@ -65,6 +68,11 @@ class Sales_invoice_model extends CI_Model
             t.terms_name
         ")
         ->from('t_sales_invoices si')
+        ->join(
+            't_delivery_receipts dr',
+            'dr.id = si.delivery_receipt_id',
+            'left'
+        )
         ->join(
             't_sales_orders so',
             'so.id = si.sales_order_id',

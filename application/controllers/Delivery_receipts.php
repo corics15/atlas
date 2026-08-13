@@ -23,19 +23,36 @@ class Delivery_receipts extends MY_Controller
       'POSTED',
       'CANCELLED',
     ];
+
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
     $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to' => trim($this->input->get('date_to')),
-      'keyword' => trim($this->input->get('keyword')),
-      'status' => trim($this->input->get('status')),
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
     ];
     $this->data = array_merge(
       $this->data,
       $filters
     );
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
+
     $this->data['searchPlaceHolder'] = 'Search...';
+    $this->data['deliveryReceipts'] = $this->Delivery_receipt_model->getAll($filters);
+    foreach ($this->data['deliveryReceipts'] as $dr) {
+      $dr->url = base_url('delivery-receipts/edit/' . $this->encodeId($dr->id));
+      $dr->so_url = base_url('sales-orders/edit/' . $this->encodeId($dr->so_id));
+    }
+
+    $this->data['recordCount'] = count($this->data['deliveryReceipts']);
+    $this->pageScript = 'delivery_receipts';
+    $this->data['tableContent']
+        = $this->load->view(
+            'delivery_receipts/table',
+            $this->data,
+            TRUE
+        );
 
     $this->data['toolbar'] = [
       'edit' => [
@@ -70,16 +87,6 @@ class Delivery_receipts extends MY_Controller
         ]
     ];
 
-    $this->data['deliveryReceipts'] = $this->Delivery_receipt_model->getAll($filters);
-    $this->data['recordCount'] = count($this->data['deliveryReceipts']);
-    $this->pageScript = 'delivery_receipts';
-    $this->data['tableContent']
-        = $this->load->view(
-            'delivery_receipts/table',
-            $this->data,
-            TRUE
-        );
-
     $this->render('delivery_receipts/index');
   }
 
@@ -89,6 +96,9 @@ class Delivery_receipts extends MY_Controller
     $this->pageScript = 'delivery_receipts';
 
     $this->data['header'] = $this->Delivery_receipt_model->getSalesOrder($salesOrderId);
+    $urlLink = isset($this->data['header']->sales_order_id) ? $this->encodeId($this->data['header']->sales_order_id) : $this->encodeId($this->data['header']->id);
+    $this->data['header']->url = base_url('sales-orders/edit/'.$urlLink);
+
     $this->data['details'] = $this->Delivery_receipt_model->getSalesOrderDetails($salesOrderId);
     $this->data['salesOrderId'] = $salesOrderId;
     $this->data['isEdit'] = false;
@@ -96,18 +106,29 @@ class Delivery_receipts extends MY_Controller
     $this->render('delivery_receipts/create');
   }
 
-  public function edit($id)
+  public function edit($id = 0)
   {
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $deliveryReceiptId = (int) $id;
+
     $this->setPage('Edit Delivery Receipt');
     $this->pageScript = 'delivery_receipts';
-    $this->data['header'] = $this->Delivery_receipt_model->get($id);
+    $this->data['header'] = $this->Delivery_receipt_model->get($deliveryReceiptId);
+    $urlLink = isset($this->data['header']->sales_order_id) ? $this->encodeId($this->data['header']->sales_order_id) : $this->encodeId($this->data['header']->id);
+    $this->data['header']->url = base_url('sales-orders/edit/'.$urlLink);
 
     if (!$this->data['header']) {
       show_404();
     }
 
-    $this->data['details'] = $this->Delivery_receipt_model->getDetails($id);
-    $this->data['deliveryReceiptId'] = $id;
+    $this->data['details'] = $this->Delivery_receipt_model->getDetails($deliveryReceiptId);
+    $this->data['deliveryReceiptId'] = $deliveryReceiptId;
     $this->data['isEdit'] = true;
 
     $this->render('delivery_receipts/create');

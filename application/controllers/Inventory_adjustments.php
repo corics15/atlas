@@ -21,6 +21,40 @@ class Inventory_adjustments extends MY_Controller
     );
     $this->pageScript = 'inventory_adjustments';
 
+    /*** filters */
+    $this->data['statuses'] = [
+      'DRAFT',
+      'POSTED',
+      'CANCELLED',
+    ];
+
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+    $filters = [
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
+    ];
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['inventoryAdjustments'] = $this->Inventory_adjustment_model->getAll($filters);
+    foreach ($this->data['inventoryAdjustments'] as $ia) {
+      $ia->url = base_url('inventory-adjustments/view/' . $this->encodeId($ia->id));
+    }
+
+    $this->data['recordCount'] = count($this->data['inventoryAdjustments']);
+    $this->data['tableContent'] = $this->load->view(
+        'inventory_adjustments/table',
+        $this->data,
+        TRUE
+    );
+
     $this->data['toolbar'] = [
       'edit' => [
         'id'   => 'btnEditInventoryAdjustment',
@@ -49,34 +83,6 @@ class Inventory_adjustments extends MY_Controller
       ]
     ];
 
-    $this->data['statuses'] = [
-      'DRAFT',
-      'POSTED',
-      'CANCELLED',
-    ];
-
-    $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to' => trim($this->input->get('date_to')),
-      'keyword' => trim($this->input->get('keyword')),
-      'status' => trim($this->input->get('status')),
-    ];
-
-    $this->data = array_merge(
-      $this->data,
-      $filters
-    );
-
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['inventoryAdjustments'] = $this->Inventory_adjustment_model->getAll($filters);
-    $this->data['recordCount'] = count($this->data['inventoryAdjustments']);
-    $this->data['tableContent'] = $this->load->view(
-        'inventory_adjustments/table',
-        $this->data,
-        TRUE
-    );
-
     $this->render('inventory_adjustments/index');
   }
 
@@ -86,14 +92,23 @@ class Inventory_adjustments extends MY_Controller
       show_404();
     }
 
-    $inventoryAdjustment = $this->Inventory_adjustment_model->get($id);
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $inventoryAdjustmentId = (int) $id;
+
+    $inventoryAdjustment = $this->Inventory_adjustment_model->get($inventoryAdjustmentId);
 
     if (!$inventoryAdjustment) {
       show_404();
     }
 
     $this->data['inventoryAdjustment'] = $inventoryAdjustment;
-    $this->data['inventoryAdjustmentDetails'] = $this->Inventory_adjustment_model->getDetails($id);
+    $this->data['inventoryAdjustmentDetails'] = $this->Inventory_adjustment_model->getDetails($inventoryAdjustmentId);
 
     $this->setPage('Inventory Adjustment');
     $this->pageScript = 'inventory_adjustments';

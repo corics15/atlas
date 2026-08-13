@@ -35,13 +35,13 @@
         </div>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('purchase-returns/edit/').$row->id ?>" class="text-wrap text-olive"><?= $row->pr_no ?></a>
+        <a href="<?= $row->url ?>" class="text-wrap text-olive"><?= $row->pr_no ?></a>
       </td>
       <td class="text-center">
         <?= date('m/d/Y', strtotime($row->return_date)) ?>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('goods-receipts/view/').$row->goods_receipt_id  ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas fa-xs mr-1"></i><?= $row->grn_no ?></a>
+        <a href="<?= $row->gr_url  ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas fa-xs mr-1"></i><?= $row->grn_no ?></a>
       </td>
       <td class="text-center">
         <?= date('m/d/Y', strtotime($row->grn_date)) ?>

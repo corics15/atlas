@@ -49,7 +49,7 @@
         font-size: 64px;
         line-height: 1;
         font-weight: 700;
-        color: #6c757d;
+        color: #9f2d2d;
       }
 
       h1 {

@@ -36,12 +36,12 @@
       </td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($row->grn_date))); ?></td>
       <td class="text-center">
-        <a href="<?= base_url('goods-receipts/view/'.$row->id) ?>" class="text-olive text-wrap">
+        <a href="<?= $row->url ?>" class="text-olive text-wrap">
           <?= htmlspecialchars($row->grn_no); ?>
         </a>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('purchase-orders?id=').$row->po_id  ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas fa-xs mr-1"></i><?= htmlspecialchars($row->po_no) ?></a>
+        <a href="<?= $row->po_url  ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas fa-xs mr-1"></i><?= htmlspecialchars($row->po_no) ?></a>
       </td>
       <td><?= htmlspecialchars($row->supplier_name); ?></td>
       <td class="text-center">

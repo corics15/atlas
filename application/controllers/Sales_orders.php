@@ -24,6 +24,43 @@ class Sales_orders extends MY_Controller
       ]
     );
 
+    /*** filters */
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $this->data['statuses'] = [
+      'OPEN',
+      'POSTED',
+      'COMPLETED',
+      'CANCELLED',
+    ];
+    $filters = [
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $keyword = trim($this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+    $this->data['searchPlaceHolder'] = 'Search...';
+
+    $this->pageScript = 'sales_orders';
+    $this->data['salesOrders'] = $this->Sales_order_model->getAll($filters);
+    foreach ($this->data['salesOrders'] as $so) {
+      $so->url = base_url('sales-orders/edit/' . $this->encodeId($so->id));
+    }
+
+    $this->data['recordCount'] = count($this->data['salesOrders']);
+
+    $this->data['tableContent'] =
+        $this->load->view(
+            'sales_orders/table',
+            $this->data,
+            TRUE
+        );
+
     $this->data['toolbar'] = [
       'edit' => [
         'id'   => 'btnEditSalesOrder',
@@ -57,39 +94,6 @@ class Sales_orders extends MY_Controller
       ]
     ];
 
-    /*** filters */
-    $filter = $this->decodeFilter($this->input->get('filter'));
-    $this->data['statuses'] = [
-      'OPEN',
-      'POSTED',
-      'COMPLETED',
-      'CANCELLED',
-    ];
-    $filters = [
-      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
-      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
-      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
-      'status' => trim($filter['status'] ?? $this->input->get('status')),
-    ];
-    $this->data = array_merge(
-      $this->data,
-      $filters
-    );
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['searchPlaceHolder'] = 'Search...';
-
-    $this->pageScript = 'sales_orders';
-    $this->data['salesOrders'] = $this->Sales_order_model->getAll($filters);
-    $this->data['recordCount'] = count($this->data['salesOrders']);
-
-    $this->data['tableContent'] =
-        $this->load->view(
-            'sales_orders/table',
-            $this->data,
-            TRUE
-        );
-
     $this->render('sales_orders/index');
   }
 
@@ -117,17 +121,26 @@ class Sales_orders extends MY_Controller
 
   public function edit($id)
   {
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $salesOrderId = (int) $id;
+
     $this->setPage('Edit Sales Order');
     $this->pageScript = 'sales_orders';
 
     $this->data['customers'] = $this->Customer_model->getDropdown();
-    $this->data['salesOrder'] = $this->Sales_order_model->get($id);
-    $this->data['details'] = $this->Sales_order_model->getDetails($id);
+    $this->data['salesOrder'] = $this->Sales_order_model->get($salesOrderId);
+    $this->data['details'] = $this->Sales_order_model->getDetails($salesOrderId);
 
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
 
-    $this->data['salesOrderId'] = $id;
+    $this->data['salesOrderId'] = $salesOrderId;
     $this->render('sales_orders/create');
   }
 

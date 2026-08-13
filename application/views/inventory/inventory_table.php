@@ -39,10 +39,10 @@
         </div>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('inventory/ledger/'.$row->product_id) ?>" class="text-wrap text-olive"><?= htmlspecialchars($row->case_barcode); ?></a>
+        <a href="<?= $row->url ?>" class="text-wrap text-olive"><?= htmlspecialchars($row->case_barcode); ?></a>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('inventory/ledger/'.$row->product_id) ?>" class="text-wrap text-olive"><?= htmlspecialchars($row->barcode); ?></a>
+        <a href="<?= $row->url ?>" class="text-wrap text-olive"><?= htmlspecialchars($row->barcode); ?></a>
       </td>
       <td><?= htmlspecialchars($row->description); ?></td>
       <td class="text-center"><?= htmlspecialchars($row->pkg); ?></td>

@@ -20,6 +20,45 @@ class Sales_returns extends MY_Controller
     $this->setPage('Sales Return List');
     $this->pageScript = 'sales_returns';
 
+    /*** filters */
+    $this->data['statuses'] = [
+      'OPEN',
+      'POSTED',
+      'CANCELLED',
+    ];
+
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+    $filters = [
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
+    ];
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['searchPlaceHolder'] = 'Search...';
+
+    $this->data['salesReturns'] = $this->Sales_return_model->getAll($filters);
+    foreach ($this->data['salesReturns'] as $sr) {
+      $sr->url = base_url('sales-returns/edit/' . $this->encodeId($sr->id));
+      $sr->si_url = base_url('sales-invoices/edit/' . $this->encodeId($sr->sales_invoice_id));
+    }
+
+    $this->data['recordCount'] = count($this->data['salesReturns']);
+
+    $this->data['tableContent'] =
+        $this->load->view(
+            'sales_returns/table',
+            $this->data,
+            TRUE
+        );
+
     $this->data['toolbar'] = [
         'edit' => [
             'id'   => 'btnEditSalesReturn',
@@ -48,36 +87,6 @@ class Sales_returns extends MY_Controller
         ]
     ];
 
-    /*** filters */
-    $this->data['statuses'] = [
-      'OPEN',
-      'POSTED',
-      'CANCELLED',
-    ];
-    $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to' => trim($this->input->get('date_to')),
-      'keyword' => trim($this->input->get('keyword')),
-      'status' => trim($this->input->get('status')),
-    ];
-    $this->data = array_merge(
-      $this->data,
-      $filters
-    );
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['searchPlaceHolder'] = 'Search...';
-
-    $this->data['salesReturns'] = $this->Sales_return_model->getAll($filters);
-    $this->data['recordCount'] = count($this->data['salesReturns']);
-
-    $this->data['tableContent'] =
-        $this->load->view(
-            'sales_returns/table',
-            $this->data,
-            TRUE
-        );
-
     $this->render('sales_returns/index');
   }
 
@@ -101,13 +110,26 @@ class Sales_returns extends MY_Controller
     $this->data['terms'] = $this->Term_model->getDropdown();
 
     $this->data['salesInvoice'] = $salesInvoice;
+    $urlLink = $this->encodeId($this->data['salesInvoice']->id);
+    $this->data['salesInvoice']->url = base_url('sales-invoices/edit/'.$urlLink);
+
     $this->data['details'] = $this->Sales_return_model->getSalesInvoiceDetails($salesInvoiceId);
+    $this->data['isEdit'] = FALSE;
 
     $this->render('sales_returns/create');
   }
 
   public function edit($id)
   {
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $salesReturnId = (int) $id;
+
     $this->setPage('Edit Sales Return');
     $this->pageScript = 'sales_returns';
 
@@ -115,16 +137,21 @@ class Sales_returns extends MY_Controller
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
 
-    $this->data['salesReturn'] = $this->Sales_return_model->get($id);
+    $this->data['header'] = $this->Sales_return_model->get($salesReturnId);
 
-    if (!$this->data['salesReturn']) {
+    if (!$this->data['header']) {
       show_404();
     }
 
     $this->data['salesInvoice'] = $this->Sales_return_model->getSalesInvoice(
-        $this->data['salesReturn']->sales_invoice_id
+      $this->data['header']->sales_invoice_id
     );
-    $this->data['details'] = $this->Sales_return_model->getDetails($id);
+    $urlLink = $this->encodeId($this->data['salesInvoice']->id);
+    $this->data['salesInvoice']->url = base_url('sales-invoices/edit/'.$urlLink);
+
+    $this->data['details'] = $this->Sales_return_model->getDetails($salesReturnId);
+    $this->data['isEdit'] = TRUE;
+
     $this->render('sales_returns/create');
   }
 

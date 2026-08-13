@@ -69,7 +69,7 @@
           <tr>
             <th>PO NO.</th>
             <td>
-              <a href="<?= base_url('purchase-orders?id=').$goodsReceipt->po_id  ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($goodsReceipt->po_no) ?></a>
+              <a href="<?= $goodsReceipt->url ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($goodsReceipt->po_no) ?></a>
             </td>
           </tr>
           <tr>

@@ -17,12 +17,18 @@ class Purchase_orders extends MY_Controller
 
   public function index()
   {
-    $this->data['purchaseOrderId'] = (int) $this->input->get('id');
+    $decodedId = $this->decodeId($this->input->get('id'));
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $id = (int) $id;
 
-    $mode = (int) $this->input->get('id') ? 'Edit' : 'New';
-
+    $this->data['purchaseOrderId'] = $id;
+    $mode = $id ? 'Edit' : 'New';
     $this->setPage($mode.' Purchase Order');
-
     $this->pageScript = 'purchase_orders';
 
     $this->data['suppliers'] = $this->Supplier_model->getDropdown();
@@ -90,7 +96,6 @@ class Purchase_orders extends MY_Controller
       'CLOSED',
     ];
 
-    /*** filters */
     $filter = $this->decodeFilter($this->input->get('filter'));
     $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
     $this->data['keyword'] = $keyword;
@@ -110,6 +115,10 @@ class Purchase_orders extends MY_Controller
     /*** end filters */
 
     $this->data['purchaseOrders'] = $this->Purchase_order_model->getAll($filters);
+    foreach ($this->data['purchaseOrders'] as $po) {
+      $po->url = base_url('purchase-orders?id=' . $this->encodeId($po->id));
+    }
+
     $this->data['recordCount'] = count($this->data['purchaseOrders']);
     $this->data['tableContent'] = $this->load->view(
       'purchase_orders/table',

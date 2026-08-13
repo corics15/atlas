@@ -12,8 +12,8 @@
         </label>
       </div>
     </th>
-    <th class="text-center">PO No.</th>
     <th class="text-center">Date</th>
+    <th class="text-center">PO No.</th>
     <th>Supplier</th>
     <th class="text-right">Total</th>
     <th>Remarks</th>
@@ -39,12 +39,12 @@
           </label>
         </div>
       </td>
+      <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($po->po_date))) ?></td>
       <td class="text-center">
-        <a href="<?= base_url('purchase-orders?id='.$po->id) ?>" class="text-olive text-wrap">
+        <a href="<?= $po->url ?>" class="text-olive text-wrap">
           <?= htmlspecialchars($po->po_no) ?>
         </a>
       </td>
-      <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($po->po_date))) ?></td>
       <td>
         <?php
           $supplierName = htmlspecialchars($po->supplier_name);

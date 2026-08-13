@@ -141,7 +141,11 @@
   </div>
 </section>
 
+<input type="hidden" id="selCustomer" value="<?= $salesInvoice->customer_id ?>">
+<input type="hidden" id="selSalesman" value="<?= $salesInvoice->salesman_id ?>">
+<input type="hidden" id="selTerms" value="<?= $salesInvoice->terms_id ?>">
+<input type="hidden" id="txtCreditLimit" value="<?= $salesInvoice->credit_limit ?>">
 <script>
-   window.salesReturnId = <?= isset($salesReturn) ? $salesReturn->id : 0; ?>;
-   window.status = '<?= isset($salesReturn) ? $salesReturn->status : ''; ?>';
+  window.salesReturnId = <?= $isEdit ? $header->id : 0 ?>;
+  window.status = '<?= $isEdit ? $header->status : '' ?>';
 </script>

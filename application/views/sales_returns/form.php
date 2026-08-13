@@ -1,7 +1,6 @@
 <?php
-  $isEdit = isset($salesReturn);
   $isFromSalesInvoice = isset($salesInvoice);
-  $status = $isEdit ? $salesReturn->status : null;
+  $status = $isEdit ? $header->status : null;
 ?>
 
 <section class="content">
@@ -9,16 +8,16 @@
     <div class="card">
       <div class="card-header">
 
-      <?php if (isset($salesReturn)) : ?>
+      <?php if (isset($header)) : ?>
 
         <div class="d-flex justify-content-between align-items-center">
           <h3 class="card-title">
-            Source Sales Invoice
+            Sales Return Information
           </h3>
 
           <?php
             $statusClass = NULL;
-            switch ($salesReturn->status) {
+            switch ($header->status) {
               case 'POSTED':
                 $statusClass = 'text-success';
                 break;
@@ -31,12 +30,12 @@
             }
           ?>
 
-          <div class="ls-wider <?= $statusClass ?>" style="font-weight:500">[<?= $salesReturn->status ?>]</div>
+          <div class="ls-wider <?= $statusClass ?>" style="font-weight:500">[<?= $header->status ?>]</div>
         </div>
 
       <?php else : ?>
         <h3 class="card-title">
-          Source Sales Invoice
+          Sales Return Information
         </h3>
       <?php endif; ?>
 
@@ -45,182 +44,86 @@
       <?php /*** header */ ?>
       <div class="card-body">
         <div class="row">
+          <div class="col-md-6">
 
-          <div class="col-md-3">
-            <div class="form-group">
-              <label for="txtSourceSalesInvoiceNo">Source Invoice No.</label>
-              <input
-                  type="text"
-                  id="txtSourceSalesInvoiceNo"
-                  class="form-control form-control-sm"
-                  value="<?= $isEdit ? htmlspecialchars($salesInvoice->si_no) : (!empty($salesInvoice) ? htmlspecialchars($salesInvoice->si_no) : '') ?>"
-                  readonly>
-            </div>
+            <?php
+              switch (htmlspecialchars($salesInvoice->status)) {
+                case 'OPEN':
+                  $status = '<span class="badge badge-secondary">OPEN</span>';
+                  break;
+                case 'POSTED':
+                  $status = '<span class="badge badge-success">POSTED</span>';
+                  break;
+                default:
+                  $status = '<span class="badge badge-danger">CANCELLED</span>';
+                  break;
+              }
+            ?>
+
+            <table class="table table-sm table-borderless">
+              <tr>
+                <th>SR No.</th>
+                <td class="text-brown"><?= $isEdit ? $header->sr_no : 'AUTO-GENERATED' ?></td>
+              </tr>
+              <tr>
+                <th width="180">SI No.</th>
+                <td>
+                  <a href="<?= $salesInvoice->url//base_url('sales-invoices/edit/').$salesInvoice->id ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($salesInvoice->si_no) ?></a>
+              </tr>
+              <tr>
+                <th>Customer</th>
+                <td>
+                  <?= htmlspecialchars($salesInvoice->customer_name); ?>
+                </td>
+              </tr>
+              <tr>
+                <th>Salesman</th>
+                <td>
+                  <?= htmlspecialchars($salesInvoice->salesman_name); ?>
+                </td>
+              </tr>
+              <tr>
+                <th>Terms</th>
+                <td>
+                  <?= htmlspecialchars($salesInvoice->terms_name); ?>
+                </td>
+              </tr>
+              <tr>
+                <th>Credit Limit</th>
+                <td>
+                  <?= number_format($salesInvoice->credit_limit, 2); ?>
+                </td>
+              </tr>
+              <tr>
+                <th>SI Remarks</th>
+                <td><?= htmlspecialchars($salesInvoice->remarks) ?>
+                </td>
+              </tr>
+              <tr>
+                <th>SI Status</th>
+                <td><?= $status ?></td>
+              </tr>
+              <tr>
+                <th>Return Date</th>
+                <td>
+                  <input type="date" id="dtSalesReturnDate" class="form-control form-control-sm w-auto" value="<?= $isEdit ? date('Y-m-d', strtotime($header->return_date)) : date('Y-m-d'); ?>">
+                </td>
+              </tr>
+              <tr>
+                <th>Remarks</th>
+                <td>
+                  <input type="text" id="txtSalesReturnRemarks" class="form-control form-control-sm text-uppercase" placeholder="Remarks..." value="<?= $isEdit ? htmlspecialchars($header->remarks) : '' ?>">
+                </td>
+              </tr>
+            </table>
+
           </div>
-
-          <div class="col-md-3">
-            <div class="form-group">
-              <label for="txtSalesReturnNo">Sales Return No.</label>
-              <input
-                  type="text"
-                  id="txtSalesReturnNo"
-                  class="form-control form-control-sm"
-                  value="<?= $isEdit ? htmlspecialchars($salesReturn->sr_no) : 'AUTO-GENERATED'; ?>"
-                  readonly>
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="form-group">
-              <label for="dtSalesReturnDate">Return Date</label>
-              <input
-                  type="date"
-                  id="dtSalesReturnDate"
-                  class="form-control form-control-sm"
-                  value="<?= $isEdit ? $salesReturn->return_date : date('Y-m-d'); ?>">
-            </div>
-          </div>
-
-        </div>
-
-        <div class="row">
-
-          <div class="col-md-3">
-            <div class="form-group">
-
-              <label for="selCustomer">Customer</label>
-              <select
-                id="selCustomer"
-                class="form-control form-control-sm no-event" readonly>
-                <option value="">Select Customer</option>
-
-                <?php foreach ($customers as $customer): ?>
-
-                <option
-                    value="<?= $customer->id ?>"
-                    data-salesman-id="<?= $customer->salesman_id ?>"
-                    data-terms="<?= htmlspecialchars($customer->terms_name) ?>"
-                    data-terms-id="<?= $customer->terms_id ?>"
-                    data-credit-limit="<?= $customer->credit_limit ?>"
-                    <?=
-                      $isEdit ? ($salesInvoice->customer_id == $customer->id ? 'selected' : '') :
-                      ($isFromSalesInvoice && $salesInvoice->customer_id == $customer->id ? 'selected' : '')
-                    ?>
-                    >
-                    <?= htmlspecialchars($customer->customer_name) ?>
-
-                </option>
-
-                <?php endforeach; ?>
-
-              </select>
-
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="form-group">
-
-              <label for="selSalesman">Salesman</label>
-              <select
-                id="selSalesman"
-                class="form-control form-control-sm no-event" readonly>
-                <option value="">Select Salesman</option>
-
-                <?php foreach ($salesmen as $salesman): ?>
-
-                <option
-                    value="<?= $salesman->id ?>"
-                    data-salesman-id="<?= $salesman->id ?>"
-                    <?=
-                      $isEdit ? ($salesInvoice->salesman_id == $salesman->id ? 'selected' : '') :
-                      ($isFromSalesInvoice && $salesInvoice->salesman_id == $salesman->id ? 'selected' : '' )
-                    ?>
-                    >
-                    <?= htmlspecialchars($salesman->salesman_name) ?>
-                </option>
-
-                <?php endforeach; ?>
-
-              </select>
-
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="form-group">
-
-              <label for="selTerms">Terms</label>
-              <select
-                id="selTerms"
-                class="form-control form-control-sm no-event" readonly>
-                <option value="">Select Term</option>
-
-                <?php foreach ($terms as $term): ?>
-
-                <option
-                    value="<?= $term->id ?>"
-                    data-term-id="<?= $term->id ?>"
-                    <?=
-                      $isEdit ? ($salesInvoice->terms_id == $term->id ? 'selected' : '') :
-                      ($isFromSalesInvoice && $salesInvoice->terms_id == $term->id ? 'selected' : '')
-                    ?>
-                    >
-                    <?= htmlspecialchars($term->terms_name) ?>
-                </option>
-
-                <?php endforeach; ?>
-
-              </select>
-
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="form-group">
-
-              <label for="txtCreditLimit">Credit Limit</label>
-              <input
-                type="text"
-                id="txtCreditLimit"
-                class="form-control form-control-sm no-event"
-                value="<?=
-                          $isEdit ? number_format($salesInvoice->credit_limit, 2) :
-                          ($isFromSalesInvoice ? number_format($salesInvoice->credit_limit, 2) : '0.00')
-                        ?>"
-                readonly>
-
-            </div>
-          </div>
-
-        </div>
-
-        <div class="row">
-
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="txtSalesReturnRemarks">Remarks</label>
-              <textarea
-                id="txtSalesReturnRemarks"
-                class="form-control form-control-sm text-uppercase"
-                rows="3"><?=
-                            $isEdit ? htmlspecialchars($salesReturn->remarks) :
-                              ($isFromSalesInvoice ? htmlspecialchars($salesInvoice->remarks) : '')
-                          ?></textarea>
-            </div>
-          </div>
-
         </div>
       </div>
+
     </div>
   </div>
 </section>
 
-<input
-    type="hidden"
-    id="hidSalesInvoiceId"
-    value="<?= isset($salesInvoice) ? $salesInvoice->id : '' ?>">
-<input
-    type="hidden"
-    id="hidSalesReturnId"
-    value="<?= $isEdit ? $salesReturn->id : '' ?>">
+<input type="hidden" id="hidSalesInvoiceId" value="<?= $salesInvoice->id ?>">
+<input type="hidden" id="hidSalesReturnId" value="<?= $isEdit ? $header->id : '' ?>">

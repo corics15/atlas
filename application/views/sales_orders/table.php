@@ -41,7 +41,7 @@
         <?= date('m/d/Y', strtotime($row->order_date)) ?>
       </td>
       <td class="text-center">
-        <a href="<?= base_url('sales-orders/edit/').$row->id ?>" class="text-wrap text-olive"><?= $row->so_no ?></a>
+        <a href="<?= $row->url ?>" class="text-wrap text-olive"><?= $row->so_no ?></a>
       </td>
       <td>
         <?= htmlspecialchars($row->customer_name) ?>

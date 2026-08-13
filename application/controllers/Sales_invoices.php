@@ -20,6 +20,45 @@ class Sales_invoices extends MY_Controller
     $this->setPage('Sales Invoice List');
     $this->pageScript = 'sales_invoices';
 
+    /*** filters */
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $this->data['statuses'] = [
+      'OPEN',
+      'POSTED',
+      'CANCELLED',
+    ];
+
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+    $filters = [
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+      'status' => trim($filter['status'] ?? $this->input->get('status')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['searchPlaceHolder'] = 'Search...';
+
+    $this->data['salesInvoices'] = $this->Sales_invoice_model->getAll($filters);
+    foreach ($this->data['salesInvoices'] as $si) {
+      $si->url = base_url('sales-invoices/edit/' . $this->encodeId($si->id));
+      $si->dr_url = base_url('delivery-receipts/edit/' . $this->encodeId($si->dr_id));
+    }
+
+    $this->data['recordCount'] = count($this->data['salesInvoices']);
+
+    $this->data['tableContent'] =
+        $this->load->view(
+            'sales_invoices/table',
+            $this->data,
+            TRUE
+        );
+
     $this->data['toolbar'] = [
       'edit' => [
         'id'   => 'btnEditSalesInvoice',
@@ -53,37 +92,6 @@ class Sales_invoices extends MY_Controller
       ]
     ];
 
-    /*** filters */
-    $filter = $this->decodeFilter($this->input->get('filter'));
-    $this->data['statuses'] = [
-      'OPEN',
-      'POSTED',
-      'CANCELLED',
-    ];
-    $filters = [
-      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
-      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
-      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
-      'status' => trim($filter['status'] ?? $this->input->get('status')),
-    ];
-    $this->data = array_merge(
-      $this->data,
-      $filters
-    );
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['searchPlaceHolder'] = 'Search...';
-
-    $this->data['salesInvoices'] = $this->Sales_invoice_model->getAll($filters);
-    $this->data['recordCount'] = count($this->data['salesInvoices']);
-
-    $this->data['tableContent'] =
-        $this->load->view(
-            'sales_invoices/table',
-            $this->data,
-            TRUE
-        );
-
     $this->render('sales_invoices/index');
   }
 
@@ -109,6 +117,9 @@ class Sales_invoices extends MY_Controller
       }
 
       $this->data['header'] = $deliveryReceipt;
+      $urlLink = isset($this->data['header']->delivery_receipt_id) ? $this->encodeId($this->data['header']->delivery_receipt_id) : $this->encodeId($this->data['header']->id);
+      $this->data['header']->url = base_url('delivery-receipts/edit/'.$urlLink);
+
       $details = $this->Sales_invoice_model->getDeliveryReceiptDetails($deliveryReceiptId);
 
       if (empty($details)) {
@@ -119,38 +130,6 @@ class Sales_invoices extends MY_Controller
       }
 
       $this->data['details'] = $details;
-    }
-
-    $this->render('sales_invoices/create');
-  }
-
-  public function create_old($salesOrderId = null)
-  {
-    $this->setPage('New Sales Invoice');
-    $this->pageScript = 'sales_invoices';
-    $this->data['customers'] = $this->Customer_model->getDropdown();
-    $this->data['salesmen'] = $this->Salesman_model->getDropdown();
-    $this->data['terms'] = $this->Term_model->getDropdown();
-    $this->data['salesOrderId'] = $salesOrderId;
-
-    if ($salesOrderId) {
-      $salesOrder = $this->Sales_invoice_model->getSalesOrder($salesOrderId);
-
-      if (!$salesOrder) {
-        $this->data['error_message'] = 'Sales Order not found or not POSTED.';
-        $this->render('sales_invoices/create');
-        return;
-      }
-
-      $this->data['salesOrder'] = $salesOrder;
-
-      if (!$this->Sales_invoice_model->hasRemainingItems($salesOrderId)) {
-        $this->data['error_message'] = 'This Sales Order has already been fully invoiced. No remaining quantities are available for invoicing.';
-        $this->render('sales_invoices/create');
-        return;
-      }
-
-      $this->data['details'] = $this->Sales_invoice_model->getSalesOrderDetails($salesOrderId);
     }
 
     $this->render('sales_invoices/create');
@@ -172,7 +151,10 @@ class Sales_invoices extends MY_Controller
     $this->data['customers'] = $this->Customer_model->getDropdown();
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
+
     $this->data['header'] = $this->Sales_invoice_model->get($id);
+    $urlLink = isset($this->data['header']->delivery_receipt_id) ? $this->encodeId($this->data['header']->delivery_receipt_id) : $this->encodeId($this->data['header']->id);
+    $this->data['header']->url = base_url('delivery-receipts/edit/'.$urlLink);
 
     if (!$this->data['header']) {
       show_404();

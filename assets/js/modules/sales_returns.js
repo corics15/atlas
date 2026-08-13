@@ -126,7 +126,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const result = await Atlas.dialog.confirm(
       'Confirm Action',
-      'Post Sales Return?'
+      `<div class="text-brown text-center">
+        <p>Inventory quantities will be updated.<br>
+        This action cannot be undone.</p>
+        <p class="font-weight-500 text-danger">Post Delivery Receipt?</p>
+      </div>`
     );
 
     if (!result) {

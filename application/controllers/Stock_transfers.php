@@ -23,11 +23,43 @@ class Stock_transfers extends MY_Controller
       ]
     );
 
+    $this->pageScript = 'stock_transfers';
+
+    /*** filters */
     $this->data['statuses'] = [
       'OPEN',
       'POSTED',
       'CANCELLED',
     ];
+
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
+    $filters = [
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to'   => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'status'    => trim($filter['status'] ?? $this->input->get('status')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['stockTransfers'] = $this->Stock_transfer_model->getAll($filters);
+    foreach ($this->data['stockTransfers'] as $st) {
+      $st->url = base_url('stock-transfers/edit/' . $this->encodeId($st->id));
+    }
+
+    $this->data['searchPlaceHolder'] = 'Search Transfer #, Branch';
+    $this->data['recordCount'] = count($this->data['stockTransfers']);
+    $this->data['tableContent'] =
+        $this->load->view(
+            'stock_transfers/table',
+            $this->data,
+            TRUE
+        );
 
     $this->data['toolbar'] = [
       'edit' => [
@@ -57,30 +89,6 @@ class Stock_transfers extends MY_Controller
       ]
     ];
 
-    $this->pageScript = 'stock_transfers';
-    $this->data['searchPlaceHolder'] = 'Search Transfer #, Branch';
-
-    $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to'   => trim($this->input->get('date_to')),
-      'status'    => trim($this->input->get('status')),
-      'keyword' => trim($this->input->get('keyword')),
-    ];
-
-    $this->data = array_merge(
-      $this->data,
-      $filters
-    );
-
-    $this->data['stockTransfers'] = $this->Stock_transfer_model->getAll($filters);
-    $this->data['recordCount'] = count($this->data['stockTransfers']);
-    $this->data['tableContent'] =
-        $this->load->view(
-            'stock_transfers/table',
-            $this->data,
-            TRUE
-        );
-
     $this->render('stock_transfers/index');
   }
 
@@ -95,12 +103,21 @@ class Stock_transfers extends MY_Controller
 
   public function edit($id)
   {
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $stockTransferId = (int) $id;
+
     $this->setPage('Edit Stock Transfer');
     $this->pageScript = 'stock_transfers';
     $this->data['branches'] = $this->Branch_model->getDropdown();
-    $this->data['stockTransfer'] = $this->Stock_transfer_model->get($id);
-    $this->data['details'] = $this->Stock_transfer_model->getDetails($id);
-    $this->data['stockTransferId'] = $id;
+    $this->data['stockTransfer'] = $this->Stock_transfer_model->get($stockTransferId);
+    $this->data['details'] = $this->Stock_transfer_model->getDetails($stockTransferId);
+    $this->data['stockTransferId'] = $stockTransferId;
     $this->render('stock_transfers/create');
   }
 
@@ -198,4 +215,5 @@ class Stock_transfers extends MY_Controller
       ]
     );
   }
+
 }

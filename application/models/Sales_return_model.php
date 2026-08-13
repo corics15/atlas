@@ -104,7 +104,9 @@ class Sales_return_model extends CI_Model
             inv.si_no,
             c.customer_name,
             concat(s.first_name, ' ', s.last_name) AS salesman_name,
-            t.terms_name
+            t.terms_name,
+            inv.remarks AS si_remarks,
+            inv.status AS si_status
         ")
         ->from('t_sales_returns sr')
         ->join(
@@ -389,6 +391,27 @@ class Sales_return_model extends CI_Model
             "Sales Return {$return->sr_no} is already {$return->status}."
           );
         }
+
+        /*** validate source sales invoice */
+        $salesInvoice = $this->db
+            ->select('id, si_no, status')
+            ->where('id', $return->sales_invoice_id)
+            ->get('t_sales_invoices')
+            ->row();
+
+        if (!$salesInvoice) {
+            throw new Exception(
+              "Source Sales Invoice not found."
+            );
+        }
+
+        if ($salesInvoice->status !== 'POSTED') {
+            throw new Exception(
+              "Sales Return {$return->sr_no} cannot be posted. " .
+              "Sales Invoice {$salesInvoice->si_no} must be POSTED first."
+            );
+        }
+        /*** end validate source sales invoice */
 
         /*** inventory update */
         $result = $this->Inventory_model->postSalesReturn($id);
