@@ -34,8 +34,6 @@ body {
 h1,
 .h1 {
   font-family: 'Montserrat', sans-serif;
-  font-size: 2rem;
-  /* ~32px */
   font-weight: 600;
 }
 
@@ -68,13 +66,102 @@ h3,
   pointer-events: none !important;
 }
 
-/* Navigation and sidebar */
-.navbar,
+/***** Navigation and sidebar */
 .main-sidebar {
   font-size: 0.875rem;
-  /* ~14px */
   font-family: 'Roboto Condensed', sans-serif;
+  background:
+    linear-gradient(180deg,
+      #26352f 0%,
+      #202b27 100%);
 }
+
+.main-sidebar .nav-header {
+  color: rgba(122, 213, 255);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12rem;
+  padding-left: 1rem;
+}
+
+.main-sidebar .nav-link {
+  color: rgba(214, 226, 220, 0.82);
+  border-radius: 0.35rem;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.main-sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.main-sidebar .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.13) !important;
+  color: #ffffff;
+}
+
+.main-sidebar .nav-link.active .nav-icon {
+  color: #bf8200;
+  opacity: 1;
+}
+
+.main-sidebar .nav-item.menu-open>.nav-link {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.main-sidebar .nav-treeview .nav-link {
+  /* margin-left: 10px; */
+  font-size: 0.84rem;
+}
+
+.main-sidebar .nav-treeview .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.11);
+}
+
+.main-sidebar .nav-item.menu-open>.nav-link .nav-icon {
+  color: #ffcd63;
+}
+
+/* AdminLTE active child menu */
+[class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active,
+[class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:focus,
+[class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:hover {
+  background-color: rgb(91 95 38 / 30%);
+  color: #93bb43;
+}
+
+.main-sidebar .nav-link .right {
+  opacity: 0.55;
+}
+
+/***** end sidebar */
+
+/***** navbar */
+.main-header.navbar {
+  background: linear-gradient(135deg, #24272b 20%, #7aab85 50%, #0e192a 97%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* Navbar links / icons */
+.main-header.navbar .nav-link {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+
+/* Navbar hover */
+.main-header.navbar .nav-link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.10);
+}
+
+
+/* Navbar icons */
+.main-header.navbar .nav-link i {
+  color: rgba(255, 255, 255, 0.90);
+}
+
+/***** end navbar */
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -106,7 +193,7 @@ h3,
 
 /** custom css */
 .content-header h1 {
-  color: rgba(91, 91, 85) !important
+  color: rgba(91, 91, 85) !important;
 }
 
 .text-uppercase::placeholder {

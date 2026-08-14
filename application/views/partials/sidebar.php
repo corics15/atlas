@@ -49,7 +49,7 @@
     <?php /*** user */ ?>
     <div class="user-panel mt-3 pb-3 mb-3 d-flex">
       <div class="image">
-        <i class="fas fa-user-circle fa-2x text-light"></i>
+        <i class="fas fa-user-circle fa-2x text-purple"></i>
       </div>
 
       <div class="info">
@@ -59,9 +59,9 @@
           ); ?>
         </span>
 
-        <small class="text-muted">
+        <div class="text-orange">
           Administrator
-        </small>
+        </div>
       </div>
     </div>
 
