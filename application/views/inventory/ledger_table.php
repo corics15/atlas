@@ -47,31 +47,8 @@
         </td>
 
         <td class="text-center">
-          <?php
-            switch ($row->transaction_type) {
-              case 'GRN':
-                $url = 'goods-receipts/view/';
-                break;
-              case 'TRANSFER':
-                $url = 'stock-transfers/edit/';
-                break;
-              case 'SR':
-                $url = 'sales-returns/edit/';
-                break;
-              case 'PR':
-                $url = 'purchase-returns/edit/';
-                break;
-              case 'DR':
-              case 'DR-CANCEL':
-                $url = 'delivery-receipts/edit/';
-                break;
-              default: /*** ADJUSTMENT */
-                $url = 'inventory-adjustments/view/';
-                break;
-            }
-          ?>
           <a
-            href="<?= base_url($url.$row->reference_id) ?>"
+            href="<?= htmlspecialchars($row->reference_url) ?>"
             class="text-olive text-wrap"
             data-toggle="tooltip" title="Open Transaction" target="_blank">
             <i class="fas fa-external-link-alt fa-xs mr-1"></i>

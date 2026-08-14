@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(`sales-returns/edit/${id}`);
+    Atlas.page.redirect(`sales-returns/edit/${Atlas.id.encode(id)}`);
   });
 
   /*** save */
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       Atlas.toast.success(result.message);
       document.getElementById('hidSalesReturnId').value = result.data.sales_return_id;
-      setTimeout(() => Atlas.page.redirect(`sales-returns/edit/${result.data.sales_return_id}`), 1500);
+      setTimeout(() => Atlas.page.redirect(`sales-returns/edit/${Atlas.id.encode(result.data.sales_return_id)}`), 1500);
       isEditMode = true;
       isDirty = false;
 

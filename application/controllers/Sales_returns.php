@@ -90,8 +90,17 @@ class Sales_returns extends MY_Controller
     $this->render('sales_returns/index');
   }
 
-  public function create($salesInvoiceId = null)
+  public function create($id = null)
   {
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $salesInvoiceId = (int) $id;
+
     if (!$salesInvoiceId) {
       show_404();
     }

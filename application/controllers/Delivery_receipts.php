@@ -90,8 +90,17 @@ class Delivery_receipts extends MY_Controller
     $this->render('delivery_receipts/index');
   }
 
-  public function create($salesOrderId)
+  public function create($id)
   {
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $salesOrderId = (int) $id;
+
     $this->setPage('New Delivery Receipt');
     $this->pageScript = 'delivery_receipts';
 

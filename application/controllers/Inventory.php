@@ -91,19 +91,24 @@ class Inventory extends MY_Controller
     }
 
     $this->data['transaction_types'] = [
-      'GRN',
       'ADJUSTMENT',
+      'DR',
+      'DR-CANCEL',
+      'GRN',
+      'PR',
       'SI',
+      'SR',
       'TRANSFER',
-      'PURCHASE RETURN',
-      'SALES RETURN'
     ];
 
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
+    $this->data['keyword'] = $keyword;
     $filters = [
-      'date_from' => trim($this->input->get('date_from')),
-      'date_to' => trim($this->input->get('date_to')),
-      'transType' => trim($this->input->get('transType')),
-      'branch_id' => $this->input->get('branch_id') ?: $this->session->userdata('branch_id')
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'transType' => trim($filter['transType'] ?? $this->input->get('transType')),
+      'branch_id' => !empty($filter['branch_id']) ? $filter['branch_id'] : $this->session->userdata('branch_id')
     ];
     $this->data = array_merge(
       $this->data,
@@ -112,6 +117,36 @@ class Inventory extends MY_Controller
     $this->data['ledger'] = $this->Inventory_model->getStockLedger($productId, $filters);
     $this->data['branches'] = $this->Branch_model->getDropdown();
     $this->data['selectedBranchId'] = $filters['branch_id'];
+
+    foreach ($this->data['ledger'] as $inv) {
+      switch ($inv->transaction_type) {
+        case 'GRN':
+          $url = 'goods-receipts/view/';
+          break;
+        case 'TRANSFER':
+          $url = 'stock-transfers/edit/';
+          break;
+        case 'SR':
+          $url = 'sales-returns/edit/';
+          break;
+        case 'SI':
+          $url = 'sales-invoices/edit/';
+          break;
+        case 'PR':
+          $url = 'purchase-returns/edit/';
+          break;
+        case 'DR':
+        case 'DR-CANCEL':
+          $url = 'delivery-receipts/edit/';
+          break;
+        case 'ADJUSTMENT':
+        default:
+          $url = 'inventory-adjustments/view/';
+          break;
+      }
+
+      $inv->reference_url = base_url($url . $this->encodeId($inv->reference_id));
+    }
 
     $this->data['tableContent'] = $this->load->view(
       'inventory/ledger_table',

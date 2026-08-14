@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       hidSalesOrderId.value = result.data.sales_order_id;
       isEditMode = true;
       isDirty = false;
-      setTimeout(() => Atlas.page.redirect(`sales-orders/edit/${result.data.sales_order_id}`), 1500);
+      setTimeout(() => Atlas.page.redirect(`sales-orders/edit/${Atlas.id.encode(result.data.sales_order_id)}`), 1500);
     }
     finally {
       btnSaveSalesOrder.disabled = false;
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(`sales-orders/edit/${id}`);
+    Atlas.page.redirect(`sales-orders/edit/${Atlas.id.encode(id)}`);
   });
 
   /*** post */

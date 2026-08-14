@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(`sales-invoices/edit/${id}`);
+    Atlas.page.redirect(`sales-invoices/edit/${Atlas.id.encode(id)}`);
   });
 
   /*** save */
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       hidSalesInvoiceId.value = result.data.sales_invoice_id;
       isEditMode = true;
       isDirty = false;
-      setTimeout(() => Atlas.page.redirect(`sales-invoices/edit/${result.data.sales_invoice_id}`), 1500);
+      setTimeout(() => Atlas.page.redirect(`sales-invoices/edit/${Atlas.id.encode(result.data.sales_invoice_id)}`), 1500);
     }
     finally {
       btnSaveSalesInvoice.disabled = false;
@@ -220,10 +220,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      Atlas.page.redirect(`sales-returns/create/${window.salesInvoiceId}`);
+      Atlas.page.redirect(`sales-returns/create/${Atlas.id.encode(window.salesInvoiceId)}`);
       return;
     }
-    Atlas.page.redirect(`sales-returns/create/${ids[0]}`)
+    Atlas.page.redirect(`sales-returns/create/${Atlas.id.encode(ids[0])}`)
   });
 
   /*** refresh */

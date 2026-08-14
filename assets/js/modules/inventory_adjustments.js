@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.page.redirect(`inventory-adjustments/view/${adjustmentId}`)
+    Atlas.page.redirect(`inventory-adjustments/view/${Atlas.id.encode(adjustmentId)}`)
   });
 
   /*** save */

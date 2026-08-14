@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       Atlas.toast.success(result.message);
       hidDeliveryReceiptId.value = result.data.delivery_receipt_id;
-      setTimeout(() => Atlas.page.redirect(`delivery-receipts/edit/${result.data.delivery_receipt_id}`), 1200);
+      setTimeout(() => Atlas.page.redirect(`delivery-receipts/edit/${Atlas.id.encode(result.data.delivery_receipt_id)}`), 1200);
 
       isEditMode = true;
       isDirty = false;
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(`delivery-receipts/edit/${id}`);
+    Atlas.page.redirect(`delivery-receipts/edit/${Atlas.id.encode(id)}`);
   });
 
   /*** post */
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      Atlas.page.redirect(`sales-invoices/create/${window.deliveryReceiptId}`);
+      Atlas.page.redirect(`sales-invoices/create/${Atlas.id.encode(window.deliveryReceiptId)}`);
       return;
     }
 
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    Atlas.page.redirect(`sales-invoices/create/${ids[0]}`);
+    Atlas.page.redirect(`sales-invoices/create/${Atlas.id.encode(ids[0])}`);
   });
 
   /*** refresh */

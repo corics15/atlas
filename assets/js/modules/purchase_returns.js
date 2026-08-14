@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       Atlas.toast.success(result.message);
       document.getElementById('hidPurchaseReturnId').value = result.data.purchase_return_id;
-      setTimeout(() => Atlas.page.redirect(`purchase-returns/edit/${result.data.purchase_return_id}`), 1200);
+      setTimeout(() => Atlas.page.redirect(`purchase-returns/edit/${Atlas.id.encode(result.data.purchase_return_id)}`), 1200);
 
       isEditMode = true;
       isDirty = false;

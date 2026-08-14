@@ -1,4 +1,4 @@
-<form>
+<form data-atlas-filter>
   <div class="d-flex flex-wrap align-items-end mb-3" style="gap:12px;">
 
     <div style="min-width:160px;">
@@ -19,6 +19,19 @@
         class="form-control form-control-sm">
     </div>
 
+    <?php
+      $transactionTypeLabels = [
+        'ADJUSTMENT' => 'INVENTORY ADJUSTMENT (IA)',
+        'DR'         => 'DELIVERY RECEIPT (DR)',
+        'DR-CANCEL'  => 'DELIVERY RECEIPT (CANCELLED)',
+        'GRN'        => 'GOODS RECEIPT (GRN)',
+        'PR'         => 'PURCHASE RETURN (PR)',
+        'SI'         => 'SALES INVOICE (SI)',
+        'SR'         => 'SALES RETURN (SR)',
+        'TRANSFER'   => 'STOCK TRANSFER (ST)'
+      ];
+    ?>
+
     <div style="min-width:150px;">
       <label for="selSLTransactionType">Type</label>
       <select
@@ -28,9 +41,9 @@
         <option value="">All</option>
         <?php foreach ($transaction_types as $item): ?>
           <option
-            value="<?= $item; ?>"
+            value="<?= htmlspecialchars($item); ?>"
             <?= ($transType == $item) ? 'selected' : ''; ?>>
-            <?= $item; ?>
+            <?= htmlspecialchars($transactionTypeLabels[$item] ?? $item); ?>
           </option>
         <?php endforeach; ?>
       </select>

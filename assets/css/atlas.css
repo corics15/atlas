@@ -574,9 +574,9 @@ label {
   padding: .25rem .5rem;
 }
 
-.select2-selection__rendered {
+/* .select2-selection__rendered {
   font-size: smaller !important;
-}
+} */
 
 .select2-container .select2-selection {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);

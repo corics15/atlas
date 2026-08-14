@@ -21,7 +21,6 @@ class Sales_invoices extends MY_Controller
     $this->pageScript = 'sales_invoices';
 
     /*** filters */
-    $filter = $this->decodeFilter($this->input->get('filter'));
     $this->data['statuses'] = [
       'OPEN',
       'POSTED',
@@ -95,8 +94,17 @@ class Sales_invoices extends MY_Controller
     $this->render('sales_invoices/index');
   }
 
-  public function create($deliveryReceiptId = null)
+  public function create($id = null)
   {
+    $decodedId = $this->decodeId($id);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $deliveryReceiptId = (int) $id;
+
     $this->setPage('New Sales Invoice');
     $this->pageScript = 'sales_invoices';
     $this->data['customers'] = $this->Customer_model->getDropdown();
