@@ -9,7 +9,7 @@
 
         <div class="d-flex justify-content-between align-items-center">
           <h3 class="card-title">
-            Sales Order Header
+            Sales Order Information
           </h3>
 
           <?php
@@ -35,7 +35,7 @@
 
       <?php else : ?>
         <h3 class="card-title">
-          Sales Order Header
+          Sales Order Information
         </h3>
       <?php endif; ?>
 
