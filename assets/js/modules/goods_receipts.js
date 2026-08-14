@@ -30,24 +30,60 @@ document.addEventListener('DOMContentLoaded', () => {
   /*** post */
   btnPostGoodsReceipt?.addEventListener('click', postGoodsReceipt);
 
-  /*** purchase return */
+  // /*** purchase return */
+  // btnCreatePurchaseReturn?.addEventListener('click', () => {
+  //   const id = getSelectedGoodsReceiptId() || window.goodsReceiptId;
+  //   const status = window.status; /**Atlas.table.selected()[0]?.closest('tr').dataset.status;*/
+
+  //   if (!id) {
+  //     if (window.goodsReceiptId === 0) {
+  //       Atlas.toast.warning('New Goods Receipt, not saved yet.');
+  //       return;
+  //     }
+
+  //     if (!window.goodsReceiptId) {
+  //       Atlas.toast.warning('Please select a Goods Receipt.');
+  //       return;
+  //     }
+  //     // }
+
+  //     if (status !== 'POSTED') {
+  //       Atlas.toast.warning('Only POSTED Goods Receipts can be returned.');
+  //       return;
+  //     }
+  //   }
+  //   Atlas.page.redirectRemember(`purchase-returns/create/${Atlas.id.encode(id)}`);
+  // });
+
+  /*** create purchase return */
   btnCreatePurchaseReturn?.addEventListener('click', () => {
-    const id = getSelectedGoodsReceiptId();
-    const status = Atlas.table.selected()[0]?.closest('tr').dataset.status;
+    let ids = window.goodsReceiptId || Atlas.table.selectedIds();
+    const status = window.status || Atlas.table.selected()[0]?.closest('tr').dataset.status;
 
-    if (!id) {
+    if (!ids || ids.length !== 1) {
+      if (window.goodsReceiptId === 0) {
+        Atlas.toast.warning('New Goods Receipt, not saved yet.');
+        return;
+      }
+
+      if (!window.goodsReceiptId) {
+        Atlas.toast.warning('Please select one Goods Receipt.');
+        return;
+      }
+
+      if (status !== 'POSTED') {
+        Atlas.toast.warning('Only POSTED Goods Receipts can be returned.');
+        return;
+      }
+
+      Atlas.page.redirectRemember(`purchase-returns/create/${Atlas.id.encode(window.goodsReceiptId)}`);
       return;
     }
-
-    if (status !== 'POSTED') {
-      Atlas.toast.warning('Only POSTED Goods Receipts can be returned.');
-      return;
-    }
-    Atlas.page.redirect(`purchase-returns/create/${id}`);
+    Atlas.page.redirectRemember(`purchase-returns/create/${Atlas.id.encode(ids[0])}`)
   });
 
   /*** refresh */
-  btnRefreshGoodsReceipt?.addEventListener('click', () => Atlas.page.redirect(`goods-receipts`));
+  btnRefreshGoodsReceipt?.addEventListener('click', () => Atlas.page.redirectRemember(`goods-receipts`));
 
   Atlas.table.init({
     checkbox: '.chkGoodsReceipt',

@@ -107,6 +107,7 @@
         <div class="ml-auto">
           <a href="<?= base_url('goods-receipts') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
           <button type="button" class="btn btn-sm btn-link" id="btnPostGoodsReceipt"><i class="fa fa-check mr-2"></i>Post</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCreatePurchaseReturn"><i class="fas fa-exchange-alt mr-2"></i>Create Purchase Return</button>
           <button type="button" class="btn btn-sm btn-link" id="btnPrintGoodsReceipt"><i class="fa fa-print mr-2"></i>Print</button>
           <button type="button" class="btn btn-sm btn-link" id="btnCancelGoodsReceipt"><i class="fas fa-ban mr-2"></i>Cancel</button>
         </div>
@@ -207,4 +208,5 @@
 
 <script>
   window.goodsReceiptId = <?= (int) ($goodsReceipt->id ?? 0); ?>;
+  window.status = '<?= $goodsReceipt->status; ?>';
 </script>

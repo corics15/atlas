@@ -215,8 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      Atlas.page.redirectRemember(`delivery-receipts/create/${window.salesOrderId}`);
-      return;
+      Atlas.page.redirectRemember(`delivery-receipts/create/${Atlas.id.encode(window.salesOrderId)}`);
     }
 
     if (row.dataset.status !== 'POSTED') {

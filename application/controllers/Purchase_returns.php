@@ -93,6 +93,15 @@ class Purchase_returns extends MY_Controller
 
   public function create($goodsReceiptId = null)
   {
+    $decodedId = $this->decodeId($goodsReceiptId);
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $goodsReceiptId = (int) $id;
+
     if (!$goodsReceiptId) {
       show_404();
     }
@@ -115,6 +124,8 @@ class Purchase_returns extends MY_Controller
 
     $this->data['goodsReceipt'] = $goodsReceipt;
     $this->data['details'] = $this->Purchase_return_model->getGoodsReceiptDetails($goodsReceiptId);
+    $urlLink = $this->encodeId($this->data['goodsReceipt']->id);
+    $this->data['goodsReceipt']->url = base_url('goods-receipts/view/'.$urlLink);
 
     $this->render('purchase_returns/create');
   }
