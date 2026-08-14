@@ -17,15 +17,22 @@ class Purchase_orders extends MY_Controller
 
   public function index()
   {
-    $decodedId = $this->decodeId($this->input->get('id'));
-
-    if ($decodedId !== NULL) {
+    $encodedId = $this->input->get('id');
+    if (empty($encodedId)) {
+      /** new */
+      $id = 0;
+    } else {
+      /*** edit an existing */
+      $decodedId = $this->decodeId($encodedId);
+      if ($decodedId === NULL) {
+        show_404();
+      }
       $id = $decodedId;
+      if (!ctype_digit((string) $id) || (int) $id <= 0) {
+        show_404();
+      }
+      $id = (int) $id;
     }
-    if (!ctype_digit((string) $id) || (int) $id <= 0) {
-      show_404();
-    }
-    $id = (int) $id;
 
     $this->data['purchaseOrderId'] = $id;
     $mode = $id ? 'Edit' : 'New';

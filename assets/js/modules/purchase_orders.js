@@ -172,11 +172,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       txtPONo.value = result.data.po_no;
       tdRefNo.innerHTML = result.data.po_no;
-      // isEditMode = true;
       purchaseOrderId = result.data.purchase_order_id;
 
       Atlas.toast.success(result.message);
-      setTimeout(() => Atlas.page.redirect(`purchase-orders?id=${result.data.purchase_order_id}`), 1200);
+      setTimeout(() => Atlas.page.redirect(`purchase-orders?id=${Atlas.id.encode(result.data.purchase_order_id)}`), 1200);
       isEditMode = true;
       isDirty = false;
 

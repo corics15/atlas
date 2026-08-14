@@ -155,7 +155,7 @@ const saveGoodsReceipt = async () => {
 
     isDirty = false;
     Atlas.toast.success(result.message);
-    setTimeout(() => Atlas.page.redirect(`goods-receipts/view/${result.data.goods_receipt_id}`), 1500);
+    setTimeout(() => Atlas.page.redirect(`goods-receipts/view/${Atlas.id.encode(result.data.goods_receipt_id)}`), 1500);
 
   } finally {
     btnSaveGoodsReceipt.disabled = false;
@@ -255,7 +255,7 @@ const postGoodsReceipt = async () => {
     }
 
     Atlas.toast.success(response.message);
-    // setTimeout(() => Atlas.page.refresh(), 1500);
+    setTimeout(() => Atlas.page.refresh(), 1500);
   } finally {
     btnPostGoodsReceipt.disabled = false;
   }
