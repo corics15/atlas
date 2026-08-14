@@ -87,7 +87,7 @@ class User_model extends MY_Model
     return $this->db
         ->where('id', $id)
         ->update('m_users', [
-            'password' => password_hash('password123', PASSWORD_DEFAULT)
+            'password' => password_hash('p1234567890d', PASSWORD_DEFAULT)
         ]);
   }
 }

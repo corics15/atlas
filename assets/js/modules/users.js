@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Atlas.loader.show();
 
     const result = await Atlas.ajax.post(
-      'users/reset-password/' + id
+      `users/resetpassword/${id}`
     );
 
     Atlas.loader.hide();
