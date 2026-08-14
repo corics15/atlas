@@ -32,3 +32,4 @@ docs/*
 
 # database configuration
 application/config/database.php
+application/config/config.php
