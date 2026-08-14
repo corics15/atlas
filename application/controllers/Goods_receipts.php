@@ -134,7 +134,14 @@ class Goods_receipts extends MY_Controller
 
   public function create()
   {
-    $poId = (int) $this->input->get('po');
+    $decodedId = $this->decodeId($this->input->get('po'));
+    if ($decodedId !== NULL) {
+      $id = $decodedId;
+    }
+    if (!ctype_digit((string) $id) || (int) $id <= 0) {
+      show_404();
+    }
+    $poId = (int) $id;
 
     if ($poId <= 0) {
       show_404();

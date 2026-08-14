@@ -56,14 +56,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     e.preventDefault();
-
     const row = e.target.closest('tr');
-
     await Atlas.productFinder.lookup(
       row,
       e.target.value
     );
-
     markDirty();
   });
 
@@ -203,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /*** receive goods footer */
   btnReceiveGoods.addEventListener('click', () => {
     if (window.purchaseOrderId > 0)
-      Atlas.page.redirect('goods-receipts/create', { po: window.purchaseOrderId })
+      Atlas.page.redirect('goods-receipts/create', { po: Atlas.id.encode(window.purchaseOrderId) })
     else Atlas.toast.warning(`Create a Purchase Order first.`);
   });
 

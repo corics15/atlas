@@ -18,6 +18,7 @@ class Purchase_orders extends MY_Controller
   public function index()
   {
     $decodedId = $this->decodeId($this->input->get('id'));
+
     if ($decodedId !== NULL) {
       $id = $decodedId;
     }
