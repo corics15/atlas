@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const txtFirstName = document.getElementById('txtFirstName');
   const txtLastName = document.getElementById('txtLastName');
   const selBranch = document.getElementById('selBranch');
+  const selAccessLevel = document.getElementById('selAccessLevel');
 
   const hidUserId = document.getElementById('hidUserId');
 
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   btnNewUser.addEventListener('click', () => {
     frmUser.reset();
     hidUserId.value = '';
+    selAccessLevel.value = 'STAFF';
 
     Atlas.validation.clear();
     Atlas.modal.open({
@@ -72,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!id) {
       return;
     }
-    const result = await Atlas.ajax.get('users/get/' + id);
+    const result = await Atlas.ajax.get(`users/get/${id}`);
     if (!result.success) {
       Atlas.toast.error(result.message);
       return;
@@ -85,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     txtFirstName.value = result.data.first_name;
     txtLastName.value = result.data.last_name;
     $('#selBranch').val(result.data.branch_id).trigger('change');
+    selAccessLevel.value = result.data.access_level;
 
     Atlas.modal.open({
       id: 'mdlUser',
@@ -110,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const result = await Atlas.ajax.post(
-      'users/deactivate/' + id
+      `users/deactivate/${id}`
     );
 
     if (result.success) {
@@ -141,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const result = await Atlas.ajax.post(
-      'users/activate/' + id
+      `users/activate${id}`
     );
 
     if (result.success) {

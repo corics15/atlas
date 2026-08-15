@@ -68,17 +68,20 @@ $config['atlas_menu'] = [
       [
         'title' => 'Purchase Order List',
         'icon'  => 'fas fa-file-invoice',
-        'url'   => 'purchase-orders/list'
+        'url'   => 'purchase-orders/list',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
       [
         'title' => 'Goods Receiving List',
         'icon'  => 'fas fa-dolly',
-        'url'   => 'goods-receipts'
+        'url'   => 'goods-receipts',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
       [
         'title' => 'Purchase Returns',
         'icon'  => 'fas fa-exchange-alt',
-        'url'   => 'purchase-returns'
+        'url'   => 'purchase-returns',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
     ]
   ],
@@ -91,17 +94,20 @@ $config['atlas_menu'] = [
       [
         'title' => 'Inventory Inquiry',
         'icon'  => 'fas fa-search',
-        'url'   => 'inventory'
+        'url'   => 'inventory',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
       [
         'title' => 'Adjustment List',
         'icon'  => 'fas fa-sliders-h',
-        'url'   => 'inventory-adjustments'
+        'url'   => 'inventory-adjustments',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF'],
       ],
       [
         'title' => 'Stock Transfer List',
         'icon'  => 'fas fa-exchange-alt',
-        'url'   => 'stock-transfers'
+        'url'   => 'stock-transfers',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF'],
       ],
     ]
   ],
@@ -114,28 +120,26 @@ $config['atlas_menu'] = [
       [
         'title' => 'Sales Order List',
         'icon'  => 'fas fa-clipboard-list',
-        'url'   => 'sales-orders'
+        'url'   => 'sales-orders',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
-      /*** below code removed, users should not manually create a Sales Invoice from the menu */
-      // [
-      //   'title' => 'New Sales Invoice',
-      //   'icon'  => 'fas fa-file-contract',
-      //   'url'   => 'sales-invoices/create'
-      // ],
       [
         'title' => 'Delivery Receipts',
         'icon'  => 'fas fa-truck',
-        'url'   => 'delivery-receipts'
+        'url'   => 'delivery-receipts',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
       [
         'title' => 'Sales Invoice List',
         'icon'  => 'fas fa-receipt',
-        'url'   => 'sales-invoices'
+        'url'   => 'sales-invoices',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
       [
         'title' => 'Sales Return List',
         'icon'  => 'fas fa-exchange-alt',
-        'url'   => 'sales-returns'
+        'url'   => 'sales-returns',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ]
     ]
   ],
@@ -151,7 +155,8 @@ $config['atlas_menu'] = [
       [
         'title' => 'Sales per Supplier',
         'icon'  => 'fas fa-truck',
-        'url'   => 'reports/sales-per-supplier'
+        'url'   => 'reports/sales-per-supplier',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
     ]
   ],
@@ -167,17 +172,20 @@ $config['atlas_menu'] = [
       [
         'title' => 'Company',
         'icon'  => 'fas fa-cog',
-        'url'   => 'company'
+        'url'   => 'company',
+        'access' => ['ADMIN'],
       ],
       [
         'title' => 'Users',
         'icon'  => 'fas fa-user-cog',
-        'url'   => 'users'
+        'url'   => 'users',
+        'access' => ['ADMIN']
       ],
       [
         'title' => 'Document Numbering',
         'icon'  => 'fas fa-list-ol',
-        'url'   => 'document-numbering'
+        'url'   => 'document-numbering',
+        'access' => ['ADMIN'],
       ],
     ]
   ],

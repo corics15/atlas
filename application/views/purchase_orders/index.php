@@ -80,9 +80,11 @@
         <h3 class="card-title">Order Details</h3>
         <div class="ml-auto">
           <a href="<?= base_url('purchase-orders/list') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
-          <button type="button" class="btn btn-sm btn-link" id="btnReceiveGoods"><i class="fa fa-dolly mr-2"></i>Receive Goods</button>
+
+          <button type="button" class="btn btn-sm btn-link" id="btnReceiveGoods" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-dolly mr-2"></i>Receive Goods</button>
           <button type="button" class="btn btn-sm btn-link" id="btnPrintPurchaseOrder"><i class="fa fa-print mr-2"></i>Print</button>
-          <button type="button" class="btn btn-sm btn-link" id="btnCancelPurchaseOrder"><i class="fas fa-ban mr-2"></i>Cancel</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCancelPurchaseOrder" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
+
         </div>
       </div>
 
@@ -173,7 +175,9 @@
             <div class="d-flex justify-content-between align-items-center">
               <div class="col-md-9"></div>
               <div class="col-md-3">
-                <button id="btnSavePurchaseOrder" class="btn btn-default btn-sm btn-block">Save Purchase Order</button>
+
+                <button id="btnSavePurchaseOrder" class="btn btn-default btn-sm btn-block" <?= !$isEditable ? 'disabled' : '' ?>>Save Purchase Order</button>
+
               </div>
             </div>
           </div>

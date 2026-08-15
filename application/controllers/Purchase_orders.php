@@ -35,6 +35,13 @@ class Purchase_orders extends MY_Controller
     }
 
     $this->data['purchaseOrderId'] = $id;
+
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
+
     $mode = $id ? 'Edit' : 'New';
     $this->setPage($mode.' Purchase Order');
     $this->pageScript = 'purchase_orders';
@@ -48,6 +55,12 @@ class Purchase_orders extends MY_Controller
 
   public function save()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $payload = json_decode($this->input->raw_input_stream);
     $result = $this->Purchase_order_model->save($payload);
 
@@ -60,6 +73,12 @@ class Purchase_orders extends MY_Controller
 
   public function update()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $payload = json_decode($this->input->raw_input_stream);
 
     $result = $this->Purchase_order_model->update($payload);
@@ -167,6 +186,12 @@ class Purchase_orders extends MY_Controller
 
   public function cancel()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $ids = $this->input->post('ids');
     $cancelReason = $this->input->post('cancel_reason');
 

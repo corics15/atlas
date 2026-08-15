@@ -48,6 +48,23 @@
               </select>
               <small id="errBranch" class="text-danger"></small>
             </div>
+
+            <div class="form-group col-md-6">
+              <label for="selAccessLevel">Access Level</label>
+              <select
+                id="selAccessLevel"
+                name="access_level"
+                class="form-control form-control-sm custom-select">
+
+                <?php foreach ($access_levels as $value => $label): ?>
+                  <option value="<?= htmlspecialchars($value); ?>">
+                    <?= htmlspecialchars($label); ?>
+                  </option>
+                <?php endforeach; ?>
+
+              </select>
+              <small id="errAccessLevel" class="text-danger"></small>
+            </div>
           </div>
         </div>
 

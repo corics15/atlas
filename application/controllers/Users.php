@@ -7,6 +7,8 @@ class Users extends MY_Controller
   {
     parent::__construct();
 
+    $this->requireAccess('ADMIN');
+
     $this->load->model('User_model');
     $this->load->model('Branch_model');
 
@@ -29,6 +31,7 @@ class Users extends MY_Controller
     $this->data['users'] = $this->User_model->getAll($keyword);
     $this->data['recordCount'] = count($this->data['users']);
     $this->data['branches'] = $this->Branch_model->getDropdown();
+    $this->data['access_levels'] = config_item('atlas')['access_levels'];
 
     $this->data['tableContent'] = $this->load->view(
       'users/table',
@@ -108,11 +111,19 @@ class Users extends MY_Controller
       'required'
     );
 
+    $this->form_validation->set_rules(
+      'access_level',
+      'Access Level',
+      'required|in_list[ADMIN,MANAGER,STAFF,VIEWER]'
+    );
+
     if (!$this->form_validation->run()) {
       return $this->validationResponse([
         'username',
         'first_name',
-        'last_name'
+        'last_name',
+        'branch_id',
+        'access_level',
       ]);
     }
 
@@ -121,6 +132,7 @@ class Users extends MY_Controller
       'first_name' => strtoupper(trim($postData['first_name'])),
       'last_name'  => strtoupper(trim($postData['last_name'])),
       'branch_id'  => $postData['branch_id'],
+      'access_level' => $postData['access_level'],
     ];
 
     if (empty($id)) {
@@ -153,18 +165,16 @@ class Users extends MY_Controller
   public function get($id)
   {
     $user = $this->User_model->get($id);
-
     if (!$user) {
         return $this->jsonResponse(
-            false,
-            'User not found.'
+          false,
+          'User not found.'
         );
     }
-
     return $this->jsonResponse(
-        true,
-        '',
-        $user
+      true,
+      '',
+      $user
     );
   }
 

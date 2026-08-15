@@ -99,11 +99,9 @@
 
       .error-image {
         display: block;
-
         width: 100%;
         max-width: 360px;
         height: auto;
-
         margin: 0 auto 20px;
       }
     </style>
@@ -127,7 +125,7 @@
         <?= $message; ?>
       </div>
       <?php endif; ?>
-      <a href="javascript:void(0)" onclick="history.back()" class="back-link">
+      <a href="<?= base_url('dashboard') ?>" class="back-link">
         Back to ATLAS
       </a>
     </div>

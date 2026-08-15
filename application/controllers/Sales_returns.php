@@ -92,6 +92,12 @@ class Sales_returns extends MY_Controller
 
   public function create($id = null)
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $decodedId = $this->decodeId($id);
     if ($decodedId !== NULL) {
       $id = $decodedId;
@@ -161,11 +167,23 @@ class Sales_returns extends MY_Controller
     $this->data['details'] = $this->Sales_return_model->getDetails($salesReturnId);
     $this->data['isEdit'] = TRUE;
 
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
+
     $this->render('sales_returns/create');
   }
 
   public function save()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $salesReturn = json_decode($this->input->raw_input_stream);
     $result = $this->Sales_return_model->save($salesReturn);
 
@@ -178,6 +196,12 @@ class Sales_returns extends MY_Controller
 
   public function post()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $request = $this->getJsonRequest();
     $result = $this->Sales_return_model->post($request['ids']);
 
@@ -190,6 +214,12 @@ class Sales_returns extends MY_Controller
 
   public function cancel()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $ids = $this->getJsonRequest('ids');
     $cancelReason = $this->getJsonRequest('cancel_reason');
     $result = $this->Sales_return_model->cancel($ids, $cancelReason);

@@ -70,11 +70,23 @@ class Goods_receipts extends MY_Controller
       TRUE
     );
 
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
+
     $this->render('goods_receipts/index');
   }
 
   public function save()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $postData = $this->input->post();
     $data = [
       'grn_date'    => $postData['grn_date'],
@@ -95,6 +107,12 @@ class Goods_receipts extends MY_Controller
 
   public function update()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $request = $this->getJsonRequest();
 
     $request['updated_by'] = $this->session->userdata('user_id');
@@ -110,6 +128,12 @@ class Goods_receipts extends MY_Controller
 
   public function cancel()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $request = $this->getJsonRequest();
     $result = $this->Goods_receipt_model->cancel($request);
 
@@ -122,6 +146,12 @@ class Goods_receipts extends MY_Controller
 
   public function post()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $request = $this->getJsonRequest();
     $result = $this->Goods_receipt_model->post($request);
 
@@ -134,6 +164,12 @@ class Goods_receipts extends MY_Controller
 
   public function create()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $decodedId = $this->decodeId($this->input->get('po'));
     if ($decodedId !== NULL) {
       $id = $decodedId;
@@ -184,10 +220,10 @@ class Goods_receipts extends MY_Controller
     $goodsReceiptId = (int) $id;
 
     $goodsReceipt = $this->Goods_receipt_model->get($goodsReceiptId);
-    $goodsReceipt->url = base_url('purchase-orders?id=' . $this->encodeId($goodsReceipt->po_id));
-
     if (!$goodsReceipt)
         show_404();
+
+    $goodsReceipt->url = base_url('purchase-orders?id=' . $this->encodeId($goodsReceipt->po_id));
 
     $this->data['goodsReceipt'] = $goodsReceipt;
     $this->data['details'] = $this->Goods_receipt_model->getDetails($goodsReceiptId);

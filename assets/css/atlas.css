@@ -111,7 +111,6 @@ h3,
 }
 
 .main-sidebar .nav-treeview .nav-link {
-  /* margin-left: 10px; */
   font-size: 0.84rem;
 }
 
@@ -121,6 +120,14 @@ h3,
 
 .main-sidebar .nav-item.menu-open>.nav-link .nav-icon {
   color: #ffcd63;
+}
+
+.nav-bar .nav-item .nav-link {
+  color: inherit !important;
+}
+
+.navbar-light .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.88) !important;
 }
 
 /* AdminLTE active child menu */
@@ -574,10 +581,6 @@ label {
   padding: .25rem .5rem;
 }
 
-/* .select2-selection__rendered {
-  font-size: smaller !important;
-} */
-
 .select2-container .select2-selection {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
@@ -738,6 +741,19 @@ textarea:focus {
 .swal2-container.swal2-bottom-end,
 .swal2-container.swal2-bottom-start {
   backdrop-filter: none;
+}
+
+/*** avatar styling selection on user profile */
+.avatar-option {
+  transition: transform 0.15s ease;
+}
+
+.avatar-option:hover {
+  transform: scale(1.08);
+}
+
+.avatar-option.border-success {
+  border-width: 3px !important;
 }
 
 /** end custom css */

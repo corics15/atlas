@@ -93,6 +93,12 @@ class Purchase_returns extends MY_Controller
 
   public function create($goodsReceiptId = null)
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $decodedId = $this->decodeId($goodsReceiptId);
     if ($decodedId !== NULL) {
       $id = $decodedId;
@@ -160,11 +166,23 @@ class Purchase_returns extends MY_Controller
 
     $this->data['details'] = $this->Purchase_return_model->getDetails($id);
 
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
+
     $this->render('purchase_returns/create');
   }
 
   public function save()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $purchaseReturn = json_decode($this->input->raw_input_stream);
     $result = $this->Purchase_return_model->save($purchaseReturn);
 
@@ -177,6 +195,12 @@ class Purchase_returns extends MY_Controller
 
   public function post()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $request = $this->getJsonRequest();
     $result = $this->Purchase_return_model->post($request['ids']);
 
@@ -189,6 +213,12 @@ class Purchase_returns extends MY_Controller
 
   public function cancel()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $ids = $this->getJsonRequest('ids');
     $cancelReason = $this->getJsonRequest('cancel_reason');
     $result = $this->Purchase_return_model->cancel($ids, $cancelReason);

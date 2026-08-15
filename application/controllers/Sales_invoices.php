@@ -96,6 +96,12 @@ class Sales_invoices extends MY_Controller
 
   public function create($id = null)
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $decodedId = $this->decodeId($id);
     if ($decodedId !== NULL) {
       $id = $decodedId;
@@ -161,22 +167,35 @@ class Sales_invoices extends MY_Controller
     $this->data['terms'] = $this->Term_model->getDropdown();
 
     $this->data['header'] = $this->Sales_invoice_model->get($id);
-    $urlLink = isset($this->data['header']->delivery_receipt_id) ? $this->encodeId($this->data['header']->delivery_receipt_id) : $this->encodeId($this->data['header']->id);
-    $this->data['header']->url = base_url('delivery-receipts/edit/'.$urlLink);
 
     if (!$this->data['header']) {
       show_404();
     }
 
+    $urlLink = isset($this->data['header']->delivery_receipt_id) ? $this->encodeId($this->data['header']->delivery_receipt_id) : $this->encodeId($this->data['header']->id);
+    $this->data['header']->url = base_url('delivery-receipts/edit/'.$urlLink);
+
     $this->data['isEdit'] = true;
     $this->data['details'] = $this->Sales_invoice_model->getDetails($id);
     $this->data['salesInvoiceId'] = $id;
+
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
 
     $this->render('sales_invoices/create');
   }
 
   public function save()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $salesInvoice =json_decode($this->input->raw_input_stream);
     $result = $this->Sales_invoice_model->save($salesInvoice);
 
@@ -189,6 +208,12 @@ class Sales_invoices extends MY_Controller
 
   public function post()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $request = $this->getJsonRequest();
     $result = $this->Sales_invoice_model->post($request['ids']);
 
@@ -201,6 +226,12 @@ class Sales_invoices extends MY_Controller
 
   public function cancel()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $ids = $this->getJsonRequest('ids');
     $cancelReason = $this->input->post('cancel_reason');
     $result = $this->Sales_invoice_model->cancel($ids, $cancelReason);

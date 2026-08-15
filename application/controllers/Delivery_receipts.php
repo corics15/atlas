@@ -92,6 +92,12 @@ class Delivery_receipts extends MY_Controller
 
   public function create($id)
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $decodedId = $this->decodeId($id);
     if ($decodedId !== NULL) {
       $id = $decodedId;
@@ -129,22 +135,35 @@ class Delivery_receipts extends MY_Controller
     $this->setPage('Edit Delivery Receipt');
     $this->pageScript = 'delivery_receipts';
     $this->data['header'] = $this->Delivery_receipt_model->get($deliveryReceiptId);
-    $urlLink = isset($this->data['header']->sales_order_id) ? $this->encodeId($this->data['header']->sales_order_id) : $this->encodeId($this->data['header']->id);
-    $this->data['header']->url = base_url('sales-orders/edit/'.$urlLink);
 
     if (!$this->data['header']) {
       show_404();
     }
 
+    $urlLink = isset($this->data['header']->sales_order_id) ? $this->encodeId($this->data['header']->sales_order_id) : $this->encodeId($this->data['header']->id);
+    $this->data['header']->url = base_url('sales-orders/edit/'.$urlLink);
+
     $this->data['details'] = $this->Delivery_receipt_model->getDetails($deliveryReceiptId);
     $this->data['deliveryReceiptId'] = $deliveryReceiptId;
     $this->data['isEdit'] = true;
+
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
 
     $this->render('delivery_receipts/create');
   }
 
   public function save()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $postData = $this->input->raw_input_stream;
     $deliveryReceipt = json_decode($postData);
     $result = $this->Delivery_receipt_model->save($deliveryReceipt);
@@ -158,6 +177,12 @@ class Delivery_receipts extends MY_Controller
 
   public function post()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $request = $this->getJsonRequest();
     $result = $this->Delivery_receipt_model->post($request['id']);
 
@@ -170,6 +195,12 @@ class Delivery_receipts extends MY_Controller
 
   public function cancel()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $request = $this->getJsonRequest();
     $result = $this->Delivery_receipt_model->cancel($request['ids'], $request['cancel_reason']);
 

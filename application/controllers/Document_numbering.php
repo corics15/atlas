@@ -7,6 +7,8 @@ class Document_numbering extends MY_Controller
   {
     parent::__construct();
 
+    $this->requireAccess('ADMIN');
+
     $this->load->model('Document_number_model');
   }
 

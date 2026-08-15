@@ -33,9 +33,9 @@
           </h3>
           <div class="ml-auto">
             <a href="<?= base_url('purchase-returns') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
-            <button type="button" class="btn btn-sm btn-link" id="btnPostPurchaseReturn"><i class="fa fa-check mr-2"></i>Post</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnPostPurchaseReturn" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
             <button type="button" class="btn btn-sm btn-link" id="btnPrintPurchaseReturn"><i class="fa fa-print mr-2"></i>Print</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnCancelPurchaseReturn"><i class="fas fa-ban mr-2"></i>Cancel</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnCancelPurchaseReturn" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
           </div>
         </div>
 
@@ -54,12 +54,7 @@
         <div class="card-body">
           <div class="row justify-content-end">
             <div class="col-md-2">
-              <button
-                type="button"
-                id="btnSavePurchaseReturn"
-                class="btn btn-sm btn-default btn-block">
-                  Save Purchase Return
-              </button>
+              <button type="button" id="btnSavePurchaseReturn" class="btn btn-sm btn-default btn-block" <?= !$isEditable ? 'disabled' : '' ?>>Save Purchase Return</button>
             </div>
           </div>
         </div>

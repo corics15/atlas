@@ -3,13 +3,13 @@
 <section class="content">
   <div class="container-fluid">
 
-    <?php if (!$company): ?>
+    <?php //if (!$company): ?>
 
-      <div class="alert alert-warning">
+      <!-- <div class="alert alert-warning">
         Company information is not available.
-      </div>
+      </div> -->
 
-    <?php else: ?>
+    <?php //else: ?>
 
       <div class="card">
 
@@ -180,6 +180,6 @@
           </form>
         </div>
       </div>
-    <?php endif; ?>
+    <?php //endif; ?>
   </div>
 </section>

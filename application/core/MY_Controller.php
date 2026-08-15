@@ -16,6 +16,8 @@ class MY_Controller extends CI_Controller
     if ($this->requiresAuth) {
       $this->requireLogin();
     }
+
+    $this->load->model('User_model');
   }
 
   protected function render($view)
@@ -44,6 +46,23 @@ class MY_Controller extends CI_Controller
     if (!$this->session->userdata('logged_in')) {
       redirect('auth');
       exit;
+    }
+  }
+
+  protected function requireAccess($levels)
+  {
+    if (!is_array($levels)) {
+      $levels = [$levels];
+    }
+
+    $userLevel = $this->session->userdata('access_level');
+
+    if (!in_array($userLevel, $levels, TRUE)) {
+      show_error(
+        'You are not authorized to access this page.',
+        403,
+        'Access Denied'
+      );
     }
   }
 

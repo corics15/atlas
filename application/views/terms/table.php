@@ -41,7 +41,7 @@
   <?php endforeach; ?>
   <?php else : ?>
   <tr>
-    <td colspan="3" class="text-center">
+    <td colspan="3" class="text-center py-3">
       No records found.
     </td>
   </tr>

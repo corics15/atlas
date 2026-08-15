@@ -87,7 +87,53 @@ class User_model extends MY_Model
     return $this->db
         ->where('id', $id)
         ->update('m_users', [
-            'password' => password_hash('p1234567890d', PASSWORD_DEFAULT)
+            'password' => password_hash(config_item('atlas')['default_password'], PASSWORD_DEFAULT)
         ]);
   }
+
+  public function getProfile($userId)
+  {
+    return $this->db
+        ->select('
+          u.id,
+          u.username,
+          u.first_name,
+          u.last_name,
+          u.email,
+          u.branch_id,
+          u.salesman_id,
+          u.access_level,
+          u.avatar,
+          b.branch_name
+        ')
+        ->from('m_users u')
+        ->join('m_branches b', 'b.id = u.branch_id', 'left')
+        ->where('u.id', $userId)
+        ->where('u.is_active', TRUE)
+        ->get()
+        ->row();
+  }
+
+  public function updatePassword($userId, $password)
+  {
+    return $this->db
+        ->where('id', $userId)
+        ->update('m_users', [
+          'password'   => password_hash($password, PASSWORD_DEFAULT),
+          'updated_by' => $userId,
+          'updated_on' => date('Y-m-d H:i:s')
+        ]);
+  }
+
+  public function updateAvatar($userId, $avatar)
+  {
+    return $this->db
+        ->where('id', $userId)
+        ->update('m_users', [
+          'avatar'     => $avatar,
+          'updated_by' => $userId,
+          'updated_on' => date('Y-m-d H:i:s')
+        ]);
+  }
+
 }

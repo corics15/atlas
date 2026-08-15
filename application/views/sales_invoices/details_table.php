@@ -9,10 +9,10 @@
           </h3>
           <div class="ml-auto">
             <a href="<?= base_url('sales-invoices') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
-            <button type="button" class="btn btn-sm btn-link" id="btnPostSalesInvoice"><i class="fa fa-check mr-2"></i>Post</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnCreateSalesReturn"><i class="fa fa-exchange-alt mr-2"></i>Create Sales Return</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnPostSalesInvoice" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnCreateSalesReturn" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-exchange-alt mr-2"></i>Create Sales Return</button>
             <button type="button" class="btn btn-sm btn-link" id="btnPrintSalesInvoice"><i class="fa fa-print mr-2"></i>Print</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnCancelSalesInvoice"><i class="fas fa-ban mr-2"></i>Cancel</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnCancelSalesInvoice" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
           </div>
         </div>
 
@@ -110,7 +110,7 @@
           <div class="form-row">
             <div class="col-md-9"></div>
             <div class="col-md-3">
-              <button id="btnSaveSalesInvoice" class="btn btn-default btn-sm btn-block">Save Sales Invoice</button>
+              <button id="btnSaveSalesInvoice" class="btn btn-default btn-sm btn-block" <?= !$isEditable ? 'disabled' : '' ?>>Save Sales Invoice</button>
             </div>
           </div>
         </div>

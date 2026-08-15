@@ -9,9 +9,9 @@
           </h3>
           <div class="ml-auto">
             <a href="<?= base_url('sales-returns') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
-            <button type="button" class="btn btn-sm btn-link" id="btnPostSalesReturn"><i class="fa fa-check mr-2"></i>Post</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnPostSalesReturn" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
             <button type="button" class="btn btn-sm btn-link" id="btnPrintSalesReturn"><i class="fa fa-print mr-2"></i>Print</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnCancelSalesReturn"><i class="fas fa-ban mr-2"></i>Cancel</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnCancelSalesReturn" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
           </div>
         </div>
 
@@ -132,7 +132,7 @@
           <div class="form-row">
             <div class="col-md-9"></div>
             <div class="col-md-3">
-              <button id="btnSaveSalesReturn" class="btn btn-default btn-sm btn-block">Save Sales Return</button>
+              <button id="btnSaveSalesReturn" class="btn btn-default btn-sm btn-block" <?= !$isEditable ? 'disabled' : '' ?>>Save Sales Return</button>
             </div>
           </div>
         </div>

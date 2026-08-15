@@ -9,6 +9,7 @@
     <th>Username</th>
     <th>Name</th>
     <th>Branch</th>
+    <th class="text-center">Access Level</th>
     <th width="120" class="text-center">Active</th>
   </tr>
 </thead>
@@ -25,6 +26,7 @@
       <td><?= htmlspecialchars($user->username); ?></td>
       <td><?= htmlspecialchars($user->first_name . ' ' . $user->last_name); ?></td>
       <td><?= htmlspecialchars($user->branch_name); ?></td>
+      <td class="text-center"><?= htmlspecialchars($user->access_level); ?></td>
       <td class="text-center">
         <?= $user->is_active == 't' ? '<i class="fas fa-check text-success"></i>' : ''; ?>
       </td>
@@ -32,7 +34,7 @@
     <?php endforeach; ?>
   <?php else : ?>
   <tr>
-    <td colspan="4" class="text-center">
+    <td colspan="6" class="text-center">
       No records found.
     </td>
   </tr>

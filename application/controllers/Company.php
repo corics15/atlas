@@ -7,6 +7,8 @@ class Company extends MY_Controller
   {
     parent::__construct();
 
+    $this->requireAccess('ADMIN');
+
     $this->load->model('Company_model');
   }
 

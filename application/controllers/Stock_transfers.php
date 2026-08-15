@@ -7,6 +7,12 @@ class Stock_transfers extends MY_Controller
   {
     parent::__construct();
 
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $this->load->model('Branch_model');
     $this->load->model('Inventory_model');
     $this->load->model('Stock_transfer_model');

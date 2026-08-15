@@ -131,6 +131,12 @@ class Inventory_adjustments extends MY_Controller
 
   public function create()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $this->setPage('New Inventory Adjustment');
     $this->pageScript = 'inventory_adjustments';
     $this->data['isEditable'] = true;
@@ -162,6 +168,12 @@ class Inventory_adjustments extends MY_Controller
 
   public function save()
   {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $request = $this->getJsonRequest();
 
     if (empty($request['adjustment_id'])) {
@@ -185,6 +197,12 @@ class Inventory_adjustments extends MY_Controller
       show_404();
     }
 
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
     $adjustmentId = (int) $this->getJsonRequest('adjustment_id');
     $postedBy     = (int) $this->session->userdata('user_id');
 
@@ -205,6 +223,12 @@ class Inventory_adjustments extends MY_Controller
     if (!$this->input->is_ajax_request()) {
       show_404();
     }
+
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
 
     $adjustmentId = (int) $this->getJsonRequest('adjustment_id');
     $cancelReason = $this->getJsonRequest('cancel_reason');

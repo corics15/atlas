@@ -8,10 +8,10 @@
         </h3>
         <div class="ml-auto">
           <button type="button" class="btn btn-sm btn-link" onClick="Atlas.page.back('delivery-receipts');"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back</a>
-            <button type="button" class="btn btn-sm btn-link" id="btnPostDeliveryReceipt"><i class="fa fa-check mr-2"></i>Post</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnCreateSalesInvoice"><i class="fa fa-file-contract mr-2"></i>Create Sales Invoice</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnPostDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnCreateSalesInvoice" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-file-contract mr-2"></i>Create Sales Invoice</button>
             <button type="button" class="btn btn-sm btn-link" id="btnPrintDeliveryReceipt"><i class="fa fa-print mr-2"></i>Print</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnCancelDeliveryReceipt"><i class="fas fa-ban mr-2"></i>Cancel</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnCancelDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
         </div>
       </div>
 
@@ -81,7 +81,7 @@
 
         <div class="d-flex justify-content-between">
           <div></div>
-          <button type="button" class="btn btn-sm btn-default" id="btnSaveDeliveryReceipt">Save Delivery Receipt</button>
+          <button type="button" class="btn btn-sm btn-default" id="btnSaveDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>>Save Delivery Receipt</button>
         </div>
 
       </div>

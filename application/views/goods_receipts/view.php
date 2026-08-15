@@ -106,10 +106,10 @@
         </h3>
         <div class="ml-auto">
           <a href="<?= base_url('goods-receipts') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
-          <button type="button" class="btn btn-sm btn-link" id="btnPostGoodsReceipt"><i class="fa fa-check mr-2"></i>Post</button>
-          <button type="button" class="btn btn-sm btn-link" id="btnCreatePurchaseReturn"><i class="fas fa-exchange-alt mr-2"></i>Create Purchase Return</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnPostGoodsReceipt" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCreatePurchaseReturn" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-exchange-alt mr-2"></i>Create Purchase Return</button>
           <button type="button" class="btn btn-sm btn-link" id="btnPrintGoodsReceipt"><i class="fa fa-print mr-2"></i>Print</button>
-          <button type="button" class="btn btn-sm btn-link" id="btnCancelGoodsReceipt"><i class="fas fa-ban mr-2"></i>Cancel</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCancelGoodsReceipt" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
         </div>
       </div>
       <div class="card-body p-0">
@@ -193,9 +193,7 @@
         <div class="row">
           <div class="col-md-9"></div>
           <div class="col-md-3">
-            <button id="btnSaveChangesGoodsReceipt" class="btn btn-default btn-sm btn-block"></i>
-              Save Goods Receipt
-            </button>
+            <button id="btnSaveChangesGoodsReceipt" class="btn btn-default btn-sm btn-block" <?= !$isEditable ? 'disabled' : '' ?>></i>Save Goods Receipt</button>
           </div>
         </div>
 

@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /*** save */
-  btnSavePurchaseOrder.addEventListener('click', async () => {
+  btnSavePurchaseOrder?.addEventListener('click', async () => {
     if (!validatePurchaseOrder()) {
       return;
     }
@@ -197,14 +197,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /*** receive goods footer */
-  btnReceiveGoods.addEventListener('click', () => {
+  btnReceiveGoods?.addEventListener('click', () => {
     if (window.purchaseOrderId > 0)
       Atlas.page.redirect('goods-receipts/create', { po: Atlas.id.encode(window.purchaseOrderId) })
     else Atlas.toast.warning(`Create a Purchase Order first.`);
   });
 
   /*** cancel purchase order footer */
-  btnCancelPurchaseOrder.addEventListener('click', async () => {
+  btnCancelPurchaseOrder?.addEventListener('click', async () => {
     if (window.purchaseOrderId === 0) {
       Atlas.toast.warning(`Create a Purchase Order first.`);
       return;
