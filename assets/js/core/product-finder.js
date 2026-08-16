@@ -87,8 +87,7 @@ class AtlasProductFinder {
     }
 
     const result = await Atlas.ajax.get(
-      'product_finder/search?q=' +
-      encodeURIComponent(keyword)
+      `product_finder/search?q=${encodeURIComponent(keyword)}`
     );
 
     tbody.innerHTML = '';
@@ -119,6 +118,7 @@ class AtlasProductFinder {
                                       data-supplier="${product.supplier_name ?? ''}"
                                       data-description="${product.description ?? ''}"
                                       data-uom="${product.uom ?? ''}"
+                                      data-uom-id="${product.uom_id}"
                                       data-price="${product.srp}"
                                       data-qty-on-hand="${product.qty_on_hand}">
                                     <td class="text-center">${product.barcode ?? ''}</td>
@@ -251,6 +251,7 @@ document.addEventListener('click', (e) => {
     barcode: tr.dataset.barcode,
     supplier_name: tr.dataset.supplier,
     description: tr.dataset.description,
+    uom_id: tr.dataset.uomId,
     uom: tr.dataset.uom,
     srp: tr.dataset.price,
     qty_on_hand: tr.dataset.qtyOnHand

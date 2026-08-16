@@ -89,16 +89,22 @@ class Inventory_model extends CI_Model
         ->result();
   }
 
-  /*** post post goods receipt */
+/*** post goods receipt */
   public function postGoodsReceipt($grn, $details)
   {
     $this->validateGoodsReceiptPosting($grn);
 
     foreach ($details as $detail) {
+      /*** convert received qty to product base UOM */
+      $detail->base_qty_receive = $detail->qty_receive * $detail->conversion_factor;
+
+      /*** convert transaction UOM cost to product base UOM cost */
+      $detail->base_unit_cost = $detail->unit_cost / $detail->conversion_factor;
+
       $this->Branch_inventory_model->adjustBalance(
         $grn['branch_id'],
         $detail->product_id,
-        $detail->qty_receive
+        $detail->base_qty_receive
       );
     }
 
@@ -108,9 +114,9 @@ class Inventory_model extends CI_Model
       $grn['id'],
       $grn['grn_no'],
       $details,
-      'qty_receive',
+      'base_qty_receive',
       NULL,
-      'unit_cost'
+      'base_unit_cost'
     );
 
     $this->markGoodsReceiptAsPosted($grn);
@@ -726,55 +732,6 @@ class Inventory_model extends CI_Model
       throw new Exception(
         'Unable to update Goods Receipt inventory status.'
       );
-    }
-  }
-
-  private function writeStockLedger_old($grn, $details)
-  {
-    $sql = "INSERT INTO t_stock_ledger
-              (
-                transaction_type,
-                reference_id,
-                reference_no,
-                product_id,
-                qty_in,
-                qty_out,
-                balance_after,
-                unit_cost,
-                entered_by,
-                entered_on
-              )
-            VALUES
-              (
-                ?,?,?,?,?,?,?,?,
-                ?,CURRENT_TIMESTAMP
-              )";
-
-    foreach ($details as $detail) {
-
-      $balance = $this->Branch_inventory_model->getBalance($grn['branch_id'], $detail->product_id);
-      $balance = $balance ? $balance->qty_on_hand : 0;
-
-      $query = $this->db->query(
-        $sql,
-        [
-          'GRN',
-          $grn['id'],
-          $grn['grn_no'],
-          $detail->product_id,
-          $detail->qty_receive,
-          0,
-          $balance,
-          $detail->unit_cost,
-          $this->session->userdata('user_id')
-        ]
-      );
-
-      if (!$query) {
-        throw new Exception(
-          'Unable to write Stock Ledger.'
-        );
-      }
     }
   }
 

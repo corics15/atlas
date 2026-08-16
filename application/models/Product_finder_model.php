@@ -19,6 +19,7 @@ class Product_finder_model extends CI_Model
         p.barcode,
         s.supplier_name,
         p.description,
+        p.uom_id,
         u.uom,
         p.srp,
         COALESCE(bi.qty_on_hand, 0) qty_on_hand
@@ -59,6 +60,7 @@ class Product_finder_model extends CI_Model
             p.barcode,
             s.supplier_name,
             p.description,
+            p.uom_id,
             u.uom,
             p.srp,
             COALESCE(bi.qty_on_hand, 0) qty_on_hand

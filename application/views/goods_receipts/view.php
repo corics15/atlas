@@ -121,6 +121,7 @@
                 <th width="150" class="text-center">Barcode</th>
                 <th>Description</th>
                 <th width="80" class="text-center">UOM</th>
+                <th width="110" class="text-right">Conversion</th>
                 <th width="110" class="text-right">Qty Ordered</th>
                 <th width="110" class="text-right">Qty Rcvd</th>
                 <th width="120" class="text-right">Unit Cost</th>
@@ -131,7 +132,7 @@
               <?php $grandTotal = 0; ?>
               <?php if (empty($details)): ?>
                 <tr>
-                  <td colspan="8" class="text-center">
+                  <td colspan="9" class="text-center">
                     No items found.
                   </td>
                 </tr>
@@ -142,11 +143,41 @@
                     $amount = $item->qty_ordered * $item->unit_cost;
                     $grandTotal += $amount;
                   ?>
-                  <tr data-grn-detail-id="<?= $item->id ?>" data-ordered-qty="<?= (float)$item->qty_ordered ?>">
+                  <tr
+                    data-grn-detail-id="<?= $item->id ?>"
+                    data-product-id="<?= $item->product_id ?>"
+                    data-uom-id="<?= $item->uom_id ?>"
+                    data-base-uom-id="<?= $item->base_uom_id ?>"
+                    data-conversion-factor="<?= $item->conversion_factor ?>"
+                    data-original-conversion="<?= $item->conversion_factor ?>"
+                    data-default-conversion="<?= $item->default_conversion !== NULL ? $item->default_conversion : '' ?>"
+                    data-ordered-qty="<?= (float)$item->qty_ordered ?>">
                     <td class="text-right"><?= $index + 1 ?>.</td>
                     <td class="text-center"><?= htmlspecialchars($item->barcode) ?></td>
                     <td><?= htmlspecialchars($item->description) ?></td>
                     <td class="text-center"><?= htmlspecialchars($item->uom) ?></td>
+                    <td>
+                      <div class="input-group input-group-sm">
+                        <input
+                          type="number"
+                          class="form-control form-control-sm text-right grn-conversion"
+                          value="<?= (float)$item->conversion_factor ?>"
+                          min="0.0001"
+                          step="any"
+                          readonly>
+
+                        <?php if ($goodsReceipt->status === 'DRAFT'): ?>
+                          <div class="input-group-append">
+                            <button
+                              type="button"
+                              class="btn btn-outline-warning btn-link btn-change-conversion"
+                              title="Change Conversion">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                          </div>
+                        <?php endif; ?>
+                      </div>
+                    </td>
                     <td class="text-right"><?= number_format($item->qty_ordered) ?></td>
                     <td>
                       <input type="number"

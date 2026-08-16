@@ -121,7 +121,16 @@
                   </td>
                   <td class="po-supplier"></td>
                   <td class="po-description"></td>
-                  <td class="po-uom text-center"></td>
+                  <td>
+                    <select class="form-control form-control-sm po-uom custom-select w-auto">
+                      <option value="">Select...</option>
+                      <?php foreach ($uoms as $uom): ?>
+                        <option value="<?= $uom->id; ?>">
+                          <?= htmlspecialchars($uom->uom); ?>
+                        </option>
+                      <?php endforeach; ?>
+                    </select>
+                  </td>
                   <td>
                     <input
                       type="number" step="any"
@@ -189,4 +198,10 @@
 
 <script>
   window.purchaseOrderId = <?= (int) ($purchaseOrderId ?? 0); ?>;
+  window.atlasUoms = <?= json_encode(array_map(function($uom) {
+    return [
+      'id' => (int)$uom->id,
+      'uom' => $uom->uom
+    ];
+  }, $uoms)); ?>;
 </script>

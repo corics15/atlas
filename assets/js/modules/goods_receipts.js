@@ -92,6 +92,26 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   txtRemarks?.addEventListener('input', markDirty);
+
+  /*** change known UOM conversion */
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-change-conversion');
+
+    if (!btn) {
+      return;
+    }
+
+    const row = btn.closest('tr');
+    const conversion = row.querySelector('.grn-conversion');
+
+    conversion.readOnly = false;
+    conversion.focus();
+    conversion.select();
+
+    row.dataset.conversionChanged = '1';
+    btn.disabled = true;
+    markDirty();
+  });
 });
 
 /*** check if closing, or navigating away from the page */
@@ -107,26 +127,37 @@ const collectReceiptDetails = () => {
   const details = [];
 
   tblGoodsReceiptDetails.querySelectorAll('tbody tr').forEach(row => {
-    const receiveNow = parseFloat(
-      row.querySelector('.grn-receive-now').value || 0
-    );
+    const receiveNow = Atlas.format.parseNumber(row.querySelector('.grn-receive-now').value || 0);
 
-    const remainingQty = parseFloat(row.dataset.remainingQty);
+    const remainingQty = Atlas.format.parseNumber(row.dataset.remainingQty);
     if (receiveNow > remainingQty) {
-      Atlas.toast.error(
-        'Receive quantity cannot exceed the remaining quantity.'
-      );
+      Atlas.toast.error('Receive quantity cannot exceed the remaining quantity.');
       row.querySelector('.grn-receive-now').focus();
       row.querySelector('.grn-receive-now').select();
       throw new Error('Invalid receive quantity.');
     }
 
+    const conversionFactor = Atlas.format.parseNumber(row.querySelector('.grn-conversion').value || 0);
+    if (conversionFactor <= 0) {
+      Atlas.toast.error('Please enter a valid conversion for all items.');
+      row.querySelector('.grn-conversion').focus();
+      throw new Error('Invalid conversion factor.');
+    }
+
+    const originalConversion = Atlas.format.parseNumber(row.dataset.originalConversion || 0);
+    const conversionChanged =
+      row.dataset.conversionChanged === '1' &&
+      originalConversion > 0 &&
+      conversionFactor !== originalConversion;
+
     details.push({
-      po_detail_id: parseInt(row.dataset.poDetailId),
-      product_id: parseInt(row.dataset.productId),
-      qty_ordered: parseFloat(row.dataset.orderedQty),
+      po_detail_id: Atlas.format.parseNumber(row.dataset.poDetailId),
+      product_id: Atlas.format.parseNumber(row.dataset.productId),
+      uom_id: Atlas.format.parseNumber(row.dataset.uomId),
+      qty_ordered: Atlas.format.parseNumber(row.dataset.orderedQty),
       qty_receive: receiveNow,
-      unit_cost: parseFloat(row.dataset.unitCost)
+      unit_cost: Atlas.format.parseNumber(row.dataset.unitCost),
+      conversion_factor: conversionFactor,
     });
   });
 
@@ -153,7 +184,6 @@ const saveGoodsReceipt = async () => {
     }
 
     formData.append('details', JSON.stringify(details));
-
     const result = await Atlas.ajax.post(
       'goods-receipts/save',
       formData
@@ -179,7 +209,7 @@ const saveChangesGoodsReceipt = async () => {
 
   try {
     const grn = {
-      id: Number(hidGoodsReceiptId.value),
+      id: Atlas.format.parseNumber(hidGoodsReceiptId.value),
       remarks: txtRemarks.value,
       details: []
     };
@@ -189,9 +219,17 @@ const saveChangesGoodsReceipt = async () => {
         return;
       }
 
+      const conversionFactor = Atlas.format.parseNumber(row.querySelector('.grn-conversion').value || 0);
+      if (conversionFactor <= 0) {
+        Atlas.toast.error('Please enter a valid conversion for all items.');
+        row.querySelector('.grn-conversion').focus();
+        return;
+      }
+
       grn.details.push({
-        id: Number(row.dataset.grnDetailId),
-        qty_received: Number(row.querySelector('.grn-qty').value)
+        id: Atlas.format.parseNumber(row.dataset.grnDetailId),
+        qty_received: Atlas.format.parseNumber(row.querySelector('.grn-qty').value),
+        conversion_factor: conversionFactor,
       });
     });
 
@@ -237,6 +275,76 @@ const postGoodsReceipt = async () => {
   }
   /*** end validate at least one received quantity */
 
+  const conversionDecisions = [];
+  const rows = document.querySelectorAll('#tblGoodsReceiptDetails tbody tr');
+
+  for (const row of rows) {
+    const productId = Number(row.dataset.productId);
+    const uomId = Number(row.dataset.uomId);
+    const baseUomId = Number(row.dataset.baseUomId);
+    const grConversion = Number(row.querySelector('.grn-conversion').value);
+    const defaultConversion = row.dataset.defaultConversion !== ''
+      ? Number(row.dataset.defaultConversion)
+      : null;
+
+    /*** base UOM always uses conversion 1 */
+    if (uomId === baseUomId) {
+      continue;
+    }
+
+    /*** no existing default: learn GR conversion on POST */
+    if (defaultConversion === null) {
+      conversionDecisions.push({
+        product_id: productId,
+        uom_id: uomId,
+        conversion_factor: grConversion,
+        update_default_conversion: true
+      });
+
+      continue;
+    }
+
+    /*** same as current default */
+    if (grConversion === defaultConversion) {
+      continue;
+    }
+
+    /*** GR conversion differs from current default */
+    const choice = await Atlas.dialog.choice({
+      title: 'Conversion Changed',
+      html: `
+      <div class="text-center">
+        <p>
+          Current default conversion:
+          <span class="font-weight-500 text-success">${defaultConversion}</span>
+        </p>
+        <p>
+          This Goods Receipt uses:
+          <span class="font-weight-500 text-warning">${grConversion}</span>
+        </p>
+        <p>
+          How should we apply this conversion?
+        </p>
+      </div>
+    `,
+      confirmText: 'Update default conversion',
+      denyText: 'Apply to this GR only',
+      cancelText: 'Wait'
+    });
+
+    /*** stop posting entirely */
+    if (choice === 'cancel') {
+      return;
+    }
+
+    conversionDecisions.push({
+      product_id: productId,
+      uom_id: uomId,
+      conversion_factor: grConversion,
+      update_default_conversion: choice === 'confirm'
+    });
+  }
+
   const result = await Atlas.dialog.confirm(
     'Confirm Action',
     `<div class="text-brown text-center">
@@ -256,7 +364,8 @@ const postGoodsReceipt = async () => {
     const response = await Atlas.ajax.post(
       'goods-receipts/post',
       {
-        id: window.goodsReceiptId
+        id: window.goodsReceiptId,
+        conversion_decisions: conversionDecisions
       }
     );
 
@@ -309,6 +418,7 @@ const cancelGoodsReceipt = async () => {
       return;
     }
 
+    isDirty = false;
     Atlas.toast.success(response.message);
     setTimeout(() => Atlas.page.refresh(), 1500);
   } finally {

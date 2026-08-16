@@ -120,6 +120,8 @@ class Purchase_order_model extends CI_Model
         ->select("
             d.id,
             d.product_id,
+            d.uom_id,
+            p.uom_id AS base_uom_id,
             p.barcode,
             s.supplier_name,
             p.description,
@@ -133,7 +135,7 @@ class Purchase_order_model extends CI_Model
         ->from('t_purchase_order_details d')
         ->join('m_products p', 'p.id = d.product_id')
         ->join('m_suppliers s', 's.id = p.supplier_id')
-        ->join('m_uom u', 'u.id = p.uom_id')
+        ->join('m_uom u', 'u.id = d.uom_id', 'left')
         ->where('purchase_order_id', $id)
         ->order_by('d.id')
         ->get()
@@ -493,12 +495,13 @@ class Purchase_order_model extends CI_Model
                 qty,
                 price,
                 discount,
+                uom_id,
                 entered_by,
                 entered_on
               )
               VALUES
               (
-                ?,?,?,?,?,?,
+                ?,?,?,?,?,?,?,
                 CURRENT_TIMESTAMP
               )
     ";
@@ -512,6 +515,7 @@ class Purchase_order_model extends CI_Model
           $detail->qty,
           $detail->price,
           $detail->discount,
+          $detail->uom_id,
           $this->session->userdata('user_id'),
         ]
       );

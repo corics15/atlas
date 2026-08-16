@@ -82,6 +82,38 @@ class AtlasDialog {
       : 'stay';
   }
 
+  async choice(options) {
+    const result = await Swal.fire({
+      title: options.title,
+      html: options.html || '',
+      icon: options.icon || 'question',
+
+      showConfirmButton: true,
+      showDenyButton: true,
+      showCancelButton: true,
+
+      confirmButtonText: options.confirmText || 'Yes',
+      denyButtonText: options.denyText || 'No',
+      cancelButtonText: options.cancelText || 'Wait',
+
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+
+      theme: 'bootstrap-4-dark'
+    });
+
+    if (result.isConfirmed) {
+      return 'confirm';
+    }
+
+    if (result.isDenied) {
+      return 'deny';
+    }
+
+    return 'cancel';
+  }
+
 }
 
 window.Atlas = window.Atlas || {};

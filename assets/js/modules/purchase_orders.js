@@ -146,8 +146,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         details: []
       };
 
-      document.querySelectorAll('#tblPurchaseOrderDetails tr').forEach(row => {
+      const rows = document.querySelectorAll('#tblPurchaseOrderDetails tr');
+      for (const row of rows) {
         if (!row.dataset.productId) {
+          continue;
+        }
+
+        const uomId = row.querySelector('.po-uom').value;
+        if (!uomId) {
+          Atlas.toast.error('Please select a UOM for all products.');
+          row.querySelector('.po-uom').focus();
           return;
         }
         po.details.push({
@@ -155,9 +163,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           qty: Atlas.format.parseNumber(row.querySelector('.po-qty').value),
           price: Atlas.format.parseNumber(row.querySelector('.po-price').value),
           discount: Atlas.format.parseNumber(row.querySelector('.po-discount').value),
-          amount: Atlas.format.parseNumber(row.querySelector('.po-total').textContent)
+          amount: Atlas.format.parseNumber(row.querySelector('.po-total').textContent),
+          uom_id: Atlas.format.integer(uomId)
         });
-      });
+      }
 
       const url = isEditMode
         ? 'purchase-orders/update'
@@ -247,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     Atlas.toast.success(result.message);
-    // setTimeout(() => Atlas.page.refresh(), 500);
+    setTimeout(() => Atlas.page.refresh(), 2000);
   });
 
   if (window.purchaseOrderId > 0) {
@@ -269,7 +278,7 @@ const populateProductRow = (row, product) => {
   row.querySelector('.po-barcode').value = product.barcode;
   row.querySelector('.po-supplier').textContent = product.supplier_name;
   row.querySelector('.po-description').textContent = product.description;
-  row.querySelector('.po-uom').textContent = product.uom;
+  row.querySelector('.po-uom').value = product.uom_id;
 
   row.querySelector('.po-price').value = Number(product.srp).toFixed(2);
 
@@ -300,6 +309,23 @@ const calculateGrandTotal = () => {
   document.getElementById('lblTotal').textContent = Atlas.format.amount(grandTotal);//grandTotal.toFixed(2);
 }
 
+const buildUomOptions = () => {
+  const uoms = Array.isArray(window.atlasUoms)
+    ? window.atlasUoms
+    : [];
+
+  console.log(uoms)
+
+  return `
+    <option value="">UOM</option>
+    ${uoms.map(uom => `
+      <option value="${uom.id}">
+        ${uom.uom}
+      </option>
+    `).join('')}
+  `;
+};
+
 const createDetailRow = () => {
   return `
     <tr>
@@ -317,7 +343,11 @@ const createDetailRow = () => {
       </td>
       <td class="po-supplier"></td>
       <td class="po-description"></td>
-      <td class="po-uom text-center"></td>
+      <td>
+        <select class="form-control form-control-sm po-uom custom-select w-auto">
+          ${buildUomOptions()}
+        </select>
+      </td>
       <td>
         <input
           type="number" step="any"
@@ -435,7 +465,7 @@ const loadPurchaseOrder = async (id) => {
   isLoading = true;
 
   const result = await Atlas.ajax.get(
-    'purchase-orders/get/' + id
+    `purchase-orders/get/${id}`
   );
 
   if (!result.success) {
@@ -510,12 +540,13 @@ const populateDetails = (details) => {
     tr.querySelector('.po-barcode').value = detail.barcode;
     tr.querySelector('.po-supplier').textContent = detail.supplier_name;
     tr.querySelector('.po-description').textContent = detail.description;
-    tr.querySelector('.po-uom').textContent = detail.uom;
+    tr.querySelector('.po-uom').value = detail.uom_id;
     tr.querySelector('.po-qty').value = Number(detail.qty);
     tr.querySelector('.po-price').value = Number(detail.price).toFixed(2);
     tr.querySelector('.po-discount').value = Number(detail.discount).toFixed(2);
 
     calculateRowTotal(tr);
+    console.log(detail)
   });
 }
 

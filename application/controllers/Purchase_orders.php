@@ -11,6 +11,7 @@ class Purchase_orders extends MY_Controller
     $this->load->model('Product_model');
     $this->load->model('Purchase_order_model');
     $this->load->model('Term_model');
+    $this->load->model('Uom_model');
 
     $this->load->library('form_validation');
   }
@@ -49,6 +50,7 @@ class Purchase_orders extends MY_Controller
     $this->data['suppliers'] = $this->Supplier_model->getDropdown();
     $this->data['products'] = $this->Product_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
+    $this->data['uoms'] = $this->Uom_model->getDropdown();
 
     $this->render('purchase_orders/index');
   }

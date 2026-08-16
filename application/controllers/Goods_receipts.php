@@ -10,6 +10,7 @@ class Goods_receipts extends MY_Controller
     $this->load->model('Purchase_order_model');
     $this->load->model('Goods_receipt_model');
     $this->load->model('Inventory_model');
+    $this->load->model('Product_uom_model');
   }
 
   public function index()
@@ -194,13 +195,30 @@ class Goods_receipts extends MY_Controller
     $this->data['poId'] = $poId;
     $this->data['purchaseOrder'] = $this->Purchase_order_model->get($poId);
 
-    $this->data['error_message'] = NULL;
-    if (!in_array($this->data['purchaseOrder']['header']->status, ['OPEN', 'PARTIAL'])) {
-      $this->data['error_message'] = 'Only OPEN or PARTIAL Purchase Orders can receive goods.';
+    foreach ($this->data['purchaseOrder']['details'] as $detail) {
+      /*** same as product base UOM */
+      if ((int)$detail->uom_id === (int)$detail->base_uom_id) {
+        $detail->conversion_factor = 1;
+        continue;
+      }
+      /*** check known product/UOM conversion */
+      $productUom = $this->Product_uom_model->get(
+        $detail->product_id,
+        $detail->uom_id
+      );
+      $detail->conversion_factor = $productUom
+        ? (float)$productUom->conversion_factor
+        : NULL;
     }
+
+    $this->data['error_message'] = NULL;
 
     if (!$this->data['purchaseOrder']) {
       show_404();
+    }
+
+    if (!in_array($this->data['purchaseOrder']['header']->status, ['OPEN', 'PARTIAL'])) {
+      $this->data['error_message'] = 'Only OPEN or PARTIAL Purchase Orders can receive goods.';
     }
 
     $this->setPage('Receive Goods');
@@ -228,7 +246,11 @@ class Goods_receipts extends MY_Controller
     $this->data['goodsReceipt'] = $goodsReceipt;
     $this->data['details'] = $this->Goods_receipt_model->getDetails($goodsReceiptId);
 
-    $this->data['isEditable'] = false;
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
 
     $this->setPage('Goods Receipt');
     $this->pageScript = 'goods_receipts';

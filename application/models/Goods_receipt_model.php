@@ -43,6 +43,72 @@ class Goods_receipt_model extends CI_Model
         $grn['details'],
       );
 
+      /*** remember / update product UOM conversions */
+      // foreach ($grn['details'] as $detail) {
+      //   $product = $this->db
+      //       ->select('uom_id')
+      //       ->where('id', $detail->product_id)
+      //       ->get('m_products')
+      //       ->row();
+
+      //   if (!$product) {
+      //     throw new Exception('Product not found.');
+      //   }
+
+      //   /*** base UOM does not need a product/UOM relationship */
+      //   if ((int)$product->uom_id === (int)$detail->uom_id) {
+      //     continue;
+      //   }
+
+      //   if ((float)$detail->conversion_factor <= 0) {
+      //     throw new Exception('Invalid UOM conversion.');
+      //   }
+
+      //   $productUom = $this->Product_uom_model->get(
+      //     $detail->product_id,
+      //     $detail->uom_id
+      //   );
+
+      //   /*** new product/UOM relationship */
+      //   if (!$productUom) {
+
+      //     if (!$this->Product_uom_model->save(
+      //       $detail->product_id,
+      //       $detail->uom_id,
+      //       $detail->conversion_factor
+      //     )) {
+      //       throw new Exception(
+      //         'Unable to save product UOM conversion.'
+      //       );
+      //     }
+
+      //     continue;
+      //   }
+
+      //   /*** existing relationship was deliberately changed */
+      //   $conversionChanged =
+      //     isset($detail->conversion_changed) &&
+      //     $detail->conversion_changed;
+
+      //   $updateDefault =
+      //     isset($detail->update_default_conversion) &&
+      //     $detail->update_default_conversion;
+
+      //   if ($conversionChanged && $updateDefault) {
+
+      //     if (!$this->Product_uom_model->save(
+      //       $detail->product_id,
+      //       $detail->uom_id,
+      //       $detail->conversion_factor
+      //     )) {
+      //       throw new Exception(
+      //         'Unable to update product UOM conversion.'
+      //       );
+      //     }
+      //   }
+      // }
+      /*** end remember */
+
       $this->db->trans_commit();
 
       return [
@@ -88,16 +154,15 @@ class Goods_receipt_model extends CI_Model
 
       /*** update details */
       foreach ($request['details'] as $detail) {
-
         $this->db
           ->where('id', $detail['id'])
           ->update(
             't_goods_receipt_details',
             [
-              'qty_received' => $detail['qty_received']
+              'qty_received'      => $detail['qty_received'],
+              'conversion_factor' => $detail['conversion_factor']
             ]
           );
-
       }
 
       if ($this->db->trans_status() === FALSE) {
@@ -154,6 +219,8 @@ class Goods_receipt_model extends CI_Model
                   ->select("
                       po_detail_id,
                       product_id,
+                      uom_id,
+                      conversion_factor,
                       qty_received AS qty_receive,
                       qty_ordered,
                       unit_cost
@@ -168,6 +235,106 @@ class Goods_receipt_model extends CI_Model
       }
 
       $this->validateReceiveQuantities($details);
+
+      /*** finalize product UOM conversions */
+      foreach ($details as $detail) {
+        $product = $this->db
+            ->select('uom_id')
+            ->where('id', $detail->product_id)
+            ->get('m_products')
+            ->row();
+
+        if (!$product) {
+          throw new Exception('Product not found.');
+        }
+
+        /*** base UOM always has conversion 1 */
+        if ((int)$product->uom_id === (int)$detail->uom_id) {
+
+          if ((float)$detail->conversion_factor !== 1.0) {
+            throw new Exception(
+              'Invalid conversion for product base UOM.'
+            );
+          }
+          continue;
+        }
+
+        if ((float)$detail->conversion_factor <= 0) {
+          throw new Exception('Invalid UOM conversion.');
+        }
+
+        $productUom = $this->Product_uom_model->get(
+          $detail->product_id,
+          $detail->uom_id
+        );
+
+        /*** unknown relationship: learn it on POST */
+        if (!$productUom) {
+          if (!$this->Product_uom_model->save(
+            $detail->product_id,
+            $detail->uom_id,
+            $detail->conversion_factor
+          )) {
+            throw new Exception(
+              'Unable to save product UOM conversion.'
+            );
+          }
+          continue;
+        }
+
+        /*** conversion still matches current default */
+        if (
+          (float)$productUom->conversion_factor ===
+          (float)$detail->conversion_factor
+        ) {
+          continue;
+        }
+
+        /*** conversion differs: browser must have supplied a decision */
+        $decision = NULL;
+        foreach ($request['conversion_decisions'] ?? [] as $item) {
+          if (
+            (int)$item['product_id'] === (int)$detail->product_id &&
+            (int)$item['uom_id'] === (int)$detail->uom_id
+          ) {
+            $decision = $item;
+            break;
+          }
+        }
+
+        if (!$decision) {
+          throw new Exception(
+            'A conversion decision is required before posting.'
+          );
+        }
+
+        /*** protect against manipulated/stale browser values */
+        if (
+          (float)$decision['conversion_factor'] !==
+          (float)$detail->conversion_factor
+        ) {
+          throw new Exception(
+            'Goods Receipt conversion has changed. Please review before posting.'
+          );
+        }
+
+        /*** THIS GR ONLY */
+        if (empty($decision['update_default_conversion'])) {
+          continue;
+        }
+
+        /*** UPDATE DEFAULT */
+        if (!$this->Product_uom_model->save(
+          $detail->product_id,
+          $detail->uom_id,
+          $detail->conversion_factor
+        )) {
+          throw new Exception(
+            'Unable to update product UOM conversion.'
+          );
+        }
+      }
+      /*** end finalize */
 
       $this->Inventory_model->postGoodsReceipt($grn, $details);
       $this->updatePurchaseOrderDetails($details);
@@ -315,13 +482,22 @@ class Goods_receipt_model extends CI_Model
   {
     return $this->db
               ->select("
-                  d.*,
-                  p.barcode,
-                  p.description,
-                  u.uom")
+                d.*,
+                p.barcode,
+                p.description,
+                p.uom_id AS base_uom_id,
+                u.uom,
+                pu.conversion_factor AS default_conversion
+              ")
               ->from('t_goods_receipt_details d')
               ->join('m_products p', 'p.id = d.product_id')
-              ->join('m_uom u', 'u.id = p.uom_id')
+              ->join('m_uom u', 'u.id = d.uom_id', 'left')
+              ->join(
+                'm_product_uom pu',
+                'pu.product_id = d.product_id AND pu.uom_id = d.uom_id AND pu.is_active = TRUE',
+                'left',
+                FALSE
+              )
               ->where('d.grn_id', $grnId)
               ->order_by('d.id')
               ->get()
@@ -404,13 +580,15 @@ class Goods_receipt_model extends CI_Model
                 grn_id,
                 po_detail_id,
                 product_id,
+                uom_id,
+                conversion_factor,
                 qty_ordered,
                 qty_received,
                 unit_cost
               )
             VALUES
               (
-                ?,?,?,?,?,?
+                ?,?,?,?,?,?,?,?
               )";
 
     foreach ($details as $detail) {
@@ -420,6 +598,8 @@ class Goods_receipt_model extends CI_Model
           $grnId,
           $detail->po_detail_id,
           $detail->product_id,
+          $detail->uom_id,
+          $detail->conversion_factor,
           $detail->qty_ordered,
           $detail->qty_receive,
           $detail->unit_cost
