@@ -66,9 +66,12 @@ class Sales_order_model extends CI_Model
     return $this->db->query("SELECT
                               sod.id,
                               sod.product_id,
+                              sod.uom_id,
+                              sod.conversion_factor,
+                              p.uom_id AS base_uom_id,
                               p.barcode,
                               p.description,
-                              COALESCE(bi.qty_on_hand,0) AS qty_available,
+                              COALESCE(bi.qty_on_hand, 0) AS qty_available,
                               sod.qty,
                               COALESCE(inv.qty_invoiced, 0) AS qty_fulfilled,
                               sod.qty - COALESCE(inv.qty_invoiced, 0) AS qty_remaining,
@@ -76,7 +79,7 @@ class Sales_order_model extends CI_Model
                             FROM t_sales_order_details sod
                             INNER JOIN m_products p ON p.id = sod.product_id
                             LEFT JOIN t_branch_inventory bi ON bi.product_id = sod.product_id AND bi.branch_id = ?
-                            LEFT JOIN m_uom u ON u.id = p.uom_id
+                            LEFT JOIN m_uom u ON u.id = sod.uom_id
                             LEFT JOIN (
                                 SELECT
                                     sid.sales_order_detail_id,
@@ -269,6 +272,8 @@ class Sales_order_model extends CI_Model
           [
             'sales_order_id' => $salesOrderId,
             'product_id' => $detail->product_id,
+            'uom_id' => $detail->uom_id,
+            'conversion_factor'=> $detail->conversion_factor,
             'qty' => $detail->qty,
             'unit_price' => 0,
             'remarks' => NULL
@@ -335,6 +340,49 @@ class Sales_order_model extends CI_Model
           );
         }
 
+        /*** validate Sales Order detail UOM conversions */
+        $details = $this->db
+          ->select("
+            sod.product_id,
+            sod.uom_id,
+            sod.conversion_factor,
+            p.uom_id AS base_uom_id
+          ")
+          ->from('t_sales_order_details sod')
+          ->join('m_products p', 'p.id = sod.product_id')
+          ->where('sod.sales_order_id', $id)
+          ->get()
+          ->result();
+
+        if (count($details) === 0) {
+          throw new Exception(
+            "Sales Order {$salesOrder->so_no} has no items."
+          );
+        }
+
+        foreach ($details as $detail) {
+          if (!$detail->uom_id) {
+            throw new Exception(
+              "Sales Order {$salesOrder->so_no} contains an item without a UOM."
+            );
+          }
+
+          if (!$detail->conversion_factor || (float) $detail->conversion_factor <= 0) {
+            throw new Exception(
+              "Sales Order {$salesOrder->so_no} contains an invalid UOM conversion."
+            );
+          }
+
+          /*** product base UOM must always have conversion 1 */
+          if ((int) $detail->uom_id === (int) $detail->base_uom_id &&(float) $detail->conversion_factor !== 1.0) {
+            throw new Exception(
+              "Sales Order {$salesOrder->so_no} contains an invalid base UOM conversion."
+            );
+          }
+        }
+        /*** end validate */
+
+        /*** update status */
         $this->db
             ->where('id', $id)
             ->update(

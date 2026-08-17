@@ -141,6 +141,7 @@ class Sales_return_model extends CI_Model
         ->select("
             sid.*,
             p.barcode,
+            p.uom_id AS base_uom_id,
             p.description,
             COALESCE(bi.qty_on_hand, 0) AS qty_available,
             u.uom
@@ -158,7 +159,7 @@ class Sales_return_model extends CI_Model
         )
         ->join(
             'm_uom u',
-            'u.id = p.uom_id',
+            'u.id = sid.uom_id',
             'left'
         )
         ->where(
@@ -214,6 +215,9 @@ class Sales_return_model extends CI_Model
         ->query("SELECT
               sid.id AS sales_invoice_detail_id,
               sid.product_id,
+              sid.uom_id,
+              sid.conversion_factor,
+              p.uom_id AS base_uom_id,
               sid.qty - COALESCE(sr.qty_returned, 0) AS qty,
               p.barcode,
               p.description,
@@ -222,7 +226,7 @@ class Sales_return_model extends CI_Model
           FROM t_sales_invoice_details sid
           INNER JOIN m_products p ON p.id = sid.product_id
           LEFT JOIN t_branch_inventory bi ON bi.product_id = sid.product_id AND bi.branch_id = ?
-          LEFT JOIN m_uom u ON u.id = p.uom_id
+          LEFT JOIN m_uom u ON u.id = sid.uom_id
           LEFT JOIN (
               SELECT
                   srd.sales_invoice_detail_id,
@@ -323,10 +327,12 @@ class Sales_return_model extends CI_Model
         $this->db->insert(
           't_sales_return_details',
           [
-            'sales_return_id'      => $salesReturnId,
+            'sales_return_id'       => $salesReturnId,
             'sales_invoice_detail_id' => $detail->sales_invoice_detail_id,
             'product_id'            => $detail->product_id,
             'qty'                   => $detail->qty,
+            'uom_id'                => $detail->uom_id,
+            'conversion_factor'     => $detail->conversion_factor,
             'unit_price'            => 0,
             'discount_percent'      => 0,
             'discount_amount'       => 0,

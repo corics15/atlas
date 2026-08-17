@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
 
-        const qty = Atlas.format.integer(row.querySelector('.pr-return-qty').value);
+        const qty = Atlas.format.parseNumber(row.querySelector('.pr-return-qty').value);
 
         // if (qty <= 0) {
         //   return;
@@ -84,8 +84,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           * so we always push, even with 0 quantities
         */
         purchaseReturn.details.push({
-          goods_receipt_detail_id: Atlas.format.integer(row.dataset.goodsReceiptDetailId),
-          product_id: Atlas.format.integer(row.dataset.productId),
+          goods_receipt_detail_id: Atlas.format.parseNumber(row.dataset.goodsReceiptDetailId),
+          product_id: Atlas.format.parseNumber(row.dataset.productId),
+          uom_id: Atlas.format.parseNumber(row.dataset.uomId),
+          conversion_factor: Atlas.format.parseNumber(row.dataset.conversionFactor),
           qty: qty
         });
 

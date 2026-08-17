@@ -16,6 +16,9 @@
   <tr
     data-goods-receipt-detail-id="<?= $item->goods_receipt_detail_id ?>"
     data-product-id="<?= $item->product_id ?>"
+    data-uom-id="<?= $item->uom_id ?>"
+    data-base-uom-id="<?= $item->base_uom_id ?>"
+    data-conversion-factor="<?= $item->conversion_factor ?>"
     data-available-qty="<?= $item->qty ?>">
 
     <td class="text-right"><?= $index + 1 ?>.</td>

@@ -11,6 +11,8 @@ class Sales_orders extends MY_Controller
     $this->load->model('Customer_model');
     $this->load->model('Salesman_model');
     $this->load->model('Term_model');
+    $this->load->model('Uom_model');
+    $this->load->model('Product_uom_model');
   }
 
   public function index()
@@ -110,6 +112,14 @@ class Sales_orders extends MY_Controller
     $this->data['customers'] = $this->Customer_model->getDropdown();
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
+    $this->data['uoms'] = $this->Uom_model->getDropdown();
+
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
+
     $this->render('sales_orders/create');
   }
 
@@ -151,6 +161,7 @@ class Sales_orders extends MY_Controller
 
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
+    $this->data['uoms'] = $this->Uom_model->getDropdown();
 
     $this->data['salesOrderId'] = $salesOrderId;
 
@@ -198,6 +209,51 @@ class Sales_orders extends MY_Controller
       $result['success'],
       $result['message'],
       $result['data']
+    );
+  }
+
+  public function get_uom_conversion()
+  {
+    $request = $this->getJsonRequest();
+
+    $productId = (int) ($request['product_id'] ?? 0);
+    $uomId = (int) ($request['uom_id'] ?? 0);
+    $baseUomId = (int) ($request['base_uom_id'] ?? 0);
+
+    if ($productId <= 0 || $uomId <= 0 || $baseUomId <= 0) {
+      return $this->jsonResponse(
+        false,
+        'Invalid product UOM request.',
+        null
+      );
+    }
+
+    /*** selected UOM is already the product base UOM */
+    if ($uomId === $baseUomId) {
+      return $this->jsonResponse(
+        true,
+        '',
+        [
+          'conversion_factor' => 1,
+          'is_known' => true
+        ]
+      );
+    }
+
+    $productUom = $this->Product_uom_model->get(
+      $productId,
+      $uomId
+    );
+
+    return $this->jsonResponse(
+      true,
+      '',
+      [
+        'conversion_factor' => $productUom
+          ? (float) $productUom->conversion_factor
+          : null,
+        'is_known' => $productUom ? true : false
+      ]
     );
   }
 

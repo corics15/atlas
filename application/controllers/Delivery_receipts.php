@@ -118,6 +118,12 @@ class Delivery_receipts extends MY_Controller
     $this->data['salesOrderId'] = $salesOrderId;
     $this->data['isEdit'] = false;
 
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
+
     $this->render('delivery_receipts/create');
   }
 

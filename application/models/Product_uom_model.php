@@ -25,6 +25,7 @@ class Product_uom_model extends CI_Model
     $data = [
       'conversion_factor' => $conversionFactor,
       'is_active' => TRUE,
+      'updated_by' => $this->session->userdata('user_id'),
       'updated_on' => date('Y-m-d H:i:s')
     ];
 
@@ -36,6 +37,7 @@ class Product_uom_model extends CI_Model
 
     $data['product_id'] = $productId;
     $data['uom_id'] = $uomId;
+    $data['entered_by'] =$this->session->userdata('user_id');
     $data['entered_on'] = date('Y-m-d H:i:s');
 
     return $this->db->insert('m_product_uom', $data);

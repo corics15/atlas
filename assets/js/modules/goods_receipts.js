@@ -323,7 +323,7 @@ const postGoodsReceipt = async () => {
           <span class="font-weight-500 text-warning">${grConversion}</span>
         </p>
         <p>
-          How should we apply this conversion?
+          How should ATLAS apply this conversion?
         </p>
       </div>
     `,

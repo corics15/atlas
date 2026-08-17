@@ -336,11 +336,19 @@ class Inventory_model extends CI_Model
       foreach ($details as $detail)
       {
 
+        /*** convert Sales Return qty to product base UOM */
+        $conversionFactor = (float)$detail->conversion_factor;
+        if ($conversionFactor <= 0) {
+          throw new Exception('Invalid UOM conversion on Sales Return.');
+        }
+        $detail->base_qty = (float)$detail->qty * $conversionFactor;
+        /*** end convert */
+
         /*** update t_branch_inventory */
         $this->Branch_inventory_model->adjustBalance(
           $branchId,
           $detail->product_id,
-          $detail->qty
+          $detail->base_qty
         );
 
         /*** update stock ledger */
@@ -350,7 +358,7 @@ class Inventory_model extends CI_Model
             $header->id,
             $header->sr_no,
             [$detail],
-            'qty',
+            'base_qty',
             NULL
         );
       }
@@ -420,11 +428,19 @@ class Inventory_model extends CI_Model
           );
         }
 
+        /*** convert Purchase Return qty to product base UOM */
+        $conversionFactor = (float)$detail->conversion_factor;
+        if ($conversionFactor <= 0) {
+          throw new Exception('Invalid UOM conversion on Purchase Return.');
+        }
+        $detail->base_qty = (float)$detail->qty * $conversionFactor;
+        /*** end convert */
+
         /*** deduct branch inventory */
         $this->Branch_inventory_model->adjustBalance(
             $branchId,
             $detail->product_id,
-            -$detail->qty
+            -$detail->base_qty
         );
 
         /*** stock ledger */
@@ -435,7 +451,7 @@ class Inventory_model extends CI_Model
             $header->pr_no,
             [$detail],
             NULL,
-            'qty'
+            'base_qty'
         );
       }
 

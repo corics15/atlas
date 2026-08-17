@@ -114,6 +114,41 @@ class AtlasDialog {
     return 'cancel';
   }
 
+  async number(options) {
+    const result = await Swal.fire({
+      icon: options.icon || 'question',
+      title: options.title,
+      html: options.html || '',
+      input: 'number',
+      inputPlaceholder: options.inputPlaceholder || '',
+      inputValue: options.inputValue || '',
+      inputAttributes: {
+        min: options.min ?? 0.0001,
+        step: options.step || 'any'
+      },
+      inputValidator: value => {
+        const number = Atlas.format.parseNumber(value);
+
+        if (!value || number <= 0) {
+          return options.requiredMessage || 'Please enter a valid value.';
+        }
+      },
+      showCancelButton: true,
+      confirmButtonText: options.confirmText || 'OK',
+      cancelButtonText: options.cancelText || 'Cancel',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      theme: 'bootstrap-4-dark'
+    });
+
+    if (!result.isConfirmed) {
+      return null;
+    }
+
+    return Atlas.format.parseNumber(result.value);
+  }
+
 }
 
 window.Atlas = window.Atlas || {};

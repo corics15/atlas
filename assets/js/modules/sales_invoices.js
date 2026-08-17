@@ -81,6 +81,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (qty > 0) {
           salesInvoice.details.push({
             product_id: Atlas.format.parseNumber(row.dataset.productId),
+            uom_id: Atlas.format.parseNumber(row.dataset.uomId),
+            conversion_factor: Atlas.format.parseNumber(row.dataset.conversionFactor),
             sales_order_detail_id: Atlas.format.parseNumber(row.dataset.salesOrderDetailId),
             qty: qty
           });

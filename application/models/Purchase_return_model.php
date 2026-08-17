@@ -142,6 +142,7 @@ class Purchase_return_model extends CI_Model
             ) AS qty_returned,
             p.barcode,
             p.description,
+            p.uom_id AS base_uom_id,
             COALESCE(bi.qty_on_hand, 0) AS qty_available,
             u.uom
         ")
@@ -163,7 +164,7 @@ class Purchase_return_model extends CI_Model
         )
         ->join(
             'm_uom u',
-            'u.id = p.uom_id',
+            'u.id = sid.uom_id',
             'left'
         )
         ->where(
@@ -191,10 +192,11 @@ class Purchase_return_model extends CI_Model
                                 grd.id AS goods_receipt_detail_id,
                                 grd.product_id,
                                 grd.qty_received,
+                                grd.uom_id,
+                                grd.conversion_factor,
+                                p.uom_id AS base_uom_id,
                                 COALESCE(pr.qty_returned, 0) AS qty_returned,
-                                -- 0 AS qty_returned,
                                 grd.qty_received - COALESCE(pr.qty_returned,0) AS qty,
-                                -- grd.qty_received AS qty,
                                 p.barcode,
                                 p.description,
                                 COALESCE(bi.qty_on_hand,0) AS qty_available,
@@ -202,7 +204,7 @@ class Purchase_return_model extends CI_Model
                               FROM t_goods_receipt_details grd
                               INNER JOIN m_products p ON p.id = grd.product_id
                               LEFT JOIN t_branch_inventory bi ON bi.product_id = grd.product_id AND bi.branch_id = ?
-                              LEFT JOIN m_uom u ON u.id = p.uom_id
+                              LEFT JOIN m_uom u ON u.id = grd.uom_id
                               LEFT JOIN
                               (
                                   SELECT
@@ -266,6 +268,8 @@ class Purchase_return_model extends CI_Model
               'purchase_return_id'      => $purchaseReturnId,
               'goods_receipt_detail_id' => $detail->goods_receipt_detail_id,
               'product_id'              => $detail->product_id,
+              'uom_id'                  => $detail->uom_id,
+              'conversion_factor'       => $detail->conversion_factor,
               'qty'                     => $detail->qty,
               'unit_price'              => 0,
               'discount_percent'        => 0,

@@ -317,7 +317,7 @@ const buildUomOptions = () => {
   console.log(uoms)
 
   return `
-    <option value="">UOM</option>
+    <option value="">Select...</option>
     ${uoms.map(uom => `
       <option value="${uom.id}">
         ${uom.uom}

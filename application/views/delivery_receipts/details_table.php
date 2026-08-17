@@ -40,6 +40,10 @@
                 <tr
                     data-sales-order-detail-id="<?= $row->sales_order_detail_id; ?>"
                     data-product-id="<?= $row->product_id; ?>"
+                    data-uom-id="<?= $row->uom_id; ?>"
+                    data-base-uom-id="<?= $row->base_uom_id; ?>"
+                    data-conversion-factor="<?= $row->conversion_factor; ?>"
+                    data-base-qty-available="<?= $row->qty_available; ?>"
                     data-qty-remaining="<?= $row->qty_remaining; ?>"
                     data-qty-available="<?= $row->qty_available; ?>"
                     data-description="<?= $row->description ?>">
@@ -52,10 +56,16 @@
                   <td class="text-right"><?= number_format($row->qty_remaining, 0); ?></td>
                   <td class="text-right"><?= number_format($row->qty_available_to_deliver, 0); ?></td>
                   <td class="text-right">
-                    <?php $stockClass = $row->qty_available >= $row->qty_remaining ? 'text-success fw-bold' : 'text-danger fw-bold'; ?>
+
+                    <?php
+                      $conversionFactor = (float) $row->conversion_factor;
+                      $stockQty = $conversionFactor > 0 ? ((float) $row->qty_available / $conversionFactor) : 0;
+                      $stockClass = $stockQty >= $row->qty_remaining ? 'text-success fw-bold' : 'text-danger fw-bold';
+                    ?>
                     <span class="<?= $stockClass; ?>">
-                    <?= number_format($row->qty_available, 0); ?>
+                      <?= number_format($stockQty, 2); ?>
                     </span>
+
                   </td>
                   <td>
                     <input

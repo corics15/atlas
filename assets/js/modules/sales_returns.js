@@ -54,12 +54,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
 
       const salesReturn = {
-        id: Atlas.format.integer(document.getElementById('hidSalesReturnId').value),
-        sales_invoice_id: Atlas.format.integer(document.getElementById('hidSalesInvoiceId').value),
+        id: Atlas.format.parseNumber(document.getElementById('hidSalesReturnId').value),
+        sales_invoice_id: Atlas.format.parseNumber(document.getElementById('hidSalesInvoiceId').value),
         return_date: document.getElementById('dtSalesReturnDate').value,
-        customer_id: Atlas.format.integer(document.getElementById('selCustomer').value),
-        salesman_id: Atlas.format.integer(document.getElementById('selSalesman').value),
-        terms_id: Atlas.format.integer(document.getElementById('selTerms').value),
+        customer_id: Atlas.format.parseNumber(document.getElementById('selCustomer').value),
+        salesman_id: Atlas.format.parseNumber(document.getElementById('selSalesman').value),
+        terms_id: Atlas.format.parseNumber(document.getElementById('selTerms').value),
         credit_limit: Atlas.format.parseNumber(document.getElementById('txtCreditLimit').value),
         remarks: document.getElementById('txtSalesReturnRemarks').value,
         details: []
@@ -71,15 +71,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
 
-        const qty = Atlas.format.integer(row.querySelector('.so-qty').value);
+        const qty = Atlas.format.parseNumber(row.querySelector('.so-qty').value);
 
         if (qty <= 0) {
           return;
         }
 
         salesReturn.details.push({
-          sales_invoice_detail_id: Atlas.format.integer(row.dataset.salesInvoiceDetailId),
-          product_id: Atlas.format.integer(row.dataset.productId),
+          sales_invoice_detail_id: Atlas.format.parseNumber(row.dataset.salesInvoiceDetailId),
+          product_id: Atlas.format.parseNumber(row.dataset.productId),
+          uom_id: Atlas.format.parseNumber(row.dataset.uomId),
+          conversion_factor: Atlas.format.parseNumber(row.dataset.conversionFactor),
           qty: qty
         });
 

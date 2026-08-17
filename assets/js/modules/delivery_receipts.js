@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         deliveryReceipt.details.push({
           sales_order_detail_id: Atlas.format.parseNumber(row.dataset.salesOrderDetailId),
           product_id: Atlas.format.parseNumber(row.dataset.productId),
+          uom_id: Atlas.format.parseNumber(row.dataset.uomId),
+          conversion_factor: Atlas.format.parseNumber(row.dataset.conversionFactor),
           qty: Atlas.format.parseNumber(row.querySelector('.dr-deliver-qty').value),
           description: row.dataset.description,
         });

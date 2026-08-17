@@ -155,6 +155,7 @@ class Sales_invoice_model extends CI_Model
     return $this->db
         ->select("
             sid.*,
+            p.uom_id AS base_uom_id,
             p.barcode,
             p.description,
             COALESCE(bi.qty_on_hand, 0) AS qty_available,
@@ -173,7 +174,7 @@ class Sales_invoice_model extends CI_Model
         )
         ->join(
             'm_uom u',
-            'u.id = p.uom_id',
+            'u.id = sid.uom_id',
             'left'
         )
         ->where(
@@ -300,6 +301,8 @@ class Sales_invoice_model extends CI_Model
               'sales_invoice_id'      => $salesInvoiceId,
               'sales_order_detail_id' => $detail->sales_order_detail_id,
               'product_id'            => $detail->product_id,
+              'uom_id'                => $detail->uom_id,
+              'conversion_factor'     => $detail->conversion_factor,
               'qty'                   => $detail->qty,
               'unit_price'            => 0,
               'discount_percent'      => 0,
@@ -600,6 +603,9 @@ class Sales_invoice_model extends CI_Model
                                 drd.id AS delivery_receipt_detail_id,
                                 drd.sales_order_detail_id,
                                 drd.product_id,
+                                drd.uom_id,
+                                drd.conversion_factor,
+                                p.uom_id AS base_uom_id,
                                 drd.qty - COALESCE(inv.qty_invoiced, 0) AS qty,
                                 p.barcode,
                                 p.description,
@@ -611,7 +617,7 @@ class Sales_invoice_model extends CI_Model
                               FROM t_delivery_receipt_details drd
                               INNER JOIN m_products p ON p.id = drd.product_id
                               LEFT JOIN t_branch_inventory bi ON bi.product_id = drd.product_id AND bi.branch_id = ?
-                              LEFT JOIN m_uom u ON u.id = p.uom_id
+                              LEFT JOIN m_uom u ON u.id = drd.uom_id
                               LEFT JOIN (
                                   SELECT
                                       sid.sales_order_detail_id,

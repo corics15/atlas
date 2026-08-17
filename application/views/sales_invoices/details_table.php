@@ -37,6 +37,9 @@
                     <tr
                       class="so-detail-row"
                       data-product-id="<?= $detail->product_id ?>"
+                      data-uom-id="<?= $detail->uom_id ?>"
+                      data-base-uom-id="<?= $detail->base_uom_id ?>"
+                      data-conversion-factor="<?= $detail->conversion_factor ?>"
                       data-sales-order-detail-id="<?= $detail->sales_order_detail_id ?>">
                       <td class="so-row-no text-center"><?= ($index + 1) ?>.</td>
                       <td>

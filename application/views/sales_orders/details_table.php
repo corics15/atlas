@@ -39,7 +39,10 @@
                 <?php foreach ($details as $index => $detail): ?>
                   <tr
                     class="so-detail-row"
-                    data-product-id="<?= $detail->product_id ?>">
+                    data-product-id="<?= $detail->product_id ?>"
+                    data-base-uom-id="<?= $detail->base_uom_id ?>"
+                    data-conversion-factor="<?= $detail->conversion_factor ?>"
+                    data-base-qty-available="<?= $detail->qty_available ?>">
                     <td class="so-row-no text-center">
                       <?= ($index + 1) ?>.
                     </td>
@@ -60,8 +63,25 @@
                       </div>
                     </td>
                     <td class="so-description"><?= htmlspecialchars($detail->description) ?></td>
-                    <td class="so-uom text-center"><?= htmlspecialchars($detail->uom) ?></td>
-                    <td class="so-available text-right"><?= number_format($detail->qty_available, 0) ?></td>
+                    <td>
+                      <select class="form-control form-control-sm so-uom custom-select w-auto">
+                        <option value="">Select...</option>
+                        <?php foreach ($uoms as $uom): ?>
+                          <option
+                            value="<?= $uom->id; ?>"
+                            <?= ((int)$detail->uom_id === (int)$uom->id) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($uom->uom); ?>
+                          </option>
+                        <?php endforeach; ?>
+                      </select>
+                    </td>
+
+                    <?php
+                      $conversionFactor = (float) $detail->conversion_factor;
+                      $availableQty = $conversionFactor > 0 ? ((float) $detail->qty_available / $conversionFactor) : 0;
+                    ?>
+                    <td class="so-available text-right"><?= number_format($availableQty, 2) ?></td>
+
                     <td class="text-right"><?= number_format($detail->qty_fulfilled, 0) ?></td>
                     <td class="text-right <?= ($detail->qty_remaining == 0) ? 'text-success font-weight-500' : '' ?>" <?= ($detail->qty_remaining == 0) ? 'title="Fully Invoiced"' : '' ?>>
                       <?= number_format($detail->qty_remaining, 0) ?>
@@ -98,7 +118,17 @@
                     </div>
                   </td>
                   <td class="so-description"></td>
-                  <td class="so-uom text-center"></td>
+                  <td>
+                    <select class="form-control form-control-sm so-uom custom-select w-auto">
+                      <option value="">Select...</option>
+
+                      <?php foreach ($uoms as $uom): ?>
+                        <option value="<?= $uom->id; ?>">
+                          <?= htmlspecialchars($uom->uom); ?>
+                        </option>
+                      <?php endforeach; ?>
+                    </select>
+                  </td>
                   <td class="so-available text-right">-</td>
                   <td></td>
                   <td></td>
@@ -139,4 +169,12 @@
   window.salesOrderId = <?= (int) ($salesOrderId ?? 0); ?>;
   window.status = '<?= isset($salesOrder) ? $salesOrder->status : ''; ?>';
   window.remainingItems = <?= isset($salesOrder) ? (int) $salesOrder->remaining_items : 0; ?>;
+  window.atlasUoms = <?= json_encode(
+    array_map(function ($uom) {
+      return [
+        'id' => (int) $uom->id,
+        'uom' => $uom->uom
+      ];
+    }, $uoms),
+  ); ?>;
 </script>

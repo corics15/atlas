@@ -60,7 +60,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /*** scanner barcode event */
   document.addEventListener('keydown', async (e) => {
-    console.log(e.target.classList)
     if (!e.target.classList.contains('atlas-barcode')) {
       return;
     }
@@ -102,16 +101,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
 
       document.querySelectorAll('#tblSalesOrderDetails tr').forEach(row => {
-
         if (!row.dataset.productId) {
           return;
         }
 
+        const uomId = Atlas.format.parseNumber(row.querySelector('.so-uom').value);
+        if (!uomId) {
+          Atlas.toast.error('Please select a UOM for all products.');
+          row.querySelector('.so-uom').focus();
+          return;
+        }
+
+        const conversionFactor = Atlas.format.parseNumber(row.dataset.conversionFactor);
+        if (!conversionFactor || conversionFactor <= 0) {
+          Atlas.toast.error('Please provide a valid UOM conversion for all products.');
+          return;
+        }
+
         salesOrder.details.push({
-          product_id: Number(row.dataset.productId),
-          qty: Number(
-            row.querySelector('.so-qty').value
-          )
+          product_id: Atlas.format.parseNumber(row.dataset.productId),
+          uom_id: uomId,
+          conversion_factor: conversionFactor,
+          qty: Atlas.format.parseNumber(row.querySelector('.so-qty').value),
         });
       });
 
@@ -278,6 +289,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    isDirty = false;
     Atlas.toast.success(result.message);
     setTimeout(() => Atlas.page.refresh(), 1500);
   });
@@ -296,6 +308,88 @@ document.addEventListener('DOMContentLoaded', async () => {
     removeDetailRow(row);
   });
 
+  /*** sales order UOM change */
+  document.addEventListener('change', async (e) => {
+    if (!e.target.classList.contains('so-uom')) {
+      return;
+    }
+
+    const row = e.target.closest('tr');
+    if (!row?.dataset.productId) {
+      return;
+    }
+
+    const productId = Atlas.format.parseNumber(row.dataset.productId);
+    const baseUomId = Atlas.format.parseNumber(row.dataset.baseUomId);
+    const uomId = Atlas.format.parseNumber(e.target.value);
+
+    if (!uomId) {
+      row.dataset.conversionFactor = '';
+      return;
+    }
+
+    const result = await Atlas.ajax.post(
+      'sales-orders/get-uom-conversion',
+      {
+        product_id: productId,
+        uom_id: uomId,
+        base_uom_id: baseUomId
+      }
+    );
+
+    if (!result.success) {
+      Atlas.toast.error(result.message);
+      return;
+    }
+
+    /*** prompt conversion */
+    if (result.data.is_known) {
+      row.dataset.conversionFactor = result.data.conversion_factor;
+      const baseQtyAvailable = Atlas.format.parseNumber(row.dataset.baseQtyAvailable || 0);
+      const qtyAvailable = baseQtyAvailable / Atlas.format.parseNumber(row.dataset.conversionFactor);
+      row.querySelector('.so-available').textContent = Atlas.format.amount(qtyAvailable);
+
+      markDirty();
+      return;
+    }
+
+    /*** unknown conversion */
+    const selectedUom = e.target.options[e.target.selectedIndex].text.trim();
+    const conversion = await Atlas.dialog.number({
+      title: 'UOM Conversion',
+      html: `<div class="text-center">
+                <p>
+                  ATLAS does not yet have a<br>conversion defined for <span class="font-weight-500 text-danger">${selectedUom}</span>.
+                </p>
+                <p>
+                  Please specify how many base units are<br>contained in <span class="font-weight-500 text-warning">1 ${selectedUom}</span> for this particular product.
+                </p>
+              </div>
+            `,
+      inputPlaceholder: 'Conversion',
+      min: 0.0001,
+      confirmText: 'Use Conversion'
+    });
+
+    if (conversion === null) {
+      /*** return to base UOM */
+      e.target.value = baseUomId;
+      row.dataset.conversionFactor = 1;
+      const baseQtyAvailable = Atlas.format.parseNumber(row.dataset.baseQtyAvailable || 0);
+      row.querySelector('.so-available').textContent = Atlas.format.amount(baseQtyAvailable);
+
+      return;
+    }
+
+    row.dataset.conversionFactor = conversion;
+    const baseQtyAvailable = Atlas.format.parseNumber(row.dataset.baseQtyAvailable || 0);
+    const qtyAvailable = baseQtyAvailable / Atlas.format.parseNumber(row.dataset.conversionFactor);
+    row.querySelector('.so-available').textContent = Atlas.format.amount(qtyAvailable);
+
+    markDirty();
+    /*** end prompt conversion */
+  });
+
   /*** add new row when in edit mode */
   if (isEditMode) {
     const lastRow = tblSalesOrderDetails.lastElementChild;
@@ -310,15 +404,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 });
 
-if (selCustomer) {
-  Atlas.select.init('#selCustomer');
-}
-if (selSalesman) {
-  Atlas.select.init('#selSalesman');
-}
-if (selTerms) {
-  Atlas.select.init('#selTerms');
-}
+if (selCustomer) Atlas.select.init('#selCustomer');
+if (selSalesman) Atlas.select.init('#selSalesman');
+if (selTerms) Atlas.select.init('#selTerms');
 
 window.addEventListener('beforeunload', e => {
   if (!isDirty) {
@@ -357,7 +445,11 @@ const createDetailRow = () => {
         </div>
       </td>
       <td class="so-description"></td>
-      <td class="so-uom text-center"></td>
+      <td>
+        <select class="form-control form-control-sm so-uom custom-select w-auto">
+          ${buildUomOptions()}
+        </select>
+      </td>
       <td class="so-available text-right">-</td>
       <td></td>
       <td></td>
@@ -375,6 +467,21 @@ const createDetailRow = () => {
   `;
 };
 
+const buildUomOptions = () => {
+  const uoms = Array.isArray(window.atlasUoms)
+    ? window.atlasUoms
+    : [];
+
+  return `
+    <option value="">Select...</option>
+    ${uoms.map(uom => `
+      <option value="${uom.id}">
+        ${uom.uom}
+      </option>
+    `).join('')}
+  `;
+};
+
 const populateProductRow = (row, product) => {
   /*** check duplicate rows */
   const duplicate = [...tblSalesOrderDetails.rows].find(r =>
@@ -389,9 +496,13 @@ const populateProductRow = (row, product) => {
   /*** end check */
 
   row.dataset.productId = product.id;
+  row.dataset.baseUomId = product.uom_id;
+  row.dataset.conversionFactor = 1;
+  row.dataset.baseQtyAvailable = Atlas.format.parseNumber(product.qty_on_hand);
+
   row.querySelector('.so-barcode').value = product.barcode;
   row.querySelector('.so-description').textContent = product.description;
-  row.querySelector('.so-uom').textContent = product.uom;
+  row.querySelector('.so-uom').value = product.uom_id;
   row.querySelector('.so-available').textContent = Atlas.format.integer(product.qty_on_hand);
   setTimeout(() => row.querySelector('.so-qty').focus(), 500);
   markDirty();
@@ -426,20 +537,46 @@ const validateSalesOrder = () => {
 
     hasProduct = true;
 
-    const qty = Number(row.querySelector('.so-qty').value || 0);
+    /*** validate UOM */
+    const uomId = Atlas.format.parseNumber(row.querySelector('.so-uom').value);
+
+    if (!uomId) {
+      Atlas.toast.warning(`Please select a UOM on row ${i + 1}.`);
+      row.querySelector('.so-uom').focus();
+      return false;
+    }
+
+    /*** validate conversion */
+    const conversionFactor = Atlas.format.parseNumber(row.dataset.conversionFactor || 0);
+
+    if (conversionFactor <= 0) {
+      Atlas.toast.warning(`Invalid UOM conversion on row ${i + 1}.`);
+      row.querySelector('.so-uom').focus();
+      return false;
+    }
+
+    /*** validate quantity */
+    const qty = Atlas.format.parseNumber(row.querySelector('.so-qty').value || 0);
     if (qty <= 0) {
-      Atlas.toast.warning(
-        `Invalid quantity on row ${i + 1}.`
-      );
+      Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
+      setTimeout(() => row.querySelector('.so-qty').focus(), 500);
+      return false;
+    }
+
+    /*** validate against available stock in selected UOM */
+    const baseQtyAvailable = Atlas.format.parseNumber(row.dataset.baseQtyAvailable || 0);
+
+    const qtyAvailable = baseQtyAvailable / conversionFactor;
+
+    if (qty > qtyAvailable) {
+      Atlas.toast.warning(`Insufficient stock on row ${i + 1}. ` + `Available: ${Atlas.format.amount(qtyAvailable)}`);
       setTimeout(() => row.querySelector('.so-qty').focus(), 500);
       return false;
     }
   }
 
   if (!hasProduct) {
-    Atlas.toast.warning(
-      'Please add at least one product.'
-    );
+    Atlas.toast.warning('Please add at least one product.');
     setTimeout(() => document.querySelector('.so-barcode')?.focus(), 500);
     return false;
   }

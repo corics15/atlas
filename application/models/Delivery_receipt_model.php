@@ -39,18 +39,21 @@ class Delivery_receipt_model extends CI_Model
     return $this->db->query("SELECT
                               sod.id AS sales_order_detail_id,
                               sod.product_id,
+                              sod.uom_id,
+                              sod.conversion_factor,
+                              p.uom_id AS base_uom_id,
                               p.barcode,
                               p.description,
                               u.uom,
                               sod.qty AS qty_ordered,
-                              COALESCE(inv.qty_on_hand,0) qty_available,
-                              COALESCE(dr.qty_delivered,0) qty_delivered,
-                              COALESCE(res.qty_reserved,0) qty_reserved,
+                              COALESCE(inv.qty_on_hand, 0) qty_available,
+                              COALESCE(dr.qty_delivered, 0) qty_delivered,
+                              COALESCE(res.qty_reserved, 0) qty_reserved,
                               (sod.qty - COALESCE(dr.qty_delivered, 0)) qty_remaining,
                               (sod.qty - COALESCE(dr.qty_delivered, 0) - COALESCE(res.qty_reserved, 0)) qty_available_to_deliver
                           FROM t_sales_order_details sod
-                          INNER JOIN m_products p ON p.id=sod.product_id
-                          LEFT JOIN m_uom u ON u.id=p.uom_id
+                          INNER JOIN m_products p ON p.id = sod.product_id
+                          LEFT JOIN m_uom u ON u.id = sod.uom_id
                           LEFT JOIN t_branch_inventory inv ON inv.product_id=p.id AND inv.branch_id = ?
                           LEFT JOIN
                           (
@@ -84,33 +87,41 @@ class Delivery_receipt_model extends CI_Model
 
   public function getDetails($deliveryReceiptId)
   {
-      $branchId = (int)$this->session->userdata('branch_id');
+    $branchId = (int)$this->session->userdata('branch_id');
 
-      return $this->db->query("SELECT
-                                  drd.id,
-                                  drd.sales_order_detail_id,
-                                  drd.product_id,
-                                  p.barcode,
-                                  p.description,
-                                  u.uom,
-                                  sod.qty AS qty_ordered,
-                                  drd.qty AS qty_delivered,
-                                  COALESCE(inv.qty_on_hand,0) AS qty_available,
-                                  0 AS qty_remaining,
-                                  0 AS qty_available_to_deliver,
-                                  drd.qty AS qty_reverse -- used for cancellation events
-                                FROM t_delivery_receipt_details drd
-                                INNER JOIN t_sales_order_details sod ON sod.id = drd.sales_order_detail_id
-                                INNER JOIN m_products p ON p.id = drd.product_id
-                                LEFT JOIN m_uom u ON u.id = p.uom_id
-                                LEFT JOIN t_branch_inventory inv ON inv.product_id = drd.product_id AND inv.branch_id = ?
-                                WHERE drd.delivery_receipt_id = ?
-                                ORDER BY drd.id
-                              ",
-                              [
-                                $branchId,
-                                $deliveryReceiptId
-                              ])->result();
+    return $this->db->query("SELECT
+                                drd.id,
+                                drd.sales_order_detail_id,
+                                drd.product_id,
+                                drd.uom_id,
+                                drd.conversion_factor,
+                                p.uom_id AS base_uom_id,
+                                p.barcode,
+                                p.description,
+                                u.uom,
+                                sod.qty AS qty_ordered,
+                                drd.qty AS qty_delivered,
+                                COALESCE(inv.qty_on_hand, 0) AS qty_available,
+                                0 AS qty_remaining,
+                                0 AS qty_available_to_deliver,
+                                (drd.qty * drd.conversion_factor) AS qty_reverse -- used for cancellation events
+                              FROM t_delivery_receipt_details drd
+                              INNER JOIN t_sales_order_details sod
+                                ON sod.id = drd.sales_order_detail_id
+                              INNER JOIN m_products p
+                                ON p.id = drd.product_id
+                              LEFT JOIN m_uom u
+                                ON u.id = drd.uom_id
+                              LEFT JOIN t_branch_inventory inv
+                                ON inv.product_id = drd.product_id
+                                AND inv.branch_id = ?
+                              WHERE drd.delivery_receipt_id = ?
+                              ORDER BY drd.id
+                            ",
+                            [
+                              $branchId,
+                              $deliveryReceiptId
+                            ])->result();
   }
 
   public function get($id)
@@ -269,6 +280,8 @@ class Delivery_receipt_model extends CI_Model
               'delivery_receipt_id'   => $deliveryReceiptId,
               'sales_order_detail_id' => $detail->sales_order_detail_id,
               'product_id'            => $detail->product_id,
+              'uom_id'             => $detail->uom_id,
+              'conversion_factor'  => $detail->conversion_factor,
               'qty'                   => $detail->qty,
               'remarks'               => NULL
             ]
@@ -434,10 +447,19 @@ class Delivery_receipt_model extends CI_Model
 
         $available = $inventory ? (float)$inventory->qty_on_hand : 0;
 
-        if ((float)$detail->qty > $available) {
+        /*** convert DR transaction qty to product base UOM */
+        $conversionFactor = (float)$detail->conversion_factor;
+
+        if ($conversionFactor <= 0) {
           throw new Exception(
-            'Insufficient inventory.'
+            'Invalid UOM conversion.'
           );
+        }
+
+        $detail->base_qty = (float)$detail->qty * $conversionFactor;
+
+        if ($detail->base_qty > $available) {
+          throw new Exception('Insufficient inventory.');
         }
       }
       /*** end validation */
@@ -448,7 +470,7 @@ class Delivery_receipt_model extends CI_Model
           $this->Branch_inventory_model->adjustBalance(
               $deliveryReceipt->branch_id,
               $detail->product_id,
-              -$detail->qty
+              -$detail->base_qty
           );
       }
       /*** end deduct inventory */
@@ -463,7 +485,7 @@ class Delivery_receipt_model extends CI_Model
             $deliveryReceipt->dr_no,
             [$detail],
             NULL,
-            'qty'
+            'base_qty'
         );
       }
       /*** end stock ledger */
