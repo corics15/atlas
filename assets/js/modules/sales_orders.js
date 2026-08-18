@@ -24,6 +24,8 @@ const btnCreateDeliveryReceipt = document.getElementById('btnCreateDeliveryRecei
 let isDirty = false;
 let isLoading = true;
 let isEditMode = (hidSalesOrderId?.value) ? true : false;
+let customerDiscountType = '';
+let customerDiscountValue = 0;
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -45,7 +47,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     $('#selSalesman').val(option.dataset.salesmanId).trigger('change');
     $('#selTerms').val(option.dataset.termsId).trigger('change');
     txtCreditLimit.value = Atlas.format.amount(option.dataset.creditLimit);
-    markDirty()
+
+    /*** customer default discount */
+    customerDiscountType = option.dataset.discountType || '';
+    customerDiscountValue = Atlas.format.parseNumber(option.dataset.discountValue || 0);
+    markDirty();
   });
   Atlas.select.onChange('#selSaleman', () => markDirty());
   /*** end dirty tracking */
@@ -72,6 +78,57 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const row = e.target.closest('tr');
     await Atlas.productFinder.lookup(row, e.target.value);
+    markDirty();
+  });
+
+  /*** sales order price / qty / discount calculation */
+  document.addEventListener('input', (e) => {
+    if (
+      !e.target.classList.contains('so-qty') &&
+      !e.target.classList.contains('so-unit-price') &&
+      !e.target.classList.contains('so-discount-value')
+    ) {
+      return;
+    }
+
+    const row = e.target.closest('tr');
+
+    if (!row?.dataset.productId) {
+      return;
+    }
+
+    calculateSalesOrderRow(row);
+    markDirty();
+  });
+
+  /*** sales order discount type change */
+  document.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('so-discount-type')) {
+      return;
+    }
+
+    const row = e.target.closest('tr');
+
+    if (!row?.dataset.productId) {
+      return;
+    }
+
+    const discountValue = row.querySelector('.so-discount-value');
+
+    if (!e.target.value) {
+      discountValue.value = '0.00';
+      discountValue.disabled = true;
+    } else {
+      discountValue.disabled = false;
+
+      /*** switching type starts clean */
+      discountValue.value = '0.00';
+
+      discountValue.focus();
+      discountValue.select();
+    }
+
+    calculateSalesOrderRow(row);
     markDirty();
   });
 
@@ -123,6 +180,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           uom_id: uomId,
           conversion_factor: conversionFactor,
           qty: Atlas.format.parseNumber(row.querySelector('.so-qty').value),
+
+          unit_price: Atlas.format.parseNumber(row.querySelector('.so-unit-price').value),
+          discount_type: row.querySelector('.so-discount-type').value || null,
+          discount_value: Atlas.format.parseNumber(row.querySelector('.so-discount-value').value || 0),
+          discount_amount: Atlas.format.parseNumber(row.dataset.discountAmount || 0,)
         });
       });
 
@@ -328,6 +390,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    /*** base UOM always has conversion 1 */
+    if (uomId === baseUomId) {
+      row.dataset.conversionFactor = 1;
+      markDirty();
+      return;
+    }
+
     const result = await Atlas.ajax.post(
       'sales-orders/get-uom-conversion',
       {
@@ -345,6 +414,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     /*** prompt conversion */
     if (result.data.is_known) {
       row.dataset.conversionFactor = result.data.conversion_factor;
+
+      /*** load default selling price for selected UOM */
+      row.querySelector('.so-unit-price').value = Atlas.format.parseNumber(result.data.selling_price || 0).toFixed(2);
+      calculateSalesOrderRow(row);
+
       const baseQtyAvailable = Atlas.format.parseNumber(row.dataset.baseQtyAvailable || 0);
       const qtyAvailable = baseQtyAvailable / Atlas.format.parseNumber(row.dataset.conversionFactor);
       row.querySelector('.so-available').textContent = Atlas.format.amount(qtyAvailable);
@@ -355,6 +429,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     /*** unknown conversion */
     const selectedUom = e.target.options[e.target.selectedIndex].text.trim();
+    const baseUomOption = [...e.target.options].find(option =>
+      Atlas.format.parseNumber(option.value) === baseUomId
+    );
+    const baseUom = baseUomOption ? baseUomOption.text.trim() : 'BASE UOM';
     const conversion = await Atlas.dialog.number({
       title: 'UOM Conversion',
       html: `<div class="text-center">
@@ -362,11 +440,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                   ATLAS does not yet have a<br>conversion defined for <span class="font-weight-500 text-danger">${selectedUom}</span>.
                 </p>
                 <p>
-                  Please specify how many base units are<br>contained in <span class="font-weight-500 text-warning">1 ${selectedUom}</span> for this particular product.
+                  The base UOM for this product is
+                  <span class="font-weight-500 text-info">${baseUom}</span>.
+                </p>
+                <p>
+                  How many <span class="font-weight-500 text-info">${baseUom}</span> does <span class="font-weight-500 text-danger">1 ${selectedUom}</span> represent?
                 </p>
               </div>
             `,
-      inputPlaceholder: 'Conversion',
+      inputPlaceholder: `1 ${selectedUom} = ? ${baseUom}`, //'Conversion',
       min: 0.0001,
       confirmText: 'Use Conversion'
     });
@@ -388,6 +470,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     markDirty();
     /*** end prompt conversion */
+  });
+
+  /*** initialize saved Sales Order calculations */
+  tblSalesOrderDetails.querySelectorAll('tr[data-product-id]').forEach(row => {
+    const discountType = row.querySelector('.so-discount-type');
+    const discountValue = row.querySelector('.so-discount-value');
+
+    if (!discountType || !discountValue) {
+      return;
+    }
+
+    /*** no discount */
+    if (!discountType.value) {
+      discountValue.value = '0.00';
+      discountValue.disabled = true;
+    } else {
+      discountValue.disabled = false;
+    }
+
+    calculateSalesOrderRow(row);
   });
 
   /*** add new row when in edit mode */
@@ -429,42 +531,76 @@ const addDetailRow = (markAsDirty = true) => {
 };
 
 const createDetailRow = () => {
-  return `
-    <tr>
-      <td class="so-row-no text-center"></td>
-      <td>
-        <div class="input-group">
-          <input type="text" class="form-control form-control-sm so-barcode atlas-barcode" placeholder="Barcode">
-          <div class="input-group-append">
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-warning btn-product-finder">
-              <i class="fas fa-search font-smr"></i>
-            </button>
-          </div>
-        </div>
-      </td>
-      <td class="so-description"></td>
-      <td>
-        <select class="form-control form-control-sm so-uom custom-select w-auto">
-          ${buildUomOptions()}
-        </select>
-      </td>
-      <td class="so-available text-right">-</td>
-      <td></td>
-      <td></td>
-      <td>
-        <input
-          type="number"
-          step="any"
-          class="form-control form-control-sm text-right so-qty"
-          value="">
-      </td>
-      <td class="text-center">
-        <i class="fas fa-trash text-danger pointer btn-delete-row"></i>
-      </td>
-    </tr>
-  `;
+  return `<tr>
+            <td class="so-row-no text-center"></td>
+
+            <td>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control form-control-sm so-barcode atlas-barcode"
+                  placeholder="Barcode">
+
+                <div class="input-group-append">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-warning btn-product-finder">
+                    <i class="fas fa-search font-smr"></i>
+                  </button>
+                </div>
+              </div>
+            </td>
+
+            <td class="so-description" data-toggle="tooltip"></td>
+
+            <td>
+              <select class="form-control form-control-sm so-uom custom-select w-auto">
+                ${buildUomOptions()}
+              </select>
+            </td>
+
+            <td class="so-available text-right">-</td>
+
+            <td></td>
+
+            <td></td>
+
+            <td>
+              <input type="number" step="any" class="form-control form-control-sm text-right so-qty" value="">
+            </td>
+
+            <td>
+              <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right so-unit-price" value="0.00">
+            </td>
+
+            <td>
+              <select
+                class="form-control form-control-sm so-discount-type custom-select">
+                <option value="">No Discount</option>
+                <option value="PERCENT">Percent (%)</option>
+                <option value="AMOUNT">Amount</option>
+              </select>
+            </td>
+
+            <td>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                class="form-control form-control-sm text-right so-discount-value"
+                value="0.00"
+                disabled>
+            </td>
+
+            <td class="so-net-amount text-right">
+              0.00
+            </td>
+
+            <td class="text-center">
+              <i class="fas fa-trash text-danger pointer btn-delete-row"></i>
+            </td>
+          </tr>
+        `;
 };
 
 const buildUomOptions = () => {
@@ -501,9 +637,28 @@ const populateProductRow = (row, product) => {
   row.dataset.baseQtyAvailable = Atlas.format.parseNumber(product.qty_on_hand);
 
   row.querySelector('.so-barcode').value = product.barcode;
-  row.querySelector('.so-description').textContent = product.description;
+  row.querySelector('.so-description').textContent = product.description.length > 15 ? product.description.substring(0, 15) + '...' : product.description;
+  if (product.description.length > 15) {
+    row.querySelector('.so-description').setAttribute('title', product.description)
+  }
   row.querySelector('.so-uom').value = product.uom_id;
   row.querySelector('.so-available').textContent = Atlas.format.integer(product.qty_on_hand);
+
+  /*** default selling price */
+  const unitPrice = Atlas.format.parseNumber(product.selling_price ?? product.srp ?? 0);
+  row.querySelector('.so-unit-price').value = unitPrice.toFixed(2);
+
+  /*** customer default discount */
+  const discountType = row.querySelector('.so-discount-type');
+  const discountValue = row.querySelector('.so-discount-value');
+
+  discountType.value = customerDiscountType || '';
+  discountValue.value = Atlas.format.parseNumber(customerDiscountValue || 0).toFixed(2);
+  discountValue.disabled = !customerDiscountType;
+
+  /*** calculate initial row */
+  calculateSalesOrderRow(row);
+
   setTimeout(() => row.querySelector('.so-qty').focus(), 500);
   markDirty();
 
@@ -515,6 +670,40 @@ const populateProductRow = (row, product) => {
   ) {
     addDetailRow();
   }
+};
+
+const calculateSalesOrderRow = (row) => {
+  const qty = Atlas.format.parseNumber(row.querySelector('.so-qty')?.value || 0);
+  const unitPrice = Atlas.format.parseNumber(row.querySelector('.so-unit-price')?.value || 0);
+  const discountType = row.querySelector('.so-discount-type')?.value || '';
+
+  let discountValue = Atlas.format.parseNumber(row.querySelector('.so-discount-value')?.value || 0);
+
+  const grossAmount = qty * unitPrice;
+  let discountAmount = 0;
+
+  if (discountType === 'PERCENT') {
+    if (discountValue > 100) {
+      discountValue = 100;
+      row.querySelector('.so-discount-value').value = '100.00';
+    }
+
+    discountAmount = grossAmount * (discountValue / 100);
+
+  } else if (discountType === 'AMOUNT') {
+
+    discountAmount = discountValue;
+
+    /*** row discount cannot exceed row gross */
+    if (discountAmount > grossAmount) {
+      discountAmount = grossAmount;
+      row.querySelector('.so-discount-value').value = grossAmount.toFixed(2);
+    }
+  }
+
+  const netAmount = Math.max(0, grossAmount - discountAmount);
+  row.dataset.discountAmount = discountAmount.toFixed(2);
+  row.querySelector('.so-net-amount').textContent = Atlas.format.amount(netAmount);
 };
 
 const renumberRows = () => {

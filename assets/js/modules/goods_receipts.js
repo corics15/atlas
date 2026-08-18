@@ -102,6 +102,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const row = btn.closest('tr');
+    const uomId = Atlas.format.parseNumber(row.dataset.uomId);
+    const baseUomId = Atlas.format.parseNumber(row.dataset.baseUomId);
+    /*** base UOM conversion is always 1 */
+    if (uomId === baseUomId) {
+      const conversion = row.querySelector('.grn-conversion');
+      conversion.value = 1;
+      conversion.readOnly = true;
+      Atlas.toast.warning('The base UOM always uses a conversion of 1.');
+      return;
+    }
     const conversion = row.querySelector('.grn-conversion');
 
     conversion.readOnly = false;

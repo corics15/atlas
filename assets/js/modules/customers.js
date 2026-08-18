@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const selUom = document.getElementById('selUom');
   const txtCost = document.getElementById('txtCost');
   const txtSRP = document.getElementById('txtSRP');
+  const selDiscountType = document.getElementById('selDiscountType');
+  const txtDiscountValue = document.getElementById('txtDiscountValue');
 
   const hidCustomerId = document.getElementById('hidCustomerId');
   const chkSelectAllCustomer = document.getElementById('chkSelectAllCustomer');
@@ -31,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateToolbarState();
 
+  /*** new */
   btnNewCustomer.addEventListener('click', () => {
     frmCustomer.reset();
     hidCustomerId.value = '';
@@ -45,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*** save */
   frmCustomer.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -54,13 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
       onSuccess: (result) => {
         frmCustomer.reset();
         hidCustomerId.value = '';
+
+        selDiscountType.value = '';
+        txtDiscountValue.value = '0.00';
+        txtDiscountValue.disabled = true;
+
         Atlas.validation.clear();
 
         Atlas.modal.close('mdlCustomer');
         Atlas.toast.success(result.message);
-        setTimeout(() => {
-          Atlas.page.refresh();
-        }, 1500);
+        setTimeout(() => Atlas.page.refresh(), 1500);
       },
       onError: (result) => {
         Atlas.toast.error(result.message);
@@ -68,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*** edit */
   btnEditCustomer.addEventListener('click', async () => {
     const id = getSelectedCustomerId();
 
@@ -76,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const result = await Atlas.ajax.get(
-      'customers/get/' + id
+      `customers/get/${id}`
     );
 
     if (!result.success) {
@@ -95,6 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
     txtTelephoneNo.value = result.data.telephone_no;
     txtEmailAddress.value = result.data.email_address;
     txtCreditLimit.value = result.data.credit_limit;
+    selDiscountType.value = result.data.discount_type || '';
+    txtDiscountValue.value = Atlas.format.parseNumber(result.data.discount_value).toFixed(2);
+    txtDiscountValue.disabled = !result.data.discount_type;
 
     $('#selSalesman').val(result.data.salesman_id).trigger('change');
     $('#selTerms').val(result.data.terms_id).trigger('change');
@@ -169,6 +180,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnRefreshCustomer.addEventListener('click', () => Atlas.page.redirect(`customers`));
+
+  /*** customer discount type change */
+  selDiscountType.addEventListener('change', () => {
+    if (!selDiscountType.value) {
+      txtDiscountValue.value = '0.00';
+      txtDiscountValue.disabled = true;
+      return;
+    }
+
+    txtDiscountValue.disabled = false;
+    txtDiscountValue.focus();
+    txtDiscountValue.select();
+  });
 });
 
 const getSelectedCustomerId = () => {

@@ -114,6 +114,36 @@ class Customers extends MY_Controller
       'required|trim'
     );
 
+    /*** validate customer discount */
+    $discountType = strtoupper(trim($postData['discount_type'] ?? ''));
+    $discountValue = (float)($postData['discount_value'] ?? 0);
+    if ($discountType !== '' && !in_array(
+        $discountType,
+        ['PERCENT', 'AMOUNT'],
+        TRUE
+      )
+    ) {
+      return $this->jsonResponse(
+        FALSE,
+        'Invalid customer discount type.'
+      );
+    }
+
+    if ($discountValue < 0) {
+      return $this->jsonResponse(
+        FALSE,
+        'Discount value cannot be negative.'
+      );
+    }
+
+    if ($discountType === 'PERCENT' &&$discountValue > 100) {
+      return $this->jsonResponse(
+        FALSE,
+        'Percentage discount cannot exceed 100%.'
+      );
+    }
+    /*** end validate customer discount */
+
     if (!$this->form_validation->run()) {
       return $this->validationResponse();
     }
@@ -129,6 +159,8 @@ class Customers extends MY_Controller
       'outlet_type_id' => (int) $postData['outlet_type_id'],
       'terms_id'       => trim($postData['terms_id']),
       'credit_limit'   => (float) $postData['credit_limit'],
+      'discount_type'  => !empty($postData['discount_type']) ? strtoupper(trim($postData['discount_type'])) : NULL,
+      'discount_value' => !empty($postData['discount_type']) ? (float) $postData['discount_value'] : 0,
     ];
 
     if (empty($id)) {

@@ -428,11 +428,16 @@ const validateStockTransfer = () => {
 
     hasProduct = true;
 
-    const qty = Number(row.querySelector('.st-qty').value || 0);
+    const qty = Atlas.format.parseNumber(row.querySelector('.st-qty').value || 0);
     if (qty <= 0) {
-      Atlas.toast.warning(
-        `Invalid transfer quantity on row ${i + 1}.`
-      );
+      Atlas.toast.warning(`Invalid transfer quantity on row ${i + 1}.`);
+      setTimeout(() => row.querySelector('.st-qty').focus(), 500);
+      return false;
+    }
+
+    const available = Atlas.format.parseNumber(row.querySelector('.st-available').textContent);
+    if (qty > available) {
+      Atlas.toast.warning(`Transfer quantity exceeds available stock on row ${i + 1}.`);
       setTimeout(() => row.querySelector('.st-qty').focus(), 500);
       return false;
     }

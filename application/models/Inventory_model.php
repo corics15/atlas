@@ -223,7 +223,7 @@ class Inventory_model extends CI_Model
     }
   }
 
-  /*** post sales */
+  /*** post sales, dead/legacy code */
   public function postSales($salesInvoiceId)
   {
     $this->db->trans_begin();

@@ -72,6 +72,8 @@
                         data-terms="<?= htmlspecialchars($customer->terms_name) ?>"
                         data-terms-id="<?= $customer->terms_id ?>"
                         data-credit-limit="<?= $customer->credit_limit ?>"
+                        data-discount-type="<?= htmlspecialchars($customer->discount_type ?? '') ?>"
+                        data-discount-value="<?= (float)($customer->discount_value ?? 0) ?>"
                         <?= isset($salesOrder)
                             && $salesOrder->customer_id == $customer->id
                                 ? 'selected'

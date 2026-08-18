@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           price: Atlas.format.parseNumber(row.querySelector('.po-price').value),
           discount: Atlas.format.parseNumber(row.querySelector('.po-discount').value),
           amount: Atlas.format.parseNumber(row.querySelector('.po-total').textContent),
-          uom_id: Atlas.format.integer(uomId)
+          uom_id: Atlas.format.parseNumber(uomId),
         });
       }
 
@@ -519,14 +519,6 @@ const populateHeader = (header) => {
   document.getElementById('btnCancelPurchaseOrder').setAttribute('data-status', header.status)
 }
 
-const enableEditMode = (header) => {
-  isEditMode = true;
-  purchaseOrderId = header.id;
-
-  btnSavePurchaseOrder.disabled = header.status !== 'OPEN';
-  txtPONo.value = header.po_no;
-}
-
 const populateDetails = (details) => {
   const tbody = document.getElementById('tblPurchaseOrderDetails');
   tbody.innerHTML = '';
@@ -546,8 +538,15 @@ const populateDetails = (details) => {
     tr.querySelector('.po-discount').value = Number(detail.discount).toFixed(2);
 
     calculateRowTotal(tr);
-    console.log(detail)
   });
+}
+
+const enableEditMode = (header) => {
+  isEditMode = true;
+  purchaseOrderId = header.id;
+
+  btnSavePurchaseOrder.disabled = header.status !== 'OPEN';
+  txtPONo.value = header.po_no;
 }
 
 const markDirty = () => {

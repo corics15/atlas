@@ -260,6 +260,51 @@ class Purchase_return_model extends CI_Model
             continue;
           }
 
+          /*** validate source GR snapshot */
+            $goodsReceiptDetail = $this->db
+                ->select('
+                  product_id,
+                  uom_id,
+                  conversion_factor
+                ')
+                ->where('id', $detail->goods_receipt_detail_id)
+                ->get('t_goods_receipt_details')
+                ->row();
+
+            if (!$goodsReceiptDetail) {
+              throw new Exception(
+                'Goods Receipt detail not found.'
+              );
+            }
+
+            if (
+              (int)$detail->product_id !==
+              (int)$goodsReceiptDetail->product_id
+            ) {
+              throw new Exception(
+                'Purchase Return product does not match the Goods Receipt.'
+              );
+            }
+
+            if (
+              (int)$detail->uom_id !==
+              (int)$goodsReceiptDetail->uom_id
+            ) {
+              throw new Exception(
+                'Purchase Return UOM does not match the Goods Receipt.'
+              );
+            }
+
+            if (
+              (float)$detail->conversion_factor !==
+              (float)$goodsReceiptDetail->conversion_factor
+            ) {
+              throw new Exception(
+                'Purchase Return conversion does not match the Goods Receipt.'
+              );
+            }
+          /*** end validate */
+
           $hasQty = TRUE;
 
           $this->db->insert(

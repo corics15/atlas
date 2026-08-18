@@ -58,10 +58,23 @@ class Customer_model extends CI_Model
 
   public function getDropdown()
   {
-    $this->db->select('id, customer_name, salesman_id, terms_name, credit_limit, terms_id');
+    $this->db->select('
+      id,
+      customer_name,
+      salesman_id,
+      terms_name,
+      credit_limit,
+      terms_id,
+      discount_type,
+      discount_value
+    ');
+
     $this->db->where('is_active', TRUE);
     $this->db->order_by('customer_name');
 
-    return $this->db->get('v_customers')->result();
+    return $this->db
+        ->get('v_customers')
+        ->result();
   }
+
 }

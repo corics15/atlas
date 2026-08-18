@@ -34,6 +34,32 @@ class Company extends MY_Controller
         );
       }
 
+      /*** validate VAT settings */
+        $vatMode = strtoupper(trim($request['vat_mode'] ?? ''));
+        $vatRate = (float)(  $request['vat_rate'] ?? 0);
+
+        if (
+          !in_array(
+            $vatMode,
+            ['INCLUSIVE', 'EXCLUSIVE'],
+            TRUE
+          )
+        ) {
+          throw new Exception(
+            'Invalid VAT pricing mode.'
+          );
+        }
+
+        if (  $vatRate < 0 ||  $vatRate > 100) {
+          throw new Exception(
+            'VAT rate must be between 0 and 100.'
+          );
+        }
+
+        $request['vat_mode'] = $vatMode;
+        $request['vat_rate'] = $vatRate;
+      /*** end validate VAT settings */
+
       $logoPath = trim($request['current_logo'] ?? '' );
 
       if (isset($_FILES['logo']) && $_FILES['logo']['error'] !== UPLOAD_ERR_NO_FILE) {

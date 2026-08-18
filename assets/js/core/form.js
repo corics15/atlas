@@ -6,14 +6,10 @@ class AtlasForm {
 
     const formData = new FormData(options.form);
 
-    Atlas.loader.show();
-
     const result = await Atlas.ajax.post(
       options.url,
       formData
     );
-
-    Atlas.loader.hide();
 
     if (result.success) {
       if (typeof options.onSuccess === 'function') {

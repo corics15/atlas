@@ -121,6 +121,7 @@ class Purchase_order_model extends CI_Model
             d.id,
             d.product_id,
             d.uom_id,
+            d.conversion_factor,
             p.uom_id AS base_uom_id,
             p.barcode,
             s.supplier_name,
@@ -133,10 +134,23 @@ class Purchase_order_model extends CI_Model
             d.discount
         ")
         ->from('t_purchase_order_details d')
-        ->join('m_products p', 'p.id = d.product_id')
-        ->join('m_suppliers s', 's.id = p.supplier_id')
-        ->join('m_uom u', 'u.id = d.uom_id', 'left')
-        ->where('purchase_order_id', $id)
+        ->join(
+          'm_products p',
+          'p.id = d.product_id'
+        )
+        ->join(
+          'm_suppliers s',
+          's.id = p.supplier_id'
+        )
+        ->join(
+          'm_uom u',
+          'u.id = d.uom_id',
+          'left'
+        )
+        ->where(
+          'd.purchase_order_id',
+          $id
+        )
         ->order_by('d.id')
         ->get()
         ->result();
@@ -496,12 +510,13 @@ class Purchase_order_model extends CI_Model
                 price,
                 discount,
                 uom_id,
+                conversion_factor,
                 entered_by,
                 entered_on
               )
               VALUES
               (
-                ?,?,?,?,?,?,?,
+                ?,?,?,?,?,?,?,?,
                 CURRENT_TIMESTAMP
               )
     ";
@@ -516,6 +531,7 @@ class Purchase_order_model extends CI_Model
           $detail->price,
           $detail->discount,
           $detail->uom_id,
+          $detail->conversion_factor,
           $this->session->userdata('user_id'),
         ]
       );
@@ -573,6 +589,17 @@ class Purchase_order_model extends CI_Model
         );
       }
     }
+
+    /*** validate detail UOM snapshots */
+      foreach ($po->details as $detail) {
+
+        if (empty($detail->uom_id)) {
+          throw new Exception(
+            'Please select a UOM for all Purchase Order items.'
+          );
+        }
+      }
+    /*** end validate */
   }
 
   private function updateHeader($po)

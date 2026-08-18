@@ -681,6 +681,45 @@ class Goods_receipt_model extends CI_Model
         throw new Exception('Purchase Order detail not found.');
       }
 
+      /*** validate GR UOM snapshot */
+        if (empty($detail->uom_id)) {
+          throw new Exception(
+            'Please select a UOM for all Goods Receipt items.'
+          );
+        }
+
+        $conversionFactor = (float)($detail->conversion_factor ?? 0);
+
+        if ($conversionFactor <= 0) {
+          throw new Exception(
+            'Invalid UOM conversion on Goods Receipt.'
+          );
+        }
+
+        /*** get product base UOM */
+        $product = $this->db
+            ->select('uom_id')
+            ->where('id', $detail->product_id)
+            ->get('m_products')
+            ->row();
+
+        if (!$product) {
+          throw new Exception(
+            'Goods Receipt contains an invalid product.'
+          );
+        }
+
+        /*** base UOM must always use conversion 1 */
+        if (
+          (int)$detail->uom_id === (int)$product->uom_id &&
+          $conversionFactor != 1
+        ) {
+          throw new Exception(
+            'Invalid conversion for product base UOM.'
+          );
+        }
+      /*** end validate */
+
       $row = $indexed[$detail->po_detail_id];
       $remaining = $row->qty - $row->qty_received;
 

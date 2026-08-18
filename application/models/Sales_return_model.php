@@ -216,6 +216,11 @@ class Sales_return_model extends CI_Model
               sid.id AS sales_invoice_detail_id,
               sid.product_id,
               sid.uom_id,
+              sid.unit_price,
+              sid.discount_type,
+              sid.discount_percent,
+              sid.discount_amount AS si_discount_amount,
+              sid.qty AS si_qty,
               sid.conversion_factor,
               p.uom_id AS base_uom_id,
               sid.qty - COALESCE(sr.qty_returned, 0) AS qty,
@@ -324,6 +329,107 @@ class Sales_return_model extends CI_Model
           continue;
         }
 
+        /*** validate source SI snapshot */
+          $salesInvoiceDetail = $this->db
+              ->select('
+                product_id,
+                uom_id,
+                conversion_factor,
+                qty,
+                unit_price,
+                discount_type,
+                discount_percent,
+                discount_amount
+              ')
+              ->where('id', $detail->sales_invoice_detail_id)
+              ->get('t_sales_invoice_details')
+              ->row();
+
+          if (!$salesInvoiceDetail) {
+            throw new Exception(
+              'Sales Invoice detail not found.'
+            );
+          }
+
+          if ((int)$detail->product_id !== (int)$salesInvoiceDetail->product_id) {
+            throw new Exception(
+              'Sales Return product does not match the Sales Invoice.'
+            );
+          }
+
+          if ((int)$detail->uom_id !== (int)$salesInvoiceDetail->uom_id) {
+            throw new Exception(
+              'Sales Return UOM does not match the Sales Invoice.'
+            );
+          }
+
+          if ((float)$detail->conversion_factor !== (float)$salesInvoiceDetail->conversion_factor) {
+            throw new Exception(
+              'Sales Return conversion does not match the Sales Invoice.'
+            );
+          }
+        /*** end validdate */
+
+        /*** calculate authoritative Sales Return commercial snapshot */
+          $returnQty = (float)$detail->qty;
+          $invoiceQty = (float)$salesInvoiceDetail->qty;
+          $unitPrice = (float)$salesInvoiceDetail->unit_price;
+          $discountType = strtoupper(trim($salesInvoiceDetail->discount_type ?? ''));
+          $discountPercent = (float)$salesInvoiceDetail->discount_percent;
+          $invoiceDiscountAmount = (float)$salesInvoiceDetail->discount_amount;
+          $discountAmount = 0;
+
+          /*** percentage discount */
+          if ($discountType === 'PERCENT') {
+            $grossAmount = $returnQty * $unitPrice;
+            $discountAmount = round($grossAmount * ($discountPercent / 100), 2);
+          }
+
+          /*** fixed amount discount */
+          elseif ($discountType === 'AMOUNT') {
+
+            if ($invoiceQty <= 0) {
+              throw new Exception(
+                'Invalid Sales Invoice quantity for discount allocation.'
+              );
+            }
+
+            /*** previous non-cancelled returns */
+            $previous = $this->db
+                ->select('
+                  COALESCE(SUM(srd.qty), 0) AS qty_returned,
+                  COALESCE(SUM(srd.discount_amount), 0) AS discount_returned
+                ', FALSE)
+                ->from('t_sales_return_details srd')
+                ->join(
+                  't_sales_returns sr',
+                  'sr.id = srd.sales_return_id'
+                )
+                ->where(
+                  'srd.sales_invoice_detail_id',
+                  $detail->sales_invoice_detail_id
+                )
+                ->where('sr.status <>', 'CANCELLED')
+                ->get()
+                ->row();
+
+            $previousQty = (float)$previous->qty_returned;
+
+            $previousDiscount = (float)$previous->discount_returned;
+
+            $remainingDiscount = max(0, $invoiceDiscountAmount - $previousDiscount);
+
+            /*** final returned quantity receives exact remaining discount */
+            if (($previousQty + $returnQty) >= $invoiceQty) {
+              $discountAmount = round($remainingDiscount, 2);
+
+            } else {
+              $discountAmount = round($invoiceDiscountAmount * ($returnQty / $invoiceQty), 2);
+              $discountAmount = min($discountAmount, $remainingDiscount);
+            }
+          }
+        /*** end commercial snapshot */
+
         $this->db->insert(
           't_sales_return_details',
           [
@@ -333,10 +439,11 @@ class Sales_return_model extends CI_Model
             'qty'                   => $detail->qty,
             'uom_id'                => $detail->uom_id,
             'conversion_factor'     => $detail->conversion_factor,
-            'unit_price'            => 0,
-            'discount_percent'      => 0,
-            'discount_amount'       => 0,
-            'remarks'               => NULL
+            'unit_price'            => $unitPrice,
+            'discount_type'         => $discountType !== '' ? $discountType : NULL,
+            'discount_percent'      => $discountType === 'PERCENT' ? $discountPercent : 0,
+            'discount_amount'       => $discountAmount,
+            'remarks'               => NULL,
           ]
         );
       }

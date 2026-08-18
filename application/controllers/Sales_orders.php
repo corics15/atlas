@@ -230,15 +230,32 @@ class Sales_orders extends MY_Controller
 
     /*** selected UOM is already the product base UOM */
     if ($uomId === $baseUomId) {
+
+      $product = $this->db
+          ->select('selling_price')
+          ->where('id', $productId)
+          ->get('m_products')
+          ->row();
+
+      if (!$product) {
+        return $this->jsonResponse(
+          false,
+          'Product not found.',
+          null
+        );
+      }
+
       return $this->jsonResponse(
         true,
         '',
         [
           'conversion_factor' => 1,
+          'selling_price' => (float) $product->selling_price,
           'is_known' => true
         ]
       );
     }
+    /*** end selected UOM */
 
     $productUom = $this->Product_uom_model->get(
       $productId,
@@ -249,9 +266,8 @@ class Sales_orders extends MY_Controller
       true,
       '',
       [
-        'conversion_factor' => $productUom
-          ? (float) $productUom->conversion_factor
-          : null,
+        'conversion_factor' => $productUom ? (float) $productUom->conversion_factor : null,
+        'selling_price' => $productUom ? (float) $productUom->selling_price : null,
         'is_known' => $productUom ? true : false
       ]
     );

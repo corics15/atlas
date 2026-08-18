@@ -56,6 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('mobile_no', document.getElementById('mobileNo').value.trim());
     formData.append('email_address', document.getElementById('emailAddress').value.trim());
     formData.append('tin_no', document.getElementById('tinNo').value.trim());
+    formData.append('vat_mode', document.getElementById('vatMode').value);
+    formData.append('vat_rate', Atlas.format.parseNumber(document.getElementById('vatRate').value));
     formData.append('current_logo', document.getElementById('currentLogo').value);
 
     const logoInput = document.getElementById('companyLogo');
@@ -72,6 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!companyName) {
       Atlas.toast.warning('Company Name is required.');
+      return;
+    }
+
+    const vatRate = Atlas.format.parseNumber(document.getElementById('vatRate').value);
+    if (vatRate < 0 || vatRate > 100) {
+      Atlas.toast.warning('VAT rate must be between 0 and 100.');
+      document.getElementById('vatRate').focus();
       return;
     }
 

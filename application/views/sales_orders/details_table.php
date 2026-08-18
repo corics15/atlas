@@ -21,15 +21,21 @@
           <table class="table table-sm table-hover mb-0">
             <thead class="thead-orange">
               <tr>
-                <th width="40" class="text-center">#</th>
-                <th width="170" class="text-center">Scan/Input Barcode</th>
-                <th>Description</th>
-                <th width="80" class="text-center">UOM</th>
-                <th width="120" class="text-right">Available</th>
-                <th width="120" class="text-right">Fulfilled</th>
-                <th width="120" class="text-right">Remaining</th>
-                <th width="120" class="text-right">Qty</th>
-                <th width="40"></th>
+                <th class="text-center">#</th>
+                <th class="text-center" width="13%">Scan/Input Barcode</th>
+                <th width="15%">Description</th>
+                <th class="text-center">UOM</th>
+                <th class="text-right">Available</th>
+                <th class="text-right">Fulfilled</th>
+                <th class="text-right">Remaining</th>
+                <th class="text-right" width="6%">Qty</th>
+
+                <th class="text-right" width="8%">Unit Price</th>
+                <th class="text-center" width="8%">Discount Type</th>
+                <th class="text-right" width="8%">Discount</th>
+                <th class="text-right" width="8%">Net Amt</th>
+
+                <th </th>
               </tr>
             </thead>
 
@@ -43,15 +49,14 @@
                     data-base-uom-id="<?= $detail->base_uom_id ?>"
                     data-conversion-factor="<?= $detail->conversion_factor ?>"
                     data-base-qty-available="<?= $detail->qty_available ?>">
-                    <td class="so-row-no text-center">
-                      <?= ($index + 1) ?>.
-                    </td>
+
+                    <?php /*** numbering */ ?>
+                    <td class="so-row-no text-center"><?= ($index + 1) ?>.</td>
+
+                    <?php /*** barcode */ ?>
                     <td>
                       <div class="input-group">
-                        <input
-                          type="text"
-                          class="form-control form-control-sm so-barcode atlas-barcode"
-                          placeholder="Barcode"
+                        <input type="text" class="form-control form-control-sm so-barcode atlas-barcode" placeholder="Barcode"
                           value="<?= htmlspecialchars($detail->barcode) ?>">
                         <div class="input-group-append">
                           <button
@@ -62,7 +67,18 @@
                         </div>
                       </div>
                     </td>
-                    <td class="so-description"><?= htmlspecialchars($detail->description) ?></td>
+
+                    <?php /*** description */ ?>
+                    <td class="so-description" data-toggle="tooltip" title="<?= htmlspecialchars($detail->description) ?>">
+                      <?php
+                        $description = htmlspecialchars($detail->description);
+                        echo (mb_strlen($description) > 30)
+                          ? mb_strimwidth($description, 0, 30, '...')
+                          : $description;
+                      ?>
+                    </td>
+
+                    <?php /*** UOM */ ?>
                     <td>
                       <select class="form-control form-control-sm so-uom custom-select w-auto">
                         <option value="">Select...</option>
@@ -77,22 +93,61 @@
                     </td>
 
                     <?php
+                      /*** available qty */
                       $conversionFactor = (float) $detail->conversion_factor;
                       $availableQty = $conversionFactor > 0 ? ((float) $detail->qty_available / $conversionFactor) : 0;
                     ?>
                     <td class="so-available text-right"><?= number_format($availableQty, 2) ?></td>
 
+                    <?php /*** fullfilled */ ?>
                     <td class="text-right"><?= number_format($detail->qty_fulfilled, 0) ?></td>
+
+                    <?php /*** remaining */ ?>
                     <td class="text-right <?= ($detail->qty_remaining == 0) ? 'text-success font-weight-500' : '' ?>" <?= ($detail->qty_remaining == 0) ? 'title="Fully Invoiced"' : '' ?>>
                       <?= number_format($detail->qty_remaining, 0) ?>
                     </td>
+
+                    <?php /*** qty */ ?>
                     <td class="text-right">
-                      <input
-                        type="number"
-                        step="any"
-                        class="form-control form-control-sm text-right so-qty"
+                      <input type="number" step="any" class="form-control form-control-sm text-right so-qty"
                         value="<?= number_format($detail->qty) ?>">
                     </td>
+
+                    <?php /*** unit price */ ?>
+                    <td>
+                      <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right so-unit-price"
+                        value="<?= number_format((float)($detail->unit_price ?? 0), 2, '.', '') ?>">
+                    </td>
+
+                    <?php /*** discount type selection */ ?>
+                    <td>
+                      <select class="form-control form-control-sm so-discount-type custom-select">
+                        <option value="">No Discount</option>
+                        <option value="PERCENT"
+                          <?= (($detail->discount_type ?? '') === 'PERCENT') ? 'selected' : '' ?>>
+                          Percent (%)
+                        </option>
+                        <option value="AMOUNT"
+                          <?= (($detail->discount_type ?? '') === 'AMOUNT') ? 'selected' : '' ?>>
+                          Amount
+                        </option>
+                      </select>
+                    </td>
+
+                    <?php /*** discount amount or percentage */ ?>
+                    <td>
+                      <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right so-discount-value"
+                        value="<?=
+                          (($detail->discount_type ?? '') === 'PERCENT')
+                            ? number_format((float)($detail->discount_percent ?? 0), 2, '.', '')
+                            : number_format((float)($detail->discount_amount ?? 0), 2, '.', '')
+                        ?>">
+                    </td>
+
+                    <?php /*** net amount */ ?>
+                    <td class="so-net-amount text-right">0.00</td>
+
+                    <?php /*** delete row button */ ?>
                     <td class="text-center">
                       <i class="fas fa-trash text-danger pointer btn-delete-row"></i>
                     </td>
@@ -102,9 +157,10 @@
               <?php else: ?>
 
                 <tr class="so-detail-row">
-                  <td class="so-row-no text-center">
-                    1.
-                  </td>
+                  <?php /*** numbering */ ?>
+                  <td class="so-row-no text-center">1.</td>
+
+                  <?php /*** barcode */ ?>
                   <td>
                     <div class="input-group">
                       <input type="text" class="form-control form-control-sm so-barcode atlas-barcode" placeholder="Barcode">
@@ -117,11 +173,14 @@
                       </div>
                     </div>
                   </td>
-                  <td class="so-description"></td>
+
+                  <?php /*** description */ ?>
+                  <td class="so-description" data-toggle="tooltip"></td>
+
+                  <?php /*** UOM */ ?>
                   <td>
                     <select class="form-control form-control-sm so-uom custom-select w-auto">
                       <option value="">Select...</option>
-
                       <?php foreach ($uoms as $uom): ?>
                         <option value="<?= $uom->id; ?>">
                           <?= htmlspecialchars($uom->uom); ?>
@@ -129,16 +188,43 @@
                       <?php endforeach; ?>
                     </select>
                   </td>
+
+                  <?php /*** available */ ?>
                   <td class="so-available text-right">-</td>
+
+                  <?php /*** fulfilled */ ?>
                   <td></td>
+
+                  <?php /*** remaining */ ?>
                   <td></td>
+
+                  <?php /*** qty */ ?>
                   <td class="text-right">
-                    <input
-                      type="number"
-                      step="any"
-                      class="form-control form-control-sm text-right so-qty"
-                      value="">
+                    <input type="number" step="any" class="form-control form-control-sm text-right so-qty" value="">
                   </td>
+
+                  <?php /*** unit price */ ?>
+                  <td>
+                    <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right so-unit-price" value="0.00">
+                  </td>
+
+                  <?php /*** discount type selection */ ?>
+                  <td>
+                    <select class="form-control form-control-sm so-discount-type custom-select">
+                      <option value="">No Discount</option>
+                      <option value="PERCENT">Percent (%)</option>
+                      <option value="AMOUNT">Amount</option>
+                    </select>
+                  </td>
+
+                  <?php /*** discount value */ ?>
+                  <td>
+                    <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right so-discount-value" value="0.00" disabled>
+                  </td>
+
+                  <?php /*** net amount */ ?>
+                  <td class="so-net-amount text-right">0.00</td>
+
                   <td class="text-center"><i class="fas fa-trash text-danger pointer btn-delete-row"></i></td>
                 </tr>
 

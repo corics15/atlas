@@ -3,13 +3,42 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Company_model extends MY_Model
 {
+
   public function get()
   {
+    $company = $this->db
+        ->where('is_active', TRUE)
+        ->order_by('id', 'ASC')
+        ->get('m_company')
+        ->row();
+
+    if ($company) {
+      return $company;
+    }
+
+    /*** initialize company settings on clean database */
+    $this->db->insert(
+      'm_company',
+      [
+        'company_name' => 'COMPANY NAME',
+        'vat_mode'     => 'INCLUSIVE',
+        'vat_rate'     => 12.0000,
+        'is_active'    => TRUE,
+        'entered_by'   => $this->session->userdata('user_id'),
+        'entered_on'   => date('Y-m-d H:i:s')
+      ]
+    );
+
+    if (!$this->db->affected_rows()) {
+      throw new Exception(
+        'Unable to initialize company information.'
+      );
+    }
+
     return $this->db
-      ->where('is_active', TRUE)
-      ->order_by('id', 'ASC')
-      ->get('m_company')
-      ->row();
+        ->where('id', $this->db->insert_id())
+        ->get('m_company')
+        ->row();
   }
 
   public function update($id, $data)
@@ -44,6 +73,8 @@ class Company_model extends MY_Model
           'mobile_no'     => trim($data['mobile_no'] ?? ''),
           'email_address' => trim($data['email_address'] ?? ''),
           'tin_no'        => trim($data['tin_no'] ?? ''),
+          'vat_mode'      => strtoupper(trim($data['vat_mode'] ?? 'INCLUSIVE')),
+          'vat_rate'      => (float)($data['vat_rate'] ?? 12),
           'logo'          => trim($data['logo'] ?? ''),
           'updated_by'    => $this->session->userdata('user_id'),
           'updated_on'    => date('Y-m-d H:i:s')

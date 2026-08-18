@@ -26,6 +26,10 @@
                   <th width="120" class="text-right">Available</th>
                   <th width="120" class="text-right">Qty</th>
                   <th width="80" class="text-center">UOM</th>
+                  <th width="120" class="text-right">Unit Price</th>
+                  <th width="120" class="text-center">Discount Type</th>
+                  <th width="120" class="text-right">Discount</th>
+                  <th width="130" class="text-right">Net Amount</th>
                   <th width="40"></th>
                 </tr>
               </thead>
@@ -78,6 +82,71 @@
                       <td class="so-uom text-center">
                         <?= htmlspecialchars($detail->uom) ?>
                       </td>
+
+                      <?php
+                        $unitPrice = (float)($detail->unit_price ?? 0);
+                        $discountType = $detail->discount_type ?? '';
+
+                        /*** saved SR already has authoritative discount amount */
+                        if (isset($detail->discount_amount)) {
+                          $discountAmount = (float)$detail->discount_amount;
+                          $hasSavedDiscount = TRUE;
+                        } else {
+                          /**
+                           * New SR:
+                           * percentage can be previewed exactly.
+                           * fixed amount is allocated authoritatively during save.
+                           */
+                          $hasSavedDiscount = FALSE;
+
+                          if ($discountType === 'PERCENT') {
+                            $discountAmount = round((float)$detail->qty * $unitPrice * ((float)$detail->discount_percent / 100), 2);
+                          } else {
+                            $discountAmount = 0;
+                          }
+                        }
+                        $grossAmount = (float)$detail->qty * $unitPrice;
+                        $netAmount = $grossAmount - $discountAmount;
+                      ?>
+
+                      <td class="text-right">
+                        <?= number_format($unitPrice, 2) ?>
+                      </td>
+
+                      <td class="text-center">
+                        <?php if ($discountType === 'PERCENT'): ?>
+                          Percent (%)
+                        <?php elseif ($discountType === 'AMOUNT'): ?>
+                          Amount
+                        <?php else: ?>
+                          -
+                        <?php endif; ?>
+                      </td>
+
+                      <td class="text-right">
+                        <?php if ($discountType === 'PERCENT'): ?>
+                          <?= number_format((float)$detail->discount_percent, 2) ?>%
+                        <?php elseif ($discountType === 'AMOUNT'): ?>
+                          <?php if ($hasSavedDiscount): ?>
+                            <?= number_format($discountAmount, 2) ?>
+                          <?php else: ?>
+                            <span class="text-muted">
+                              Calculated on Save
+                            </span>
+                          <?php endif; ?>
+                        <?php else: ?>
+                          0.00
+                        <?php endif; ?>
+                      </td>
+
+                      <td class="text-right font-weight-500">
+                        <?php if ($discountType === 'AMOUNT' && !$hasSavedDiscount): ?>
+                          -
+                        <?php else: ?>
+                          <?= number_format($netAmount, 2) ?>
+                        <?php endif; ?>
+                      </td>
+
                       <td class="text-center">
                         <i class="fas fa-trash text-muted pointer btn-delete-row no-event"></i>
                       </td>
@@ -115,6 +184,12 @@
                         value="">
                     </td>
                     <td class="so-uom text-center"></td>
+
+                    <td class="text-right">0.00</td>
+                    <td class="text-center">-</td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right font-weight-500">0.00</td>
+
                     <td class="text-center">
                       <i class="fas fa-trash text-danger pointer btn-delete-row"></i>
                     </td>

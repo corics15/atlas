@@ -295,6 +295,131 @@ class Sales_invoice_model extends CI_Model
             continue;
           }
 
+          /*** validate source DR snapshot */
+            $deliveryReceiptDetail = $this->db
+                ->select('
+                  product_id,
+                  uom_id,
+                  conversion_factor
+                ')
+                ->where('sales_order_detail_id', $detail->sales_order_detail_id)
+                ->where('delivery_receipt_id', $salesInvoice->delivery_receipt_id)
+                ->get('t_delivery_receipt_details')
+                ->row();
+
+            if (!$deliveryReceiptDetail) {
+              throw new Exception(
+                'Delivery Receipt detail not found.'
+              );
+            }
+
+            if (
+              (int)$detail->product_id !==
+              (int)$deliveryReceiptDetail->product_id
+            ) {
+              throw new Exception(
+                'Sales Invoice product does not match the Delivery Receipt.'
+              );
+            }
+
+            if (
+              (int)$detail->uom_id !==
+              (int)$deliveryReceiptDetail->uom_id
+            ) {
+              throw new Exception(
+                'Sales Invoice UOM does not match the Delivery Receipt.'
+              );
+            }
+
+            if (
+              (float)$detail->conversion_factor !==
+              (float)$deliveryReceiptDetail->conversion_factor
+            ) {
+              throw new Exception(
+                'Sales Invoice conversion does not match the Delivery Receipt.'
+              );
+            }
+          /*** end validate */
+
+          /*** get authoritative SO commercial snapshot */
+            $salesOrderDetail = $this->db
+                ->select('
+                  qty,
+                  unit_price,
+                  discount_type,
+                  discount_percent,
+                  discount_amount
+                ')
+                ->where('id', $detail->sales_order_detail_id)
+                ->get('t_sales_order_details')
+                ->row();
+
+            if (!$salesOrderDetail) {
+              throw new Exception(
+                'Sales Order detail not found.'
+              );
+            }
+
+            $invoiceQty = (float)$detail->qty;
+            $soQty = (float)$salesOrderDetail->qty;
+            $unitPrice = (float)$salesOrderDetail->unit_price;
+            $discountType = strtoupper(trim($salesOrderDetail->discount_type ?? ''));
+            $discountPercent = (float)$salesOrderDetail->discount_percent;
+            $soDiscountAmount = (float)$salesOrderDetail->discount_amount;
+            $discountAmount = 0;
+
+            /*** percentage discount */
+            if ($discountType === 'PERCENT') {
+              $grossAmount = $invoiceQty * $unitPrice;
+              $discountAmount = round($grossAmount * ($discountPercent / 100), 2);
+            }
+
+            /*** fixed row discount */
+            elseif ($discountType === 'AMOUNT') {
+
+              if ($soQty <= 0) {
+                throw new Exception(
+                  'Invalid Sales Order quantity for discount allocation.'
+                );
+              }
+
+              /*** get previously invoiced qty + discount */
+              $previous = $this->db
+                            ->select('
+                              COALESCE(SUM(sid.qty), 0) AS qty_invoiced,
+                              COALESCE(SUM(sid.discount_amount), 0) AS discount_invoiced
+                            ', FALSE)
+                            ->from('t_sales_invoice_details sid')
+                            ->join(
+                              't_sales_invoices si',
+                              'si.id = sid.sales_invoice_id'
+                            )
+                            ->where(
+                              'sid.sales_order_detail_id',
+                              $detail->sales_order_detail_id
+                            )
+                            ->where('si.status <>', 'CANCELLED')
+                            ->get()
+                            ->row();
+
+              $previousQty = (float)$previous->qty_invoiced;
+              $previousDiscount = (float)$previous->discount_invoiced;
+              $remainingDiscount = max(0, $soDiscountAmount - $previousDiscount);
+
+              /*** final quantity receives exact remaining discount */
+              if (($previousQty + $invoiceQty) >= $soQty) {
+                $discountAmount = round($remainingDiscount, 2);
+              } else {
+
+                /*** proportional allocation */
+                $discountAmount = round($soDiscountAmount * ($invoiceQty / $soQty), 2);
+
+                /*** never exceed remaining discount */
+                $discountAmount = min($discountAmount, $remainingDiscount);
+              }
+            }
+          /*** end authoritative SO commercial snapshot */
+
           $this->db->insert(
             't_sales_invoice_details',
             [
@@ -304,10 +429,11 @@ class Sales_invoice_model extends CI_Model
               'uom_id'                => $detail->uom_id,
               'conversion_factor'     => $detail->conversion_factor,
               'qty'                   => $detail->qty,
-              'unit_price'            => 0,
-              'discount_percent'      => 0,
-              'discount_amount'       => 0,
-              'remarks'               => NULL
+              'unit_price'            => $unitPrice,
+              'discount_type'         => $discountType !== '' ? $discountType : NULL,
+              'discount_percent'      => $discountType === 'PERCENT' ? $discountPercent : 0,
+              'discount_amount'       => $discountAmount,
+              'remarks' => NULL,
             ]
           );
         }
@@ -606,6 +732,11 @@ class Sales_invoice_model extends CI_Model
                                 drd.uom_id,
                                 drd.conversion_factor,
                                 p.uom_id AS base_uom_id,
+                                sod.qty AS so_qty,
+                                sod.unit_price,
+                                sod.discount_type,
+                                sod.discount_percent,
+                                sod.discount_amount AS so_discount_amount,
                                 drd.qty - COALESCE(inv.qty_invoiced, 0) AS qty,
                                 p.barcode,
                                 p.description,
@@ -616,6 +747,7 @@ class Sales_invoice_model extends CI_Model
                                 u.uom
                               FROM t_delivery_receipt_details drd
                               INNER JOIN m_products p ON p.id = drd.product_id
+                              INNER JOIN t_sales_order_details sod ON sod.id = drd.sales_order_detail_id
                               LEFT JOIN t_branch_inventory bi ON bi.product_id = drd.product_id AND bi.branch_id = ?
                               LEFT JOIN m_uom u ON u.id = drd.uom_id
                               LEFT JOIN (

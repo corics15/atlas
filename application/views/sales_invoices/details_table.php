@@ -27,6 +27,10 @@
                   <th width="120" class="text-right">Available</th>
                   <th width="120" class="text-right">Qty</th>
                   <th width="80" class="text-center">UOM</th>
+                  <th width="120" class="text-right">Unit Price</th>
+                  <th width="120" class="text-center">Discount Type</th>
+                  <th width="120" class="text-right">Discount</th>
+                  <th width="130" class="text-right">Net Amount</th>
                 </tr>
               </thead>
 
@@ -63,6 +67,46 @@
                           value="<?= number_format($detail->qty, 0) ?>" readonly>
                       </td>
                       <td class="so-uom text-center"><?= htmlspecialchars($detail->uom) ?></td>
+
+                      <?php
+                        $grossAmount = (float)$detail->qty * (float)$detail->unit_price;
+                        $discountAmount = isset($detail->discount_amount) ? (float)$detail->discount_amount : 0;
+                        $netAmount = $grossAmount - $discountAmount;
+                        $discountType = $detail->discount_type ?? '';
+                      ?>
+
+                      <td class="text-right">
+                        <?= number_format((float)$detail->unit_price, 2) ?>
+                      </td>
+
+                      <td class="text-center">
+                        <?php if ($discountType === 'PERCENT'): ?>
+                          Percent (%)
+                        <?php elseif ($discountType === 'AMOUNT'): ?>
+                          Amount
+                        <?php else: ?>
+                          -
+                        <?php endif; ?>
+                      </td>
+
+                      <td class="text-right">
+                        <?php if ($discountType === 'PERCENT'): ?>
+                          <?= number_format(      (float)$detail->discount_percent, 2) ?>%
+                        <?php elseif ($discountType === 'AMOUNT'): ?>
+                          <?php if (isset($detail->discount_amount)): ?>
+                            <?= number_format($discountAmount, 2) ?>
+                          <?php else: ?>
+                            <span class="text-muted">Calculated on Save</span>
+                          <?php endif; ?>
+                        <?php else: ?>
+                          0.00
+                        <?php endif; ?>
+                      </td>
+
+                      <td class="text-right font-weight-500">
+                        <?= number_format($netAmount, 2) ?>
+                      </td>
+
                     </tr>
                   <?php endforeach; ?>
 
@@ -88,13 +132,15 @@
                     <td class="so-description"></td>
                     <td class="so-available text-right">-</td>
                     <td class="text-right">
-                      <input
-                        type="number"
-                        step="any"
-                        class="form-control form-control-sm text-right so-qty"
-                        value="">
+                      <input type="number" step="any" class="form-control form-control-sm text-right so-qty" value="">
                     </td>
                     <td class="so-uom text-center"></td>
+
+                    <td class="text-right">0.00</td>
+                    <td class="text-center">-</td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right font-weight-500">0.00</td>
+
                     <td class="text-center"><i class="fas fa-trash text-danger pointer btn-delete-row"></i></td>
                   </tr>
 

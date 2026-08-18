@@ -73,6 +73,10 @@ class Sales_order_model extends CI_Model
                               p.description,
                               COALESCE(bi.qty_on_hand, 0) AS qty_available,
                               sod.qty,
+                              sod.unit_price,
+                              sod.discount_type,
+                              sod.discount_percent,
+                              sod.discount_amount,
                               COALESCE(inv.qty_invoiced, 0) AS qty_fulfilled,
                               sod.qty - COALESCE(inv.qty_invoiced, 0) AS qty_remaining,
                               u.uom
@@ -265,8 +269,145 @@ class Sales_order_model extends CI_Model
         $this->db->where('sales_order_id', $salesOrderId)->delete('t_sales_order_details');
       }
 
+      if (empty($postData->details)) {
+        throw new Exception('Please add at least one product.');
+      }
+
+      /*** validate detail UOM snapshots */
+        foreach ($postData->details as $detail) {
+
+          if (empty($detail->product_id)) {
+            throw new Exception(
+              'Sales Order contains an invalid product.'
+            );
+          }
+
+          if (empty($detail->uom_id)) {
+            throw new Exception(
+              'Please select a UOM for all Sales Order items.'
+            );
+          }
+
+          $conversionFactor = (float)($detail->conversion_factor ?? 0);
+
+          if ($conversionFactor <= 0) {
+            throw new Exception(
+              'Invalid UOM conversion on Sales Order.'
+            );
+          }
+
+          /*** get product base UOM */
+          $product = $this->db
+              ->select('uom_id')
+              ->where('id', $detail->product_id)
+              ->get('m_products')
+              ->row();
+
+          if (!$product) {
+            throw new Exception(
+              'Sales Order contains an invalid product.'
+            );
+          }
+
+          /*** base UOM must always use conversion 1 */
+          if (
+            (int)$detail->uom_id === (int)$product->uom_id &&
+            $conversionFactor != 1
+          ) {
+            throw new Exception(
+              'Invalid conversion for product base UOM.'
+            );
+          }
+
+          /*** validate quantity */
+            $qty = (float)($detail->qty ?? 0);
+
+            if ($qty <= 0) {
+              throw new Exception(
+                'Sales Order quantity must be greater than zero.'
+              );
+            }
+
+            /*** validate selling price */
+            $unitPrice = (float)($detail->unit_price ?? 0);
+
+            if ($unitPrice < 0) {
+              throw new Exception(
+                'Sales Order unit price cannot be negative.'
+              );
+            }
+
+            /*** validate discount */
+            $discountType = strtoupper(
+              trim($detail->discount_type ?? '')
+            );
+
+            $discountValue = (float)(
+              $detail->discount_value ?? 0
+            );
+
+            $grossAmount = $qty * $unitPrice;
+
+            if (
+              $discountType !== '' &&
+              !in_array(
+                $discountType,
+                ['PERCENT', 'AMOUNT'],
+                TRUE
+              )
+            ) {
+              throw new Exception(
+                'Invalid Sales Order discount type.'
+              );
+            }
+
+            if ($discountValue < 0) {
+              throw new Exception(
+                'Sales Order discount cannot be negative.'
+              );
+            }
+
+            if (
+              $discountType === 'PERCENT' &&
+              $discountValue > 100
+            ) {
+              throw new Exception(
+                'Sales Order percentage discount cannot exceed 100%.'
+              );
+            }
+
+            if (
+              $discountType === 'AMOUNT' &&
+              $discountValue > $grossAmount
+            ) {
+              throw new Exception(
+                'Sales Order discount cannot exceed the product row amount.'
+              );
+            }
+          /*** end validate quantity */
+
+        }
+      /*** end validate */
+
       /*** INSERT DETAILS */
       foreach ($postData->details as $detail) {
+
+        /*** calculate authoritative discount amount */
+        $qty = (float)$detail->qty;
+        $unitPrice = (float)$detail->unit_price;
+        $discountType = strtoupper(trim($detail->discount_type ?? ''));
+        $discountValue = (float)($detail->discount_value ?? 0);
+        $grossAmount = $qty * $unitPrice;
+        $discountAmount = 0;
+        if ($discountType === 'PERCENT') {
+          $discountAmount = $grossAmount * ($discountValue / 100);
+
+        } elseif ($discountType === 'AMOUNT') {
+          $discountAmount = $discountValue;
+        }
+        $discountAmount = round($discountAmount, 2);
+        /*** endd calculate */
+
         $this->db->insert(
           't_sales_order_details',
           [
@@ -275,8 +416,11 @@ class Sales_order_model extends CI_Model
             'uom_id' => $detail->uom_id,
             'conversion_factor'=> $detail->conversion_factor,
             'qty' => $detail->qty,
-            'unit_price' => 0,
-            'remarks' => NULL
+            'unit_price' => $detail->unit_price,
+            'discount_type' => $discountType !== '' ? $discountType : NULL,
+            'discount_percent' =>  $discountType === 'PERCENT' ? $discountValue : 0,
+            'discount_amount' =>  $discountAmount,
+            'remarks' => NULL,
           ]
         );
       }

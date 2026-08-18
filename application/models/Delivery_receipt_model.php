@@ -238,10 +238,7 @@ class Delivery_receipt_model extends CI_Model
           'entered_on'      => date('Y-m-d H:i:s'),
         ];
 
-        $this->db->insert(
-          't_delivery_receipts',
-          $header
-        );
+        $this->db->insert('t_delivery_receipts', $header);
 
         $deliveryReceiptId = $this->db->insert_id();
         $drNo = $header['dr_no'];
@@ -273,6 +270,51 @@ class Delivery_receipt_model extends CI_Model
           /*** end validate */
 
           $hasQty = TRUE;
+
+          /*** validate source SO snapshot */
+            $salesOrderDetail = $this->db
+                ->select('
+                  product_id,
+                  uom_id,
+                  conversion_factor
+                ')
+                ->where('id', $detail->sales_order_detail_id)
+                ->get('t_sales_order_details')
+                ->row();
+
+            if (!$salesOrderDetail) {
+              throw new Exception(
+                'Sales Order detail not found.'
+              );
+            }
+
+            if (
+              (int)$detail->product_id !==
+              (int)$salesOrderDetail->product_id
+            ) {
+              throw new Exception(
+                'Delivery Receipt product does not match the Sales Order.'
+              );
+            }
+
+            if (
+              (int)$detail->uom_id !==
+              (int)$salesOrderDetail->uom_id
+            ) {
+              throw new Exception(
+                'Delivery Receipt UOM does not match the Sales Order.'
+              );
+            }
+
+            if (
+              (float)$detail->conversion_factor !==
+              (float)$salesOrderDetail->conversion_factor
+            ) {
+              throw new Exception(
+                'Delivery Receipt conversion does not match the Sales Order.'
+              );
+            }
+          /*** end validate */
 
           $this->db->insert(
             't_delivery_receipt_details',

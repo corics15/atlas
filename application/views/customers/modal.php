@@ -114,6 +114,52 @@
               <small id="errCreditLimit" class="text-danger"></small>
             </div>
           </div>
+
+          <?php /*** default customer discount */ ?>
+          <div class="form-row">
+
+            <div class="form-group col-md-6">
+              <label for="selDiscountType">Default Discount Type</label>
+
+              <select
+                id="selDiscountType"
+                name="discount_type"
+                class="form-control form-control-sm custom-select">
+
+                <option value="">No Discount</option>
+                <option value="PERCENT">Percent (%)</option>
+                <option value="AMOUNT">Amount</option>
+
+              </select>
+
+              <small
+                id="errDiscountType"
+                class="text-danger">
+              </small>
+            </div>
+
+            <div class="form-group col-md-6">
+              <label for="txtDiscountValue">Default Discount Value</label>
+
+              <input
+                type="number"
+                id="txtDiscountValue"
+                name="discount_value"
+                class="form-control form-control-sm text-right"
+                min="0"
+                step="0.01"
+                value="0.00"
+                placeholder="0.00">
+
+              <small
+                id="errDiscountValue"
+                class="text-danger">
+              </small>
+            </div>
+
+          </div>
+          <?php /*** end default customer discount */ ?>
+
         </div>
 
         <div class="modal-footer">
