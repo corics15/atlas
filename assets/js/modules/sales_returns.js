@@ -21,14 +21,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     selectAll: '#chkSelectAllSalesReturn',
   });
 
-  /*** dirty tracking */
+  /*** dirty tracking + live totals */
   document.addEventListener('input', (e) => {
-    if (
-      e.target.classList.contains('so-qty') ||
-      e.target.id === `txtSalesReturnRemarks`
-    ) {
+    if (e.target.classList.contains('so-qty')) {
+      calculateSalesReturnTotals();
+      markDirty();
+      return;
+    }
+    if (e.target.id === 'txtSalesReturnRemarks') {
       markDirty();
     }
+
   });
 
   /*** edit */
@@ -214,6 +217,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   /*** refresh */
   btnRefreshSalesReturn?.addEventListener('click', () => Atlas.page.redirect(`sales-returns`));
 
+  /*** initialize Sales Return totals */
+  calculateSalesReturnTotals();
+
+  isDirty = false;
+  isLoading = false;
+
 });
 
 window.addEventListener('beforeunload', e => {
@@ -224,6 +233,57 @@ window.addEventListener('beforeunload', e => {
   e.preventDefault();
   e.returnValue = '';
 });
+
+const calculateSalesReturnTotals = () => {
+  let grossAmount = 0;
+  let discountAmount = 0;
+
+  document.querySelectorAll('#tblSalesReturnDetails tr[data-product-id]').forEach(row => {
+
+    const qty = Atlas.format.parseNumber(row.querySelector('.so-qty')?.value || 0);
+    const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
+    const rowDiscount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
+
+    grossAmount += qty * unitPrice;
+    discountAmount += rowDiscount;
+  });
+
+  const discountedAmount = Math.max(0, grossAmount - discountAmount);
+  const vatMode = window.salesReturnVatMode || '';
+  const vatRate = window.salesReturnVatRate || 0;
+
+  const vatDecimal = vatRate / 100;
+
+  let subtotal = 0;
+  let vatAmount = 0;
+  let totalAmount = 0;
+
+  /*** VAT inclusive */
+  if (vatMode === 'INCLUSIVE') {
+    totalAmount = discountedAmount;
+
+    if (vatDecimal > 0) {
+      subtotal = totalAmount / (1 + vatDecimal);
+      vatAmount = totalAmount - subtotal;
+    } else {
+      subtotal = totalAmount;
+    }
+  }
+
+  /*** VAT exclusive */
+  else if (vatMode === 'EXCLUSIVE') {
+    subtotal = discountedAmount;
+    vatAmount = subtotal * vatDecimal;
+    totalAmount = subtotal + vatAmount;
+  }
+
+  document.getElementById('srGrossAmount').textContent = Atlas.format.amount(grossAmount);
+  document.getElementById('srDiscountAmount').textContent = Atlas.format.amount(discountAmount);
+  document.getElementById('srSubtotal').textContent = Atlas.format.amount(subtotal);
+  document.getElementById('srVatRateLabel').textContent = `${vatRate.toFixed(2)}%`;
+  document.getElementById('srVatAmount').textContent = Atlas.format.amount(vatAmount);
+  document.getElementById('srTotalAmount').textContent = Atlas.format.amount(totalAmount);
+};
 
 const getSelectedId = () => {
   const checked = Atlas.table.selected();

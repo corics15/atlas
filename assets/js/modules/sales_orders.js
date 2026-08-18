@@ -492,6 +492,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     calculateSalesOrderRow(row);
   });
 
+  /*** initialize Sales Order totals */
+  calculateSalesOrderTotals();
+
   /*** add new row when in edit mode */
   if (isEditMode) {
     const lastRow = tblSalesOrderDetails.lastElementChild;
@@ -704,6 +707,62 @@ const calculateSalesOrderRow = (row) => {
   const netAmount = Math.max(0, grossAmount - discountAmount);
   row.dataset.discountAmount = discountAmount.toFixed(2);
   row.querySelector('.so-net-amount').textContent = Atlas.format.amount(netAmount);
+
+  calculateSalesOrderTotals();
+};
+
+const calculateSalesOrderTotals = () => {
+  let grossAmount = 0;
+  let discountAmount = 0;
+
+  document.querySelectorAll('#tblSalesOrderDetails tr[data-product-id]').forEach(row => {
+    const qty = Atlas.format.parseNumber(row.querySelector('.so-qty')?.value || 0);
+    const unitPrice = Atlas.format.parseNumber(row.querySelector('.so-unit-price')?.value || 0);
+    const rowGross = qty * unitPrice;
+    const rowDiscount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
+
+    grossAmount += rowGross;
+    discountAmount += rowDiscount;
+  });
+
+  const discountedAmount = Math.max(0, grossAmount - discountAmount);
+  const vatMode = window.salesOrderVatMode || '';
+  const vatRate = window.salesOrderVatRate || 0;
+  const vatDecimal = vatRate / 100;
+
+  let subtotal = 0;
+  let vatAmount = 0;
+  let totalAmount = 0;
+
+  if (vatMode === 'INCLUSIVE') {
+
+    totalAmount = discountedAmount;
+
+    if (vatDecimal > 0) {
+      subtotal = totalAmount / (1 + vatDecimal);
+      vatAmount = totalAmount - subtotal;
+    } else {
+      subtotal = totalAmount;
+    }
+
+  } else if (vatMode === 'EXCLUSIVE') {
+
+    subtotal = discountedAmount;
+    vatAmount = subtotal * vatDecimal;
+    totalAmount = subtotal + vatAmount;
+
+  } else {
+    /*** new SO before VAT snapshot is resolved */
+    subtotal = discountedAmount;
+    totalAmount = discountedAmount;
+  }
+
+  document.getElementById('soGrossAmount').textContent = Atlas.format.amount(grossAmount);
+  document.getElementById('soDiscountAmount').textContent = Atlas.format.amount(discountAmount);
+  document.getElementById('soSubtotal').textContent = Atlas.format.amount(subtotal);
+  document.getElementById('soVatRateLabel').textContent = `${vatRate.toFixed(2)}%`;
+  document.getElementById('soVatAmount').textContent = Atlas.format.amount(vatAmount);
+  document.getElementById('soTotalAmount').textContent = Atlas.format.amount(totalAmount);
 };
 
 const renumberRows = () => {

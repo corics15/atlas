@@ -13,6 +13,7 @@ class Sales_orders extends MY_Controller
     $this->load->model('Term_model');
     $this->load->model('Uom_model');
     $this->load->model('Product_uom_model');
+    $this->load->model('Company_model');
   }
 
   public function index()
@@ -113,6 +114,11 @@ class Sales_orders extends MY_Controller
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
     $this->data['uoms'] = $this->Uom_model->getDropdown();
+
+    /*** current Company VAT settings for new SO preview */
+    $company = $this->Company_model->get();
+    $this->data['vatMode'] = $company ? $company->vat_mode : 'INCLUSIVE';
+    $this->data['vatRate'] = $company ? (float)$company->vat_rate : 12.00;
 
     $this->data['isEditable'] = in_array(
       $this->session->userdata('access_level'),

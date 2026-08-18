@@ -258,11 +258,72 @@ class Sales_return_model extends CI_Model
     try {
       $this->db->trans_begin();
 
+      /*** resolve authoritative source Sales Invoice */
+        if (empty($salesReturn->id)) {
+
+          /*** new SR: source SI comes from request */
+          $salesInvoiceId = (int)($salesReturn->sales_invoice_id ?? 0);
+
+        } else {
+
+          /*** existing SR: source SI comes from saved SR */
+          $existingReturn = $this->db
+              ->select('sales_invoice_id')
+              ->where('id', $salesReturn->id)
+              ->get('t_sales_returns')
+              ->row();
+
+          if (!$existingReturn) {
+            throw new Exception(
+              'Sales Return not found.'
+            );
+          }
+
+          $salesInvoiceId = (int)$existingReturn->sales_invoice_id;
+        }
+
+        $salesInvoice = $this->db
+            ->select('id, vat_mode, vat_rate')
+            ->where('id', $salesInvoiceId)
+            ->get('t_sales_invoices')
+            ->row();
+
+        if (!$salesInvoice) {
+          throw new Exception(
+            'Source Sales Invoice not found.'
+          );
+        }
+
+        $vatMode = strtoupper(trim($salesInvoice->vat_mode ?? ''));
+
+        $vatRate = (float)($salesInvoice->vat_rate ?? 0);
+
+        if (
+          !in_array(
+            $vatMode,
+            ['INCLUSIVE', 'EXCLUSIVE'],
+            TRUE
+          )
+        ) {
+          throw new Exception(
+            'Invalid Sales Invoice VAT pricing mode.'
+          );
+        }
+
+        if ($vatRate < 0 || $vatRate > 100) {
+          throw new Exception(
+            'Invalid Sales Invoice VAT rate.'
+          );
+        }
+      /*** end resolve source Sales Invoice */
+
       if (empty($salesReturn->id)) {
         $header = [
           'sr_no'            => $this->Document_number_model->generate('SR'),
           'return_date'      => $salesReturn->return_date,
-          'sales_invoice_id' => $salesReturn->sales_invoice_id,
+          'sales_invoice_id' => $salesInvoiceId,
+          'vat_mode'        => $vatMode,
+          'vat_rate'        => $vatRate,
           'customer_id'    => $salesReturn->customer_id,
           'salesman_id'    => $salesReturn->salesman_id,
           'terms_id'       => $salesReturn->terms_id,
@@ -447,6 +508,61 @@ class Sales_return_model extends CI_Model
           ]
         );
       }
+
+      /*** calculate authoritative Sales Return totals */
+        $totals = $this->db
+            ->select("
+              COALESCE(
+                SUM((qty * unit_price) - discount_amount),
+                0
+              ) AS discounted_amount
+            ", FALSE)
+            ->where(
+              'sales_return_id',
+              $salesReturnId
+            )
+            ->get('t_sales_return_details')
+            ->row();
+
+        $discountedAmount = round(          (float)$totals->discounted_amount,          2        );
+        $subtotal = 0;
+        $vatAmount = 0;
+        $totalAmount = 0;
+        $vatDecimal =          $vatRate / 100;
+
+        /*** VAT inclusive */
+        if ($vatMode === 'INCLUSIVE') {
+
+          $totalAmount = $discountedAmount;
+
+          if ($vatDecimal > 0) {
+            $subtotal = round($totalAmount / (1 + $vatDecimal), 2);
+            $vatAmount = round($totalAmount - $subtotal, 2);
+
+          } else {
+            $subtotal = $totalAmount;
+            $vatAmount = 0;
+          }
+        }
+
+        /*** VAT exclusive */
+        elseif ($vatMode === 'EXCLUSIVE') {
+          $subtotal = $discountedAmount;
+          $vatAmount = round($subtotal * $vatDecimal, 2);
+          $totalAmount = round($subtotal + $vatAmount, 2);
+        }
+
+        $this->db
+            ->where('id', $salesReturnId)
+            ->update(
+              't_sales_returns',
+              [
+                'subtotal'     => $subtotal,
+                'vat_amount'   => $vatAmount,
+                'total_amount' => $totalAmount
+              ]
+            );
+      /*** end Sales Return totals */
 
       if ($this->db->trans_status() === FALSE)
       {

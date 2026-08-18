@@ -79,7 +79,7 @@
                     </td>
 
                     <?php /*** UOM */ ?>
-                    <td>
+                    <td class="text-right">
                       <select class="form-control form-control-sm so-uom custom-select w-auto">
                         <option value="">Select...</option>
                         <?php foreach ($uoms as $uom): ?>
@@ -178,7 +178,7 @@
                   <td class="so-description" data-toggle="tooltip"></td>
 
                   <?php /*** UOM */ ?>
-                  <td>
+                  <td class="text-right">
                     <select class="form-control form-control-sm so-uom custom-select w-auto">
                       <option value="">Select...</option>
                       <?php foreach ($uoms as $uom): ?>
@@ -236,15 +236,66 @@
       </div>
     </div>
 
-    <?php /*** footer */ ?>
+    <?php /*** footer, total computation */ ?>
     <div class="card mt-3 mb-3">
       <div class="card-body">
+
         <div class="form-row">
-          <div class="col-md-9"></div>
-          <div class="col-md-3">
+          <div class="col-md-8"></div>
+          <div class="col-md-4">
+            <table class="table table-sm mb-3">
+              <tbody>
+                <tr>
+                  <td>Gross Amount</td>
+                  <td id="soGrossAmount" class="text-right">0.00</td>
+                </tr>
+
+                <tr>
+                  <td>Less Discount</td>
+                  <td id="soDiscountAmount"class="text-right">0.00</td>
+                </tr>
+
+                <tr>
+                  <td>Subtotal</td>
+                  <td id="soSubtotal" class="text-right"><?= isset($salesOrder) ? number_format((float)$salesOrder->subtotal, 2) : '0.00' ?></td>
+                </tr>
+
+                <tr>
+                  <td>
+                    VAT
+                    <span id="soVatRateLabel">
+                      <?= isset($salesOrder)
+                        ? number_format((float)$salesOrder->vat_rate, 2)
+                        : '0.00' ?>%
+                    </span>
+                  </td>
+                  <td
+                    id="soVatAmount"
+                    class="text-right">
+                    <?= isset($salesOrder)
+                      ? number_format((float)$salesOrder->vat_amount, 2)
+                      : '0.00' ?>
+                  </td>
+                </tr>
+
+                <tr class="font-weight-500">
+                  <td>TOTAL</td>
+                  <td
+                    id="soTotalAmount"
+                    class="text-right">
+                    <?= isset($salesOrder)
+                      ? number_format((float)$salesOrder->total_amount, 2)
+                      : '0.00' ?>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+
             <button id="btnSaveSalesOrder" class="btn btn-default btn-sm btn-block" <?= !$isEditable ? 'disabled' : '' ?>>Save Sales Order</button>
           </div>
         </div>
+
       </div>
     </div>
 
@@ -263,4 +314,7 @@
       ];
     }, $uoms),
   ); ?>;
+
+  window.salesOrderVatMode =  '<?= isset($salesOrder) ? $salesOrder->vat_mode : ($vatMode ?? 'INCLUSIVE'); ?>';
+  window.salesOrderVatRate =  <?= isset($salesOrder) ? (float)$salesOrder->vat_rate : (float)($vatRate ?? 12); ?>;
 </script>

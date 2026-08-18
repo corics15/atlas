@@ -131,6 +131,12 @@ class Sales_returns extends MY_Controller
     $this->data['details'] = $this->Sales_return_model->getSalesInvoiceDetails($salesInvoiceId);
     $this->data['isEdit'] = FALSE;
 
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
+
     $this->render('sales_returns/create');
   }
 

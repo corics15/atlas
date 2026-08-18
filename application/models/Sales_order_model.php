@@ -9,6 +9,7 @@ class Sales_order_model extends CI_Model
     parent::__construct();
 
     $this->load->model('Document_number_model');
+    $this->load->model('Company_model');
   }
 
   public function get($id)
@@ -199,6 +200,63 @@ class Sales_order_model extends CI_Model
     try {
       $this->db->trans_begin();
 
+      /*** resolve VAT snapshot */
+        $vatMode = NULL;
+        $vatRate = 0;
+
+        if (empty($postData->id)) {
+
+          /*** new SO uses current Company settings */
+          $company = $this->Company_model->get();
+
+          if (!$company) {
+            throw new Exception(
+              'Company settings not found.'
+            );
+          }
+
+          $vatMode = strtoupper(trim($company->vat_mode ?? 'INCLUSIVE'));
+
+          $vatRate = (float)($company->vat_rate ?? 0);
+
+        } else {
+
+          /*** existing SO keeps its original VAT snapshot */
+          $existingSalesOrder = $this->db
+              ->select('vat_mode, vat_rate')
+              ->where('id', $postData->id)
+              ->get('t_sales_orders')
+              ->row();
+
+          if (!$existingSalesOrder) {
+            throw new Exception(
+              'Sales Order not found.'
+            );
+          }
+
+          $vatMode = strtoupper(trim($existingSalesOrder->vat_mode ?? ''));
+          $vatRate = (float)$existingSalesOrder->vat_rate;
+        }
+
+        if (
+          !in_array(
+            $vatMode,
+            ['INCLUSIVE', 'EXCLUSIVE'],
+            TRUE
+          )
+        ) {
+          throw new Exception(
+            'Invalid Sales Order VAT pricing mode.'
+          );
+        }
+
+        if ($vatRate < 0 || $vatRate > 100) {
+          throw new Exception(
+            'Invalid Sales Order VAT rate.'
+          );
+        }
+      /*** end resolve VAT snapshot */
+
       if (empty($postData->id)) {
 
         /*** insert header */
@@ -209,6 +267,8 @@ class Sales_order_model extends CI_Model
           'salesman_id' => (int) $postData->salesman_id,
           'terms_id' => $postData->terms_id <> '' ? (int) $postData->terms_id : NULL,
           'credit_limit' => $postData->credit_limit,
+          'vat_mode' => $vatMode,
+          'vat_rate' => $vatRate,
           'remarks' => trim($postData->remarks) <> '' ? strtoupper(trim($postData->remarks)) : NULL,
           'status' => 'OPEN',
           'entered_by' => $this->session->userdata('user_id'),
@@ -424,6 +484,56 @@ class Sales_order_model extends CI_Model
           ]
         );
       }
+
+      /*** calculate authoritative Sales Order totals */
+        $totals = $this->db
+            ->select("
+              COALESCE(
+                SUM((qty * unit_price) - discount_amount),
+                0
+              ) AS discounted_amount
+            ", FALSE)
+            ->where('sales_order_id', $salesOrderId)
+            ->get('t_sales_order_details')
+            ->row();
+
+        $discountedAmount =          round((float)$totals->discounted_amount, 2);
+        $subtotal = 0;
+        $vatAmount = 0;
+        $totalAmount = 0;
+        $vatDecimal = $vatRate / 100;
+
+        /*** VAT Inclusive */
+        if ($vatMode === 'INCLUSIVE') {
+          $totalAmount = $discountedAmount;
+          if ($vatDecimal > 0) {
+            $subtotal = round($totalAmount / (1 + $vatDecimal), 2);
+            $vatAmount = round($totalAmount - $subtotal, 2);
+          } else {
+            $subtotal = $totalAmount;
+            $vatAmount = 0;
+          }
+        }
+
+        /*** VAT Exclusive */
+        elseif ($vatMode === 'EXCLUSIVE') {
+
+          $subtotal = $discountedAmount;
+          $vatAmount = round($subtotal * $vatDecimal, 2);
+          $totalAmount = round($subtotal + $vatAmount, 2);
+        }
+
+        $this->db
+            ->where('id', $salesOrderId)
+            ->update(
+              't_sales_orders',
+              [
+                'subtotal'     => $subtotal,
+                'vat_amount'   => $vatAmount,
+                'total_amount' => $totalAmount
+              ]
+            );
+      /*** end calculate totals */
 
       if ($this->db->trans_status() === FALSE) {
         throw new Exception('Unable to save Sales Order.');

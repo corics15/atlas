@@ -231,6 +231,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   /*** refresh */
   btnRefreshSalesInvoice?.addEventListener('click', () => Atlas.page.redirect(`sales-invoices`));
 
+  document.addEventListener('input', (e) => {
+    if (e.target.classList.contains('so-qty')) {
+
+      const row = e.target.closest('tr');
+
+      if (row?.dataset.productId) {
+        calculateSalesInvoiceRow(row);
+        calculateSalesInvoiceTotals();
+      }
+
+      markDirty();
+      return;
+    }
+
+    if (e.target.id === 'txtSalesOrderRemarks') {
+      markDirty();
+    }
+  });
+
+  document.querySelectorAll('#tblSalesOrderDetails tr[data-product-id]').forEach(row => {
+    calculateSalesInvoiceRow(row);
+  });
+  calculateSalesInvoiceTotals();
+
 });
 
 window.addEventListener('beforeunload', e => {
@@ -322,6 +346,69 @@ const printSalesInvoice = () => {
     'sales-invoices/print',
     ids
   );
+};
+
+const calculateSalesInvoiceRow = (row) => {
+  const qty = Atlas.format.parseNumber(row.querySelector('.so-qty')?.value || 0);
+  const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
+  const discountAmount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
+  const grossAmount = qty * unitPrice;
+  const netAmount = Math.max(0, grossAmount - discountAmount);
+  const netCell = row.querySelector('.so-net-amount');
+
+  if (netCell) {
+    netCell.textContent = Atlas.format.amount(netAmount);
+  }
+};
+
+const calculateSalesInvoiceTotals = () => {
+  let grossAmount = 0;
+  let discountAmount = 0;
+
+  document.querySelectorAll('#tblSalesOrderDetails tr[data-product-id]').forEach(row => {
+
+    const qty = Atlas.format.parseNumber(row.querySelector('.so-qty')?.value || 0);
+    const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
+    const rowDiscount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
+
+    grossAmount += qty * unitPrice;
+    discountAmount += rowDiscount;
+  });
+
+  const discountedAmount = Math.max(0, grossAmount - discountAmount);
+  const vatMode = window.salesInvoiceVatMode || '';
+  const vatRate = window.salesInvoiceVatRate || 0;
+  const vatDecimal = vatRate / 100;
+
+  let subtotal = 0;
+  let vatAmount = 0;
+  let totalAmount = 0;
+
+  /*** VAT inclusive */
+  if (vatMode === 'INCLUSIVE') {
+    totalAmount = discountedAmount;
+
+    if (vatDecimal > 0) {
+      subtotal = totalAmount / (1 + vatDecimal);
+      vatAmount = totalAmount - subtotal;
+    } else {
+      subtotal = totalAmount;
+    }
+  }
+
+  /*** VAT exclusive */
+  else if (vatMode === 'EXCLUSIVE') {
+    subtotal = discountedAmount;
+    vatAmount = subtotal * vatDecimal;
+    totalAmount = subtotal + vatAmount;
+  }
+
+  document.getElementById('siGrossAmount').textContent = Atlas.format.amount(grossAmount);
+  document.getElementById('siDiscountAmount').textContent = Atlas.format.amount(discountAmount);
+  document.getElementById('siSubtotal').textContent = Atlas.format.amount(subtotal);
+  document.getElementById('siVatRateLabel').textContent = `${vatRate.toFixed(2)}%`;
+  document.getElementById('siVatAmount').textContent = Atlas.format.amount(vatAmount);
+  document.getElementById('siTotalAmount').textContent = Atlas.format.amount(totalAmount);
 };
 
 const markDirty = () => {

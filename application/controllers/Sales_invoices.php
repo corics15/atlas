@@ -146,6 +146,12 @@ class Sales_invoices extends MY_Controller
       $this->data['details'] = $details;
     }
 
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );
+
     $this->render('sales_invoices/create');
   }
 

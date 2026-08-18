@@ -20,17 +20,17 @@
             <table class="table table-sm table-hover mb-0">
               <thead class="thead-orange">
                 <tr>
-                  <th width="40" class="text-center">#</th>
-                  <th width="170" class="text-center">Barcode</th>
-                  <th>Description</th>
-                  <th width="120" class="text-right">Available</th>
-                  <th width="120" class="text-right">Qty</th>
-                  <th width="80" class="text-center">UOM</th>
-                  <th width="120" class="text-right">Unit Price</th>
-                  <th width="120" class="text-center">Discount Type</th>
-                  <th width="120" class="text-right">Discount</th>
-                  <th width="130" class="text-right">Net Amount</th>
-                  <th width="40"></th>
+                  <th class="text-center" width="3%">#</th>
+                  <th class="text-center"  width="13%">Barcode</th>
+                  <th width="30%">Description</th>
+                  <th class="text-right" width="6%">Available</th>
+                  <th class="text-right" width="6%">Qty</th>
+                  <th class="text-center" width="6%">UOM</th>
+                  <th class="text-right" width="8%">Unit Price</th>
+                  <th class="text-center" width="8%">Discount Type</th>
+                  <th class="text-right" width="6%">Discount</th>
+                  <th width="130" class="text-right" width="12%">Net Amount</th>
+                  <th width="2%"></th>
                 </tr>
               </thead>
 
@@ -44,10 +44,27 @@
                       data-uom-id="<?= $detail->uom_id ?>"
                       data-base-uom-id="<?= $detail->base_uom_id ?>"
                       data-conversion-factor="<?= $detail->conversion_factor ?>"
-                      data-sales-invoice-detail-id="<?= $detail->sales_invoice_detail_id ?>">
+                      data-sales-invoice-detail-id="<?= $detail->sales_invoice_detail_id ?>"
+                      data-unit-price="<?= (float)($detail->unit_price ?? 0) ?>"
+                      data-discount-amount="<?= (float)(
+                        $detail->discount_amount
+                        ?? (
+                          ($detail->discount_type ?? '') === 'PERCENT'
+                            ? round(
+                                (float)$detail->qty *
+                                (float)$detail->unit_price *
+                                ((float)$detail->discount_percent / 100),
+                                2
+                              )
+                            : 0
+                        )
+                      ) ?>">
+                      <?php /*** numbering */ ?>
                       <td class="so-row-no text-center">
                         <?= ($index + 1) ?>.
                       </td>
+
+                      <?php /*** barcode */ ?>
                       <td>
                         <div class="input-group">
                           <label for="bc-<?= $index + 1 ?>"></label>
@@ -66,24 +83,34 @@
                           </div>
                         </div>
                       </td>
+
+                      <?php /*** description */ ?>
                       <td class="so-description">
-                        <?= htmlspecialchars($detail->description) ?>
+                        <?php
+                          $description = htmlspecialchars($detail->description);
+                          echo (mb_strlen($description) > 30)
+                            ? mb_strimwidth($description, 0, 30, '...')
+                            : $description;
+                        ?>
                       </td>
+
+                      <?php /*** available */ ?>
                       <td class="so-available text-right">
                         <?= number_format($detail->qty_available, 0) ?>
                       </td>
+
+                      <?php /*** qty */ ?>
                       <td class="text-right">
-                        <input
-                          type="number"
-                          step="any"
-                          class="form-control form-control-sm text-right so-qty"
-                          value="<?= number_format($detail->qty, 0) ?>">
+                        <input type="number" step="any" class="form-control form-control-sm text-right so-qty" value="<?= number_format($detail->qty, 0) ?>">
                       </td>
+
+                      <?php /*** uom */ ?>
                       <td class="so-uom text-center">
                         <?= htmlspecialchars($detail->uom) ?>
                       </td>
 
                       <?php
+                        /*** unit price */
                         $unitPrice = (float)($detail->unit_price ?? 0);
                         $discountType = $detail->discount_type ?? '';
 
@@ -113,6 +140,7 @@
                         <?= number_format($unitPrice, 2) ?>
                       </td>
 
+                      <?php /*** discount type */ ?>
                       <td class="text-center">
                         <?php if ($discountType === 'PERCENT'): ?>
                           Percent (%)
@@ -123,6 +151,7 @@
                         <?php endif; ?>
                       </td>
 
+                      <?php /*** discount */ ?>
                       <td class="text-right">
                         <?php if ($discountType === 'PERCENT'): ?>
                           <?= number_format((float)$detail->discount_percent, 2) ?>%
@@ -139,7 +168,8 @@
                         <?php endif; ?>
                       </td>
 
-                      <td class="text-right font-weight-500">
+                      <?php /*** net amt */ ?>
+                      <td class="text-right font-weight-500 sr-net-amount">
                         <?php if ($discountType === 'AMOUNT' && !$hasSavedDiscount): ?>
                           -
                         <?php else: ?>
@@ -147,6 +177,7 @@
                         <?php endif; ?>
                       </td>
 
+                      <?php /*** delete */ ?>
                       <td class="text-center">
                         <i class="fas fa-trash text-muted pointer btn-delete-row no-event"></i>
                       </td>
@@ -156,40 +187,48 @@
                 <?php else: ?>
 
                   <tr class="so-detail-row">
-                    <td class="so-row-no text-center">
-                      1.
-                    </td>
+                    <?php /*** numbering */ ?>
+                    <td class="so-row-no text-center">1.</td>
+
+                    <?php /*** barcode */ ?>
                     <td>
                       <div class="input-group">
-                        <input
-                          type="text"
-                          class="form-control form-control-sm so-barcode"
-                          placeholder="Barcode">
+                        <input type="text" class="form-control form-control-sm so-barcode" placeholder="Barcode">
                         <div class="input-group-append">
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-outline-warning btn-product-finder">
+                          <button type="button" class="btn btn-sm btn-outline-warning btn-product-finder">
                           <i class="fas fa-search font-smr"></i>
                           </button>
                         </div>
                       </div>
                     </td>
+
+                    <?php /*** description */ ?>
                     <td class="so-description"></td>
+
+                    <?php /*** available */ ?>
                     <td class="so-available text-right">-</td>
+
+                    <?php /*** numbering */ ?>
                     <td class="text-right">
-                      <input
-                        type="number"
-                        step="any"
-                        class="form-control form-control-sm text-right so-qty"
-                        value="">
+                      <input type="number" step="any" class="form-control form-control-sm text-right so-qty" value="">
                     </td>
+
+                    <?php /*** uom */ ?>
                     <td class="so-uom text-center"></td>
 
+                    <?php /*** unit price */ ?>
                     <td class="text-right">0.00</td>
+
+                    <?php /*** discount type */ ?>
                     <td class="text-center">-</td>
+
+                    <?php /*** discount */ ?>
                     <td class="text-right">0.00</td>
+
+                    <?php /*** net amt */ ?>
                     <td class="text-right font-weight-500">0.00</td>
 
+                    <?php /*** delete */ ?>
                     <td class="text-center">
                       <i class="fas fa-trash text-danger pointer btn-delete-row"></i>
                     </td>
@@ -204,12 +243,58 @@
         </div>
       </div>
 
+      <?php
+        /***
+         * CREATE = source SI VAT snapshot
+         * EDIT   = saved SR VAT snapshot
+         */
+        $vatMode = $isEdit ? ($header->vat_mode ?? '') : ($salesInvoice->vat_mode ?? '');
+        $vatRate = $isEdit ? (float)($header->vat_rate ?? 0) : (float)($salesInvoice->vat_rate ?? 0);
+      ?>
+
       <?php /*** footer */ ?>
       <div class="card mt-3 mb-3">
         <div class="card-body">
           <div class="form-row">
-            <div class="col-md-9"></div>
-            <div class="col-md-3">
+            <div class="col-md-8"></div>
+            <div class="col-md-4">
+
+              <table class="table table-sm mb-3">
+                <tbody>
+                  <tr>
+                    <td>Gross Amount</td>
+                    <td id="srGrossAmount" class="text-right">0.00</td>
+                  </tr>
+
+                  <tr>
+                    <td>Less Discount</td>
+                    <td id="srDiscountAmount" class="text-right">0.00</td>
+                  </tr>
+
+                  <tr>
+                    <td>Subtotal</td>
+                    <td id="srSubtotal" class="text-right">0.00</td>
+                  </tr>
+
+                  <tr>
+                    <td>
+                      VAT
+                      <span id="srVatRateLabel">
+                        <?= number_format($vatRate, 2) ?>%
+                      </span>
+                    </td>
+
+                    <td id="srVatAmount" class="text-right">0.00</td>
+                  </tr>
+
+                  <tr class="font-weight-500">
+                    <td>TOTAL</td>
+                    <td id="srTotalAmount" class="text-right">0.00</td>
+                  </tr>
+
+                </tbody>
+              </table>
+
               <button id="btnSaveSalesReturn" class="btn btn-default btn-sm btn-block" <?= !$isEditable ? 'disabled' : '' ?>>Save Sales Return</button>
             </div>
           </div>
@@ -226,4 +311,6 @@
 <script>
   window.salesReturnId = <?= $isEdit ? $header->id : 0 ?>;
   window.status = '<?= $isEdit ? $header->status : '' ?>';
+  window.salesReturnVatMode = '<?= htmlspecialchars($vatMode) ?>';
+  window.salesReturnVatRate = <?= (float)$vatRate ?>;
 </script>

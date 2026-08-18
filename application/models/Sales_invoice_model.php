@@ -266,18 +266,80 @@ class Sales_invoice_model extends CI_Model
     try {
       $this->db->trans_begin();
 
+      /*** resolve source Sales Order */
+      if (empty($salesInvoice->id)) {
+
+        /*** new SI: source SO comes from request */
+        $salesOrderId = (int)($salesInvoice->sales_order_id ?? 0);
+
+      } else {
+
+        /*** existing SI: source SO comes from saved SI */
+        $existingInvoice = $this->db
+            ->select('sales_order_id')
+            ->where('id', $salesInvoice->id)
+            ->get('t_sales_invoices')
+            ->row();
+
+        if (!$existingInvoice) {
+          throw new Exception(
+            'Sales Invoice not found.'
+          );
+        }
+
+        $salesOrderId = (int)$existingInvoice->sales_order_id;
+      }
+      /*** end resolve source Sales Order */
+
+      /*** get authoritative SO VAT snapshot */
+        $salesOrder = $this->db
+            ->select('id, vat_mode, vat_rate')
+            ->where('id', $salesOrderId)
+            ->get('t_sales_orders')
+            ->row();
+
+        if (!$salesOrder) {
+          throw new Exception(
+            'Source Sales Order not found.'
+          );
+        }
+
+        $vatMode = strtoupper(trim($salesOrder->vat_mode ?? ''));
+        $vatRate = (float)($salesOrder->vat_rate ?? 0);
+
+        if (
+          !in_array(
+            $vatMode,
+            ['INCLUSIVE', 'EXCLUSIVE'],
+            TRUE
+          )
+        ) {
+          throw new Exception(
+            'Invalid Sales Order VAT pricing mode.'
+          );
+        }
+
+        if ($vatRate < 0 || $vatRate > 100) {
+          throw new Exception(
+            'Invalid Sales Order VAT rate.'
+          );
+        }
+      /*** end SO VAT snapshot */
+
       if (empty($salesInvoice->id)) {
         /*** insert header */
         $header = [
           'si_no'          => $this->Document_number_model->generate('SI'),
           'invoice_date'   => $salesInvoice->invoice_date,
-          'sales_order_id' => $salesInvoice->sales_order_id,
+          'sales_order_id' => $salesOrderId,
           'delivery_receipt_id' => $salesInvoice->delivery_receipt_id,
           'customer_id'    => $salesInvoice->customer_id,
           'salesman_id'    => $salesInvoice->salesman_id,
           'terms_id'       => $salesInvoice->terms_id,
           'credit_limit'   => $salesInvoice->credit_limit,
           'remarks'        => trim($salesInvoice->remarks) <> '' ? strtoupper(trim($salesInvoice->remarks)) : NULL,
+          'vat_mode'        => $vatMode,
+          'vat_rate'        => $vatRate,
           'status'         => 'OPEN',
           'entered_by'     => $this->session->userdata('user_id'),
           'entered_on'     => date('Y-m-d H:i:s')
@@ -487,6 +549,61 @@ class Sales_invoice_model extends CI_Model
         /** end header update */
       }
 
+      /*** calculate authoritative Sales Invoice totals */
+        $totals = $this->db
+            ->select("
+              COALESCE(
+                SUM((qty * unit_price) - discount_amount),
+                0
+              ) AS discounted_amount
+            ", FALSE)
+            ->where(
+              'sales_invoice_id',
+              $salesInvoiceId
+            )
+            ->get('t_sales_invoice_details')
+            ->row();
+
+        $discountedAmount = round((float)$totals->discounted_amount, 2);
+
+        $subtotal = 0;
+        $vatAmount = 0;
+        $totalAmount = 0;
+        $vatDecimal = $vatRate / 100;
+
+        /*** VAT inclusive */
+        if ($vatMode === 'INCLUSIVE') {
+          $totalAmount = $discountedAmount;
+
+          if ($vatDecimal > 0) {
+            $subtotal = round($totalAmount / (1 + $vatDecimal), 2);
+            $vatAmount = round($totalAmount - $subtotal, 2);
+
+          } else {
+            $subtotal = $totalAmount;
+            $vatAmount = 0;
+          }
+        }
+
+        /*** VAT exclusive */
+        elseif ($vatMode === 'EXCLUSIVE') {
+          $subtotal = $discountedAmount;
+          $vatAmount = round($subtotal * $vatDecimal, 2);
+          $totalAmount = round($subtotal + $vatAmount, 2);
+        }
+
+        $this->db
+            ->where('id', $salesInvoiceId)
+            ->update(
+              't_sales_invoices',
+              [
+                'subtotal'     => $subtotal,
+                'vat_amount'   => $vatAmount,
+                'total_amount' => $totalAmount
+              ]
+            );
+      /*** end Sales Invoice totals */
+
       if ($this->db->trans_status() === FALSE)
       {
         throw new Exception('Unable to save Sales Invoice.');
@@ -688,6 +805,8 @@ class Sales_invoice_model extends CI_Model
             dr.*,
             dr.dr_no,
             so.so_no,
+            so.vat_mode,
+            so.vat_rate,
             c.customer_name,
             CONCAT(s.first_name,' ',s.last_name) AS salesman_name,
             t.terms_name,
