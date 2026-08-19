@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /*** initialize saved Sales Order calculations */
-  tblSalesOrderDetails.querySelectorAll('tr[data-product-id]').forEach(row => {
+  tblSalesOrderDetails?.querySelectorAll('tr[data-product-id]').forEach(row => {
     const discountType = row.querySelector('.so-discount-type');
     const discountValue = row.querySelector('.so-discount-value');
 
@@ -493,7 +493,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /*** initialize Sales Order totals */
-  calculateSalesOrderTotals();
+  if (tblSalesOrderDetails)
+    calculateSalesOrderTotals();
 
   /*** add new row when in edit mode */
   if (isEditMode) {
