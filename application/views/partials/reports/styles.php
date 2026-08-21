@@ -2,7 +2,7 @@
   @media print {
     @page {
       size: A4 portrait;
-      margin: 3mm;
+      margin: 5mm;
     }
   }
 
@@ -46,6 +46,14 @@
     border: none;
     border-top: 1px solid #999;
     margin: 10px 0 15px;
+  }
+
+  .report-table tbody tr td {
+    border: none;
+  }
+  .report-table tfoot tr th {
+    border: none;
+    border-top: 0.5px solid #000;
   }
 
   .text-center {

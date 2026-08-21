@@ -16,8 +16,9 @@
     <th class="text-center">Case Barcode</th>
     <th class="text-center">Barcode</th>
     <th>Description</th>
-    <th class="text-center">UOM</th>
+    <th>Packing</th>
     <th class="text-right">Qty on Hand</th>
+    <th class="text-center">UOM</th>
     <th class="text-right">Cost</th>
     <th class="text-right">SRP</th>
     <th class="text-center">Active</th>
@@ -27,6 +28,7 @@
   <?php if (!empty($products)) : ?>
   <?php foreach ($products as $product) : ?>
   <tr>
+    <?php /*** checkbox */ ?>
     <td class="text-center">
       <div class="custom-checkbox custom-control ml-2 mt-1">
         <input
@@ -40,20 +42,43 @@
         </label>
       </div>
     </td>
-    <td><?= htmlspecialchars($product->supplier_name); ?></td>
+    <?php /*** suppliler */ ?>
+    <td>
+      <?php
+        $supplierName = htmlspecialchars($product->supplier_name);
+        echo (mb_strlen($supplierName) > 30)
+          ? mb_strimwidth($supplierName, 0, 30, '...')
+          : $supplierName;
+      ?>
+    </td>
+    <?php /*** case barcode */ ?>
     <td class="text-center">
       <?= htmlspecialchars($product->case_barcode); ?>
     </td>
+    <?php /*** barcode */ ?>
     <td class="text-center">
       <?= htmlspecialchars($product->barcode); ?>
     </td>
+    <?php /*** description */ ?>
     <td>
-      <?= htmlspecialchars($product->description); ?>
+      <?php
+        $description = htmlspecialchars($product->description);
+        echo (mb_strlen($description) > 30)
+          ? mb_strimwidth($description, 0, 30, '...')
+          : $description;
+      ?>
     </td>
-    <td class="text-center"><?= $product->uom ?></td>
+    <?php /*** packing */ ?>
+    <td><?= htmlspecialchars($product->pkg) ?></td>
+    <?php /*** qty */ ?>
     <td class="text-right"><?= number_format($product->qty_on_hand) ?></td>
+    <?php /*** uom */ ?>
+    <td class="text-center"><?= $product->uom ?></td>
+    <?php /*** cost */ ?>
     <td class="text-right"><?= $product->cost ?></td>
+    <?php /*** srp */ ?>
     <td class="text-right"><?= $product->srp ?></td>
+    <?php /*** active ? */ ?>
     <td class="text-center">
       <?= $product->is_active == 't' ? '<i class="fas fa-check text-success"></i>' : ''; ?>
     </td>

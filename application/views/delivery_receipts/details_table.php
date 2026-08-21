@@ -70,7 +70,7 @@
                   <td>
                     <input
                         type="number"
-                        class="form-control text-right dr-deliver-qty"
+                        class="form-control form-control-sm text-right dr-deliver-qty"
                         min="0"
                         max="<?= $row->qty_available_to_deliver; ?>"
                         step="any"

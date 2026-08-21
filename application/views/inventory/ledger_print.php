@@ -21,7 +21,7 @@
   <tr>
     <td><strong>Description</strong></td>
     <td><?= htmlspecialchars($product->description) ?></td>
-    <td><strong>Package</strong></td>
+    <td><strong>Packing</strong></td>
     <td><?= htmlspecialchars($product->pkg) ?></td>
   </tr>
 

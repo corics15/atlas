@@ -132,6 +132,7 @@ class Products extends MY_Controller
       'uom_id' => $postData['uom_id'],
       'cost' => $postData['cost'],
       'srp' => $postData['srp'],
+      'pkg' => trim($postData['pkg']) <> '' ? strtoupper(trim($postData['pkg'])) : NULL,
     ];
 
     if (empty($id)) {

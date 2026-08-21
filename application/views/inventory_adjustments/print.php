@@ -8,13 +8,14 @@
     ]
   );
 
-?> <!-- DOCUMENT INFORMATION -->
+?>
+<?php /*** DOCUMENT INFORMATION */ ?>
 <table class="table report-borderless mb-3">
 	<tr>
 		<td width="120"><strong>Doc. No.</strong></td>
 		<td><?= htmlspecialchars($inventoryAdjustment->adjustment_no) ?></td>
 		<td width="120"><strong>Date</strong></td>
-		<td><?= date('F d, Y', strtotime($inventoryAdjustment->adjustment_date)) ?> </td>
+		<td><?= date('M d, Y', strtotime($inventoryAdjustment->adjustment_date)) ?> </td>
 	</tr>
 	<tr>
 		<td><strong>Status</strong></td>
@@ -22,7 +23,7 @@
 	</tr>
 </table>
 
-<!-- REMARKS -->
+<?php /*** REMARKS */ ?>
 <table class="table report-borderless">
 	<tr>
 		<td>
@@ -30,16 +31,14 @@
 		</td>
 	</tr>
 	<tr>
-		<td> <?= nl2br(
-        htmlspecialchars($inventoryAdjustment->remarks)
-      ) ?> </td>
+		<td><?= nl2br(htmlspecialchars($inventoryAdjustment->remarks)) ?></td>
 	</tr>
 </table>
 
-<!-- DETAILS -->
+<?php /*** DETAILS */ ?>
 <br>
 <h4>Items</h4>
-<table class="table table-bordered table-sm">
+<table class="table report-table table-sm">
 	<thead>
 		<tr>
 			<th width="5%">#</th>
@@ -70,11 +69,11 @@
   </tbody>
 </table>
 
-<!-- SIGNATURES -->
+<?php /*** SIGNATURES */ ?>
 <br><br>
 <table class="table report-borderless">
 	<tr>
-		<!-- PREPARED BY -->
+		<?php /*** PREPARED BY */ ?>
 		<td width="33%" class="text-center">
 			<strong> Prepared By </strong>
 			<br><br><br> __________________________ <br> <?= '<em>' .
@@ -91,7 +90,7 @@
           )
         ) ?> </small>
 		</td>
-		<!-- LAST UPDATED BY -->
+		<?php /*** LAST UPDATED BY */ ?>
 		<td width="33%" class="text-center"> <?php if (
         !empty(
           $inventoryAdjustment->updated_by_name
@@ -112,7 +111,7 @@
           ) ?> </small> <?php endif; ?>
 		</td>
 
-		<!-- POSTED / CANCELLED -->
+		<?php /*** POSTED / CANCELLED */ ?>
 		<td width="33%" class="text-center"> <?php if (
         $inventoryAdjustment->status === 'POSTED'
       ): ?> <strong> Posted By </strong>
@@ -158,10 +157,10 @@
 	</tr>
 </table>
 
-      <div style="text-align:right;font-size:10px;margin-top:20px;">
-        Printed By:
-        <?= htmlspecialchars($this->session->userdata('username')) ?>
-        <?= date('m/d/Y h:i A') ?>
-      </div>
+<div style="text-align:right;font-size:10px;margin-top:20px;">
+  Printed By:
+  <?= htmlspecialchars($this->session->userdata('username')) ?>
+  <?= date('m/d/Y h:i A') ?>
+</div>
 
 <?php $this->load->view('partials/reports/scripts'); ?>

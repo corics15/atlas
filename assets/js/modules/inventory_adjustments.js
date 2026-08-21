@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!adjustmentId) return;
 
-    Atlas.page.open(`inventory_adjustments/print/${adjustmentId}`)
+    Atlas.page.open(`inventory-adjustments/print/${Atlas.id.encode(Atlas.format.parseNumber(adjustmentId))}`)
   })
 
   /*** refresh */
@@ -286,16 +286,14 @@ const restorePlaceholderRow = () => {
 };
 
 const getSelectedInventoryAdjustmentId = () => {
-  const checkedRows = document.querySelectorAll(
-    'tbody .chkInventoryAdjustment:checked'
-  );
+  const checkedRows = document.querySelectorAll('tbody .chkInventoryAdjustment:checked');
 
   if (checkedRows.length === 0) {
     if (window.inventoryAdjustmentId === 0) {
       Atlas.toast.warning('New Inventory Adjustment, not saved yet.');
       return null;
     } else if (window.inventoryAdjustmentId) {
-      return Atlas.format.integer(window.inventoryAdjustmentId);
+      return window.inventoryAdjustmentId;
     } else {
       Atlas.toast.warning('Please select an Inventory Adjustment.');
       return null;
@@ -306,8 +304,7 @@ const getSelectedInventoryAdjustmentId = () => {
     Atlas.toast.warning('Please select only one Inventory Adjustment.');
     return null;
   }
-
-  return Atlas.format.integer(checkedRows[0].closest('tr').dataset.id);
+  return Atlas.format.parseNumber(checkedRows[0].closest('tr').dataset.id);
 };
 
 const postInventoryAdjustment = async () => {
@@ -383,15 +380,11 @@ const executeInventoryAdjustmentAction = async (
   onSuccess = () => Atlas.page.refresh()
 ) => {
 
-  Atlas.loader.show();
-
   try {
     const response = await Atlas.ajax.post(
       endpoint,
       payload
     );
-
-    Atlas.loader.hide();
 
     if (!response.success) {
       Atlas.toast.error(response.message);

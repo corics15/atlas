@@ -2,13 +2,8 @@
   <tr>
     <th width="30" class="text-center">
       <div class="custom-checkbox custom-control ml-2 mt-1">
-        <input
-          type="checkbox"
-          class="custom-control-input chkInventoryAdjustment"
-          id="idHere">
-        <label
-          class="custom-control-label"
-          for="idHere">
+        <input type="checkbox" class="custom-control-input chkInventoryAdjustment" id="chkIAId">
+        <label class="custom-control-label" for="chkIAId">
         </label>
       </div>
     </th>

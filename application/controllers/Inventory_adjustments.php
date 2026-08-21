@@ -249,6 +249,21 @@ class Inventory_adjustments extends MY_Controller
 
   public function print($adjustmentId = null)
   {
+    $encodedId = $adjustmentId;
+    if (empty($encodedId)) {
+      show_404();
+    } else {
+      $decodedId = $this->decodeId($encodedId);
+      if ($decodedId === NULL) {
+        show_404();
+      }
+      $id = $decodedId;
+      if (!ctype_digit((string) $id) || (int) $id <= 0) {
+        show_404();
+      }
+      $adjustmentId = (int) $id;
+    }
+
     if (empty($adjustmentId)) {
       show_404();
     }

@@ -31,7 +31,7 @@
       </tr>
       <tr>
         <th>On Hand</th>
-        <td>
+        <td class="font-weight-500 text-primary">
           <?= number_format($product->qty_on_hand); ?>
         </td>
       </tr>
@@ -40,12 +40,20 @@
         <td><?= number_format($product->cost, 2); ?></td>
       </tr>
       <tr>
+        <th>Inventory Value</th>
+        <td><?= number_format($product->qty_on_hand * $product->cost); ?></td>
+      </tr>
+      <tr>
         <th>SRP</th>
         <td><?= number_format($product->srp, 2); ?></td>
       </tr>
       <tr>
         <th>SP</th>
         <td><?= number_format($product->selling_price, 2); ?></td>
+      </tr>
+      <tr>
+        <th>Packing</th>
+        <td><?= htmlspecialchars($product->pkg); ?></td>
       </tr>
     </table>
   </div>

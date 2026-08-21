@@ -91,6 +91,7 @@ class Inventory extends MY_Controller
     }
 
     $this->data['transaction_types'] = [
+      'OPENING INVENTORY',
       'ADJUSTMENT',
       'DR',
       'DR-CANCEL',

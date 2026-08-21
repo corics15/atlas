@@ -25,7 +25,7 @@
 
             <thead class="thead-orange">
               <tr>
-                <th width="120" class="text-center">Barcode</th>
+                <th width="150" class="text-center">Barcode</th>
                 <th>Description</th>
                 <th width="80" class="text-center">UOM</th>
                 <th width="120" class="text-right">On Hand</th>
@@ -42,12 +42,12 @@
                 <?php foreach ($inventoryAdjustmentDetails as $detail) : ?>
                 <tr data-product-id="<?= $detail->product_id ?>">
 
-                  <td class="ia-barcode">
+                  <td class="ia-barcode text-center">
                     <?= htmlspecialchars($detail->barcode) ?>
                   </td>
 
                   <td class="ia-description">
-                    <?= htmlspecialchars($detail->description) ?>
+                    <?= htmlspecialchars($detail->description); ?>
                   </td>
 
                   <td class="ia-uom text-center">
@@ -60,11 +60,7 @@
 
                   <?php if ($isEditable): ?>
                     <td>
-                      <input
-                          type="number"
-                          step="any"
-                          class="form-control form-control-sm text-right ia-adjustment"
-                          value="<?= number_format($detail->adjustment_qty, 0) ?>">
+                      <input type="number" step="any" class="form-control form-control-sm text-right ia-adjustment" value="<?= number_format($detail->adjustment_qty, 0) ?>">
                     </td>
                   <?php else : ?>
                     <td class="text-right ia-adjustment"><?= number_format($detail->adjustment_qty) ?></td>

@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     txtDescription.value = result.data.description;
     txtCost.value = result.data.cost;
     txtSRP.value = result.data.srp;
+    txtPkg.value = result.data.pkg;
 
     $('#selSupplier').val(result.data.supplier_id).trigger('change');
     $('#selUom').val(result.data.uom_id).trigger('change');

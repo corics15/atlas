@@ -53,7 +53,7 @@
                 <td class="font-weight-500 text-brown" id="tdRefNo"><?= isset($salesOrder) ? htmlspecialchars($salesOrder->so_no) : 'AUTO-GENERATED'; ?></td>
               </tr>
               <tr>
-                <th>Transfer Date</th>
+                <th>Order Date</th>
                 <td>
                   <input type="date" id="dtOrderDate" class="form-control form-control-sm w-auto" value="<?= isset($salesOrder) ? $salesOrder->order_date : date('Y-m-d'); ?>">
                 </td>

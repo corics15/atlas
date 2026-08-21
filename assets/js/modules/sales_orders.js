@@ -557,7 +557,7 @@ const createDetailRow = () => {
 
             <td class="so-description" data-toggle="tooltip"></td>
 
-            <td>
+            <td class="text-right">
               <select class="form-control form-control-sm so-uom custom-select w-auto">
                 ${buildUomOptions()}
               </select>

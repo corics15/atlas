@@ -245,7 +245,12 @@
                           <?= $index + 1; ?>
                         </td>
                         <td>
-                          <?= html_escape($product->description); ?>
+                          <?php
+                            $description = htmlspecialchars($product->description);
+                            echo (mb_strlen($description) > 30)
+                              ? mb_strimwidth($description, 0, 30, '...')
+                              : $description;
+                          ?>
                         </td>
                         <td class="text-right">
                           <?= number_format((float) $product->total_qty); ?>

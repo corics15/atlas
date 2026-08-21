@@ -38,6 +38,7 @@
               'PR'         => 'badge-indigo-2',
               'DR'         => 'badge-avocado-green',
               'DR-CANCEL'  => 'badge-danger',
+              'OPENING INVENTORY' => 'badge-dark-olive-brown',
             ];
           ?>
 
