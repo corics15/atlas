@@ -12,14 +12,16 @@
     <th>Salesman</th>
     <th class="text-center">Terms</th>
     <th>Remarks</th>
+    <th class="text-center">Item Count</th>
+    <th class="text-right">Total Amt</th>
     <th class="text-center">Remaining</th>
-    <th width="110" class="text-center">Status</th>
+    <th class="text-center">Status</th>
   </tr>
 </thead>
 <tbody>
   <?php if (count($salesOrders) == 0): ?>
     <tr>
-      <td colspan="9" class="text-center text-muted py-3">
+      <td colspan="11" class="text-center text-muted py-3">
         No Sales Order found.
       </td>
     </tr>
@@ -60,6 +62,9 @@
             : $remarks;
         ?>
       </td>
+
+      <td class="text-center"><?= number_format($row->item_count, 0) ?></td>
+      <td class="text-right"><?= number_format($row->total_amount, 2) ?></td>
 
       <td class="text-center">
         <?= number_format($row->remaining_items, 0) ?>

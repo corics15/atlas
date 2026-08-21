@@ -53,6 +53,10 @@ h3,
   font-weight: 600;
 }
 
+table tbody tr td {
+  white-space: nowrap !important;
+}
+
 .table,
 .form-control {
   font-size: 0.875rem;

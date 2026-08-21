@@ -7,7 +7,7 @@
           Items to Deliver
         </h3>
         <div class="ml-auto">
-          <button type="button" class="btn btn-sm btn-link" onClick="Atlas.page.back('delivery-receipts');"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back</a>
+          <button type="button" class="btn btn-sm btn-link" onClick="Atlas.page.back('delivery-receipts');"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
             <button type="button" class="btn btn-sm btn-link" id="btnPostDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
             <button type="button" class="btn btn-sm btn-link" id="btnCreateSalesInvoice" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-file-contract mr-2"></i>Create Sales Invoice</button>
             <button type="button" class="btn btn-sm btn-link" id="btnPrintDeliveryReceipt"><i class="fa fa-print mr-2"></i>Print</button>
@@ -20,6 +20,7 @@
           <table class="table table-sm table-hover mb-0" id="tblDeliveryReceiptDetails">
             <thead class="thead-orange">
               <tr>
+                <th class="text-center">#</th>
                 <th width="120" class="text-center">Barcode</th>
                 <th>Description</th>
                 <th class="text-center">UOM</th>
@@ -36,7 +37,7 @@
 
             <tbody>
 
-              <?php foreach($details as $row): ?>
+              <?php $index = 1; foreach($details as $row): ?>
                 <tr
                     data-sales-order-detail-id="<?= $row->sales_order_detail_id; ?>"
                     data-product-id="<?= $row->product_id; ?>"
@@ -48,6 +49,7 @@
                     data-qty-available="<?= $row->qty_available; ?>"
                     data-description="<?= $row->description ?>">
 
+                  <td class="text-center"><?= $index ?>.</td>
                   <td class="text-center"><?= htmlspecialchars($row->barcode); ?></td>
                   <td><?= htmlspecialchars($row->description); ?></td>
                   <td class="text-center"><?= htmlspecialchars($row->uom); ?></td>
@@ -78,7 +80,7 @@
                         <?= isset($deliveryReceiptId) ? 'readonly' : '' ?>>
                   </td>
                 </tr>
-              <?php endforeach; ?>
+              <?php $index++; endforeach; ?>
 
             </tbody>
           </table>

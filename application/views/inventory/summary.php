@@ -41,7 +41,7 @@
       </tr>
       <tr>
         <th>Inventory Value</th>
-        <td><?= number_format($product->qty_on_hand * $product->cost); ?></td>
+        <td><?= number_format($product->qty_on_hand * $product->cost, 2); ?></td>
       </tr>
       <tr>
         <th>SRP</th>

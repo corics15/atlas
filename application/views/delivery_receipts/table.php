@@ -15,7 +15,9 @@
       <th width="150" class="text-center">SO No.</th>
       <th>Customer</th>
       <th>Remarks</th>
-      <th width="120" class="text-center">Status</th>
+      <th class="text-center">Item Count</th>
+      <th class="text-right">Total Amt</th>
+      <th class="text-center">Status</th>
   </tr>
 </thead>
 
@@ -23,7 +25,7 @@
   <?php if (empty($deliveryReceipts)): ?>
 
   <tr>
-      <td colspan="7" class="text-center text-muted py-3">
+      <td colspan="9" class="text-center text-muted py-3">
         No Delivery Receipts found.
       </td>
   </tr>
@@ -88,6 +90,8 @@
               : $remarks;
           ?>
         </td>
+        <td class="text-center"><?= number_format($row->item_count, 0) ?></td>
+        <td class="text-right"><?= number_format($row->total_amount, 2) ?></td>
         <td class="text-center"><?= $status; ?></td>
       </tr>
 
