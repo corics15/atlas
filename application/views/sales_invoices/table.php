@@ -39,10 +39,10 @@
         <?= date('m/d/Y', strtotime($row->invoice_date)) ?>
       </td>
       <td class="text-center">
-        <a href="<?= $row->url ?>" class="text-wrap text-olive"><?= $row->si_no ?></a>
+        <a href="<?= $row->url ?>" class="text-olive"><?= $row->si_no ?></a>
       </td>
       <td class="text-center">
-        <a href="<?= $row->dr_url ?>" class="text-wrap text-olive" target="_blank">
+        <a href="<?= $row->dr_url ?>" class="text-olive" target="_blank">
           <i class="fa-external-link-alt fas fa-xs mr-1"></i><?= $row->dr_no ?>
         </a>
       </td>

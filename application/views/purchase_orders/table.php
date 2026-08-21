@@ -41,7 +41,7 @@
       </td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($po->po_date))) ?></td>
       <td class="text-center">
-        <a href="<?= $po->url ?>" class="text-olive text-wrap">
+        <a href="<?= $po->url ?>" class="text-olive">
           <?= htmlspecialchars($po->po_no) ?>
         </a>
       </td>

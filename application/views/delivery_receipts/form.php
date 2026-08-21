@@ -59,7 +59,7 @@
               <tr>
                 <th width="180">SO No.</th>
                 <td>
-                  <a href="<?= $header->url //base_url('sales-orders/edit/').($header->sales_order_id ?? $header->id) ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($header->so_no) ?></a>
+                  <a href="<?= $header->url ?>" class="text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($header->so_no) ?></a>
               </tr>
               <tr>
                 <th>Order Date</th>

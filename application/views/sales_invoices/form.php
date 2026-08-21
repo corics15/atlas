@@ -67,7 +67,7 @@
               <tr>
                 <th width="180">DR No.</th>
                 <td>
-                  <a href="<?= $header->url ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($header->dr_no) ?></a>
+                  <a href="<?= $header->url ?>" class="text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($header->dr_no) ?></a>
               </tr>
               <tr>
                 <th>Delivery Date</th>

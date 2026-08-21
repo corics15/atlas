@@ -37,7 +37,7 @@
         <?= date('m/d/Y', strtotime($row->transfer_date)) ?>
       </td>
       <td class="text-center">
-        <a href="<?= $row->url ?>" class="text-wrap text-olive"><?= $row->transfer_no ?></a>
+        <a href="<?= $row->url ?>" class="text-olive"><?= $row->transfer_no ?></a>
       </td>
       <td>
         <?= $row->from_branch ?>

@@ -68,7 +68,7 @@
               <tr>
                 <th width="180">SI No.</th>
                 <td>
-                  <a href="<?= $salesInvoice->url//base_url('sales-invoices/edit/').$salesInvoice->id ?>" class="text-wrap text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($salesInvoice->si_no) ?></a>
+                  <a href="<?= $salesInvoice->url ?>" class="text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($salesInvoice->si_no) ?></a>
               </tr>
               <tr>
                 <th>Customer</th>

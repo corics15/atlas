@@ -319,7 +319,7 @@
                     <?php foreach ($recentSales as $sale) : ?>
                       <tr>
                         <td class="text-center">
-                          <a href="<?= $sale->url; ?>" class="text-wrap text-olive" target="_blank">
+                          <a href="<?= $sale->url; ?>" class="text-olive" target="_blank">
                             <i class="fas fa-external-link-alt fa-xs mr-1"></i>
                             <?= $sale->si_no ?>
                           </a>

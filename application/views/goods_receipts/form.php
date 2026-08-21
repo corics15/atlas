@@ -55,7 +55,7 @@
       <tr>
         <th>PO No.</th>
         <td>
-          <a href="<?= base_url('purchase-orders?id=').$purchaseOrder['header']->id ?>" class="text-wrap text-olive" target="_blank">
+          <a href="<?= base_url('purchase-orders?id=').$purchaseOrder['header']->id ?>" class="text-olive" target="_blank">
             <i class="fa-external-link-alt fas fa-xs mr-1"></i>
             <?= htmlspecialchars($purchaseOrder['header']->po_no) ?>
           </a>

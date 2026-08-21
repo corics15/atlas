@@ -41,7 +41,7 @@
       </td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($row->adjustment_date))); ?></td>
       <td class="text-center">
-        <a href="<?= $row->url ?>" class="text-olive text-wrap">
+        <a href="<?= $row->url ?>" class="text-olive">
           <?= htmlspecialchars($row->adjustment_no); ?>
         </a>
       </td>
