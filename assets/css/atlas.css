@@ -53,6 +53,7 @@ h3,
   font-weight: 600;
 }
 
+table thead tr th,
 table tbody tr td {
   white-space: nowrap !important;
 }
