@@ -20,7 +20,7 @@
 
       <div class="card-body p-0">
         <div class="font-sm px-4 py-2 text-lightblue text-right"><span class="font-weight-500">NOTE:</span> Enter "-" to decrease, e.g. -5, otherwise 5</div>
-        <div class="table-responsive table-scroll">
+        <div class="table-responsive">
           <table class="table table-sm table-bordered table-hover">
 
             <thead class="thead-orange">

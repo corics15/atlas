@@ -6,17 +6,8 @@
   </div>
   <div class="card-body">
 
-    <input
-      type="hidden"
-      id="hidPurchaseOrderId"
-      name="po_id"
-      value="<?= $purchaseOrder['header']->id ?>">
-
-    <input
-      type="hidden"
-      id="hidSupplierId"
-      name="supplier_id"
-      value="<?= $purchaseOrder['header']->supplier_id ?>">
+    <input type="hidden" id="hidPurchaseOrderId" name="po_id" value="<?= $purchaseOrder['header']->id ?>">
+    <input type="hidden" id="hidSupplierId" name="supplier_id" value="<?= $purchaseOrder['header']->supplier_id ?>">
 
       <?php /*** header */ ?>
       <?php
