@@ -356,7 +356,7 @@
     <div class="row">
 
       <?php /*** Sales - Last 6 Months */ ?>
-      <div class="col-8">
+      <div class="col-lg-8">
         <div class="card">
 
           <div class="card-header">

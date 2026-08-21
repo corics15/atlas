@@ -169,7 +169,7 @@
                       </td>
 
                       <?php /*** net amt */ ?>
-                      <td class="text-right font-weight-500 sr-net-amount">
+                      <td class="text-right sr-net-amount">
                         <?php if ($discountType === 'AMOUNT' && !$hasSavedDiscount): ?>
                           -
                         <?php else: ?>
@@ -226,7 +226,7 @@
                     <td class="text-right">0.00</td>
 
                     <?php /*** net amt */ ?>
-                    <td class="text-right font-weight-500">0.00</td>
+                    <td class="text-right">0.00</td>
 
                     <?php /*** delete */ ?>
                     <td class="text-center">

@@ -256,7 +256,7 @@ const getSelectedDeliveryReceiptId = () => {
       Atlas.toast.warning('New Delivery Receipt, not saved yet.');
       return null;
     } else if (window.deliveryReceiptId) {
-      return Atlas.format.integer(window.deliveryReceiptId, 10);
+      return window.deliveryReceiptId;
     } else {
       Atlas.toast.warning('Please select a Delivery Receipt.');
       return null;

@@ -379,6 +379,7 @@ const calculateSalesInvoiceTotals = () => {
   const vatMode = window.salesInvoiceVatMode || '';
   const vatRate = window.salesInvoiceVatRate || 0;
   const vatDecimal = vatRate / 100;
+  console.log(discountedAmount)
 
   let subtotal = 0;
   let vatAmount = 0;

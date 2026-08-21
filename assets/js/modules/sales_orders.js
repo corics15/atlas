@@ -368,6 +368,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const row = btn.closest('tr');
     removeDetailRow(row);
+    calculateSalesOrderTotals();
   });
 
   /*** sales order UOM change */

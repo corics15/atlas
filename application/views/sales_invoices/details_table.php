@@ -17,7 +17,7 @@
       </div>
 
       <div class="card-body p-0">
-        <div class="table-responsive table-scroll">
+        <div class="table-responsive">
           <table class="table table-sm table-hover mb-0">
             <thead class="thead-orange">
               <tr>
@@ -105,7 +105,7 @@
                       <?php endif; ?>
                     </td>
 
-                    <td class="text-right font-weight-500 so-net-amount">
+                    <td class="text-right so-net-amount">
                       <?= number_format($netAmount, 2) ?>
                     </td>
 
@@ -141,7 +141,7 @@
                   <td class="text-right">0.00</td>
                   <td class="text-center">-</td>
                   <td class="text-right">0.00</td>
-                  <td class="text-right font-weight-500">0.00</td>
+                  <td class="text-right">0.00</td>
 
                   <td class="text-center"><i class="fas fa-trash text-danger pointer btn-delete-row"></i></td>
                 </tr>
@@ -162,13 +162,8 @@
        * EDIT  = saved SI snapshot
        * CREATE = source SO/DR header snapshot
        */
-      $vatMode = $isEdit
-          ? ($header->vat_mode ?? '')
-          : ($header->vat_mode ?? '');
-
-      $vatRate = $isEdit
-          ? (float)($header->vat_rate ?? 0)
-          : (float)($header->vat_rate ?? 0);
+      $vatMode = $isEdit ? ($header->vat_mode ?? '') : ($header->vat_mode ?? '');
+      $vatRate = $isEdit ? (float)($header->vat_rate ?? 0) : (float)($header->vat_rate ?? 0);
     ?>
 
     <div class="card mt-3 mb-3">
@@ -192,9 +187,7 @@
                 <tr>
                   <td>Subtotal</td>
                   <td id="siSubtotal" class="text-right">
-                    <?= $isEdit
-                      ? number_format((float)($header->subtotal ?? 0), 2)
-                      : '0.00' ?>
+                    <?= $isEdit ? number_format((float)($header->subtotal ?? 0), 2) : '0.00' ?>
                   </td>
                 </tr>
 
@@ -207,18 +200,14 @@
                   </td>
 
                   <td id="siVatAmount" class="text-right">
-                    <?= $isEdit
-                      ? number_format((float)($header->vat_amount ?? 0), 2)
-                      : '0.00' ?>
+                    <?= $isEdit ? number_format((float)($header->vat_amount ?? 0), 2) : '0.00' ?>
                   </td>
                 </tr>
 
                 <tr class="font-weight-500">
                   <td>TOTAL</td>
                   <td id="siTotalAmount" class="text-right">
-                    <?= $isEdit
-                      ? number_format((float)($header->total_amount ?? 0), 2)
-                      : '0.00' ?>
+                    <?= $isEdit ? number_format((float)($header->total_amount ?? 0), 2) : '0.00' ?>
                   </td>
                 </tr>
               </tbody>
