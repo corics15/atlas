@@ -99,6 +99,15 @@
       </button>
       <?php endif ?>
 
+      <?php /*** excel download */ if (!empty($toolbar['excel'])) : ?>
+      <button
+        id="<?= $toolbar['excel']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['excel']['icon']; ?>"></i>
+        <?= $toolbar['excel']['text']; ?>
+      </button>
+      <?php endif ?>      
+
       <?php  /*** receive items */ if (!empty($toolbar['receive'])) : ?>
       <button
         id="<?= $toolbar['receive']['id']; ?>"

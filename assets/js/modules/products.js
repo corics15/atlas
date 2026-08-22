@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnDeactivateProduct = document.getElementById('btnDeactivateProduct');
   const btnRefreshProduct = document.getElementById('btnRefreshProduct');
   const btnInventoryInquiry = document.getElementById('btnInventoryInquiry');
+  const btnDownloadProductExcel = document.getElementById('btnDownloadProductExcel');
 
   const frmProduct = document.getElementById('frmProduct');
 
@@ -171,6 +172,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     Atlas.page.redirect(`inventory/ledger/${Atlas.id.encode(id)}`);
+  });
+
+  /*** excel download */
+  btnDownloadProductExcel?.addEventListener('click', () => {
+    Atlas.excel.download(
+      document.getElementById('tblProducts'),
+      {
+        title: 'Product List',
+        generatedBy: Atlas.config.userName,
+        fileName: 'product-list',
+        sheetName: 'ProductList',
+      }
+    );
   });
 
   btnRefreshProduct.addEventListener('click', () => Atlas.page.redirect(`products`));

@@ -51,12 +51,17 @@ class Sales_orders extends MY_Controller
 
     $this->pageScript = 'sales_orders';
     $this->data['salesOrders'] = $this->Sales_order_model->getAll($filters);
+    $totalAmt = 0;
+    $itemCount = 0;
     foreach ($this->data['salesOrders'] as $so) {
       $so->url = base_url('sales-orders/edit/' . $this->encodeId($so->id));
+      $totalAmt += $so->total_amount;
+      $itemCount += $so->item_count;
     }
 
+    $this->data['total_amount'] = $totalAmt;
+    $this->data['item_count'] = $itemCount;
     $this->data['recordCount'] = count($this->data['salesOrders']);
-
     $this->data['tableContent'] =
         $this->load->view(
             'sales_orders/table',
@@ -79,6 +84,11 @@ class Sales_orders extends MY_Controller
         'id'   => 'btnCreateDeliveryReceipt',
         'text' => 'Create Delivery Receipt',
         'icon' => 'fas fa-truck',
+      ],
+      'excel' => [
+        'id'   => 'btnDownloadSOExcel',
+        'icon' => 'fas fa-file-excel',
+        'text' => 'Download as Excel'
       ],
       'print' => [
         'id'   => 'btnPrintSalesOrder',

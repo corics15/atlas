@@ -7,7 +7,7 @@ const btnRefreshDeliveryReceipt = document.getElementById('btnRefreshDeliveryRec
 const btnCancelDeliveryReceipt = document.getElementById('btnCancelDeliveryReceipt');
 const btnCreateSalesInvoice = document.getElementById('btnCreateSalesInvoice');
 const btnPrintDeliveryReceipt = document.getElementById('btnPrintDeliveryReceipt');
-
+const btnDownloadDRExcel = document.getElementById('btnDownloadDRExcel');
 
 const hidSalesOrderId = document.getElementById('hidSalesOrderId');
 const hidDeliveryReceiptId = document.getElementById('hidDeliveryReceiptId');
@@ -189,6 +189,38 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     Atlas.toast.success(result.message);
     setTimeout(() => Atlas.page.refresh(), 1500);
+  });
+
+  /*** excel download */
+  btnDownloadDRExcel?.addEventListener('click', () => {
+    Atlas.excel.download(
+      document.getElementById('tblDRList'),
+      {
+        title: 'Delivery Receipts List',
+        generatedBy: Atlas.config.userName,
+        fileName: 'delivery-receipts-list',
+        sheetName: 'DRList',
+        /*** start with 0, index based */
+        totals: [
+          {
+            column: 4,
+            value: 'TOTAL'
+          },
+          {
+            column: 5,
+            value: window.itemCount || 0,
+            type: 'n',
+            format: '#,##0'
+          },
+          {
+            column: 6,
+            value: window.totalAmount || 0,
+            type: 'n',
+            format: '#,##0.00'
+          },
+        ]
+      }
+    );
   });
 
   /*** create sales invoice */

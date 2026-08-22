@@ -1,6 +1,6 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center">
+    <th width="40" class="text-center" data-exclude="true">
       <div class="custom-control custom-checkbox ml-2 mt-1">
         <input type="checkbox" class="custom-control-input" id="chkSelectAllSalesOrder">
         <label class="custom-control-label" for="chkSelectAllSalesOrder"></label>
@@ -33,7 +33,7 @@
       data-id="<?= $row->id ?>"
       data-status="<?= $row->status ?>"
       data-remaining-items="<?= $row->remaining_items ?>">
-      <td class="text-center">
+      <td class="text-center" data-exclude="true">
         <div class="custom-control custom-checkbox ml-2 mt-1">
           <input type="checkbox" class="custom-control-input chkSalesOrder" id="chkSalesOrder-<?= $row->id ?>" value="<?= $row->id ?>">
           <label class="custom-control-label" for="chkSalesOrder-<?= $row->id ?>"></label>
@@ -54,7 +54,7 @@
       <td class="text-center">
         <?= htmlspecialchars($row->terms_name) ?>
       </td>
-      <td>
+      <td data-excel-value="<?= htmlspecialchars($row->remarks) ?>">
         <?php
           $remarks = htmlspecialchars($row->remarks);
           echo (mb_strlen($remarks) > 30)
@@ -63,12 +63,9 @@
         ?>
       </td>
 
-      <td class="text-center"><?= number_format($row->item_count, 0) ?></td>
-      <td class="text-right"><?= number_format($row->total_amount, 2) ?></td>
-
-      <td class="text-center">
-        <?= number_format($row->remaining_items, 0) ?>
-      </td>
+      <td class="text-center" data-t="n" data-num-fmt="#,##0"><?= number_format($row->item_count, 0) ?></td>
+      <td class="text-right" data-t="n" data-num-fmt="#,##0.00"><?= number_format($row->total_amount, 2) ?></td>
+      <td class="text-center" data-t="n" data-num-fmt="#,##0"><?= number_format($row->remaining_items, 0) ?></td>
 
       <td class="text-center">
         <?php

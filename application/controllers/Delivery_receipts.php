@@ -40,11 +40,17 @@ class Delivery_receipts extends MY_Controller
 
     $this->data['searchPlaceHolder'] = 'Search...';
     $this->data['deliveryReceipts'] = $this->Delivery_receipt_model->getAll($filters);
+    $totalAmt = 0;
+    $itemCount = 0;
     foreach ($this->data['deliveryReceipts'] as $dr) {
       $dr->url = base_url('delivery-receipts/edit/' . $this->encodeId($dr->id));
       $dr->so_url = base_url('sales-orders/edit/' . $this->encodeId($dr->so_id));
+      $totalAmt += $dr->total_amount;
+      $itemCount += $dr->item_count;
     }
 
+    $this->data['total_amount'] = $totalAmt;
+    $this->data['item_count'] = $itemCount;
     $this->data['recordCount'] = count($this->data['deliveryReceipts']);
     $this->pageScript = 'delivery_receipts';
     $this->data['tableContent']
@@ -74,6 +80,11 @@ class Delivery_receipts extends MY_Controller
           'id' => 'btnCancelDeliveryReceipt',
           'text' => 'Cancel DR',
           'icon' => 'fas fa-ban'
+      ],
+      'excel' => [
+        'id'   => 'btnDownloadDRExcel',
+        'icon' => 'fas fa-file-excel',
+        'text' => 'Download as Excel'
       ],
       'create' => [
         'id'   => 'btnCreateSalesInvoice',

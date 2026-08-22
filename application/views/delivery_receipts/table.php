@@ -1,23 +1,23 @@
 <thead class="thead-orange">
   <tr>
-      <th width="40" class="text-center">
-        <div class="custom-control custom-checkbox ml-2 mt-1">
-          <input
-              type="checkbox"
-              class="custom-control-input"
-              id="chkSelectAllDeliveryReceipt"/>
-          <label class="custom-control-label" for="chkSelectAllDeliveryReceipt"></label>
-        </div>
-      </th>
+    <th width="40" class="text-center" data-exclude="true">
+      <div class="custom-control custom-checkbox ml-2 mt-1">
+        <input
+            type="checkbox"
+            class="custom-control-input"
+            id="chkSelectAllDeliveryReceipt"/>
+        <label class="custom-control-label" for="chkSelectAllDeliveryReceipt"></label>
+      </div>
+    </th>
 
-      <th width="120" class="text-center">Delivery Date</th>
-      <th width="140" class="text-center">DR No.</th>
-      <th width="150" class="text-center">SO No.</th>
-      <th>Customer</th>
-      <th>Remarks</th>
-      <th class="text-center">Item Count</th>
-      <th class="text-right">Total Amt</th>
-      <th class="text-center">Status</th>
+    <th width="120" class="text-center">Delivery Date</th>
+    <th width="140" class="text-center">DR No.</th>
+    <th width="150" class="text-center">SO No.</th>
+    <th>Customer</th>
+    <th>Remarks</th>
+    <th class="text-center">Item Count</th>
+    <th class="text-right">Total Amt</th>
+    <th class="text-center">Status</th>
   </tr>
 </thead>
 
@@ -47,7 +47,7 @@
       ?>
 
       <tr data-id="<?= $row->id; ?>" data-status="<?= $row->status; ?>">
-        <td class="text-center">
+        <td class="text-center" data-exclude="true">
           <div class="custom-control custom-checkbox ml-2 mt-1">
             <input
                 type="checkbox"
@@ -74,7 +74,7 @@
           </a>
         </td>
 
-        <td>
+        <td data-excel-value="<?= htmlspecialchars($row->customer_name) ?>">
           <?php
             $customerName = htmlspecialchars($row->customer_name);
             echo (mb_strlen($customerName) > 30)
@@ -82,7 +82,7 @@
               : $customerName;
           ?>
         </td>
-        <td>
+        <td data-excel-value="<?= htmlspecialchars($row->remarks) ?>">
           <?php
             $remarks = htmlspecialchars($row->remarks);
             echo (mb_strlen($remarks) > 30)
@@ -90,8 +90,8 @@
               : $remarks;
           ?>
         </td>
-        <td class="text-center"><?= number_format($row->item_count, 0) ?></td>
-        <td class="text-right"><?= number_format($row->total_amount, 2) ?></td>
+        <td class="text-center" data-t="n" data-num-fmt="#,##0"><?= number_format($row->item_count, 0) ?></td>
+        <td class="text-right" data-t="n" data-num-fmt="#,##0.00"><?= number_format($row->total_amount, 2) ?></td>
         <td class="text-center"><?= $status; ?></td>
       </tr>
 

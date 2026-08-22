@@ -34,7 +34,11 @@ class Inventory extends MY_Controller
         'icon' => 'fas fa-history',
         'text' => 'View Stock Ledger'
       ],
-
+      'excel' => [
+        'id'   => 'btnDownloadInventoryExcel',
+        'icon' => 'fas fa-file-excel',
+        'text' => 'Download as Excel'
+      ],
       'refresh' => [
         'id'   => 'btnRefreshInventory',
         'icon' => 'fas fa-sync-alt',

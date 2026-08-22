@@ -15,7 +15,7 @@
         <?php $this->load->view('partials/record_count'); ?>
 
         <div class="table-responsive table-scroll">
-          <table class="table table-sm table-bordered table-hover">
+          <table class="table table-sm table-bordered table-hover" id="tblDRList">
 
             <?php $this->load->view('partials/table'); ?>
 
@@ -26,3 +26,8 @@
     </div>
   </div>
 </section>
+
+<script>
+  window.totalAmount = <?= (float)$total_amount ?>;
+  window.itemCount = <?= (float)$item_count ?>;
+</script>

@@ -20,6 +20,7 @@ const btnRefreshSalesOrder = document.getElementById('btnRefreshSalesOrder');
 const btnPrintSalesOrder = document.getElementById('btnPrintSalesOrder');
 const btnPostSalesOrder = document.getElementById('btnPostSalesOrder');
 const btnCreateDeliveryReceipt = document.getElementById('btnCreateDeliveryReceipt');
+const btnDownloadSOExcel = document.getElementById('btnDownloadSOExcel');
 
 let isDirty = false;
 let isLoading = true;
@@ -354,6 +355,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     isDirty = false;
     Atlas.toast.success(result.message);
     setTimeout(() => Atlas.page.refresh(), 1500);
+  });
+
+  /*** excel download */
+  btnDownloadSOExcel?.addEventListener('click', () => {
+    Atlas.excel.download(
+      document.getElementById('tblSOList'),
+      {
+        title: 'Sales Order List',
+        generatedBy: Atlas.config.userName,
+        fileName: 'sales-order-list',
+        sheetName: 'SOList',
+        /*** start with 0, index based */
+        totals: [
+          {
+            column: 5,
+            value: 'TOTAL'
+          },
+          {
+            column: 6,
+            value: window.itemCount || 0,
+            type: 'n',
+            format: '#,##0'
+          },
+          {
+            column: 7,
+            value: window.totalAmount || 0,
+            type: 'n',
+            format: '#,##0.00'
+          },
+        ]
+      }
+    );
   });
 
   /*** refresh */

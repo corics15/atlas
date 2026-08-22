@@ -57,6 +57,11 @@ class Products extends MY_Controller
         'icon' => 'fas fa-history',
         'text' => 'Inventory Inquiry'
       ],
+      'excel' => [
+        'id'   => 'btnDownloadProductExcel',
+        'icon' => 'fas fa-file-excel',
+        'text' => 'Download as Excel'
+      ],
       'refresh' => [
         'id' => 'btnRefreshProduct',
         'text' => 'Refresh',

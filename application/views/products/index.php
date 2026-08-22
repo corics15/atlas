@@ -15,7 +15,7 @@
         <?php $this->load->view('partials/record_count'); ?>
 
         <div class="table-responsive table-scroll">
-          <table class="table table-sm table-bordered table-hover">
+          <table class="table table-sm table-bordered table-hover" id="tblProducts">
 
             <?php $this->load->view('partials/table'); ?>
 

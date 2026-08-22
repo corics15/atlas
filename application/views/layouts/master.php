@@ -42,6 +42,10 @@
     <script>
       window.Atlas = window.Atlas || {};
       Atlas.config = { baseUrl: "<?= base_url(); ?>" };
+      Atlas.config = {
+        baseUrl: '<?= base_url() ?>',
+        userName: '<?= htmlspecialchars(strtoupper($this->session->userdata('username'))) ?>'
+      };
     </script>
 
     <?php $this->load->view('partials/modals/product_finder'); ?>

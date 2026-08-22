@@ -1,6 +1,6 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center">
+    <th width="40" class="text-center" data-exclude="true">
       <div class="custom-checkbox custom-control ml-2 mt-1">
         <input
           type="checkbox"
@@ -29,7 +29,7 @@
   <?php foreach ($products as $product) : ?>
   <tr>
     <?php /*** checkbox */ ?>
-    <td class="text-center">
+    <td class="text-center" data-exclude="true">
       <div class="custom-checkbox custom-control ml-2 mt-1">
         <input
           type="checkbox"
@@ -43,7 +43,7 @@
       </div>
     </td>
     <?php /*** suppliler */ ?>
-    <td>
+    <td data-excel-value="<?= htmlspecialchars($product->supplier_name) ?>">
       <?php
         $supplierName = htmlspecialchars($product->supplier_name);
         echo (mb_strlen($supplierName) > 30)
@@ -60,7 +60,7 @@
       <?= htmlspecialchars($product->barcode); ?>
     </td>
     <?php /*** description */ ?>
-    <td>
+    <td data-excel-value="<?= htmlspecialchars($product->description) ?>">
       <?php
         $description = htmlspecialchars($product->description);
         echo (mb_strlen($description) > 30)
@@ -71,22 +71,22 @@
     <?php /*** packing */ ?>
     <td><?= htmlspecialchars($product->pkg) ?></td>
     <?php /*** qty */ ?>
-    <td class="text-right"><?= number_format($product->qty_on_hand) ?></td>
+    <td class="text-right" data-t="n" data-num-fmt="#,##0"><?= number_format($product->qty_on_hand) ?></td>
     <?php /*** uom */ ?>
     <td class="text-center"><?= $product->uom ?></td>
     <?php /*** cost */ ?>
-    <td class="text-right"><?= $product->cost ?></td>
+    <td class="text-right" data-t="n" data-num-fmt="#,##0.00"><?= $product->cost ?></td>
     <?php /*** srp */ ?>
     <td class="text-right"><?= $product->srp ?></td>
     <?php /*** active ? */ ?>
-    <td class="text-center">
+    <td class="text-center" data-excel-value="<?= $product->is_active == 't' ? 'Y' : '' ?>">
       <?= $product->is_active == 't' ? '<i class="fas fa-check text-success"></i>' : ''; ?>
     </td>
   </tr>
   <?php endforeach; ?>
   <?php else : ?>
   <tr>
-    <td colspan="10" class="text-center py-3">
+    <td colspan="11" class="text-center py-3">
       No records found.
     </td>
   </tr>

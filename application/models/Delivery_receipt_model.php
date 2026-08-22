@@ -200,7 +200,7 @@ class Delivery_receipt_model extends CI_Model
             so.status AS so_status,
             so.id AS so_id,
             so.total_amount,
-            (SELECT count(*) FROM t_sales_order_details sod WHERE sod.sales_order_id = so.id) AS item_count            
+            (SELECT count(*) FROM t_sales_order_details sod WHERE sod.sales_order_id = so.id) AS item_count
         ")
         ->from('t_delivery_receipts dr')
         ->join(

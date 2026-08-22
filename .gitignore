@@ -16,7 +16,7 @@ Thumbs.db
 .vscode/
 
 # Composer
-vendor/
+/vendor/
 
 # Node
 node_modules/

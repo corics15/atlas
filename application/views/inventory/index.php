@@ -68,3 +68,8 @@
     </div>
   </div>
 </section>
+
+<script>
+  window.inventoryTotalQty = <?= (float)$totalQty ?>;
+  window.inventoryTotalAmount = <?= (float)$totalAmount ?>;
+</script>

@@ -7,9 +7,11 @@ const txtFromDate = document.querySelector('input[name=date_from]');
 const txtToDate = document.querySelector('input[name=date_to]');
 const selSLTransactionType = document.getElementById('selSLTransactionType');
 const hidProductId = document.getElementById('hidProductId');
+const btnDownloadInventoryExcel = document.getElementById('btnDownloadInventoryExcel');
 
 document.addEventListener('DOMContentLoaded', async (e) => {
 
+  /*** view stock ledger */
   btnViewStockLedger?.addEventListener('click', async () => {
     const id = getSelectedInventoryId();
 
@@ -29,6 +31,38 @@ document.addEventListener('DOMContentLoaded', async (e) => {
 
   /*** back */
   btnBackInventoryInquiry?.addEventListener('click', () => Atlas.page.back());
+
+  /*** excel download */
+  btnDownloadInventoryExcel?.addEventListener('click', () => {
+    Atlas.excel.download(
+      document.getElementById('tblInventory'),
+      {
+        title: 'Inventory Inquiry',
+        generatedBy: Atlas.config.userName,
+        fileName: 'inventory-inquiry',
+        sheetName: 'Inventory',
+        /*** start with 0, index based */
+        totals: [
+          {
+            column: 5,
+            value: 'TOTAL'
+          },
+          {
+            column: 6,
+            value: window.inventoryTotalQty || 0,
+            type: 'n',
+            format: '#,##0'
+          },
+          {
+            column: 9,
+            value: window.inventoryTotalAmount || 0,
+            type: 'n',
+            format: '#,##0.00'
+          }
+        ]
+      }
+    );
+  });
 
   Atlas.table.init({
     checkbox: '.chkInventoryInquiry',

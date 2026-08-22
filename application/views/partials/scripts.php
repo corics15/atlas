@@ -4,6 +4,7 @@
 <script src="<?= atlas_asset('assets/adminlte/plugins/select2/js/select2.full.min.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/adminlte/plugins/chart.js/Chart.min.js'); ?>"></script>
 <script src="<?= base_url('assets/plugins/sweetalert2/sweetalert2.all.min.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/vendor/table-to-excel/tableToExcel.js'); ?>"></script>
 
 <script src="<?= atlas_asset('assets/js/core/ajax.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/toast.js'); ?>"></script>
@@ -24,6 +25,7 @@
 <script src="<?= atlas_asset('assets/js/core/id.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/filter.js'); ?>"></script>
 <script src="<?= atlas_asset('assets/js/core/upload.js'); ?>"></script>
+<script src="<?= atlas_asset('assets/js/core/excel.js'); ?>"></script>
 
 <script>
   $(function () {
