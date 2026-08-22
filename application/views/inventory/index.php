@@ -12,8 +12,6 @@
 
         </div>
 
-        <?php //$this->load->view('partials/record_count'); ?>
-
         <?php /*** inventory summary */ ?>
         <div class="row mb-3">
 

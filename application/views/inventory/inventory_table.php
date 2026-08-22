@@ -44,9 +44,23 @@
       <td class="text-center">
         <a href="<?= $row->url ?>" class="text-olive"><?= htmlspecialchars($row->barcode); ?></a>
       </td>
-      <td><?= htmlspecialchars($row->description); ?></td>
+      <td>
+        <?php
+          $description = htmlspecialchars($row->description);
+          echo (mb_strlen($description) > 30)
+            ? mb_strimwidth($description, 0, 30, '...')
+            : $description;
+        ?>
+      </td>
       <td class="text-center"><?= htmlspecialchars($row->pkg); ?></td>
-      <td><?= htmlspecialchars($row->supplier_name); ?></td>
+      <td>
+        <?php
+          $supplierName = htmlspecialchars($row->supplier_name);
+          echo (mb_strlen($supplierName) > 30)
+            ? mb_strimwidth($supplierName, 0, 30, '...')
+            : $supplierName;
+        ?>
+      </td>
       <td class="text-center"><?= htmlspecialchars($row->uom); ?></td>
       <td class="text-right"><?= number_format($row->qty_on_hand); ?></td>
       <td class="text-right"><?= number_format($row->cost, 2); ?></td>

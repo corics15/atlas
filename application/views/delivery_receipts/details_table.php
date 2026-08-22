@@ -70,12 +70,7 @@
 
                   </td>
                   <td>
-                    <input
-                        type="number"
-                        class="form-control form-control-sm text-right dr-deliver-qty"
-                        min="0"
-                        max="<?= $row->qty_available_to_deliver; ?>"
-                        step="any"
+                    <input type="number" class="form-control form-control-sm text-right dr-deliver-qty" min="0" max="<?= $row->qty_available_to_deliver; ?>" step="any"
                         value="0"
                         <?= isset($deliveryReceiptId) ? 'readonly' : '' ?>>
                   </td>
