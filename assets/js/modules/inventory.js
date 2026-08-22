@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async (e) => {
     }
 
     Atlas.page.remember();
-    Atlas.page.redirect(`inventory/ledger/${id}`)
+    Atlas.page.redirect(`inventory/ledger/${Atlas.id.encode(id)}`)
   });
 
   /*** refresh */
