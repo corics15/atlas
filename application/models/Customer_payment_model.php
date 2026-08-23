@@ -234,6 +234,142 @@ class Customer_payment_model extends CI_Model
         ->result();
   }
 
+  public function getCustomerLedger( $customerId, $dateFrom = null, $dateTo = null)
+  {
+    $customerId = (int)$customerId;
+    $dateFrom = trim($dateFrom ?? '');
+    $dateTo = trim($dateTo ?? '');
+
+    if ($customerId <= 0) {
+      return [
+        'opening_balance' => 0,
+        'transactions' => []
+      ];
+    }
+
+    /*** opening balance */
+    $openingBalance = 0;
+
+    if ($dateFrom !== '') {
+      $row = $this->db
+          ->query(
+            "SELECT COALESCE(SUM(x.debit - x.credit), 0) AS opening_balance
+            FROM (
+              SELECT si.total_amount AS debit, 0::numeric AS credit
+              FROM t_sales_invoices si
+              WHERE si.customer_id = ?
+              AND si.status = 'POSTED'
+              AND si.invoice_date < ?
+              UNION ALL
+              SELECT 0::numeric AS debit, COALESCE(a.amount_applied, 0) AS credit
+              FROM t_customer_payments cp
+              LEFT JOIN (
+                SELECT customer_payment_id, SUM(amount_applied) AS amount_applied
+                FROM t_customer_payment_allocations
+                GROUP BY customer_payment_id
+              ) a ON a.customer_payment_id = cp.id
+              WHERE cp.customer_id = ?
+              AND cp.status = 'POSTED'
+              AND cp.payment_date < ?
+            ) x",
+            [
+              $customerId,
+              $dateFrom,
+              $customerId,
+              $dateFrom
+            ]
+          )
+          ->row();
+
+      $openingBalance = round((float)$row->opening_balance, 2);
+    }
+
+    /*** transaction date conditions */
+    $invoiceWhere = '';
+    $paymentWhere = '';
+    $params = [
+      $openingBalance,
+      $customerId
+    ];
+
+    if ($dateFrom !== '') {
+      $invoiceWhere .= ' AND si.invoice_date >= ?';
+      $params[] = $dateFrom;
+    }
+
+    if ($dateTo !== '') {
+      $invoiceWhere .= ' AND si.invoice_date <= ?';
+      $params[] = $dateTo;
+    }
+
+    $params[] = $customerId;
+
+    if ($dateFrom !== '') {
+      $paymentWhere .= ' AND cp.payment_date >= ?';
+      $params[] = $dateFrom;
+    }
+
+    if ($dateTo !== '') {
+      $paymentWhere .= ' AND cp.payment_date <= ?';
+      $params[] = $dateTo;
+    }
+
+    $transactions = $this->db
+        ->query(
+          "SELECT
+            x.transaction_date,
+            x.reference_no,
+            x.transaction_type,
+            x.debit,
+            x.credit,
+            ? + SUM(x.debit - x.credit) OVER (
+              ORDER BY x.transaction_date, x.sort_order, x.transaction_id
+              ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+            ) AS balance,
+            x.transaction_id
+          FROM (
+            SELECT
+              si.invoice_date AS transaction_date,
+              si.si_no AS reference_no,
+              'SALES INVOICE' AS transaction_type,
+              si.total_amount AS debit,
+              0::numeric AS credit,
+              si.id AS transaction_id,
+              1 AS sort_order
+            FROM t_sales_invoices si
+            WHERE si.customer_id = ?
+            AND si.status = 'POSTED'
+            {$invoiceWhere}
+            UNION ALL
+            SELECT
+              cp.payment_date AS transaction_date,
+              cp.payment_no AS reference_no,
+              'CUSTOMER PAYMENT' AS transaction_type,
+              0::numeric AS debit,
+              COALESCE(a.amount_applied, 0) AS credit,
+              cp.id AS transaction_id,
+              2 AS sort_order
+            FROM t_customer_payments cp
+            LEFT JOIN (
+              SELECT customer_payment_id, SUM(amount_applied) AS amount_applied
+              FROM t_customer_payment_allocations
+              GROUP BY customer_payment_id
+            ) a ON a.customer_payment_id = cp.id
+            WHERE cp.customer_id = ?
+            AND cp.status = 'POSTED'
+            {$paymentWhere}
+          ) x
+          ORDER BY x.transaction_date, x.sort_order, x.transaction_id",
+          $params
+        )
+        ->result();
+
+    return [
+      'opening_balance' => $openingBalance,
+      'transactions' => $transactions
+    ];
+  }
+
   public function save($customerPayment)
   {
     try {

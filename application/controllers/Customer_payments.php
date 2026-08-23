@@ -252,4 +252,22 @@ class Customer_payments extends MY_Controller
     );
   }
 
+  public function customer_ledger()
+  {
+    if (!$this->input->is_ajax_request()) {
+      show_404();
+    }
+
+    $customerId = (int)$this->getJsonRequest('customer_id');
+    $ledger = $this->Customer_payment_model->getCustomerLedger($customerId);
+
+    return $this->jsonResponse(
+      TRUE,
+      '',
+      [
+        'ledger' => $ledger
+      ]
+    );
+  }
+
 }

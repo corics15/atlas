@@ -155,7 +155,13 @@ $config['atlas_menu'] = [
         'url'   => 'customer-payments',
         'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
-    ]
+      [
+        'title' => 'Customer Ledger',
+        'icon'  => 'fas fa-book',
+        'url'   => 'customer-ledger',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
+      ],
+    ],
   ],
 
   [

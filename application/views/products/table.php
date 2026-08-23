@@ -42,8 +42,9 @@
         </label>
       </div>
     </td>
-    <?php /*** suppliler */ ?>
-    <td data-excel-value="<?= htmlspecialchars($product->supplier_name) ?>">
+    <?php /*** supplier */ ?>
+    <td <?= mb_strlen(htmlspecialchars($product->supplier_name)) > 30 ? 'data-toggle="tooltip" title="'.htmlspecialchars($product->supplier_name).'"' : '' ?>
+        data-excel-value="<?= htmlspecialchars($product->supplier_name) ?>">
       <?php
         $supplierName = htmlspecialchars($product->supplier_name);
         echo (mb_strlen($supplierName) > 30)
@@ -60,7 +61,8 @@
       <?= htmlspecialchars($product->barcode); ?>
     </td>
     <?php /*** description */ ?>
-    <td data-excel-value="<?= htmlspecialchars($product->description) ?>">
+    <td <?= mb_strlen(htmlspecialchars($product->description)) > 30 ? 'data-toggle="tooltip" title="'.htmlspecialchars($product->description).'"' : '' ?>
+        data-excel-value="<?= htmlspecialchars($product->description) ?>">
       <?php
         $description = htmlspecialchars($product->description);
         echo (mb_strlen($description) > 30)
