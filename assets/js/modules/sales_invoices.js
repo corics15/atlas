@@ -404,12 +404,14 @@ const calculateSalesInvoiceTotals = () => {
     totalAmount = subtotal + vatAmount;
   }
 
-  document.getElementById('siGrossAmount').textContent = Atlas.format.amount(grossAmount);
-  document.getElementById('siDiscountAmount').textContent = Atlas.format.amount(discountAmount);
-  document.getElementById('siSubtotal').textContent = Atlas.format.amount(subtotal);
-  document.getElementById('siVatRateLabel').textContent = `${vatRate.toFixed(2)}%`;
-  document.getElementById('siVatAmount').textContent = Atlas.format.amount(vatAmount);
-  document.getElementById('siTotalAmount').textContent = Atlas.format.amount(totalAmount);
+  if (btnSaveSalesInvoice) {
+    document.getElementById('siGrossAmount').textContent = Atlas.format.amount(grossAmount);
+    document.getElementById('siDiscountAmount').textContent = Atlas.format.amount(discountAmount);
+    document.getElementById('siSubtotal').textContent = Atlas.format.amount(subtotal);
+    document.getElementById('siVatRateLabel').textContent = `${vatRate.toFixed(2)}%`;
+    document.getElementById('siVatAmount').textContent = Atlas.format.amount(vatAmount);
+    document.getElementById('siTotalAmount').textContent = Atlas.format.amount(totalAmount);
+  }
 };
 
 const markDirty = () => {

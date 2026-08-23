@@ -12,6 +12,20 @@
     </div>
 
     <div style="min-width:150px;">
+      <label for="selPaymentMethodSearch">Payment Method</label>
+      <select id="selPaymentMethodSearch" name="payment_method" class="form-control form-control-sm custom-select">
+        <option value="">All</option>
+        <?php foreach ($payment_methods as $item): ?>
+          <option
+            value="<?= $item; ?>"
+            <?= ($payment_method == $item) ? 'selected' : ''; ?>>
+            <?= $item; ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+
+    <div style="min-width:150px;">
       <label for="selGenericStatus">Status</label>
       <select id="selGenericStatus" name="status" class="form-control form-control-sm custom-select">
         <option value="">All</option>
@@ -31,7 +45,7 @@
     </div>
 
     <div class="">
-      <button type="submit" class="btn btn-sm btn-default"><i class="fas fa-search"></i>Search</button>
+      <button type="submit" class="btn btn-sm btn-default"><i class="fas fa-search mr-2"></i>Search</button>
     </div>
   </div>
 </form>

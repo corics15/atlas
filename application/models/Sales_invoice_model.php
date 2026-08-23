@@ -293,7 +293,7 @@ class Sales_invoice_model extends CI_Model
 
       /*** get authoritative SO VAT snapshot */
         $salesOrder = $this->db
-            ->select('id, vat_mode, vat_rate')
+            ->select('id, terms_id, vat_mode, vat_rate')
             ->where('id', $salesOrderId)
             ->get('t_sales_orders')
             ->row();
@@ -306,6 +306,7 @@ class Sales_invoice_model extends CI_Model
 
         $vatMode = strtoupper(trim($salesOrder->vat_mode ?? ''));
         $vatRate = (float)($salesOrder->vat_rate ?? 0);
+        $termsId = (int)($salesOrder->terms_id ?? 0);
 
         if (
           !in_array(
@@ -335,11 +336,11 @@ class Sales_invoice_model extends CI_Model
           'delivery_receipt_id' => $salesInvoice->delivery_receipt_id,
           'customer_id'    => $salesInvoice->customer_id,
           'salesman_id'    => $salesInvoice->salesman_id,
-          'terms_id'       => $salesInvoice->terms_id,
+          'terms_id'       => $termsId > 0 ? $termsId : NULL,
           'credit_limit'   => $salesInvoice->credit_limit,
           'remarks'        => trim($salesInvoice->remarks) <> '' ? strtoupper(trim($salesInvoice->remarks)) : NULL,
-          'vat_mode'        => $vatMode,
-          'vat_rate'        => $vatRate,
+          'vat_mode'       => $vatMode,
+          'vat_rate'       => $vatRate,
           'status'         => 'OPEN',
           'entered_by'     => $this->session->userdata('user_id'),
           'entered_on'     => date('Y-m-d H:i:s')

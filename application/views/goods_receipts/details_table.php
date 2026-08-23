@@ -47,10 +47,7 @@
         ): ?>
 
           <div class="input-group-append">
-            <button
-              type="button"
-              class="btn btn-outline-warning btn-link btn-change-conversion"
-              title="Change Conversion">
+            <button type="button" class="btn btn-outline-warning btn-link btn-change-conversion" title="Change Conversion">
               <i class="fas fa-edit"></i>
             </button>
           </div>

@@ -145,6 +145,20 @@ $config['atlas_menu'] = [
   ],
 
   [
+    'title' => 'Accounting',
+    'icon'  => 'fas fa-calculator',
+
+    'children' => [
+      [
+        'title' => 'Customer Payments',
+        'icon'  => 'fas fa-money-check-alt',
+        'url'   => 'customer-payments',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
+      ],
+    ]
+  ],
+
+  [
     'header' => 'REPORTS',
   ],
   [
