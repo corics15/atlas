@@ -167,6 +167,12 @@ $config['atlas_menu'] = [
         'url'   => 'statement-of-account',
         'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
+      [
+        'title' => 'A/R Aging',
+        'icon'  => 'fas fa-calendar-alt',
+        'url'   => 'accounts-receivable-aging',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
+      ],
     ],
   ],
 

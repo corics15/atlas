@@ -11,7 +11,7 @@
       <input type="date" name="date_to" value="<?= htmlspecialchars($date_to ?: date('Y-m-d')); ?>" class="form-control form-control-sm">
     </div>
 
-    <div class="col-lg-4">
+    <div class="col-lg-3">
       <label for="selCustomer">Customer</label>
       <select id="selCustomer" name="customer_id" class="form-control form-control-sm custom-select">
         <option value="">Select Customer</option>

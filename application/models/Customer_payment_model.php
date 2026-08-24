@@ -861,4 +861,101 @@ class Customer_payment_model extends CI_Model
     }
   }
 
+  public function getArAging($asOfDate, $customerId = NULL)
+  {
+    $sql = "SELECT
+              si.customer_id,
+              c.customer_name,
+              SUM(
+                CASE
+                  WHEN aging.days_past_due <= 0
+                  THEN aging.balance
+                  ELSE 0
+                END
+              ) AS current_amount,
+              SUM(
+                CASE
+                  WHEN aging.days_past_due BETWEEN 1 AND 30
+                  THEN aging.balance
+                  ELSE 0
+                END
+              ) AS days_1_30,
+              SUM(
+                CASE
+                  WHEN aging.days_past_due BETWEEN 31 AND 60
+                  THEN aging.balance
+                  ELSE 0
+                END
+              ) AS days_31_60,
+              SUM(
+                CASE
+                  WHEN aging.days_past_due BETWEEN 61 AND 90
+                  THEN aging.balance
+                  ELSE 0
+                END
+              ) AS days_61_90,
+              SUM(
+                CASE
+                  WHEN aging.days_past_due > 90
+                  THEN aging.balance
+                  ELSE 0
+                END
+              ) AS over_90,
+              SUM(aging.balance) AS total_balance
+            FROM t_sales_invoices si
+            INNER JOIN m_customers c ON c.id = si.customer_id
+            LEFT JOIN m_terms t ON t.id = si.terms_id
+            CROSS JOIN LATERAL (
+              SELECT
+                (
+                  si.invoice_date +
+                  COALESCE(t.days_due, 0)
+                ) AS due_date,
+                (
+                  ?::date -
+                  (
+                    si.invoice_date +
+                    COALESCE(t.days_due, 0)
+                  )
+                ) AS days_past_due,
+                (
+                  si.total_amount -
+                  COALESCE(
+                    (
+                      SELECT SUM(a.amount_applied)
+                      FROM t_customer_payment_allocations a
+                      INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
+                      WHERE a.sales_invoice_id = si.id
+                        AND cp.status = 'POSTED'
+                        AND cp.payment_date <= ?::date
+                    ),
+                    0
+                  )
+                ) AS balance
+            ) aging
+            WHERE si.status = 'POSTED' AND si.invoice_date <= ?::date
+          ";
+
+    $params = [
+      $asOfDate,
+      $asOfDate,
+      $asOfDate
+    ];
+
+    if (!empty($customerId)) {
+      $sql .= "AND si.customer_id = ? ";
+      $params[] = (int)$customerId;
+    }
+
+    $sql .= "GROUP BY
+              si.customer_id,
+              c.customer_name
+            HAVING SUM(aging.balance) > 0
+            ORDER BY c.customer_name";
+
+    return $this->db
+        ->query($sql, $params)
+        ->result();
+  }
+
 }
