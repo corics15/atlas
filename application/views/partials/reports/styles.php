@@ -48,9 +48,18 @@
     margin: 10px 0 15px;
   }
 
+  .w-100 {
+    width: 100% !important;
+  }
+
+  .font-weight-bold {
+    font-weight: bold !important;
+  }
+
   .report-table tbody tr td {
     border: none;
   }
+
   .report-table tfoot tr th {
     border: none;
     border-top: 0.5px solid #000;
@@ -148,7 +157,7 @@
 
   .report-bordered th,
   .report-bordered td {
-    border:1px solid #000;
+    border:0.5px solid #bdbdbd;
   }
 
   .report-borderless th,
@@ -187,5 +196,70 @@
   .summary-table td {
     padding: 0 4px;
     line-height: 1.2;
+  }
+
+  /*** SOA page layout */
+  .soa-report {
+    min-height: 245mm;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .soa-content {
+    flex: 1;
+  }
+
+  .soa-footer {
+    margin-top: auto !important;
+  }
+
+  .soa-bill-to {
+    width: 50%;
+    display: inline-block;
+    background-color: #bdbdbd !important;
+    padding: 8px 0 8px 5px;
+
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /*** transaction header */
+  .soa-account-summary,
+  .soa-footer,
+  .soa-details thead th {
+    background-color: #bdbdbd !important;
+
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /*** alternating transaction rows */
+  .soa-details tbody .soa-detail-row:nth-of-type(even) td {
+    background-color: #f2f2f2 !important;
+
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /*** current balance */
+  .soa-current-balance {
+    border-top: 1px solid #333;
+    padding-top: 8px;
+  }
+
+  .soa-details tbody tr {
+    height: 24px;
+  }
+
+  .soa-details tbody .soa-detail-row:nth-of-type(even) td {
+    background-color: #f2f2f2 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @media print {
+    .soa-report {
+      min-height: 245mm;
+    }
   }
 </style>

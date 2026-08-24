@@ -32,7 +32,6 @@ class Customer_payments extends MY_Controller
       'POSTED',
       'CANCELLED',
     ];
-
     $this->data['payment_methods'] = [
       'CASH',
       'CHECK',
@@ -78,12 +77,11 @@ class Customer_payments extends MY_Controller
     }
 
     $this->data['recordCount'] = count($this->data['customerPayments']);
-    $this->data['tableContent']
-        = $this->load->view(
-          'customer_payments/table',
-          $this->data,
-          TRUE
-        );
+    $this->data['tableContent'] = $this->load->view(
+        'customer_payments/table',
+        $this->data,
+        TRUE
+      );
 
     $this->data['toolbar'] = [
       'edit' => [

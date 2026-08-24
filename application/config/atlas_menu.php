@@ -161,6 +161,12 @@ $config['atlas_menu'] = [
         'url'   => 'customer-ledger',
         'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
+      [
+        'title' => 'Statement of Account',
+        'icon'  => 'fas fa-file-alt',
+        'url'   => 'statement-of-account',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
+      ],
     ],
   ],
 
