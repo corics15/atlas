@@ -189,7 +189,7 @@ class Sales_order_model extends CI_Model
           'left'
       )
       ->order_by(
-          'so.id',
+          'so.order_date',
           'DESC'
       )
       ->get()

@@ -212,7 +212,7 @@ class Delivery_receipt_model extends CI_Model
             'c.id = dr.customer_id'
         )
         ->order_by(
-            'dr.id',
+            'dr.delivery_date',
             'DESC'
         )
         ->get()

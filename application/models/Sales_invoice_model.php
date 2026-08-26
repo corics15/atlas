@@ -98,7 +98,7 @@ class Sales_invoice_model extends CI_Model
             'DESC'
         )
         ->order_by(
-            'si.id',
+            'si.invoice_date',
             'DESC'
         )
         ->get()

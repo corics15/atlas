@@ -90,7 +90,7 @@ class Purchase_return_model extends CI_Model
             't.id = pr.terms_id',
             'left'
         )
-        ->order_by('gr.grn_date','DESC')
+        ->order_by('pr.return_date','DESC')
         ->order_by('pr.id','DESC')
         ->get()
         ->result();
