@@ -38,11 +38,7 @@
         );
       ?>
 
-      <h3 class="text-center">
-        PURCHASE ORDER
-      </h3>
-
-      <table style="margin-bottom:15px;border:none;">
+      <table class="report-borderless">
         <tr>
           <td style="border:none;width:70%;">
             <strong>Supplier :</strong>
@@ -75,8 +71,15 @@
         </tr>
       </table>
 
+      <?php /*** remarks */ ?>
+      <br>
+      <strong>Remarks</strong>
+      <div style="padding:8px;min-height:30px;margin-bottom:5px">
+      <?= nl2br(htmlspecialchars($header->remarks)) ?>
+      </div>
+
       <?php /*** details table */ ?>
-      <table>
+      <table class="report-table">
         <thead>
           <tr>
             <th class="text-center" width="5%">#</th>
@@ -129,15 +132,7 @@
         </tbody>
       </table>
 
-      <?php /*** remarks */ ?>
-      <br>
-      <strong>Remarks</strong>
-      <div style="border:1px solid #000;padding:8px;min-height:60px;">
-      <?= nl2br(htmlspecialchars($header->remarks)) ?>
-      </div>
-
       <?php /*** signatories */ ?>
-      <br><br>
       <table style="border:none;">
         <tr>
           <td style="border:none;text-align:center;width:25%;height:70px;vertical-align:bottom;">

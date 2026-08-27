@@ -164,7 +164,7 @@ class Purchase_order_model extends CI_Model
   public function getAll($filters = [])
   {
     $this->db
-        ->select("p.id, p.po_no, p.po_date, s.supplier_name, p.status, COALESCE(SUM((d.qty * d.price) - d.discount), 0) AS total, p.remarks")
+        ->select("p.id, p.po_no, p.po_date, s.supplier_name, p.status, COALESCE(SUM((d.qty * d.price) - d.discount), 0) AS total, p.remarks, COUNT(d.*) AS item_count")
         ->from('t_purchase_orders p')
         ->join(
           'm_suppliers s',

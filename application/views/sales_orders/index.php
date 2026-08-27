@@ -12,7 +12,9 @@
 
         </div>
 
-        <?php $this->load->view('partials/record_count'); ?>
+        <?php /*** so summary */ ?>
+        <?php $this->load->view('sales_orders/mini_summary'); ?>
+
 
         <div class="table-responsive table-scroll">
           <table class="table table-sm table-bordered table-hover" id="tblSOList">

@@ -170,7 +170,7 @@ class Sales_order_model extends CI_Model
                   sod.qty - COALESCE(dr.qty_delivered, 0)
                 ) > 0
             ) AS remaining_items,
-            (SELECT count(*) FROM t_sales_order_details sod WHERE sod.sales_order_id = so.id) AS item_count
+            (SELECT COUNT(*) FROM t_sales_order_details sod WHERE sod.sales_order_id = so.id) AS item_count
         ")
       ->from('t_sales_orders so')
       ->join(

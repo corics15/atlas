@@ -57,10 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     e.preventDefault();
     const row = e.target.closest('tr');
-    await Atlas.productFinder.lookup(
-      row,
-      e.target.value
-    );
+    await Atlas.productFinder.lookup(row, e.target.value);
     markDirty();
   });
 
@@ -124,6 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!tbody.children.length) {
       addDetailRow();
     }
+    renumberRows();
   });
 
   /*** save */
@@ -310,11 +308,7 @@ const calculateGrandTotal = () => {
 }
 
 const buildUomOptions = () => {
-  const uoms = Array.isArray(window.atlasUoms)
-    ? window.atlasUoms
-    : [];
-
-  console.log(uoms)
+  const uoms = Array.isArray(window.atlasUoms) ? window.atlasUoms : [];
 
   return `
     <option value="">Select...</option>
@@ -329,9 +323,10 @@ const buildUomOptions = () => {
 const createDetailRow = () => {
   return `
     <tr>
+      <td class="po-index text-center"></td>
       <td>
         <div class="input-group">
-          <input type="text" class="form-control form-control-sm po-barcode atlas-barcode" placeholder="Barcode">
+          <input type="text" class="form-control form-control-sm po-barcode atlas-barcode text-center" placeholder="Barcode">
           <div class="input-group-append">
             <button
               type="button"
@@ -382,6 +377,7 @@ const addDetailRow = () => {
     'beforeend',
     createDetailRow()
   );
+  renumberRows();
 
   const row = tbody.lastElementChild;
   row.querySelector('.po-barcode').focus();
@@ -406,6 +402,7 @@ const resetPurchaseOrder = async () => {
 
   const tbody = document.getElementById('tblPurchaseOrderDetails');
   tbody.innerHTML = createDetailRow();
+  renumberRows();
   tbody.querySelector('.po-barcode').focus();
   isDirty = false;
 }
@@ -475,6 +472,7 @@ const loadPurchaseOrder = async (id) => {
 
   populateHeader(result.data.header);
   populateDetails(result.data.details);
+  renumberRows();
   calculateGrandTotal();
 
   enableEditMode(result.data.header);
@@ -540,9 +538,17 @@ const populateDetails = (details) => {
     tr.querySelector('.po-price').value = Number(detail.price).toFixed(2);
     tr.querySelector('.po-discount').value = Number(detail.discount).toFixed(2);
 
+    renumberRows();
     calculateRowTotal(tr);
   });
 }
+
+const renumberRows = () => {
+  const rows = document.querySelectorAll('#tblPurchaseOrderDetails tr');
+  rows.forEach((tr, index) => {
+    tr.querySelector('.po-index').textContent = (index + 1) + '.';
+  });
+};
 
 const enableEditMode = (header) => {
   isEditMode = true;

@@ -15,6 +15,7 @@
     <th class="text-center">Date</th>
     <th class="text-center">PO No.</th>
     <th>Supplier</th>
+    <th class="text-center">Item Count</th>
     <th class="text-right">Total</th>
     <th>Remarks</th>
     <th class="text-center">Status</th>
@@ -27,16 +28,9 @@
     <tr>
       <td class="text-center">
         <div class="custom-checkbox custom-control ml-2 mt-1">
-          <input
-            type="checkbox"
-            class="custom-control-input chkPurchaseOrder"
-            id="chkPurchaseOrder-<?= $po->id ?>"
-            value="<?= $po->id ?>"
+          <input type="checkbox" class="custom-control-input chkPurchaseOrder" id="chkPurchaseOrder-<?= $po->id ?>" value="<?= $po->id ?>"
             data-status="<?= htmlspecialchars($po->status); ?>">
-          <label
-            class="custom-control-label"
-            for="chkPurchaseOrder-<?= $po->id ?>">
-          </label>
+          <label class="custom-control-label" for="chkPurchaseOrder-<?= $po->id ?>"></label>
         </div>
       </td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($po->po_date))) ?></td>
@@ -53,8 +47,11 @@
             : $supplierName;
         ?>
       </td>
+      <td class="text-center">
+        <?= number_format($po->item_count) ?>
+      </td>
       <td class="text-right">
-        <?= number_format($po->total,2) ?>
+        <?= number_format($po->total, 2) ?>
       </td>
       <td>
         <?php
@@ -99,7 +96,7 @@
 
   <?php else: ?>
   <tr>
-    <td colspan="7" class="text-center py-3">
+    <td colspan="8" class="text-center py-3">
       No records found.
     </td>
   </tr>

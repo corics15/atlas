@@ -144,10 +144,16 @@ class Purchase_orders extends MY_Controller
     /*** end filters */
 
     $this->data['purchaseOrders'] = $this->Purchase_order_model->getAll($filters);
+    $totalAmt = 0;
+    $itemCount = 0;
     foreach ($this->data['purchaseOrders'] as $po) {
       $po->url = base_url('purchase-orders?id=' . $this->encodeId($po->id));
+      $itemCount += $po->item_count;
+      $totalAmt += $po->total;
     }
 
+    $this->data['itemCount'] = $itemCount;
+    $this->data['totalAmount'] = $totalAmt;
     $this->data['recordCount'] = count($this->data['purchaseOrders']);
     $this->data['tableContent'] = $this->load->view(
       'purchase_orders/table',
