@@ -16,7 +16,7 @@
     <div class="small-box bg-light mb-0">
       <div class="inner">
         <h4><?= number_format($itemCount, 0); ?></h4>
-        <p>Total Item Couont</p>
+        <p>Total Item Count</p>
       </div>
 
       <div class="icon">
