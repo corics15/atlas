@@ -27,7 +27,7 @@
         <?php /*** table */ ?>
         <div id="pfRecordCount" class="small text-muted mb-2"></div>
         <div class="table-responsive table-scroll">
-          <table class="table table-bordered table-sm">
+          <table class="font-sm table table-bordered table-sm">
             <thead class="thead-orange">
               <tr>
                 <th class="text-center">Barcode</th>
@@ -39,7 +39,7 @@
             </thead>
             <tbody id="tblProductFinder">
               <tr>
-                <td colspan="5">No records found.</td>
+                <td colspan="5" class="text-center py-3">No records found.</td>
               </tr>
             </tbody>
           </table>

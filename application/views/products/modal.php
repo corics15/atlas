@@ -30,7 +30,14 @@
 
             <div class="form-group col-md-6">
               <label for="txtBarcode">Item Barcode</label>
-              <input type="text" id="txtBarcode" name="barcode" class="form-control form-control-sm" placeholder="Enter barcode">
+              <div class="input-group input-group-sm">
+                <input type="text" id="txtBarcode" name="barcode" class="form-control form-control-sm" placeholder="Enter barcode">
+                <div class="input-group-append">
+                  <button type="button" id="btnGenerateBarcode" class="btn btn-default" title="Generate Barcode" data-toggle="tooltip">
+                    <i class="fas fa-barcode"></i>
+                  </button>
+                </div>
+              </div>
               <small id="errBarcode" class="text-danger"></small>
             </div>
 

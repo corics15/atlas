@@ -528,10 +528,13 @@ const populateDetails = (details) => {
     tbody.insertAdjacentHTML('beforeend', row);
     const tr = tbody.lastElementChild;
 
+    const description = detail.description;
+    const descriptionName = description.length > 30 ? description.substring(0, 30) + "..." : description;
+
     tr.dataset.productId = detail.product_id;
     tr.querySelector('.po-barcode').value = detail.barcode;
     tr.querySelector('.po-supplier').textContent = detail.supplier_name;
-    tr.querySelector('.po-description').textContent = detail.description;
+    tr.querySelector('.po-description').textContent = descriptionName;
     tr.querySelector('.po-uom').value = detail.uom_id;
     tr.querySelector('.po-qty').value = Number(detail.qty);
     tr.querySelector('.po-price').value = Number(detail.price).toFixed(2);

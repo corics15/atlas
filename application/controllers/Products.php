@@ -98,6 +98,14 @@ class Products extends MY_Controller
     $postData = $this->input->post();
     $id = (int) $postData['id'];
 
+    $barcode = trim($postData['barcode']);
+    if ($barcode !== '' && $this->Product_model->barcodeInUse($barcode, $id)) {
+      return $this->jsonResponse(
+        false,
+        'Item Barcode is already being used by another product or UOM.'
+      );
+    }
+
     $this->form_validation->set_rules(
       'supplier_id',
       'Supplier',
@@ -131,7 +139,7 @@ class Products extends MY_Controller
 
     $data = [
       'supplier_id' => trim($postData['supplier_id']),
-      'barcode' => trim($postData['barcode']),
+      'barcode' => $barcode !== '' ? $barcode : NULL,
       'case_barcode' => trim($postData['case_barcode']),
       'description' => trim($postData['description']) <> '' ? strtoupper(trim($postData['description'])) : NULL,
       'uom_id' => $postData['uom_id'],
@@ -189,6 +197,26 @@ class Products extends MY_Controller
     return $this->jsonResponse(
       true,
       'Product deactivated successfully.'
+    );
+  }
+
+  public function generateBarcode()
+  {
+    $barcode = $this->Product_model->generateBarcode();
+
+    if (!$barcode) {
+      return $this->jsonResponse(
+        false,
+        'Unable to generate barcode.'
+      );
+    }
+
+    return $this->jsonResponse(
+      true,
+      'Barcode generated successfully.',
+      [
+        'barcode' => $barcode
+      ]
     );
   }
 

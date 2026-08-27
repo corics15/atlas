@@ -137,4 +137,115 @@ class Product_model extends CI_Model
         ->get('v_products')
         ->row();
   }
+
+  public function generateBarcode()
+  {
+    $this->db->trans_start();
+
+    $numbering = $this->db
+        ->query("
+            SELECT id, next_number
+            FROM m_barcode_numbering
+            ORDER BY id
+            LIMIT 1
+            FOR UPDATE
+        ")
+        ->row();
+
+    if (!$numbering) {
+      $this->db->trans_complete();
+      return false;
+    }
+
+    $nextNumber = (int)$numbering->next_number;
+
+    do {
+      $body = '29' . str_pad($nextNumber, 10, '0', STR_PAD_LEFT);
+      $barcode = $body . $this->calculateBarcodeCheckDigit($body);
+
+      $exists = $this->barcodeExists($barcode);
+
+      if ($exists) {
+          $nextNumber++;
+      }
+    } while ($exists);
+
+    $this->db
+        ->where('id', $numbering->id)
+        ->update('m_barcode_numbering', [
+            'next_number' => $nextNumber + 1,
+            'updated_by' => $this->session->userdata('user_id'),
+            'updated_on' => date('Y-m-d H:i:s')
+        ]);
+
+    $this->db->trans_complete();
+
+    if ($this->db->trans_status() === FALSE) {
+      return false;
+    }
+
+    return $barcode;
+  }
+
+  private function calculateBarcodeCheckDigit($body)
+  {
+    $sum = 0;
+    for ($i = 0; $i < strlen($body); $i++) {
+      $digit = (int)$body[$i];
+      $sum += ($i % 2 === 0) ? $digit : $digit * 3;
+    }
+
+    return (10 - ($sum % 10)) % 10;
+  }
+
+  private function barcodeExists($barcode)
+  {
+    $productBarcode = $this->db
+        ->group_start()
+            ->where('barcode', $barcode)
+            ->or_where('case_barcode', $barcode)
+        ->group_end()
+        ->count_all_results('m_products');
+
+    if ($productBarcode > 0) {
+        return true;
+    }
+
+    $productUomBarcode = $this->db
+        ->where('barcode', $barcode)
+        ->count_all_results('m_product_uom');
+
+    return $productUomBarcode > 0;
+  }
+
+  public function barcodeInUse($barcode, $excludeProductId = null)
+  {
+    $barcode = trim($barcode);
+
+    if ($barcode === '') {
+      return false;
+    }
+
+    $this->db
+        ->group_start()
+            ->where('barcode', $barcode)
+            ->or_where('case_barcode', $barcode)
+        ->group_end();
+
+    if (!empty($excludeProductId)) {
+      $this->db->where('id !=', (int)$excludeProductId);
+    }
+
+    if ($this->db->count_all_results('m_products') > 0) {
+      return true;
+    }
+
+    $this->db->where('barcode', $barcode);
+    if (!empty($excludeProductId)) {
+      $this->db->where('product_id !=', (int)$excludeProductId);
+    }
+
+    return $this->db->count_all_results('m_product_uom') > 0;
+  }
+
 }

@@ -93,14 +93,14 @@
           <table class="table table-sm table-hover mb-0">
             <thead class="thead-orange">
               <tr>
-                <th width="170">Scan/Input Barcode</th>
-                <th width="150">Supplier</th>
+                <th width="14%">Scan/Input Barcode</th>
+                <th>Supplier</th>
                 <th>Product Description</th>
-                <th width="70" class="text-center">UOM</th>
-                <th width="70" class="text-right">Qty</th>
-                <th width="90" class="text-right">Price</th>
-                <th width="90" class="text-right">Disc.</th>
-                <th width="110" class="text-right">Amount</th>
+                <th width="7%" class="text-center">UOM</th>
+                <th width="7%" class="text-right">Qty</th>
+                <th width="8%" class="text-right">Price</th>
+                <th width="7%" class="text-right">Discount</th>
+                <th width="8%" class="text-right">Amount</th>
                 <th width="40"></th>
               </tr>
             </thead>
@@ -109,11 +109,9 @@
                 <tr>
                   <td>
                     <div class="input-group">
-                      <input type="text" class="form-control form-control-sm po-barcode atlas-barcode" placeholder="Barcode">
+                      <input type="text" class="form-control form-control-sm po-barcode atlas-barcode text-center" placeholder="Barcode">
                       <div class="input-group-append">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-warning btn-product-finder">
+                        <button type="button" class="btn btn-sm btn-outline-warning btn-product-finder">
                           <i class="fas fa-search font-smr"></i>
                         </button>
                       </div>
@@ -132,22 +130,13 @@
                     </select>
                   </td>
                   <td>
-                    <input
-                      type="number" step="any"
-                      class="form-control form-control-sm text-right po-qty"
-                      value="">
+                    <input type="number" step="any" class="form-control form-control-sm text-right po-qty" value="">
                   </td>
                   <td>
-                    <input
-                      type="number" step="any"
-                      class="form-control form-control-sm text-right po-price"
-                      value="0.00">
+                    <input type="number" step="any" class="form-control form-control-sm text-right po-price" value="0.00">
                   </td>
                   <td>
-                    <input
-                      type="number" step="any"
-                      class="form-control form-control-sm text-right po-discount"
-                      value="0.00">
+                    <input type="number" step="any" class="form-control form-control-sm text-right po-discount" value="0.00">
                   </td>
                   <td class="po-total text-right">
                     0.00

@@ -1,24 +1,22 @@
+const btnNewProduct = document.getElementById('btnNewProduct');
+const btnEditProduct = document.getElementById('btnEditProduct');
+const btnActivateProduct = document.getElementById('btnActivateProduct');
+const btnDeactivateProduct = document.getElementById('btnDeactivateProduct');
+const btnRefreshProduct = document.getElementById('btnRefreshProduct');
+const btnInventoryInquiry = document.getElementById('btnInventoryInquiry');
+const btnDownloadProductExcel = document.getElementById('btnDownloadProductExcel');
+
+const frmProduct = document.getElementById('frmProduct');
+
+const txtBarcode = document.getElementById('txtBarcode');
+const txtDescription = document.getElementById('txtDescription');
+const txtCost = document.getElementById('txtCost');
+const txtSRP = document.getElementById('txtSRP');
+const btnGenerateBarcode = document.getElementById('btnGenerateBarcode');
+
+const hidProductId = document.getElementById('hidProductId');
+
 document.addEventListener('DOMContentLoaded', () => {
-
-  const btnNewProduct = document.getElementById('btnNewProduct');
-  const btnEditProduct = document.getElementById('btnEditProduct');
-  const btnActivateProduct = document.getElementById('btnActivateProduct');
-  const btnDeactivateProduct = document.getElementById('btnDeactivateProduct');
-  const btnRefreshProduct = document.getElementById('btnRefreshProduct');
-  const btnInventoryInquiry = document.getElementById('btnInventoryInquiry');
-  const btnDownloadProductExcel = document.getElementById('btnDownloadProductExcel');
-
-  const frmProduct = document.getElementById('frmProduct');
-
-  const txtBarcode = document.getElementById('txtBarcode');
-  const txtDescription = document.getElementById('txtDescription');
-  const selSupplier = document.getElementById('selSupplier');
-  const selUom = document.getElementById('selUom');
-  const txtCost = document.getElementById('txtCost');
-  const txtSRP = document.getElementById('txtSRP');
-
-  const hidProductId = document.getElementById('hidProductId');
-  const chkSelectAllProduct = document.getElementById('chkSelectAllProduct');
 
   Atlas.select.init('#selSupplier', '#mdlProduct');
   Atlas.select.init('#selUom', '#mdlProduct');
@@ -188,6 +186,33 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   btnRefreshProduct.addEventListener('click', () => Atlas.page.redirect(`products`));
+
+  btnGenerateBarcode?.addEventListener('click', async () => {
+    const currentBarcode = txtBarcode.value.trim();
+
+    if (currentBarcode !== '') {
+      const confirmed = await Atlas.dialog.confirm(
+        'Generate Barcode',
+        'This will generate a new barcode, increment the barcode counter, and replace the existing barcode. Continue?'
+      );
+
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    const result = await Atlas.ajax.get('products/generateBarcode');
+    if (!result.success) {
+      Atlas.toast.error(result.message);
+      return;
+    }
+
+    Atlas.toast.success(result.message);
+    txtBarcode.value = result.data.barcode;
+    txtBarcode.focus();
+    txtBarcode.select();
+  });
+
 });
 
 const getSelectedProductId = () => {

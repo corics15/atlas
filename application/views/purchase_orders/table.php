@@ -53,7 +53,7 @@
             : $supplierName;
         ?>
       </td>
-      <td class="font-weight-500 text-right text-brown">
+      <td class="text-right">
         <?= number_format($po->total,2) ?>
       </td>
       <td>

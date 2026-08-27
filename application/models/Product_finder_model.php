@@ -21,10 +21,16 @@ class Product_finder_model extends CI_Model
         p.description,
         p.uom_id,
         u.uom,
-        p.srp,
-        COALESCE(bi.qty_on_hand, 0) qty_on_hand
+        COALESCE(pu.selling_price, p.selling_price, p.srp, 0) AS srp,
+        COALESCE(bi.qty_on_hand, 0) AS qty_on_hand
       ")
       ->from('m_products p')
+      ->join(
+          'm_product_uom pu',
+          'pu.product_id = p.id AND pu.uom_id = p.uom_id AND pu.is_active = TRUE',
+          'left',
+          FALSE
+      )
       ->join(
         't_branch_inventory bi',
         "bi.product_id = p.id AND bi.branch_id = {$branchId}",

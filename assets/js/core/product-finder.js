@@ -39,7 +39,7 @@ class AtlasProductFinder {
 
     search.value = '';
     tbody.innerHTML = `<tr>
-                          <td colspan="5" class="text-center text-muted font-sm">
+                          <td colspan="5" class="text-center text-muted font-sm py-3">
                             Start typing to search products...
                           </td>
                         </tr>
@@ -59,7 +59,7 @@ class AtlasProductFinder {
     search.value = '';
     tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="text-center text-muted font-sm">
+          <td colspan="5" class="text-center text-muted font-sm py-3">
             Start typing to search products...
           </td>
         </tr>
@@ -78,7 +78,7 @@ class AtlasProductFinder {
       lblRecordCount.textContent = '';
 
       tbody.innerHTML = `<tr>
-                            <td colspan="5" class="text-center text-muted font-sm">
+                            <td colspan="5" class="text-center text-muted font-sm py-3">
                               Type at least 2 characters...
                             </td>
                           </tr>
@@ -87,7 +87,7 @@ class AtlasProductFinder {
     }
 
     const result = await Atlas.ajax.get(
-      `product_finder/search?q=${encodeURIComponent(keyword)}`
+      `product-finder/search?q=${encodeURIComponent(keyword)}`
     );
 
     tbody.innerHTML = '';
@@ -96,7 +96,7 @@ class AtlasProductFinder {
       lblRecordCount.textContent = '0 product found.';
 
       tbody.innerHTML = `<tr>
-                            <td colspan="5" class="text-center text-muted font-sm">
+                            <td colspan="5" class="text-center text-muted font-sm py-3">
                               No products found.
                             </td>
                           </tr>
@@ -172,7 +172,7 @@ class AtlasProductFinder {
 
     document.getElementById('searchInput').value = '';
     document.getElementById('tblProductFinder').innerHTML = `<tr>
-                                                                <td colspan="5" class="text-center text-muted font-sm">
+                                                                <td colspan="5" class="text-center text-muted font-sm py-3">
                                                                   Start typing to search products...
                                                                 </td>
                                                               </tr>
