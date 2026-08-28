@@ -11,8 +11,8 @@
 
           <div>
             <span class="font-weight-500">1.</span>
-            Scan or enter the product barcode, then press <kbd class="text-lime">Enter</kbd>.
-            You may also press <kbd class="text-lime">F2</kbd> or click the
+            Scan or enter the product barcode, then press <span class="font-weight-500 text-success">Enter</span>.
+            You may also press <span class="font-weight-500 text-success">F2</span> or click the
             <i class="fas fa-search text-brown"></i>
             button to open the Product Finder.
           </div>
@@ -31,7 +31,7 @@
 
           <div>
             <span class="font-weight-500">4.</span>
-            Press <kbd class="text-lime">Enter</kbd> after <span class="font-weight-500 text-danger">Qty</span> to continue to the next item.
+            Press <span class="font-weight-500 text-success">Enter</span> after <span class="font-weight-500 text-danger">Qty</span> to continue to the next item.
           </div>
 
           <div>

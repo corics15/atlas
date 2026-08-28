@@ -250,8 +250,8 @@
 
               <div>
                 <span class="font-weight-500">1.</span>
-                Scan or enter the product barcode, then press <kbd class="text-lime">Enter</kbd>.
-                You may also press <kbd class="text-lime">F2</kbd> or click the <i class="fas fa-search text-brown"></i> button to open the <span class="font-weight-500 text-indigo-2">Product Finder</span>.
+                Scan or enter the product barcode, then press <span class="font-weight-500 text-success">Enter</span>.
+                You may also press <span class="font-weight-500 text-success">F2</span> or click the <i class="fas fa-search text-brown"></i> button to open the <span class="font-weight-500 text-indigo-2">Product Finder</span>.
               </div>
 
               <div>

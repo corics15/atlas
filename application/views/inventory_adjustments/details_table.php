@@ -119,7 +119,7 @@
 
               <div>
                 <span class="font-weight-500">1.</span>
-                Click <span class="font-weight-500 text-olive">Add Product</span> or press <kbd class="font-weight-500 text-lime">F2</kbd> to open the Product Finder.
+                Click <span class="font-weight-500 text-olive">Add Product</span> or press <span class="font-weight-500 text-success">F2</span> to open the Product Finder.
               </div>
 
               <div>
