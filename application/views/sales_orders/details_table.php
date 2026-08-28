@@ -21,7 +21,7 @@
           <table class="table table-sm table-hover mb-0">
             <thead class="thead-orange">
               <tr>
-                <th class="text-center">#</th>
+                <!-- <th class="text-center">#</th>
                 <th class="text-center" width="13%">Scan/Input Barcode</th>
                 <th width="15%">Description</th>
                 <th class="text-center">UOM</th>
@@ -35,7 +35,22 @@
                 <th class="text-right" width="8%">Discount</th>
                 <th class="text-right" width="8%">Net Amt</th>
 
-                <th </th>
+                <th></th> -->
+                <th class="text-center">#</th>
+                <th class="text-center">Scan/Input Barcode</th>
+                <th>Description</th>
+                <th class="text-center">UOM</th>
+                <th class="text-right">Available</th>
+                <th class="text-right">Fulfilled</th>
+                <th class="text-right">Remaining</th>
+                <th class="text-right">Qty</th>
+
+                <th class="text-right">Unit Price</th>
+                <th class="text-center">Discount Type</th>
+                <th class="text-right">Discount</th>
+                <th class="text-right">Net Amt</th>
+
+                <th></th>
               </tr>
             </thead>
 
@@ -56,7 +71,7 @@
                     <?php /*** barcode */ ?>
                     <td>
                       <div class="input-group">
-                        <input type="text" class="form-control form-control-sm so-barcode atlas-barcode" placeholder="Barcode"
+                        <input type="text" class="form-control form-control-sm so-barcode atlas-barcode text-center" placeholder="Barcode"
                           value="<?= htmlspecialchars($detail->barcode) ?>">
                         <div class="input-group-append">
                           <button

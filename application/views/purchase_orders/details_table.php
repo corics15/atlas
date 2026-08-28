@@ -16,16 +16,16 @@
       <table class="table table-sm table-hover mb-0">
         <thead class="thead-orange">
           <tr>
-            <th width="3%" class="text-center">#</th>
-            <th width="12%">Scan/Input Barcode</th>
+            <th class="text-center">#</th>
+            <th>Scan/Input Barcode</th>
             <th>Supplier</th>
             <th>Product Description</th>
-            <th width="7%" class="text-center">UOM</th>
-            <th width="7%" class="text-right">Qty</th>
-            <th width="8%" class="text-right">Price</th>
-            <th width="7%" class="text-right">Discount</th>
-            <th width="8%" class="text-right">Amount</th>
-            <th width="40"></th>
+            <th class="text-center">UOM</th>
+            <th class="text-right">Qty</th>
+            <th class="text-right">Price</th>
+            <th class="text-right">Discount</th>
+            <th class="text-right">Amount</th>
+            <th></th>
           </tr>
         </thead>
 

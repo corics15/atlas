@@ -573,10 +573,7 @@ const createDetailRow = () => {
 
             <td>
               <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control form-control-sm so-barcode atlas-barcode"
-                  placeholder="Barcode">
+                <input type="text" class="form-control form-control-sm so-barcode atlas-barcode text-center" placeholder="Barcode">
 
                 <div class="input-group-append">
                   <button
@@ -611,8 +608,7 @@ const createDetailRow = () => {
             </td>
 
             <td>
-              <select
-                class="form-control form-control-sm so-discount-type custom-select">
+              <select class="form-control form-control-sm so-discount-type custom-select">
                 <option value="">No Discount</option>
                 <option value="PERCENT">Percent (%)</option>
                 <option value="AMOUNT">Amount</option>

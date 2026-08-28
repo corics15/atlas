@@ -528,11 +528,22 @@ const populateDetails = (details) => {
 
     const description = detail.description;
     const descriptionName = description.length > 30 ? description.substring(0, 30) + "..." : description;
+    const supplierName = detail.supplier_name;
+    const supplierShort = supplierName.length > 30 ? supplierName.substring(0, 30) + "..." : supplierName;
 
     tr.dataset.productId = detail.product_id;
     tr.querySelector('.po-barcode').value = detail.barcode;
-    tr.querySelector('.po-supplier').textContent = detail.supplier_name;
-    tr.querySelector('.po-description').textContent = descriptionName;
+
+    const supplierTd = tr.querySelector('.po-supplier');
+    supplierTd.textContent = supplierShort;
+    supplierTd.setAttribute('data-toggle', 'tooltip');
+    supplierTd.setAttribute('title', supplierName);
+
+    const descTd = tr.querySelector('.po-description');
+    descTd.textContent = descriptionName;
+    descTd.setAttribute('data-toggle', 'tooltip');
+    descTd.setAttribute('title', description);
+
     tr.querySelector('.po-uom').value = detail.uom_id;
     tr.querySelector('.po-qty').value = Number(detail.qty);
     tr.querySelector('.po-price').value = Number(detail.price).toFixed(2);
@@ -540,6 +551,7 @@ const populateDetails = (details) => {
 
     renumberRows();
     calculateRowTotal(tr);
+    Atlas.ui.init(); /*** tooltips */
   });
 }
 

@@ -316,7 +316,7 @@ class Sales_orders extends MY_Controller
       'sales_orders/print',
       [
         'documents' => $documents,
-        'title' => 'SALES ORDER'
+        'title' => 'Sales Order'
       ]
     );
   }

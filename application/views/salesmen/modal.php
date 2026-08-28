@@ -16,14 +16,12 @@
           <div class="form-row">
             <div class="form-group col-md-6">
               <label for="txtSalesmanCode">Code</label>
-              <input type="text" id="txtSalesmanCode" name="salesman_code"
-                     class="form-control form-control-sm text-uppercase" placeholder="AUTO-GENERATED" readonly>
+              <input type="text" id="txtSalesmanCode" name="salesman_code" class="form-control form-control-sm text-uppercase" placeholder="AUTO-GENERATED" readonly>
               <small id="errSalesmanCode" class="text-danger"></small>
             </div>
             <div class="form-group col-md-6">
               <label for="txtFirstName">First Name</label>
-              <input type="text" id="txtFirstName" name="first_name"
-                     class="form-control form-control-sm text-uppercase" placeholder="Enter first name">
+              <input type="text" id="txtFirstName" name="first_name" class="form-control form-control-sm text-uppercase" placeholder="Enter first name">
               <small id="errFirstName" class="text-danger"></small>
             </div>
           </div>
@@ -31,14 +29,12 @@
           <div class="form-row">
             <div class="form-group col-md-6">
               <label for="txtLastName">Last Name</label>
-              <input type="text" id="txtLastName" name="last_name"
-                     class="form-control form-control-sm text-uppercase" placeholder="Enter last name">
+              <input type="text" id="txtLastName" name="last_name" class="form-control form-control-sm text-uppercase" placeholder="Enter last name">
               <small id="errLastName" class="text-danger"></small>
             </div>
             <div class="form-group col-md-6">
               <label for="txtContactNo">Contact #</label>
-              <input type="text" id="txtContactNo" name="contact_no"
-                     class="form-control form-control-sm text-uppercase" placeholder="Enter contact number">
+              <input type="text" id="txtContactNo" name="contact_no" class="form-control form-control-sm text-uppercase" placeholder="Enter contact number">
               <small id="errContactNo" class="text-danger"></small>
             </div>
           </div>
