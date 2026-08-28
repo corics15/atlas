@@ -82,6 +82,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     markDirty();
   });
 
+  /*** product finder shortcut */
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'F2') {
+      return;
+    }
+
+    e.preventDefault();
+
+    /*** do nothing if Product Finder is already open */
+    if (document.querySelector('.modal.show')) {
+      return;
+    }
+
+    let row = e.target.closest?.('#tblSalesOrderDetails tr');
+
+    /*** if focus is outside the details table, use first empty row */
+    if (!row) {
+      row = [...tblSalesOrderDetails.rows].find(r => !r.dataset.productId);
+    }
+
+    /*** if no empty row exists, add one */
+    if (!row) {
+      addDetailRow(false);
+      row = tblSalesOrderDetails.lastElementChild;
+    }
+
+    Atlas.productFinder.show(row);
+  });
+
   /*** sales order price / qty / discount calculation */
   document.addEventListener('input', (e) => {
     if (
