@@ -21,21 +21,6 @@
           <table class="table table-sm table-hover mb-0">
             <thead class="thead-orange">
               <tr>
-                <!-- <th class="text-center">#</th>
-                <th class="text-center" width="13%">Scan/Input Barcode</th>
-                <th width="15%">Description</th>
-                <th class="text-center">UOM</th>
-                <th class="text-right">Available</th>
-                <th class="text-right">Fulfilled</th>
-                <th class="text-right">Remaining</th>
-                <th class="text-right" width="6%">Qty</th>
-
-                <th class="text-right" width="8%">Unit Price</th>
-                <th class="text-center" width="8%">Discount Type</th>
-                <th class="text-right" width="8%">Discount</th>
-                <th class="text-right" width="8%">Net Amt</th>
-
-                <th></th> -->
                 <th class="text-center">#</th>
                 <th class="text-center">Scan/Input Barcode</th>
                 <th>Description</th>

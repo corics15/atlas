@@ -122,6 +122,7 @@
       <table style="border:none;">
         <tr>
           <td style="border:none;text-align:center;width:25%;height:70px;vertical-align:bottom;">
+            <strong><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></strong>
             _________________________<br>
             Prepared By
           </td>
