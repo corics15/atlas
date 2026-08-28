@@ -152,7 +152,7 @@
                   <img
                     id="companyLogoPreview"
                     src="<?= !empty($company->logo)
-                        ? base_url($company->logo)
+                        ? atlas_asset($company->logo)
                         : ''; ?>"
                     alt="Company Logo"
                     style="
