@@ -5,8 +5,14 @@ if (!function_exists('atlas_asset')) {
   function atlas_asset($path)
   {
     $app = atlas_app();
+    $file = FCPATH . ltrim($path, '/');
+
+    if (is_file($file)) {
+      return base_url($path) . '?v=' . filemtime($file);
+    }
     return base_url($path) . '?v=' . $app['app_version'];
   }
+
 }
 
 if (!function_exists('atlas_url')) {

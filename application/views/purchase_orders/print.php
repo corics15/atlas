@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
   <head>
     <title>Purchase Order</title>
-    <link rel="stylesheet" href="<?= atlas_asset('assets/css/print.css'); ?>">
-    <link rel="shortcut icon" href="<?= atlas_asset($app['shortcut_ico']) ?>" type="image/x-icon">
+    <link rel="stylesheet" href="<= atlas_asset('assets/css/print.css'); ?>">
+    <link rel="shortcut icon" href="<= atlas_asset($app['shortcut_ico']) ?>" type="image/x-icon">
   </head>
-  <body>
+  <body> -->
 
     <?php /*** header */ ?>
     <?php
@@ -152,8 +152,10 @@
 
     <?php endforeach; ?>
 
-    <script>
+    <?php $this->load->view('partials/reports/scripts'); ?>
+
+    <!-- <script>
       window.print();
     </script>
   </body>
-</html>
+</html> -->

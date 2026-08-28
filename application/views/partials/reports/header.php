@@ -12,62 +12,30 @@
   </head>
 
   <body>
-    <table class="report-borderless">
+    <table class="report-borderless" style="table-layout:auto" cellpadding="0" cellspacing="0">
       <tr>
-        <td width="90">
+        <td class="text-right" width="15%">
           <?php if (!empty($company->logo)) : ?>
-            <img
-              src="<?= atlas_asset($company->logo); ?>"
-              width="200"
-              alt="<?= htmlspecialchars($company->company_name); ?>">
+            <img src="<?= atlas_asset($company->logo); ?>" width="75" alt="<?= htmlspecialchars($company->company_name); ?>">
           <?php endif; ?>
         </td>
         <td class="text-center">
-          <div class="company-name">
-            <?= htmlspecialchars($app['company_name']); ?>
-          </div>
-          <div>
-            <?= htmlspecialchars($company->address ?? ''); ?>
-          </div>
-          <div>
-            <?= htmlspecialchars($company->contact_no ?? ''); ?>
-          </div>
-          <br>
-          <div class="report-title">
-            <?= strtoupper($title); ?>
-          </div>
-        </td>
-        <td width="220">
-          <?php if (false) : ?>
-          <table class="summary-tablex" cellpadding="0" cellspacing="0">
-            <tr>
-              <td width="90">
-                Printed By
-              </td>
-              <td>
-                <?= strtoupper($this->session->userdata('username')); ?>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                Printed On
-              </td>
-              <td>
-                <?= date('m/d/Y h:i A'); ?>
-              </td>
-            </tr>
-            <?php if(!empty($period)){ ?>
-            <tr>
-              <td>
-                Period
-              </td>
-              <td>
-                <?= $period; ?>
-              </td>
-            </tr>
-            <?php } ?>
+          <table style="line-height:8px">
+            <tbody>
+              <tr>
+                <td class="company-name"><?= htmlspecialchars($company->company_name); ?></td>
+              </tr>
+              <tr>
+                <td><?= htmlspecialchars($company->address ?? ''); ?></td>
+              </tr>
+              <tr>
+                <td><?= htmlspecialchars($company->contact_no ?? ''); ?></td>
+              </tr>
+              <tr>
+                <td class="report-title"><?= strtoupper($title); ?></td>
+              </tr>
+            </tbody>
           </table>
-          <?php endif ?>
         </td>
       </tr>
     </table>
