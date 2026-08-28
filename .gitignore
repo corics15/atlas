@@ -33,3 +33,6 @@ docs/*
 # database configuration
 application/config/database.php
 application/config/config.php
+
+# company images
+assets/images/company
