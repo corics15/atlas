@@ -84,7 +84,7 @@
                     </td>
 
                     <?php /*** description */ ?>
-                    <td class="so-description" data-toggle="tooltip" title="<?= htmlspecialchars($detail->description) ?>">
+                    <td class="so-description" <?= mb_strlen(htmlspecialchars($detail->description)) > 30 ? 'data-toggle="tooltip" title="'.htmlspecialchars($detail->description).'"' : '' ?>>
                       <?php
                         $description = htmlspecialchars($detail->description);
                         echo (mb_strlen($description) > 30)

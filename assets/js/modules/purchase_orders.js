@@ -536,13 +536,17 @@ const populateDetails = (details) => {
 
     const supplierTd = tr.querySelector('.po-supplier');
     supplierTd.textContent = supplierShort;
-    supplierTd.setAttribute('data-toggle', 'tooltip');
-    supplierTd.setAttribute('title', supplierName);
+    if (supplierName.length > 30) {
+      supplierTd.setAttribute('data-toggle', 'tooltip');
+      supplierTd.setAttribute('title', supplierName);
+    }
 
     const descTd = tr.querySelector('.po-description');
     descTd.textContent = descriptionName;
-    descTd.setAttribute('data-toggle', 'tooltip');
-    descTd.setAttribute('title', description);
+    if (description.length > 30) {
+      descTd.setAttribute('data-toggle', 'tooltip');
+      descTd.setAttribute('title', description);
+    }
 
     tr.querySelector('.po-uom').value = detail.uom_id;
     tr.querySelector('.po-qty').value = Number(detail.qty);

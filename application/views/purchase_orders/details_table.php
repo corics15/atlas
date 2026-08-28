@@ -18,8 +18,8 @@
           <tr>
             <th class="text-center">#</th>
             <th>Scan/Input Barcode</th>
-            <th>Supplier</th>
-            <th>Product Description</th>
+            <th width="20%">Supplier</th>
+            <th width="20%">Product Description</th>
             <th class="text-center">UOM</th>
             <th class="text-right">Qty</th>
             <th class="text-right">Price</th>

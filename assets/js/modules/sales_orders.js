@@ -697,10 +697,7 @@ const populateProductRow = (row, product) => {
 
   /*** check if there's already an empty row */
   const nextRow = row.nextElementSibling;
-  if (
-    !nextRow ||
-    nextRow.dataset.productId
-  ) {
+  if (!nextRow || nextRow.dataset.productId) {
     addDetailRow();
   }
 };
