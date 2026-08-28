@@ -36,36 +36,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     selectAll: '#chkSelectAllStockTransfer',
   });
 
-  /*** always select main branch */
-  $('#selFromBranch').val(1).trigger('change.select2');
-
-  /*** event for product search on selected */
-  document.addEventListener('keydown', async (e) => {
-    if (!e.target.classList.contains('st-barcode')) {
-      return;
-    }
-
-    if (e.key !== 'Enter') {
-      return;
-    }
-
-    e.preventDefault();
-    const barcode = e.target.value.trim();
-    if (!barcode) {
-      return;
-    }
-
-    const result = await Atlas.ajax.get(`product-finder/barcode/${encodeURIComponent(barcode)}`)
-    if (!result.success) {
-      Atlas.toast.error(result.message);
-      return;
-    }
-
-    const row = e.target.closest('tr');
-    populateProductRow(row, result.data);
-    markDirty();
-  });
-
   /*** product finder event */
   document.addEventListener('click', e => {
     if (!e.target.closest('.btn-product-finder')) {
@@ -73,6 +43,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const row = e.target.closest('tr');
+    Atlas.productFinder.show(row);
+  });
+
+  /*** product finder shortcut */
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'F2') {
+      return;
+    }
+
+    e.preventDefault();
+
+    /*** do nothing if Product Finder is already open */
+    if (document.querySelector('.modal.show')) {
+      return;
+    }
+
+    let row = e.target.closest?.('#tblStockTransferDetails tr');
+
+    /*** if focus is outside the details table, use first empty row */
+    if (!row) {
+      row = [...tblStockTransferDetails.rows].find(r => !r.dataset.productId);
+    }
+
+    /*** if no empty row exists, add one */
+    if (!row) {
+      addDetailRow(false);
+      row = tblStockTransferDetails.lastElementChild;
+    }
+
     Atlas.productFinder.show(row);
   });
 
@@ -115,9 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         stockTransfer.details.push({
           product_id: Number(row.dataset.productId),
-          qty: Number(
-            row.querySelector('.st-qty').value
-          )
+          qty: Number(row.querySelector('.st-qty').value)
         });
       });
 
@@ -337,7 +334,7 @@ const createDetailRow = () => {
         <div class="input-group">
           <input
             type="text"
-            class="form-control form-control-sm st-barcode atlas-barcode"
+            class="form-control form-control-sm st-barcode atlas-barcode text-center"
             placeholder="Barcode">
           <div class="input-group-append">
             <button
@@ -371,7 +368,6 @@ const addDetailRow = (markAsDirty = true) => {
   const tbody = document.getElementById('tblStockTransferDetails');
   tbody.insertAdjacentHTML('beforeend', createDetailRow());
   renumberRows();
-  // setTimeout(() => tbody.lastElementChild.querySelector('.st-barcode').focus(), 500);
   if (markAsDirty) {
     markDirty();
   }

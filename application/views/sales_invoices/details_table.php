@@ -51,22 +51,13 @@
                     <td>
                       <div class="input-group">
                         <label for="bc-<?= $index + 1 ?>"></label>
-                        <input
-                          id="bc-<?= $index + 1 ?>"
-                          type="text"
-                          class="form-control form-control-sm so-barcode"
-                          placeholder="Barcode"
-                          value="<?= htmlspecialchars($detail->barcode) ?>" readonly>
+                        <input id="bc-<?= $index + 1 ?>" type="text" class="form-control form-control-sm so-barcode text-center" placeholder="Barcode" value="<?= htmlspecialchars($detail->barcode) ?>" readonly>
                       </div>
                     </td>
                     <td class="so-description"><?= htmlspecialchars($detail->description) ?></td>
                     <td class="so-available text-right"><?= number_format($detail->qty_available, 0) ?></td>
                     <td class="text-right">
-                      <input
-                        type="number"
-                        step="any"
-                        class="form-control form-control-sm text-right so-qty"
-                        value="<?= number_format($detail->qty, 0) ?>" readonly>
+                      <input type="number" step="any" class="form-control form-control-sm text-right so-qty" value="<?= number_format($detail->qty, 0) ?>" readonly>
                     </td>
                     <td class="so-uom text-center"><?= htmlspecialchars($detail->uom) ?></td>
 
@@ -114,36 +105,11 @@
 
               <?php else: ?>
 
-                <tr class="so-detail-row">
-                  <td class="so-row-no text-center">1.</td>
-                  <td>
-                    <div class="input-group">
-                      <input
-                        type="text"
-                        class="form-control form-control-sm so-barcode"
-                        placeholder="Barcode">
-                      <div class="input-group-append">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-warning btn-product-finder">
-                        <i class="fas fa-search font-smr"></i>
-                        </button>
-                      </div>
-                    </div>
+                <tr>
+                  <td colspan="10" class="text-center text-muted py-4">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    No items are available for invoicing from this Delivery Receipt.
                   </td>
-                  <td class="so-description"></td>
-                  <td class="so-available text-right">-</td>
-                  <td class="text-right">
-                    <input type="number" step="any" class="form-control form-control-sm text-right so-qty" value="">
-                  </td>
-                  <td class="so-uom text-center"></td>
-
-                  <td class="text-right">0.00</td>
-                  <td class="text-center">-</td>
-                  <td class="text-right">0.00</td>
-                  <td class="text-right">0.00</td>
-
-                  <td class="text-center"><i class="fas fa-trash text-danger pointer btn-delete-row"></i></td>
                 </tr>
 
               <?php endif; ?>
@@ -169,7 +135,55 @@
     <div class="card mt-3 mb-3">
       <div class="card-body">
         <div class="form-row">
-          <div class="col-md-8"></div>
+          <div class="col-md-8 d-flex align-items-end">
+
+            <div class="alert alert-light font-sm mb-0" role="alert">
+              <div class="font-weight-500 mb-1">
+                <i class="fas fa-info-circle mr-1 text-info"></i>
+                Sales Invoice Guide
+              </div>
+
+              <div>
+                <span class="font-weight-500">1.</span>
+                Review the products and quantities from the selected <span class="font-weight-500 text-success">Delivery Receipt</span>.
+              </div>
+
+              <div>
+                <span class="font-weight-500">2.</span>
+                Check the <span class="font-weight-500 text-danger">Available</span> quantity for each item before invoicing.
+              </div>
+
+              <div>
+                <span class="font-weight-500">3.</span>
+                Review the <span class="font-weight-500 text-danger">Qty</span>, <span class="font-weight-500 text-danger">UOM</span>, <span class="font-weight-500 text-danger">Unit Price</span>,
+                and <span class="font-weight-500 text-danger">Discount</span> for each item.
+              </div>
+
+              <div>
+                <span class="font-weight-500">4.</span>
+                Verify the calculated <span class="font-weight-500 text-danger">Gross Amount</span>, <span class="font-weight-500 text-danger">Discount</span>,
+                <span class="font-weight-500 text-danger">Subtotal</span>, <span class="font-weight-500 text-danger">VAT</span>, and <span class="font-weight-500 text-danger">Total</span>.
+              </div>
+
+              <div>
+                <span class="font-weight-500">5.</span>
+                Click <span class="font-weight-500 text-brown">Save Sales Invoice</span> after verifying all invoice details.
+              </div>
+
+              <div>
+                <span class="font-weight-500">6.</span>
+                Once verified, click <span class="font-weight-500 text-orange">Post</span> to finalize the Sales Invoice.
+              </div>
+
+              <div>
+                <span class="font-weight-500">7.</span>
+                After posting, click <span class="font-weight-500 text-olive">Create Sales Return</span> if invoiced items
+                need to be returned by the customer.
+              </div>
+            </div>
+
+          </div>
+
           <div class="col-md-4">
 
             <table class="table table-sm mb-3">

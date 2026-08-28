@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       `<div class="text-brown text-center">
         <p>Inventory quantities will be updated.<br>
         This action cannot be undone.</p>
-        <p class="font-weight-500 text-danger">Post Delivery Receipt?</p>
+        <p class="font-weight-500 text-danger">Post Sales Return?</p>
       </div>`
     );
 

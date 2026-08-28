@@ -29,6 +29,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /*** product finder shortcut */
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'F2') {
+      return;
+    }
+
+    e.preventDefault();
+
+    /*** do nothing if a modal is already open */
+    if (document.querySelector('.modal.show')) {
+      return;
+    }
+
+    btnAddProductInventoryAdjustment?.click();
+  });
+
   /*** edit/update/view */
   btnEditInventoryAdjustment?.addEventListener('click', () => {
     const adjustmentId = getSelectedInventoryAdjustmentId();
@@ -374,11 +390,7 @@ const cancelInventoryAdjustment = async () => {
   );
 };
 
-const executeInventoryAdjustmentAction = async (
-  endpoint,
-  payload,
-  onSuccess = () => Atlas.page.refresh()
-) => {
+const executeInventoryAdjustmentAction = async (endpoint, payload, onSuccess = () => Atlas.page.refresh()) => {
 
   try {
     const response = await Atlas.ajax.post(
@@ -398,11 +410,6 @@ const executeInventoryAdjustmentAction = async (
     }, 1500);
 
   } catch (error) {
-    Atlas.loader.hide();
-    Atlas.toast.error(
-      'An unexpected error occurred.'
-    );
-
-    console.error(error);
+    Atlas.toast.error('An unexpected error occurred.');
   }
 };

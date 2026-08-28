@@ -9,6 +9,7 @@ const tblPurchaseOrderDetails = document.getElementById('tblPurchaseOrderDetails
 
 const selSupplier = document.getElementById('selSupplier');
 const btnSavePurchaseOrder = document.getElementById('btnSavePurchaseOrder');
+const btnCancelPurchaseOrder = document.getElementById('btnCancelPurchaseOrder');
 
 let isEditMode = false;
 let purchaseOrderId = null;
@@ -43,6 +44,35 @@ document.addEventListener('DOMContentLoaded', async () => {
       const row = e.target.closest('tr');
       Atlas.productFinder.show(row);
     }
+  });
+
+  /*** product finder shortcut */
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'F2') {
+      return;
+    }
+
+    e.preventDefault();
+
+    /*** do nothing if a modal is already open */
+    if (document.querySelector('.modal.show')) {
+      return;
+    }
+
+    let row = e.target.closest?.('#tblPurchaseOrderDetails tr');
+
+    /*** if focus is outside the details table, use first empty row */
+    if (!row) {
+      row = [...tblPurchaseOrderDetails.rows].find(r => !r.dataset.productId);
+    }
+
+    /*** if no empty row exists, add one */
+    if (!row) {
+      addDetailRow();
+      row = tblPurchaseOrderDetails.lastElementChild;
+    }
+
+    Atlas.productFinder.show(row);
   });
 
   /*** scanner barcode event */
@@ -281,9 +311,7 @@ const populateProductRow = (row, product) => {
   row.querySelector('.po-price').value = Number(product.srp).toFixed(2);
 
   calculateRowTotal(row);
-
   row.querySelector('.po-qty').focus();
-
   markDirty();
 }
 

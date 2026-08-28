@@ -86,9 +86,62 @@
     <div class="card">
       <div class="card-body">
 
-        <div class="d-flex justify-content-between">
-          <div></div>
-          <button type="button" class="btn btn-sm btn-default" id="btnSaveDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>>Save Delivery Receipt</button>
+        <div class="row">
+          <div class="col-md-9 d-flex align-items-end">
+
+            <div class="alert alert-light font-sm mb-0" role="alert">
+              <div class="font-weight-500 mb-1">
+                <i class="fas fa-info-circle mr-1 text-info"></i>
+                Delivery Receipt Guide
+              </div>
+
+              <div>
+                <span class="font-weight-500">1.</span>
+                Review the products from the selected <span class="font-weight-500 text-success">Sales Order</span>.
+              </div>
+
+              <div>
+                <span class="font-weight-500">2.</span>
+                Check the <span class="font-weight-500 text-danger">Ordered</span>, <span class="font-weight-500 text-danger">Delivered</span>, and
+                <span class="font-weight-500">Remaining</span> quantities for each item.
+              </div>
+
+              <div>
+                <span class="font-weight-500">3.</span>
+                Check <span class="font-weight-500 text-danger">AQTD</span> (Available Quantity to Deliver) and
+                <span class="font-weight-500 text-danger">Stock</span> before entering the delivery quantity.
+              </div>
+
+              <div>
+                <span class="font-weight-500">4.</span>
+                Enter the quantity being delivered under <span class="font-weight-500 text-danger">Deliver Qty</span>.
+                The quantity must not exceed the available quantity to deliver.
+              </div>
+
+              <div>
+                <span class="font-weight-500">5.</span>
+                Click <span class="font-weight-500 text-brown">Save Delivery Receipt</span> after verifying all
+                products and delivery quantities.
+              </div>
+
+              <div>
+                <span class="font-weight-500">6.</span>
+                Once verified, click <span class="font-weight-500 text-orange">Post</span> to update inventory quantities.
+                Posting cannot be undone.
+              </div>
+
+              <div>
+                <span class="font-weight-500">7.</span>
+                After posting, click <span class="font-weight-500 text-olive">Create Sales Invoice</span> when the
+                Delivery Receipt is ready for billing.
+              </div>
+            </div>
+
+          </div>
+
+          <div class="col-md-3">
+            <button type="button" class="btn btn-sm btn-default btn-block" id="btnSaveDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>>Save Delivery Receipt</button>
+          </div>
         </div>
 
       </div>

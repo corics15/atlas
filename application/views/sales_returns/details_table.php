@@ -30,7 +30,6 @@
                   <th class="text-center" width="8%">Discount Type</th>
                   <th class="text-right" width="6%">Discount</th>
                   <th width="130" class="text-right" width="12%">Net Amount</th>
-                  <th width="2%"></th>
                 </tr>
               </thead>
 
@@ -66,22 +65,7 @@
 
                       <?php /*** barcode */ ?>
                       <td>
-                        <div class="input-group">
-                          <label for="bc-<?= $index + 1 ?>"></label>
-                          <input
-                            id="bc-<?= $index + 1 ?>"
-                            type="text"
-                            class="form-control form-control-sm so-barcode"
-                            placeholder="Barcode"
-                            value="<?= htmlspecialchars($detail->barcode) ?>" readonly>
-                          <div class="input-group-append">
-                            <button
-                              type="button"
-                              class="btn btn-sm btn-outline-muted btn-product-finder no-event">
-                            <i class="fas fa-search font-smr"></i>
-                            </button>
-                          </div>
-                        </div>
+                        <input id="bc-<?= $index + 1 ?>" type="text" class="form-control form-control-sm so-barcode text-center" placeholder="Barcode" value="<?= htmlspecialchars($detail->barcode) ?>" readonly>
                       </td>
 
                       <?php /*** description */ ?>
@@ -177,60 +161,15 @@
                         <?php endif; ?>
                       </td>
 
-                      <?php /*** delete */ ?>
-                      <td class="text-center">
-                        <i class="fas fa-trash text-muted pointer btn-delete-row no-event"></i>
-                      </td>
                     </tr>
                   <?php endforeach; ?>
 
                 <?php else: ?>
 
-                  <tr class="so-detail-row">
-                    <?php /*** numbering */ ?>
-                    <td class="so-row-no text-center">1.</td>
-
-                    <?php /*** barcode */ ?>
-                    <td>
-                      <div class="input-group">
-                        <input type="text" class="form-control form-control-sm so-barcode" placeholder="Barcode">
-                        <div class="input-group-append">
-                          <button type="button" class="btn btn-sm btn-outline-warning btn-product-finder">
-                          <i class="fas fa-search font-smr"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-
-                    <?php /*** description */ ?>
-                    <td class="so-description"></td>
-
-                    <?php /*** available */ ?>
-                    <td class="so-available text-right">-</td>
-
-                    <?php /*** numbering */ ?>
-                    <td class="text-right">
-                      <input type="number" step="any" class="form-control form-control-sm text-right so-qty" value="">
-                    </td>
-
-                    <?php /*** uom */ ?>
-                    <td class="so-uom text-center"></td>
-
-                    <?php /*** unit price */ ?>
-                    <td class="text-right">0.00</td>
-
-                    <?php /*** discount type */ ?>
-                    <td class="text-center">-</td>
-
-                    <?php /*** discount */ ?>
-                    <td class="text-right">0.00</td>
-
-                    <?php /*** net amt */ ?>
-                    <td class="text-right">0.00</td>
-
-                    <?php /*** delete */ ?>
-                    <td class="text-center">
-                      <i class="fas fa-trash text-danger pointer btn-delete-row"></i>
+                  <tr>
+                    <td colspan="10" class="text-center text-muted py-3">
+                      <i class="fas fa-info-circle mr-1"></i>
+                      No items are available for return from this Sales Invoice.
                     </td>
                   </tr>
 
@@ -256,7 +195,47 @@
       <div class="card mt-3 mb-3">
         <div class="card-body">
           <div class="form-row">
-            <div class="col-md-8"></div>
+            <div class="align-items-end col-md-8 d-flex">
+
+              <div class="alert alert-light font-sm mb-0" role="alert">
+                <div class="font-weight-500 mb-1">
+                  <i class="fas fa-info-circle mr-1 text-info"></i>
+                  Sales Return Guide
+                </div>
+
+                <div>
+                  <span class="font-weight-500">1.</span>
+                  Review the products from the selected <span class="font-weight-500 text-success">Sales Invoice</span>.
+                </div>
+
+                <div>
+                  <span class="font-weight-500">2.</span>
+                  Check the <span class="font-weight-500 text-danger">Available</span> quantity for each item before entering a return.
+                </div>
+
+                <div>
+                  <span class="font-weight-500">3.</span>
+                  Enter the quantity being returned under <span class="font-weight-500 text-danger">Qty</span>.
+                  Only items from the original Sales Invoice may be returned.
+                </div>
+
+                <div>
+                  <span class="font-weight-500">4.</span>
+                  Review the Unit Price, Discount, Net Amount, VAT, and total Sales Return amount.
+                </div>
+
+                <div>
+                  <span class="font-weight-500">5.</span>
+                  Click <span class="font-weight-500 text-brown">Save Sales Return</span> after verifying the returned items and quantities.
+                </div>
+
+                <div>
+                  <span class="font-weight-500">6.</span>
+                  Once verified, <span class="font-weight-500 text-orange">Post</span> the Sales Return to update inventory.
+                </div>
+              </div>
+
+            </div>
             <div class="col-md-4">
 
               <table class="table table-sm mb-3">

@@ -67,7 +67,7 @@ class AtlasProductFinder {
 
     $('#mdlProductFinder').modal('show');
 
-    setTimeout(() => search.focus(), 150);
+    setTimeout(() => search.focus(), 1000);
   }
 
   async search(keyword) {

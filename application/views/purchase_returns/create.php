@@ -52,7 +52,51 @@
         </div>
 
         <div class="card-body">
-          <div class="row justify-content-end">
+          <div class="row justify-content-between">
+
+            <div class="alert alert-light font-sm mb-0" role="alert">
+              <div class="font-weight-500 mb-1">
+                <i class="fas fa-info-circle mr-1 text-info"></i>
+                Purchase Return Guide
+              </div>
+
+              <div>
+                <span class="font-weight-500">1.</span>
+                Review the products originally received under the selected Goods Receipt.
+              </div>
+
+              <div>
+                <span class="font-weight-500">2.</span>
+                Check the <span class="font-weight-500 text-danger">Received</span>, <span class="font-weight-500 text-danger">Returned</span>, and
+                <span class="font-weight-500 text-danger">Available</span> quantities before entering a return.
+              </div>
+
+              <div>
+                <span class="font-weight-500">3.</span>
+                Enter the quantity to return under <span class="font-weight-500 text-danger">Return Qty</span>.
+                The return quantity cannot exceed the available quantity.
+              </div>
+
+              <div>
+                <span class="font-weight-500">4.</span>
+                Review the return details, then click <span class="font-weight-500 text-brown">Save Purchase Return</span>.
+              </div>
+
+              <div>
+                <span class="font-weight-500">5.</span>
+                Once verified, <span class="font-weight-500 text-orange">Post</span> the Purchase Return to update inventory.
+              </div>
+
+              <div>
+                <span class="font-weight-500">6.</span>
+                Once the Purchase Return has been created, the
+                <span class="font-weight-500 text-danger">Return Qty can no longer be changed</span>.
+                If a correction is needed, cancel the Purchase Return and create a new one.
+              </div>
+
+            </div>
+
+
             <div class="col-md-2">
               <button type="button" id="btnSavePurchaseReturn" class="btn btn-sm btn-default btn-block" <?= !$isEditable ? 'disabled' : '' ?>>Save Purchase Return</button>
             </div>

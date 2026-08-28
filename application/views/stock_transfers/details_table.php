@@ -42,15 +42,9 @@
                     </td>
                     <td>
                       <div class="input-group">
-                        <input
-                          type="text"
-                          class="form-control form-control-sm st-barcode atlas-barcode"
-                          placeholder="Barcode"
-                          value="<?= htmlspecialchars($detail->barcode) ?>">
+                        <input type="text" class="form-control form-control-sm st-barcode atlas-barcode text-center" placeholder="Barcode" value="<?= htmlspecialchars($detail->barcode) ?>">
                         <div class="input-group-append">
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-outline-warning btn-product-finder">
+                          <button type="button" class="btn btn-sm btn-outline-warning btn-product-finder">
                           <i class="fas fa-search font-smr"></i>
                           </button>
                         </div>
@@ -63,11 +57,7 @@
                       <?= number_format($detail->qty_on_hand, 0) ?>
                     </td>
                     <td class="text-right">
-                      <input
-                        type="number"
-                        step="any"
-                        class="form-control form-control-sm text-right st-qty"
-                        value="<?= number_format($detail->qty) ?>">
+                      <input type="number" step="any" class="form-control form-control-sm text-right st-qty" value="<?= number_format($detail->qty) ?>">
                     </td>
                     <td class="st-uom text-center">
                       <?= htmlspecialchars($detail->uom) ?>
@@ -86,14 +76,9 @@
                   </td>
                   <td>
                     <div class="input-group">
-                      <input
-                        type="text"
-                        class="form-control form-control-sm st-barcode atlas-barcode"
-                        placeholder="Barcode">
+                      <input type="text" class="form-control form-control-sm st-barcode atlas-barcode text-center" placeholder="Barcode">
                       <div class="input-group-append">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-warning btn-product-finder">
+                        <button type="button" class="btn btn-sm btn-outline-warning btn-product-finder">
                         <i class="fas fa-search font-smr"></i>
                         </button>
                       </div>
@@ -102,11 +87,7 @@
                   <td class="st-description"></td>
                   <td class="st-available text-right">0</td>
                   <td class="text-right">
-                    <input
-                      type="number"
-                      step="any"
-                      class="form-control form-control-sm text-right st-qty"
-                      value="">
+                    <input type="number" step="any" class="form-control form-control-sm text-right st-qty" value="">
                   </td>
                   <td class="st-uom text-center"></td>
                   <td class="text-center">
@@ -126,7 +107,50 @@
     <div class="card mt-3 mb-3">
       <div class="card-body">
         <div class="form-row">
-          <div class="col-md-9"></div>
+          <div class="align-items-end col-md-9 d-flex">
+
+            <div class="alert alert-light font-sm mb-0" role="alert">
+              <div class="font-weight-500 mb-1">
+                <i class="fas fa-info-circle mr-1 text-info"></i>
+                Stock Transfer Guide
+              </div>
+
+              <div>
+                <span class="font-weight-500">1.</span>
+                Select the <span class="font-weight-500 text-danger">Source Branch</span> and <span class="font-weight-500 text-danger">Destination Branch</span>.
+                The source and destination must be different.
+              </div>
+
+              <div>
+                <span class="font-weight-500">2.</span>
+                Scan or enter the product <span class="font-weight-500">Barcode</span> and press <span class="font-weight-500 text-success">Enter</span>,
+                press <span class="font-weight-500 text-success">F2</span>, or click the <i class="fas fa-search text-brown"></i> button to open the Product Finder.
+              </div>
+
+              <div>
+                <span class="font-weight-500">3.</span>
+                Check the product's <span class="font-weight-500 text-danger">Available</span> quantity at the Source Branch.
+              </div>
+
+              <div>
+                <span class="font-weight-500">4.</span>
+                Enter the <span class="font-weight-500 text-danger">Transfer Qty</span>.
+                The quantity must be greater than zero and must not exceed the available stock.
+              </div>
+
+              <div>
+                <span class="font-weight-500">5.</span>
+                Click <span class="font-weight-500 text-brown">Save Stock Transfer</span> after verifying the branches, products, and quantities.
+              </div>
+
+              <div>
+                <span class="font-weight-500">6.</span>
+                Once verified, click <span class="font-weight-500 text-orange">Post</span> to update the inventory quantities.
+                Posting cannot be undone.
+              </div>
+            </div>
+
+          </div>
           <div class="col-md-3">
             <button id="btnSaveStockTransfer" class="btn btn-default btn-sm btn-block">Save Stock Transfer</button>
           </div>

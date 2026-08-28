@@ -1,7 +1,6 @@
 // const btnCreateDeliveryReceipt = document.getElementById('btnCreateDeliveryReceipt');
 const btnSaveDeliveryReceipt = document.getElementById('btnSaveDeliveryReceipt');
 const btnEditDeliveryReceipt = document.getElementById('btnEditDeliveryReceipt');
-const btnNewDeliveryReceipt = document.getElementById('btnNewDeliveryReceipt');
 const btnPostDeliveryReceipt = document.getElementById('btnPostDeliveryReceipt');
 const btnRefreshDeliveryReceipt = document.getElementById('btnRefreshDeliveryReceipt');
 const btnCancelDeliveryReceipt = document.getElementById('btnCancelDeliveryReceipt');
@@ -92,9 +91,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
   });
-
-  /*** new */
-  btnNewDeliveryReceipt?.addEventListener('click', () => Atlas.page.redirect('delivery-receipts/queue'));
 
   /*** edit */
   btnEditDeliveryReceipt?.addEventListener('click', () => {
@@ -234,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!row) {
       if (window.deliveryReceiptId === 0) {
-        Atlas.toast.warning('New Delivery Receipt, not save yet.');
+        Atlas.toast.warning('New Delivery Receipt, not saved yet.');
         return;
       }
 

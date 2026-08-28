@@ -58,16 +58,20 @@
               <tr>
                 <th>From Branch</th>
                 <td>
-                  <select
-                    id="selFromBranch"
-                    class="form-control form-control-sm no-event" disabled>
+                  <select id="selFromBranch" class="form-control form-control-sm no-event" disabled>
                     <option value="">Select Branch</option>
                     <?php foreach ($branches as $branch): ?>
-                      <option
-                          value="<?= $branch->id ?>"
-                          <?= isset($stockTransfer) && $stockTransfer->from_branch_id == $branch->id ? 'selected' : '' ?>>
-                          <?= $branch->branch_name ?>
-                      </option>
+<option
+  value="<?= $branch->id ?>"
+  <?php
+    if (isset($stockTransfer)) {
+      echo $stockTransfer->from_branch_id == $branch->id ? 'selected' : '';
+    } else {
+      echo $currentBranchId == $branch->id ? 'selected' : '';
+    }
+  ?>>
+  <?= htmlspecialchars($branch->branch_name) ?>
+</option>
                     <?php endforeach; ?>
                   </select>
                 </td>
@@ -75,9 +79,7 @@
               <tr>
                 <th>To Branch</th>
                 <td>
-                  <select
-                    id="selToBranch"
-                    class="form-control form-control-sm">
+                  <select id="selToBranch" class="form-control form-control-sm">
                     <option value="">Select Branch</option>
                     <?php foreach ($branches as $branch): ?>
                       <option
@@ -105,7 +107,4 @@
   </div>
 </section>
 
-<input
-    type="hidden"
-    id="hidStockTransferId"
-    value="<?= isset($stockTransferId) ? $stockTransferId : ''; ?>">
+<input type="hidden" id="hidStockTransferId" value="<?= isset($stockTransferId) ? $stockTransferId : ''; ?>">

@@ -18,8 +18,8 @@
         </div>
       </div>
 
+      <?php /*** details */ ?>
       <div class="card-body p-0">
-        <div class="font-sm px-4 py-2 text-lightblue text-right"><span class="font-weight-500">NOTE:</span> Enter "-" to decrease, e.g. -5, otherwise 5</div>
         <div class="table-responsive">
           <table class="table table-sm table-bordered table-hover">
 
@@ -100,15 +100,70 @@
             </tbody>
 
           </table>
+        </div>
+      </div>
 
-          <div class="d-flex justify-content-end pb-3 pr-3">
-            <div class="col-md-2">
-              <button type="button" id="btnSaveInventoryAdjustment" class="btn btn-default btn-sm btn-block">Save Adjustment</button>
+    </div>
+
+    <?php /*** footer */ ?>
+    <div class="card mt-3 mb-3">
+      <div class="card-body">
+        <div class="form-row">
+          <div class="align-items-end col-md-8 d-flex">
+
+            <div class="alert alert-light font-sm mb-0" role="alert">
+              <div class="font-weight-500 mb-1">
+                <i class="fas fa-info-circle mr-1 text-info"></i>
+                Inventory Adjustment Guide
+              </div>
+
+              <div>
+                <span class="font-weight-500">1.</span>
+                Click <span class="font-weight-500 text-olive">Add Product</span> or press <kbd class="font-weight-500 text-lime">F2</kbd> to open the Product Finder.
+              </div>
+
+              <div>
+                <span class="font-weight-500">2.</span>
+                Search and select the product that needs an inventory adjustment.
+              </div>
+
+              <div>
+                <span class="font-weight-500">3.</span>
+                Review the current <span class="font-weight-500 text-danger">On Hand</span> quantity before entering the adjustment.
+              </div>
+
+              <div>
+                <span class="font-weight-500">4.</span>
+                Enter a positive quantity to <span class="font-weight-500 text-danger">increase</span> stock,
+                or a negative quantity to <span class="font-weight-500 text-danger">decrease</span> stock.
+                Example: <span class="font-weight-500 text-danger">5</span> adds five units, while <span class="font-weight-500 text-danger">-5</span> removes five units.
+              </div>
+
+              <div>
+                <span class="font-weight-500">5.</span>
+                Review the resulting <span class="font-weight-500 text-danger">New Balance</span> before saving.
+              </div>
+
+              <div>
+                <span class="font-weight-500">6.</span>
+                Click <span class="font-weight-500 text-brown">Save Adjustment</span> after verifying all products and quantities.
+              </div>
+
+              <div>
+                <span class="font-weight-500">7.</span>
+                Once verified, click <span class="font-weight-500 text-orange">Post</span> to update inventory quantities.
+                Posting cannot be undone.
+              </div>
             </div>
+
+          </div>
+          <div class="col-md-4">
+            <button type="button" id="btnSaveInventoryAdjustment" class="btn btn-default btn-sm btn-block">Save Adjustment</button>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 </section>
 

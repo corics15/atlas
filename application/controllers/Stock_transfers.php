@@ -104,6 +104,7 @@ class Stock_transfers extends MY_Controller
     $this->pageScript = 'stock_transfers';
 
     $this->data['branches'] = $this->Branch_model->getDropdown();
+    $this->data['currentBranchId'] = $this->session->userdata('branch_id');
     $this->render('stock_transfers/create');
   }
 
