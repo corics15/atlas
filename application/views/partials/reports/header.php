@@ -29,6 +29,9 @@
                 <td><?= htmlspecialchars($company->address ?? ''); ?></td>
               </tr>
               <tr>
+                <td><?= 'TIN: '.htmlspecialchars($company->tin_no ?? ''); ?></td>
+              </tr>              
+              <tr>
                 <td><?= htmlspecialchars($company->contact_no ?? ''); ?></td>
               </tr>
               <tr>
