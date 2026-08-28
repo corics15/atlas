@@ -124,6 +124,7 @@
   .report-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: auto;
   }
 
   .report-table thead {

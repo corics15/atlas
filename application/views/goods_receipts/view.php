@@ -113,11 +113,11 @@
         </div>
       </div>
       <div class="card-body p-0">
-        <div class="table-responsive table-scroll">
+        <div class="table-responsive">
           <table class="table table-sm table-bordered table-hover" id="tblGoodsReceiptDetails">
             <thead class="thead-orange">
               <tr>
-                <th width="50" class="text-cener">#</th>
+                <th width="50" class="text-center">#</th>
                 <th width="150" class="text-center">Barcode</th>
                 <th>Description</th>
                 <th width="80" class="text-center">UOM</th>
@@ -158,14 +158,7 @@
                     <td class="text-center"><?= htmlspecialchars($item->uom) ?></td>
                     <td>
                       <div class="input-group input-group-sm">
-                        <input
-                          type="number"
-                          class="form-control form-control-sm text-right grn-conversion"
-                          value="<?= (float)$item->conversion_factor ?>"
-                          min="0.0001"
-                          step="any"
-                          readonly>
-
+                        <input type="number" class="form-control form-control-sm text-right grn-conversion" value="<?= (float)$item->conversion_factor ?>" min="0.0001" step="any" readonly>
                         <?php if ($goodsReceipt->status === 'DRAFT'): ?>
                           <div class="input-group-append">
                             <button
@@ -180,11 +173,7 @@
                     </td>
                     <td class="text-right"><?= number_format($item->qty_ordered) ?></td>
                     <td>
-                      <input type="number"
-                            class="form-control form-control-sm text-right grn-qty"
-                            name="qty_received[]"
-                            value="<?= (float)$item->qty_received ?>"
-                            min="0"
+                      <input type="number" class="form-control form-control-sm text-right grn-qty" name="qty_received[]" value="<?= (float)$item->qty_received ?>" min="0"
                             max="<?= (float)$item->qty_ordered ?>"
                             step="any">
                     </td>

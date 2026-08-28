@@ -25,7 +25,7 @@
     data-unit-cost="<?= $item->price ?>"
     data-remaining-qty="<?= $item->qty_remaining ?>">
 
-    <td class="text-right">
+    <td class="text-center">
       <?= $index + 1 ?>.
     </td>
     <td class="text-center"><?= htmlspecialchars($item->barcode) ?></td>
@@ -33,18 +33,10 @@
     <td class="text-center"><?= htmlspecialchars($item->uom) ?></td>
     <td>
       <div class="input-group input-group-sm">
-        <input
-          type="number"
-          class="form-control form-control-sm text-right grn-conversion"
-          value="<?= $item->conversion_factor !== NULL ? $item->conversion_factor : '' ?>"
-          min="0.0001"
-          step="any"
+        <input type="number" class="form-control form-control-sm text-right grn-conversion" value="<?= $item->conversion_factor !== NULL ? $item->conversion_factor : '' ?>" min="0.0001" step="any"
           <?= $item->conversion_factor !== NULL ? 'readonly' : '' ?>>
 
-        <?php if (
-          $item->conversion_factor !== NULL &&
-          (int)$item->uom_id !== (int)$item->base_uom_id
-        ): ?>
+        <?php if ($item->conversion_factor !== NULL && (int)$item->uom_id !== (int)$item->base_uom_id): ?>
 
           <div class="input-group-append">
             <button type="button" class="btn btn-outline-warning btn-link btn-change-conversion" title="Change Conversion">
@@ -59,13 +51,7 @@
     <td class="text-right"><?= number_format($item->qty_received) ?></td>
     <td class="text-right"><?= number_format($item->qty_remaining) ?></td>
     <td>
-      <input
-        type="number"
-        class="form-control form-control-sm text-right grn-receive-now"
-        value="0"
-        min="0"
-        max="<?= $item->qty_remaining ?>"
-        step="any">
+      <input type="number" class="form-control form-control-sm text-right grn-receive-now" value="0" min="0" max="<?= $item->qty_remaining ?>" step="any">
     </td>
   </tr>
   <?php endforeach; ?>

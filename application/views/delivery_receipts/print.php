@@ -8,30 +8,24 @@
     ?>
 
   <div class="report">
-    <table class="table report-borderless table-sm mb-3">
+    <table class="report-borderless" style="line-height:8px;table-layout:auto">
       <tr>
-        <td width="100"><strong>DR No.</strong></td>
-        <td><?= $header->dr_no ?></td>
+        <td><strong>DR No.:</strong></td>
+        <td><?= htmlspecialchars($header->dr_no) ?></td>
+        <td><strong>SO No.:</strong></td>
+        <td><?= htmlspecialchars($header->so_no) ?></td>
       </tr>
       <tr>
-          <td><strong>SO No.</strong></td>
-          <td><?= $header->so_no ?></td>
-      </tr>
-      <tr>
-        <td><strong>Delivery Date</strong></td>
+        <td><strong>Delivery Date:</strong></td>
         <td><?= date('m/d/Y', strtotime($header->delivery_date)) ?></td>
+        <td><strong>Customer:</strong></td>
+        <td><?= htmlspecialchars($header->customer_name) ?></td>
       </tr>
       <tr>
-        <td><strong>Customer</strong></td>
-        <td><?= $header->customer_name ?></td>
-      </tr>
-      <tr>
-        <td><strong>Salesman</strong></td>
-        <td><?= $header->salesman_name ?></td>
-      </tr>
-      <tr>
-        <td><strong>Terms</strong></td>
-        <td><?= $header->terms_name ?></td>
+        <td><strong>Salesman:</strong></td>
+        <td><?= htmlspecialchars($header->salesman_name) ?></td>
+        <td><strong>Terms:</strong></td>
+        <td><?= htmlspecialchars($header->terms_name) ?></td>
       </tr>
       <tr>
         <td><strong>Remarks</strong></td>
@@ -41,38 +35,24 @@
 
     <br><br>
 
-    <table class="table table-bordered table-sm">
+    <table class="report-table">
       <thead>
         <tr>
           <th width="40">#</th>
           <th>Barcode</th>
           <th>Description</th>
-          <th width="120" class="text-right">
-            Qty
-          </th>
-          <th width="90">
-            UOM
-          </th>
+          <th class="text-center">Qty</th>
+          <th>UOM</th>
         </tr>
       </thead>
       <tbody>
         <?php foreach ($details as $index => $detail): ?>
         <tr>
-          <td class="text-center">
-            <?= $index + 1 ?>.
-          </td>
-          <td class="text-center">
-            <?= $detail->barcode ?>
-          </td>
-          <td>
-            <?= $detail->description ?>
-          </td>
-          <td class="text-right">
-            <?= number_format($detail->qty_ordered) ?>
-          </td>
-          <td class="text-center">
-            <?= $detail->uom ?>
-          </td>
+          <td class="text-center"><?= $index + 1 ?>.</td>
+          <td class="text-center"><?= $detail->barcode ?></td>
+          <td><?= $detail->description ?></td>
+          <td class="text-center"><?= number_format($detail->qty_ordered) ?></td>
+          <td class="text-center"><?= $detail->uom ?></td>
         </tr>
         <?php endforeach; ?>
       </tbody>

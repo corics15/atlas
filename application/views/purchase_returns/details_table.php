@@ -21,7 +21,7 @@
     data-conversion-factor="<?= $item->conversion_factor ?>"
     data-available-qty="<?= $item->qty ?>">
 
-    <td class="text-right"><?= $index + 1 ?>.</td>
+    <td class="text-center"><?= $index + 1 ?>.</td>
     <td class="text-center"><?= htmlspecialchars($item->barcode) ?></td>
     <td><?= htmlspecialchars($item->description) ?></td>
     <td class="text-center"><?= htmlspecialchars($item->uom) ?></td>

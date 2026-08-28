@@ -133,6 +133,12 @@ class Purchase_returns extends MY_Controller
     $urlLink = $this->encodeId($this->data['goodsReceipt']->id);
     $this->data['goodsReceipt']->url = base_url('goods-receipts/view/'.$urlLink);
 
+    $this->data['isEditable'] = in_array(
+      $this->session->userdata('access_level'),
+      ['ADMIN', 'MANAGER', 'STAFF'],
+      TRUE
+    );    
+
     $this->render('purchase_returns/create');
   }
 

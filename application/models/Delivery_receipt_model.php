@@ -106,15 +106,10 @@ class Delivery_receipt_model extends CI_Model
                                 0 AS qty_available_to_deliver,
                                 (drd.qty * drd.conversion_factor) AS qty_reverse -- used for cancellation events
                               FROM t_delivery_receipt_details drd
-                              INNER JOIN t_sales_order_details sod
-                                ON sod.id = drd.sales_order_detail_id
-                              INNER JOIN m_products p
-                                ON p.id = drd.product_id
-                              LEFT JOIN m_uom u
-                                ON u.id = drd.uom_id
-                              LEFT JOIN t_branch_inventory inv
-                                ON inv.product_id = drd.product_id
-                                AND inv.branch_id = ?
+                              INNER JOIN t_sales_order_details sod ON sod.id = drd.sales_order_detail_id
+                              INNER JOIN m_products p ON p.id = drd.product_id
+                              LEFT JOIN m_uom u ON u.id = drd.uom_id
+                              LEFT JOIN t_branch_inventory inv ON inv.product_id = drd.product_id AND inv.branch_id = ?
                               WHERE drd.delivery_receipt_id = ?
                               ORDER BY drd.id
                             ",
@@ -199,21 +194,40 @@ class Delivery_receipt_model extends CI_Model
             c.customer_name,
             so.status AS so_status,
             so.id AS so_id,
-            so.total_amount,
-            (SELECT count(*) FROM t_sales_order_details sod WHERE sod.sales_order_id = so.id) AS item_count
+            (
+              SELECT COUNT(*)
+              FROM t_delivery_receipt_details drd
+              WHERE drd.delivery_receipt_id = dr.id
+            ) AS item_count,
+            (
+              SELECT COALESCE(
+                SUM(
+                  (drd.qty * sod.unit_price)
+                  -
+                  (
+                    COALESCE(sod.discount_amount, 0)
+                    * (drd.qty / NULLIF(sod.qty, 0))
+                  )
+                ),
+                0
+              )
+              FROM t_delivery_receipt_details drd
+              JOIN t_sales_order_details sod ON sod.id = drd.sales_order_detail_id
+              WHERE drd.delivery_receipt_id = dr.id
+            ) AS total_amount
         ")
         ->from('t_delivery_receipts dr')
         ->join(
-            't_sales_orders so',
-            'so.id = dr.sales_order_id',
+          't_sales_orders so',
+          'so.id = dr.sales_order_id'
         )
         ->join(
-            'm_customers c',
-            'c.id = dr.customer_id'
+          'm_customers c',
+          'c.id = dr.customer_id'
         )
         ->order_by(
-            'dr.delivery_date',
-            'DESC'
+          'dr.delivery_date',
+          'DESC'
         )
         ->get()
         ->result();

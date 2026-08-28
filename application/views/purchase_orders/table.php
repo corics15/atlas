@@ -39,7 +39,7 @@
           <?= htmlspecialchars($po->po_no) ?>
         </a>
       </td>
-      <td>
+      <td <?= mb_strlen($po->supplier_name) > 30 ? 'data-toggle="tooltip" title="'.htmlspecialchars($po->supplier_name).'"' : '' ?>>
         <?php
           $supplierName = htmlspecialchars($po->supplier_name);
           echo (mb_strlen($supplierName) > 30)

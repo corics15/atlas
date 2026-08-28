@@ -255,7 +255,7 @@ class Delivery_receipts extends MY_Controller
       'delivery_receipts/print',
       [
         'documents' => $documents,
-        'title'     => 'DELIVERY RECEIPT'
+        'title'     => 'Delivery Receipt'
       ]
     );
   }

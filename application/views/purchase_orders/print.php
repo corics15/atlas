@@ -38,36 +38,22 @@
         );
       ?>
 
-      <table class="report-borderless">
+      <table class="report-borderless" style="line-height:8px;table-layout:auto">
         <tr>
-          <td style="border:none;width:70%;">
-            <strong>Supplier :</strong>
-            <?= htmlspecialchars($header->supplier_name) ?>
-          </td>
-          <td style="border:none;">
-            <strong>PO No :</strong>
-            <?= htmlspecialchars($header->po_no) ?>
-          </td>
+          <td><strong>Supplier:</strong></td>
+          <td><?= htmlspecialchars($header->supplier_name) ?></td>
+          <td><strong>PO No:</strong></td>
+          <td><?= htmlspecialchars($header->po_no) ?></td>
         </tr>
         <tr>
-          <td style="border:none;">
-            <strong>Address :</strong>
-            <?= htmlspecialchars($header->address) ?>
-          </td>
-          <td style="border:none;">
-            <strong>Date :</strong>
-            <?= date('m/d/Y', strtotime($header->po_date)) ?>
-          </td>
+          <td><strong>Address:</strong></td>
+          <td><?= date('m/d/Y', strtotime($header->po_date)) ?></td>
+          <td><strong>Terms:</strong></td>
+          <td><?= htmlspecialchars($header->terms_name) ?></td>
         </tr>
         <tr>
-          <td style="border:none;">
-            <strong>Contact :</strong>
-            <?= htmlspecialchars($header->contact_person) ?>
-          </td>
-          <td style="border:none;">
-            <strong>Terms :</strong>
-            <?= htmlspecialchars($header->terms_name) ?>
-          </td>
+          <td><strong>Contact:</strong></td>
+          <td><?= htmlspecialchars($header->contact_person) ?></td>
         </tr>
       </table>
 

@@ -19,12 +19,12 @@
   <div class="report">
 
     <?php /*** document header */ ?>
-    <table class="table report-borderless table-sm mb-3">
+    <table class="report-borderless" style="table-layout:auto;line-height:8px">
       <tr>
-        <td width="150"><strong>SI No.</strong></td>
+        <td><strong>SI No.</strong></td>
         <td><?= htmlspecialchars($header->si_no) ?></td>
-        <td width="130"><strong>Invoice Date</strong></td>
-        <td width="170"><?= date('m/d/Y', strtotime($header->invoice_date)) ?></td>
+        <td><strong>Invoice Date</strong></td>
+        <td><?= date('m/d/Y', strtotime($header->invoice_date)) ?></td>
       </tr>
       <tr>
         <td><strong>SO No.</strong></td>
@@ -51,18 +51,18 @@
 
     <?php /*** details */ ?>
     <br>
-    <table class="table table-bordered table-sm" style="width:100%; table-layout:auto; border:auto">
+    <table class="report-table">
       <thead>
         <tr>
-          <th class="text-center" style="white-space:nowrap;">#</th>
-          <th class="text-center" style="white-space:nowrap;">Barcode</th>
-          <th style="white-space:nowrap;">Description</th>
-          <th class="text-right" style="white-space:nowrap;">Qty</th>
-          <th class="text-center" style="white-space:nowrap;">UOM</th>
-          <th class="text-right" style="white-space:nowrap;">Unit Price</th>
-          <th class="text-center" style="white-space:nowrap;">Discount</th>
-          <th class="text-right" style="white-space:nowrap;">Disc. Amt</th>
-          <th class="text-right" style="white-space:nowrap;">Net Amt</th>
+          <th class="text-center">#</th>
+          <th class="text-center">Barcode</th>
+          <th>Description</th>
+          <th class="text-right">Qty</th>
+          <th class="text-center">UOM</th>
+          <th class="text-right">Unit Price</th>
+          <th class="text-center">Discount</th>
+          <th class="text-right">Disc. Amt</th>
+          <th class="text-right">Net Amt</th>
         </tr>
       </thead>
       <tbody>
@@ -74,19 +74,13 @@
             $discountType = strtoupper(trim($detail->discount_type ?? ''));
           ?>
           <tr>
-            <td class="text-center" style="border:none"><?= $index + 1 ?>.</td>
-            <td class="text-center" style="white-space:nowrap;border:none;"><?= htmlspecialchars($detail->barcode) ?></td>
-            <td style="border:none"><?= htmlspecialchars($detail->description) ?></td>
-            <td class="text-right" style="white-space:nowrap;border:none;">
-              <?= number_format((float)$detail->qty, 2) ?>
-            </td>
-            <td class="text-center" style="white-space:nowrap;border:none">
-              <?= htmlspecialchars($detail->uom) ?>
-            </td>
-            <td class="text-right" style="white-space:nowrap;border:none">
-              <?= number_format((float)$detail->unit_price, 2) ?>
-            </td>
-            <td class="text-center" style="white-space:nowrap;border:none">
+            <td class="text-center"><?= $index + 1 ?>.</td>
+            <td class="text-center"><?= htmlspecialchars($detail->barcode) ?></td>
+            <td><?= htmlspecialchars($detail->description) ?></td>
+            <td class="text-center"><?= number_format((float)$detail->qty, 0) ?></td>
+            <td class="text-center"><?= htmlspecialchars($detail->uom) ?></td>
+            <td class="text-right"><?= number_format((float)$detail->unit_price, 2) ?></td>
+            <td class="text-center">
               <?php if ($discountType === 'PERCENT'): ?>
                 <?= number_format((float)$detail->discount_percent, 2) ?>%
               <?php elseif ($discountType === 'AMOUNT'): ?>
@@ -95,12 +89,8 @@
                 -
               <?php endif; ?>
             </td>
-            <td class="text-right" style="white-space:nowrap;border:none">
-              <?= number_format($rowDiscount, 2) ?>
-            </td>
-            <td class="text-right" style="white-space:nowrap;border:none">
-              <?= number_format($rowNet, 2) ?>
-            </td>
+            <td class="text-right"><?= number_format($rowDiscount, 2) ?></td>
+            <td class="text-right"><?= number_format($rowNet, 2) ?></td>
           </tr>
         <?php endforeach; ?>
       </tbody>
@@ -109,8 +99,7 @@
 
     <?php /*** totals */ ?>
     <br>
-    <hr>
-    <table class="table report-borderless table-sm" style="width:100%;">
+    <table class="report-borderless" style="table-layout:auto;line-height:8px">
       <tr>
         <td class="text-right" width="80%">Gross Amount</td>
         <td class="text-right" width="20%">

@@ -56,7 +56,7 @@
         );
       ?>
 
-      <table style="margin-bottom:15px;border:none;">
+      <table class="report-borderless">
         <tr>
           <td style="border:none;width:70%;">
             <strong>Supplier :</strong>
@@ -82,26 +82,25 @@
       <?php /*** remarks */ ?>
       <br>
       <strong>Remarks</strong>
-      <div style="border:0.8px solid #000;padding:8px;min-height:60px;">
+      <div style="padding:8px;min-height:10px;">
         <?= nl2br(htmlspecialchars($goodsReceipt->remarks)) ?>
       </div>
-      <br>
 
       <?php /*** details table */ ?>
       <h3>
         Items Received
       </h3>
-      <table>
+      <table class="report-table" style="table-layout: auto;">
         <thead>
           <tr>
-            <th width="50">#</th>
-            <th width="150" class="text-center">Barcode</th>
-            <th width="100%">Description</th>
-            <th width="80" class="text-center">UOM</th>
-            <th width="110" class="text-right">Ordered</th>
-            <th width="110" class="text-right">Received</th>
-            <th width="120" class="text-right">Unit Cost</th>
-            <th width="130" class="text-right">Amount</th>
+            <th>#</th>
+            <th class="text-center">Barcode</th>
+            <th>Description</th>
+            <th class="text-center">UOM</th>
+            <th class="text-right">Ordered</th>
+            <th class="text-right">Received</th>
+            <th class="text-right">Unit Cost</th>
+            <th class="text-right">Amount</th>
           </tr>
         </thead>
         <tbody>

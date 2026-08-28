@@ -39,12 +39,18 @@ class Goods_receipts extends MY_Controller
 
     $this->pageScript = 'goods_receipts';
     $this->data['goodsReceipts'] = $this->Goods_receipt_model->getAll($filters);
+    $itemCount = 0;
+    $totalAmount = 0;
     foreach ($this->data['goodsReceipts'] as $gr) {
       $gr->url = base_url('goods-receipts/view/' . $this->encodeId($gr->id));
       $gr->po_url = base_url('purchase-orders?id=' . $this->encodeId($gr->po_id));
+      $itemCount += $gr->item_count;
+      $totalAmount += $gr->total_amount;
     }
 
     $this->data['recordCount'] = count($this->data['goodsReceipts']);
+    $this->data['itemCount'] = $itemCount;
+    $this->data['totalAmount'] = $totalAmount;
     $this->data['searchPlaceHolder'] = 'Search GRN, PO, Supplier...';
 
     $this->data['toolbar'] = [

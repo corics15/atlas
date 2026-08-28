@@ -10,6 +10,8 @@
     <th width="140" class="text-center">GRN No.</th>
     <th width="160" class="text-center">PO No.</th>
     <th>Supplier</th>
+    <th class="text-center">Item Count</th>
+    <th class="text-right">Total Amount</th>
     <th class="text-center">Status</th>
     <th>Remarks</th>
   </tr>
@@ -19,7 +21,7 @@
   <?php if (empty($goodsReceipts)): ?>
 
     <tr>
-      <td colspan="7" class="text-center text-muted py-3">
+      <td colspan="9" class="text-center text-muted py-3">
         No goods receipts found.
       </td>
     </tr>
@@ -43,7 +45,16 @@
       <td class="text-center">
         <a href="<?= $row->po_url  ?>" class="text-olive" target="_blank"><i class="fa-external-link-alt fas fa-xs mr-1"></i><?= htmlspecialchars($row->po_no) ?></a>
       </td>
-      <td><?= htmlspecialchars($row->supplier_name); ?></td>
+      <td <?= mb_strlen($row->supplier_name) > 30 ? 'data-toggle="tooltip" title="'.htmlspecialchars($row->supplier_name).'"' : '' ?>>
+        <?php
+          $supplierName = htmlspecialchars($row->supplier_name);
+          echo (mb_strlen($supplierName) > 30)
+            ? mb_strimwidth($supplierName, 0, 30, '...')
+            : $supplierName;
+        ?>
+      </td>
+      <td class="text-center"><?= number_format($row->item_count) ?></td>
+      <td class="text-right"><?= number_format($row->total_amount, 2) ?></td>
       <td class="text-center">
         <?php
           switch (htmlspecialchars($row->status)) {

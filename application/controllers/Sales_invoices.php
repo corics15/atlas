@@ -276,7 +276,7 @@ class Sales_invoices extends MY_Controller
       'sales_invoices/print',
       [
         'documents' => $documents,
-        'title'     => 'SALES INVOICE'
+        'title'     => 'Sales Invoice'
       ]
     );
   }

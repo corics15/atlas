@@ -2,17 +2,13 @@
   <tr>
     <th width="40" class="text-center" data-exclude="true">
       <div class="custom-control custom-checkbox ml-2 mt-1">
-        <input
-            type="checkbox"
-            class="custom-control-input"
-            id="chkSelectAllDeliveryReceipt"/>
+        <input type="checkbox" class="custom-control-input" id="chkSelectAllDeliveryReceipt"/>
         <label class="custom-control-label" for="chkSelectAllDeliveryReceipt"></label>
       </div>
     </th>
-
-    <th width="120" class="text-center">Delivery Date</th>
-    <th width="140" class="text-center">DR No.</th>
-    <th width="150" class="text-center">SO No.</th>
+    <th class="text-center">Delivery Date</th>
+    <th class="text-center">DR No.</th>
+    <th class="text-center">SO No.</th>
     <th>Customer</th>
     <th>Remarks</th>
     <th class="text-center">Item Count</th>
@@ -25,9 +21,9 @@
   <?php if (empty($deliveryReceipts)): ?>
 
   <tr>
-      <td colspan="9" class="text-center text-muted py-3">
-        No Delivery Receipts found.
-      </td>
+    <td colspan="9" class="text-center text-muted py-3">
+      No Delivery Receipts found.
+    </td>
   </tr>
 
   <?php else: ?>
@@ -49,11 +45,7 @@
       <tr data-id="<?= $row->id; ?>" data-status="<?= $row->status; ?>">
         <td class="text-center" data-exclude="true">
           <div class="custom-control custom-checkbox ml-2 mt-1">
-            <input
-                type="checkbox"
-                class="custom-control-input chkDeliveryReceipt"
-                id="chkDeliveryReceipt-<?= $row->id; ?>"
-                value="<?= $row->id; ?>"/>
+            <input type="checkbox" class="custom-control-input chkDeliveryReceipt" id="chkDeliveryReceipt-<?= $row->id; ?>" value="<?= $row->id; ?>"/>
             <label class="custom-control-label" for="chkDeliveryReceipt-<?= $row->id; ?>"></label>
           </div>
         </td>
