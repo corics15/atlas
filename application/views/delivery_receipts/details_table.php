@@ -103,7 +103,7 @@
               <div>
                 <span class="font-weight-500">2.</span>
                 Check the <span class="font-weight-500 text-danger">Ordered</span>, <span class="font-weight-500 text-danger">Delivered</span>, and
-                <span class="font-weight-500">Remaining</span> quantities for each item.
+                <span class="font-weight-500 text-danger">Remaining</span> quantities for each item.
               </div>
 
               <div>

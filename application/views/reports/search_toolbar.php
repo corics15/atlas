@@ -10,21 +10,42 @@
       <input type="date" name="date_to" value="<?= htmlspecialchars($date_to ?: date('Y-m-d')); ?>" class="form-control form-control-sm">
     </div>
 
-    <div class="col-md-3">
-      <label for="selSupplier">Supplier</label>
-      <select id="selSupplier" name="supplier_id" class="form-control form-control-sm custom-select">
-        <option value="">Select Supplier</option>
-        <?php foreach ($suppliers as $item): ?>
-          <option
-            value="<?= $item->id ?>"
-            <?= ((int)$supplier_id === (int)$item->id)
-              ? 'selected'
-              : '' ?>>
-            <?= htmlspecialchars($item->supplier_name) ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-    </div>
+    <?php if (!empty($suppliers)): ?>
+      <div class="col-md-3">
+        <label for="selSupplier">Supplier</label>
+        <select id="selSupplier" name="supplier_id" class="form-control form-control-sm custom-select">
+          <option value="">Select Supplier</option>
+          <?php foreach ($suppliers as $item): ?>
+            <option
+              value="<?= $item->id ?>"
+              <?= ((int)$supplier_id === (int)$item->id)
+                ? 'selected'
+                : '' ?>>
+              <?= htmlspecialchars($item->supplier_name) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+    <?php endif; ?>
+
+    <?php if (!empty($customers)): ?>
+      <div class="col-md-3">
+        <label for="selCustomer">Customer</label>
+        <select id="selCustomer" name="customer_id" class="form-control form-control-sm custom-select">
+          <option value="">Select Customer</option>
+          <?php foreach ($customers as $item): ?>
+            <option
+              value="<?= $item->id ?>"
+              <?= ((int)($customer_id ?? 0) === (int)$item->id)
+                ? 'selected'
+                : '' ?>>
+
+              <?= htmlspecialchars($item->customer_name) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+    <?php endif; ?>
 
     <div class="">
       <label for="selBranch">Branch</label>

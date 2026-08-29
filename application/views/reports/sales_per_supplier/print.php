@@ -4,11 +4,7 @@
 
   <table class="report-borderless" style="line-height:8px;table-layout:auto">
     <tr>
-      <td><strong>Report</strong></td>
-      <td>Sales Per Supplier - Product Breakdown</td>
-    </tr>
-    <tr>
-      <td><strong>Supplier</strong></td>
+      <td width="12%"><strong>Supplier</strong></td>
       <td><?= htmlspecialchars($supplierName); ?></td>
     </tr>
     <tr>
@@ -82,8 +78,8 @@
 
 </div>
 
-<div style="text-align:right;font-size:10px;margin-top:20px;  ">
-  Printed By: <?= htmlspecialchars($this->session->userdata('username')); ?>
+<div style="text-align:right;font-size:10px;margin-top:20px;">
+  Printed By: <strong><?= strtoupper(htmlspecialchars($this->session->userdata('username'))); ?></strong>
   <?= date('m/d/Y h:i A'); ?>
 </div>
 

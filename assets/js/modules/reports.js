@@ -1,14 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   Atlas.select.init('#selSupplier');
+  Atlas.select.init('#selCustomer');
 
   document.querySelectorAll('.js-supplier-drilldown').forEach(link => {
     link.addEventListener('click', loadSupplierProductBreakdown);
   });
 
+  document.querySelectorAll('.js-customer-drilldown').forEach(link => {
+    link.addEventListener('click', event => {
+      event.preventDefault();
+
+      const customerId = parseInt(link.dataset.customerId, 10);
+
+      if (!customerId) {
+        return;
+      }
+
+      loadCustomerProductBreakdown(customerId);
+    });
+  });
+
   /*** supplier name click event */
   const supplierProductBreakdown = document.getElementById('supplierProductBreakdown');
   supplierProductBreakdown?.addEventListener('click', handleSupplierProductBreakdownAction);
+
+  /*** customer name click event */
+  const customerProductBreakdown = document.getElementById('customerProductBreakdown');
+  customerProductBreakdown?.addEventListener('click', handleCustomerProductBreakdownAction);
 
 });
 
@@ -107,3 +126,97 @@ const handleSupplierProductBreakdownAction = event => {
     );
   }
 };
+
+const loadCustomerProductBreakdown = async (customerId) => {
+  const container = document.getElementById('customerProductBreakdown');
+
+  if (!container) {
+    return;
+  }
+
+  const dateFrom = document.querySelector('[name="date_from"]').value;
+  const dateTo = document.querySelector('[name="date_to"]').value;
+  const branchId = document.querySelector('[name="branch_id"]').value;
+
+  container.innerHTML = `
+    <div class="text-center py-4">
+      <i class="fas fa-spinner fa-spin"></i>
+      Loading product breakdown...
+    </div>
+  `;
+
+  const response = await Atlas.ajax.post(
+    'reports/sales_per_customer_products',
+    {
+      customer_id: customerId,
+      date_from: dateFrom,
+      date_to: dateTo,
+      branch_id: branchId
+    }
+  );
+
+  if (!response.success) {
+    Atlas.toast.error(response.message || 'Unable to load customer sales details.');
+    container.innerHTML = '';
+    return;
+  }
+  container.dataset.customerId = customerId;
+  container.innerHTML = response.data.html;
+}
+
+const handleCustomerProductBreakdownAction = (event) => {
+  const container = document.getElementById('customerProductBreakdown');
+
+  if (!container) {
+    return;
+  }
+
+  const customerId = parseInt(container.dataset.customerId || '0', 10);
+
+  if (!customerId) {
+    return;
+  }
+
+  const dateFrom = document.querySelector('[name="date_from"]').value;
+  const dateTo = document.querySelector('[name="date_to"]').value;
+  const branchId = document.querySelector('[name="branch_id"]').value;
+  const printButton = event.target.closest('#btnPrintSalesPerCustomer');
+
+  if (printButton) {
+    event.preventDefault();
+
+    Atlas.print.post(
+      'reports/print-sales-per-customer-products',
+      {
+        customer_id: customerId,
+        date_from: dateFrom,
+        date_to: dateTo,
+        branch_id: branchId
+      }
+    );
+
+    return;
+  }
+
+  const excelButton = event.target.closest('#btnDownloadCustomerExcel');
+  if (excelButton) {
+    event.preventDefault();
+
+    const table = document.getElementById('tblSalesPerCustomerProducts');
+
+    if (!table) {
+      return;
+    }
+
+    const customerName = container.querySelector('.card-title .text-orange')?.textContent.replace('—', '').trim() || 'Customer';
+    Atlas.excel.download(
+      table,
+      {
+        title: `Sales Per Customer - ${customerName}`,
+        generatedBy: Atlas.config.userName,
+        fileName: `sales-per-customer-${customerId}`,
+        sheetName: 'CustomerSales'
+      }
+    );
+  }
+}
