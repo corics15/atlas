@@ -137,43 +137,45 @@
             <td class="text-right"><?= number_format((float)$row->balance, 2) ?></td>
           </tr>
         <?php endforeach; ?>
+
+        <?php /*** filler rows */ ?>
+        <?php
+          $usedRows = count($transactions);
+          if ((float)$openingBalance != 0) {
+            $usedRows++;
+          }
+          $minimumRows = 28;
+          $blankRows = max(0, $minimumRows - $usedRows);
+        ?>
+        <?php for ($i = 0; $i < $blankRows; $i++): ?>
+          <tr class="soa-detail-row soa-blank-row">
+            <td>&nbsp;</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        <?php endfor; ?>
       <?php endif; ?>
+    </tbody>
+  </table>
 
-      <?php /*** filler rows */ ?>
-      <?php
-        $usedRows = count($transactions);
-        if ((float)$openingBalance != 0) {
-          $usedRows++;
-        }
-        $minimumRows = 28;
-        $blankRows = max(0, $minimumRows - $usedRows);
-      ?>
-      <?php for ($i = 0; $i < $blankRows; $i++): ?>
-        <tr class="soa-detail-row soa-blank-row">
-          <td>&nbsp;</td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
+  <?php if (!empty($transactions)): ?>
+    <br>
+
+    <?php /*** footer */ ?>
+    <table class="report-borderless">
+      <tbody>
+        <tr class="soa-footer">
+          <td class="font-weight-bold text-right">Account Current Balance</td>
+          <td class="font-weight-bold text-right"><?= number_format((float)$amountDue, 2) ?></td>
         </tr>
-      <?php endfor; ?>
-    </tbody>
-  </table>
+      </tbody>
+    </table>
 
-  <br>
-
-  <?php /*** footer */ ?>
-  <table class="report-borderless">
-    <tbody>
-      <tr class="soa-footer">
-        <td class="font-weight-bold text-right">Account Current Balance</td>
-        <td class="font-weight-bold text-right"><?= number_format((float)$amountDue, 2) ?></td>
-      </tr>
-    </tbody>
-  </table>
-
-  <br>
-  <div class="text-center"><em>Thank you for your business!</em></div>
+    <br>
+    <div class="text-center"><em>Thank you for your business!</em></div>
+  <?php endif ?>
 
 <?php $this->load->view('partials/reports/scripts'); ?>

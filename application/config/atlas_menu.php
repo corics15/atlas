@@ -185,7 +185,7 @@ $config['atlas_menu'] = [
 
     'children' => [
       [
-        'title' => 'Sales per Supplier',
+        'title' => 'Sales Per Supplier',
         'icon'  => 'fas fa-truck',
         'url'   => 'reports/sales-per-supplier',
         'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],

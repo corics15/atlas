@@ -1,9 +1,7 @@
 <div class="d-flex justify-content-end mb-3">
 
   <div class="btn-group">
-    <button
-      class="btn btn-sm btn-default dropdown-toggle"
-      data-toggle="dropdown">
+    <button class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">
     Actions
     </button>
 

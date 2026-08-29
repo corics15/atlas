@@ -1,4 +1,3 @@
-// const btnCreateDeliveryReceipt = document.getElementById('btnCreateDeliveryReceipt');
 const btnSaveDeliveryReceipt = document.getElementById('btnSaveDeliveryReceipt');
 const btnEditDeliveryReceipt = document.getElementById('btnEditDeliveryReceipt');
 const btnPostDeliveryReceipt = document.getElementById('btnPostDeliveryReceipt');
