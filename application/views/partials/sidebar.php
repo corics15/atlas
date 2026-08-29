@@ -38,7 +38,11 @@
   $currentRoute = str_replace('_', '-', $currentController);
 
   if ($currentMethod !== 'index') {
-    $currentRoute .= '/' . $currentMethod;
+    $currentRoute .= '/' . str_replace(
+      '_',
+      '-',
+      $currentMethod
+    );
   }
 ?>
 

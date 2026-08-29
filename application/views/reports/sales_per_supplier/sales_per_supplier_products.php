@@ -20,7 +20,7 @@
           <thead class="thead-orange">
             <tr>
               <th>Product</th>
-              <th>UOM</th>
+              <th class="text-center" data-a-h="center">UOM</th>
               <th class="text-right">Invoices</th>
               <th class="text-right">Qty Sold</th>
               <th class="text-right">Gross Sales</th>
@@ -46,7 +46,7 @@
               ?>
               <tr>
                 <td><?= htmlspecialchars($row->product_description); ?></td>
-                <td><?= htmlspecialchars($row->uom); ?></td>
+                <td class="text-center" data-a-h="center"><?= htmlspecialchars($row->uom); ?></td>
                 <td class="text-right" data-t="n" data-num-fmt="#,##0"><?= number_format((int)$row->invoice_count); ?></td>
                 <td class="text-right" data-t="n" data-num-fmt="#,##0"><?= number_format((float)$row->qty_sold, 2); ?></td>
                 <td class="text-right" data-t="n" data-num-fmt="#,##0.00"><?= number_format($grossSales, 2); ?></td>
