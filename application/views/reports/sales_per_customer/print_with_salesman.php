@@ -22,7 +22,7 @@
 <table class="report-table">
   <thead>
     <tr>
-      <th>Supplier</th>
+      <th>Customer</th>
       <th>Salesman</th>
       <th class="text-right">Invoices</th>
       <th class="text-right">Gross Sales</th>
@@ -32,7 +32,7 @@
   </thead>
   <tbody>
 
-    <?php foreach ($salesPerSupplierSalesman as $row): ?>
+    <?php foreach ($salesPerCustomerSalesman as $row): ?>
       <?php
         $grossSales = (float)$row->gross_sales;
         $discountAmount = (float)$row->discount_amount;
@@ -42,7 +42,7 @@
         $netTotal += $netSales;
       ?>
       <tr>
-        <td><?= htmlspecialchars($row->supplier_name) ?></td>
+        <td><?= htmlspecialchars($row->customer_name) ?></td>
         <td><?= htmlspecialchars($row->salesman_name) ?></td>
         <td class="text-right"><?= number_format((int)$row->invoice_count) ?></td>
         <td class="text-right"><?= number_format($grossSales, 2) ?></td>

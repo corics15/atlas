@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateFrom = document.querySelector('[name="date_from"]').value;
     const dateTo = document.querySelector('[name="date_to"]').value;
     const branchId = document.querySelector('[name="branch_id"]').value;
-    const salesmanId = document.getElementById('selSupplier')?.value || '';
+    const salesmanId = document.getElementById('selSalesman')?.value || '';
 
     Atlas.print.post(
       'reports/print-sales-per-supplier-salesman',
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         date_from: dateFrom,
         date_to: dateTo,
         branch_id: branchId,
-        salesman_i: salesmanId
+        salesman_id: salesmanId
       }
     );
   });
@@ -68,6 +68,45 @@ document.addEventListener('DOMContentLoaded', () => {
   /*** customer name click event */
   const customerProductBreakdown = document.getElementById('customerProductBreakdown');
   customerProductBreakdown?.addEventListener('click', handleCustomerProductBreakdownAction);
+
+  /*** excel download salesman per customer */
+  const btnDownloadSalesPerCustomerSalesmanExcel = document.getElementById('btnDownloadSalesPerCustomerSalesmanExcel');
+  btnDownloadSalesPerCustomerSalesmanExcel?.addEventListener('click', () => {
+    const table = document.getElementById('tblSalesPerCustomerSalesman');
+
+    if (!table) {
+      return;
+    }
+
+    Atlas.excel.download(
+      table,
+      {
+        title: 'Sales Per Customer / Salesman',
+        generatedBy: Atlas.config.userName,
+        fileName: 'sales-per-customer-salesman',
+        sheetName: 'CustomerSalesman'
+      }
+    );
+  });
+
+  /*** print salesman per customer */
+  const btnPrintSalesPerCustomerSalesman = document.getElementById('btnPrintSalesPerCustomerSalesman');
+  btnPrintSalesPerCustomerSalesman?.addEventListener('click', () => {
+    const dateFrom = document.querySelector('[name="date_from"]').value;
+    const dateTo = document.querySelector('[name="date_to"]').value;
+    const branchId = document.querySelector('[name="branch_id"]').value;
+    const salesmanId = document.getElementById('selSalesman')?.value || '';
+
+    Atlas.print.post(
+      'reports/print-sales-per-customer-salesman',
+      {
+        date_from: dateFrom,
+        date_to: dateTo,
+        branch_id: branchId,
+        salesman_id: salesmanId
+      }
+    );
+  });
 
 });
 

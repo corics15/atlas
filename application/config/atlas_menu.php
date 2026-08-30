@@ -202,6 +202,12 @@ $config['atlas_menu'] = [
         'url'   => 'reports/sales-per-customer',
         'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
+      [
+        'title' => 'Sales Per Customer / Salesman',
+        'icon'  => 'fas fa-user-tie',
+        'url'   => 'reports/sales-per-customer-salesman',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
+      ],
     ]
   ],
 

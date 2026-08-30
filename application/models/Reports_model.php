@@ -433,4 +433,89 @@ class Reports_model extends MY_Model
         ->result();
   }
 
+  public function getSalesPerCustomerSalesman($filters = [])
+  {
+    if (!empty($filters['date_from'])) {
+      $this->db->where(
+        'si.invoice_date >=',
+        $filters['date_from']
+      );
+    }
+
+    if (!empty($filters['date_to'])) {
+      $this->db->where(
+        'si.invoice_date <=',
+        $filters['date_to']
+      );
+    }
+
+    if (!empty($filters['branch_id'])) {
+      $this->db->where(
+        'dr.branch_id',
+        (int)$filters['branch_id']
+      );
+    }
+
+    if (!empty($filters['salesman_id'])) {
+      $this->db->where(
+        'm.id',
+        (int)$filters['salesman_id']
+      );
+    }
+
+    return $this->db
+        ->select("
+          c.id AS customer_id,
+          c.customer_name,
+          m.id AS salesman_id,
+          CONCAT(m.first_name, ' ', m.last_name) AS salesman_name,
+          COUNT(DISTINCT si.id) AS invoice_count,
+          COALESCE(SUM(sid.qty * sid.unit_price), 0) AS gross_sales,
+          COALESCE(SUM(COALESCE(sid.discount_amount, 0)), 0) AS discount_amount,
+          COALESCE(SUM((sid.qty * sid.unit_price) - COALESCE(sid.discount_amount, 0)), 0) AS net_sales
+        ", FALSE)
+        ->from('t_sales_invoice_details sid')
+        ->join(
+          't_sales_invoices si',
+          'si.id = sid.sales_invoice_id'
+        )
+        ->join(
+          't_delivery_receipts dr',
+          'dr.id = si.delivery_receipt_id'
+        )
+        ->join(
+          'm_customers c',
+          'c.id = si.customer_id'
+        )
+        ->join(
+          'm_salesmen m',
+          'm.id = si.salesman_id'
+        )
+        ->where(
+          'si.status',
+          'POSTED'
+        )
+        ->group_by([
+          'c.id',
+          'c.customer_name',
+          'm.id',
+          'm.first_name',
+          'm.last_name'
+        ])
+        ->order_by(
+          'net_sales',
+          'DESC'
+        )
+        ->order_by(
+          'c.customer_name',
+          'ASC'
+        )
+        ->order_by(
+          'salesman_name',
+          'ASC'
+        )
+        ->get()
+        ->result();
+  }
+
 }

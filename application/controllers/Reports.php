@@ -214,7 +214,7 @@ class Reports extends MY_Controller
       'date_from' => trim($this->input->post('date_from')),
       'date_to' => trim($this->input->post('date_to')),
       'branch_id' => (int)($this->input->post('branch_id')),
-      'supplier_id' => (int)($this->input->post('supplier_id')),
+      'salesman_id' => (int)($this->input->post('salesman_id')),
     ];
 
     if ($filters['date_from'] === '' || $filters['date_to'] === '') {
@@ -354,6 +354,56 @@ class Reports extends MY_Controller
     );
   }
 
+  public function sales_per_customer_salesman()
+  {
+    $this->setPage('Sales Per Customer / Salesman');
+    $this->pageScript = 'reports';
+
+    /*** filters */
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'branch_id' => (int)($filter['branch_id'] ?? $this->input->get('branch_id')),
+      'salesman_id' => (int)($filter['salesman_id'] ?? $this->input->get('salesman_id')),
+    ];
+
+    if ($filters['branch_id'] <= 0) {
+      $filters['branch_id'] = (int)$this->session->userdata('branch_id');
+    }
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['branches'] = $this->Branch_model->getDropdown();
+    $this->data['salesmen'] = $this->Salesman_model->getDropdown();
+    $this->data['salesPerCustomerSalesman'] = [];
+    $this->data['url'] = 'sales-per-customer-salesman';
+    $this->data['showActionButton'] = false;
+
+    if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
+      $this->data['salesPerCustomerSalesman'] = $this->Reports_model->getSalesPerCustomerSalesman($filters);
+      $this->data['showActionButton'] = true;
+    }
+
+    $this->data['toolbar'] = [
+      'print' => [
+        'id' => 'btnPrintSalesPerCustomerSalesman',
+        'text' => 'Print',
+        'icon' => 'fas fa-print'
+      ],
+      'excel' => [
+        'id' => 'btnDownloadSalesPerCustomerSalesmanExcel',
+        'text' => 'Download as Excel',
+        'icon' => 'fas fa-file-excel'
+      ],
+    ];
+
+    $this->render('reports/sales_per_customer/sales_per_customer_salesman');
+  }
+
   public function print_sales_per_customer_products()
   {
     $filters = [
@@ -406,6 +456,41 @@ class Reports extends MY_Controller
         'customerName' => $products[0]->customer_name,
         'salesPerCustomerProducts' => $products,
         'title' => 'Sales Per Customer'
+      ]
+    );
+  }
+
+  public function print_sales_per_customer_salesman()
+  {
+    $filters = [
+      'date_from' => trim($this->input->post('date_from')),
+      'date_to' => trim($this->input->post('date_to')),
+      'branch_id' => (int)($this->input->post('branch_id')),
+      'salesman_id' => (int)($this->input->post('salesman_id')),
+    ];
+
+    if ($filters['date_from'] === '' || $filters['date_to'] === '') {
+      show_error('Date From and Date To are required.', 400);
+    }
+
+    if ($filters['branch_id'] <= 0) {
+      $filters['branch_id'] = (int)$this->session->userdata('branch_id');
+    }
+
+    $rows = $this->Reports_model->getSalesPerCustomerSalesman($filters);
+    if (empty($rows)) {
+      show_error(
+        'No sales found.',
+        404
+      );
+    }
+
+    $this->load->view(
+      'reports/sales_per_customer/print_with_salesman',
+      [
+        'filters' => $filters,
+        'salesPerCustomerSalesman' => $rows,
+        'title' => 'Sales Per Customer / Salesman'
       ]
     );
   }
