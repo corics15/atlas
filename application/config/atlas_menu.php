@@ -191,6 +191,12 @@ $config['atlas_menu'] = [
         'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
       [
+        'title' => 'Sales Per Supplier / Salesman',
+        'icon'  => 'fas fa-user-tie',
+        'url'   => 'reports/sales-per-supplier-salesman',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
+      ],
+      [
         'title' => 'Sales Per Customer',
         'icon'  => 'fas fa-chart-bar',
         'url'   => 'reports/sales-per-customer',

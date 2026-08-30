@@ -3,7 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $config['atlas'] = [
   'app_name'      => 'ATLAS ERP Suite',
-  'app_version'   => '0.7.2.9',
+  'app_version'   => '0.7.3.0',
   'developer'     => 'O R H T E J',
   'timezone'      => 'Asia/Manila',
   'shortcut_ico'  => 'assets/images/atlas.ico',

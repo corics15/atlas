@@ -53,7 +53,7 @@
   <tfoot class="font-weight-500 text-info text-right">
     <tr>
       <td>Grand Total</td>
-      <td class="text-right">—</td>
+      <td class="text-right">-</td>
       <td class="text-right"><?= number_format($grossTotal, 2); ?></td>
       <td class="text-right"><?= number_format($discountTotal, 2); ?></td>
       <td class="text-right"><?= number_format($netTotal, 2); ?></td>

@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   Atlas.select.init('#selSupplier');
   Atlas.select.init('#selCustomer');
+  Atlas.select.init('#selSalesman');
 
   document.querySelectorAll('.js-supplier-drilldown').forEach(link => {
     link.addEventListener('click', loadSupplierProductBreakdown);
@@ -24,6 +25,45 @@ document.addEventListener('DOMContentLoaded', () => {
   /*** supplier name click event */
   const supplierProductBreakdown = document.getElementById('supplierProductBreakdown');
   supplierProductBreakdown?.addEventListener('click', handleSupplierProductBreakdownAction);
+
+  /*** excel download salesman per supplier */
+  const btnDownloadSalesPerSupplierSalesmanExcel = document.getElementById('btnDownloadSalesPerSupplierSalesmanExcel');
+  btnDownloadSalesPerSupplierSalesmanExcel?.addEventListener('click', () => {
+    const table = document.getElementById('tblSalesPerSupplierSalesman');
+
+    if (!table) {
+      return;
+    }
+
+    Atlas.excel.download(
+      table,
+      {
+        title: 'Sales Per Supplier / Salesman',
+        generatedBy: Atlas.config.userName,
+        fileName: 'sales-per-supplier-salesman',
+        sheetName: 'SupplierSalesman'
+      }
+    );
+  });
+
+  /*** print salesman per suppplier */
+  const btnPrintSalesPerSupplierSalesman = document.getElementById('btnPrintSalesPerSupplierSalesman');
+  btnPrintSalesPerSupplierSalesman?.addEventListener('click', () => {
+    const dateFrom = document.querySelector('[name="date_from"]').value;
+    const dateTo = document.querySelector('[name="date_to"]').value;
+    const branchId = document.querySelector('[name="branch_id"]').value;
+    const salesmanId = document.getElementById('selSupplier')?.value || '';
+
+    Atlas.print.post(
+      'reports/print-sales-per-supplier-salesman',
+      {
+        date_from: dateFrom,
+        date_to: dateTo,
+        branch_id: branchId,
+        salesman_i: salesmanId
+      }
+    );
+  });
 
   /*** customer name click event */
   const customerProductBreakdown = document.getElementById('customerProductBreakdown');

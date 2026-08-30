@@ -2,20 +2,12 @@
   <div class="row mb-3 align-items-end">
     <div class="col-auto">
       <label for="txtGenericSearch">Search</label>
-      <input
-        id="txtGenericSearch"
-        type="text"
-        name="keyword"
-        value="<?= htmlspecialchars($keyword ?? ''); ?>"
-        class="form-control form-control-sm"
-        placeholder="<?= $searchPlaceHolder ?? 'Search...' ?>">
+      <input id="txtGenericSearch" type="text" name="keyword" value="<?= htmlspecialchars($keyword ?? ''); ?>" class="form-control form-control-sm" placeholder="<?= $searchPlaceHolder ?? 'Search...' ?>">
     </div>
     <div class="col-auto">
-      <button
-        type="submit"
-        class="btn btn-sm btn-default btn-block">
-      <i class="fas fa-search"></i>
-      Search
+      <button type="submit" class="btn btn-sm btn-default btn-block">
+        <i class="fas fa-search"></i>
+        Search
       </button>
     </div>
   </div>

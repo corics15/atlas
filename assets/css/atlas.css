@@ -592,10 +592,16 @@ label {
   top: -3px;
 }
 
+/*** options element */
 .select2-container--bootstrap4 .select2-results__option {
   font-size: 0.8rem;
   line-height: 1.4;
   padding: .25rem .5rem;
+}
+
+/*** select element */
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+  font-size: 0.8rem;
 }
 
 .select2-container .select2-selection {

@@ -12,6 +12,7 @@ class Reports extends MY_Controller
     $this->load->model('Branch_model');
     $this->load->model('Supplier_model');
     $this->load->model('Customer_model');
+    $this->load->model('Salesman_model');
   }
 
   public function sales_per_supplier()
@@ -43,6 +44,8 @@ class Reports extends MY_Controller
     $this->data['branches'] = $this->Branch_model->getDropdown();
     $this->data['suppliers'] = $this->Supplier_model->getDropdown();
     $this->data['salesPerSupplier'] = [];
+    $this->data['url'] = 'sales-per-supplier';
+    $this->data['showActionButton'] = false;
 
     if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
       $this->data['salesPerSupplier'] = $this->Reports_model->getSalesPerSupplier($filters);
@@ -115,6 +118,56 @@ class Reports extends MY_Controller
     );
   }
 
+  public function sales_per_supplier_salesman()
+  {
+    $this->setPage('Sales Per Supplier / Salesman');
+    $this->pageScript = 'reports';
+
+    /*** filters */
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'branch_id' => (int)($filter['branch_id'] ?? $this->input->get('branch_id')),
+      'salesman_id' => (int)($filter['salesman_id'] ?? $this->input->get('salesman_id')),
+    ];
+
+    if ($filters['branch_id'] <= 0) {
+      $filters['branch_id'] = (int)$this->session->userdata('branch_id');
+    }
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['branches'] = $this->Branch_model->getDropdown();
+    $this->data['salesmen'] = $this->Salesman_model->getDropdown();
+    $this->data['salesPerSupplierSalesman'] = [];
+    $this->data['url'] = 'sales-per-supplier-salesman';
+    $this->data['showActionButton'] = false;
+
+    if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
+      $this->data['salesPerSupplierSalesman'] = $this->Reports_model->getSalesPerSupplierSalesman($filters);
+      $this->data['showActionButton'] = true;
+    }
+
+    $this->data['toolbar'] = [
+      'print' => [
+        'id' => 'btnPrintSalesPerSupplierSalesman',
+        'text' => 'Print',
+        'icon' => 'fas fa-print'
+      ],
+      'excel' => [
+        'id' => 'btnDownloadSalesPerSupplierSalesmanExcel',
+        'text' => 'Download as Excel',
+        'icon' => 'fas fa-file-excel'
+      ],
+    ];
+
+    $this->render('reports/sales_per_supplier/sales_per_supplier_salesman');
+  }
+
   public function print_sales_per_supplier_products()
   {
     $filters = [
@@ -155,38 +208,55 @@ class Reports extends MY_Controller
     );
   }
 
+  public function print_sales_per_supplier_salesman()
+  {
+    $filters = [
+      'date_from' => trim($this->input->post('date_from')),
+      'date_to' => trim($this->input->post('date_to')),
+      'branch_id' => (int)($this->input->post('branch_id')),
+      'supplier_id' => (int)($this->input->post('supplier_id')),
+    ];
+
+    if ($filters['date_from'] === '' || $filters['date_to'] === '') {
+      show_error('Date From and Date To are required.', 400);
+    }
+
+    if ($filters['branch_id'] <= 0) {
+      $filters['branch_id'] = (int)$this->session->userdata('branch_id');
+    }
+
+    $rows = $this->Reports_model->getSalesPerSupplierSalesman($filters);
+
+    if (empty($rows)) {
+      show_error('No sales found.', 404);
+    }
+
+    $this->load->view(
+      'reports/sales_per_supplier/print_with_salesman',
+      [
+        'filters' => $filters,
+        'salesPerSupplierSalesman' => $rows,
+        'title' => 'Sales Per Supplier / Salesman'
+      ]
+    );
+  }
+
   public function sales_per_customer()
   {
     $this->setPage('Sales Per Customer');
     $this->pageScript = 'reports';
 
     /*** filters */
-    $filter = $this->decodeFilter(
-      $this->input->get('filter')
-    );
-
+    $filter = $this->decodeFilter($this->input->get('filter'));
     $filters = [
-      'date_from' => trim(
-        $filter['date_from']
-        ?? $this->input->get('date_from')
-      ),
-      'date_to' => trim(
-        $filter['date_to']
-        ?? $this->input->get('date_to')
-      ),
-      'branch_id' => (int)(
-        $filter['branch_id']
-        ?? $this->input->get('branch_id')
-      ),
-      'customer_id' => (int)(
-        $filter['customer_id']
-        ?? $this->input->get('customer_id')
-      ),
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'branch_id' => (int)($filter['branch_id'] ?? $this->input->get('branch_id')),
+      'customer_id' => (int)($filter['customer_id'] ?? $this->input->get('customer_id')),
     ];
 
     if ($filters['branch_id'] <= 0) {
-      $filters['branch_id'] =
-        (int)$this->session->userdata('branch_id');
+      $filters['branch_id'] = (int)$this->session->userdata('branch_id');
     }
 
     $this->data = array_merge(
@@ -194,26 +264,17 @@ class Reports extends MY_Controller
       $filters
     );
 
-    $this->data['branches'] =
-      $this->Branch_model->getDropdown();
-
-    $this->data['customers'] =
-      $this->Customer_model->getDropdown();
-
+    $this->data['branches'] = $this->Branch_model->getDropdown();
+    $this->data['customers'] = $this->Customer_model->getDropdown();
     $this->data['salesPerCustomer'] = [];
+    $this->data['url'] = 'sales-per-customer';
+    $this->data['showActionButton'] = false;
 
-    if (
-      $filters['date_from'] !== '' &&
-      $filters['date_to'] !== ''
-    ) {
-      $this->data['salesPerCustomer'] =
-        $this->Reports_model
-            ->getSalesPerCustomer($filters);
+    if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
+      $this->data['salesPerCustomer'] = $this->Reports_model->getSalesPerCustomer($filters);
     }
 
-    $this->render(
-      'reports/sales_per_customer/sales_per_customer'
-    );
+    $this->render('reports/sales_per_customer/sales_per_customer');
   }
 
   public function sales_per_customer_products()

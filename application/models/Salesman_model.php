@@ -3,6 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Salesman_model extends CI_Model
 {
+
   public function getAll($keyword = '')
   {
     if (!empty($keyword)) {
@@ -90,4 +91,5 @@ class Salesman_model extends CI_Model
     /*** if no rows yet, start at 1000 */
     return $lastCode ? ((int)$lastCode + 1) : 1000;
   }
+
 }
