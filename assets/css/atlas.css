@@ -71,6 +71,10 @@ table tbody tr td {
   pointer-events: none !important;
 }
 
+div.table-responsive table {
+  font-size: smaller !important;
+}
+
 /***** Navigation and sidebar */
 .main-sidebar {
   font-size: 0.875rem;
