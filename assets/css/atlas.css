@@ -75,6 +75,10 @@ div.table-responsive table {
   font-size: smaller !important;
 }
 
+div.table-responsive table div.custom-checkbox {
+  margin-top: 0 !important;
+}
+
 /***** Navigation and sidebar */
 .main-sidebar {
   font-size: 0.875rem;
