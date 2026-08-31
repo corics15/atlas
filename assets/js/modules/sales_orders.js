@@ -496,39 +496,61 @@ document.addEventListener('DOMContentLoaded', async () => {
       Atlas.format.parseNumber(option.value) === baseUomId
     );
     const baseUom = baseUomOption ? baseUomOption.text.trim() : 'BASE UOM';
-    const conversion = await Atlas.dialog.number({
+    // const conversion = await Atlas.dialog.number({
+    //   title: 'UOM Conversion',
+    //   html: `<div class="text-center">
+    //             <p>
+    //               ATLAS does not yet have a<br>conversion defined for <span class="font-weight-500 text-danger">${selectedUom}</span>.
+    //             </p>
+    //             <p>
+    //               The base UOM for this product is
+    //               <span class="font-weight-500 text-info">${baseUom}</span>.
+    //             </p>
+    //             <p>
+    //               How many <span class="font-weight-500 text-info">${baseUom}</span> does <span class="font-weight-500 text-danger">1 ${selectedUom}</span> represent?
+    //             </p>
+    //           </div>
+    //         `,
+    //   inputPlaceholder: `1 ${selectedUom} = ? ${baseUom}`, //'Conversion',
+    //   min: 0.0001,
+    //   confirmText: 'Use Conversion'
+    // });
+
+    const unitsPerBase = await Atlas.dialog.number({
       title: 'UOM Conversion',
       html: `<div class="text-center">
-                <p>
-                  ATLAS does not yet have a<br>conversion defined for <span class="font-weight-500 text-danger">${selectedUom}</span>.
-                </p>
-                <p>
-                  The base UOM for this product is
-                  <span class="font-weight-500 text-info">${baseUom}</span>.
-                </p>
-                <p>
-                  How many <span class="font-weight-500 text-info">${baseUom}</span> does <span class="font-weight-500 text-danger">1 ${selectedUom}</span> represent?
-                </p>
-              </div>
-            `,
-      inputPlaceholder: `1 ${selectedUom} = ? ${baseUom}`, //'Conversion',
+          <p>
+            ATLAS does not yet have a<br>conversion defined for
+            <span class="font-weight-500 text-danger">${selectedUom}</span>.
+          </p>
+          <p>
+            The base UOM for this product is
+            <span class="font-weight-500 text-info">${baseUom}</span>.
+          </p>
+          <p>
+            How many <span class="font-weight-500 text-danger">${selectedUom}</span>
+            are in <span class="font-weight-500 text-info">1 ${baseUom}</span>?
+          </p>
+        </div>`,
+      inputPlaceholder: `1 ${baseUom} = ? ${selectedUom}`,
       min: 0.0001,
       confirmText: 'Use Conversion'
     });
 
-    if (conversion === null) {
+    if (unitsPerBase === null) {
       /*** return to base UOM */
       e.target.value = baseUomId;
       row.dataset.conversionFactor = 1;
       const baseQtyAvailable = Atlas.format.parseNumber(row.dataset.baseQtyAvailable || 0);
       row.querySelector('.so-available').textContent = Atlas.format.amount(baseQtyAvailable);
-
       return;
     }
 
-    row.dataset.conversionFactor = conversion;
+    /*** convert human-friendly relationship to ATLAS base factor */
+    const conversionFactor = 1 / unitsPerBase;
+    row.dataset.conversionFactor = conversionFactor;
     const baseQtyAvailable = Atlas.format.parseNumber(row.dataset.baseQtyAvailable || 0);
-    const qtyAvailable = baseQtyAvailable / Atlas.format.parseNumber(row.dataset.conversionFactor);
+    const qtyAvailable = baseQtyAvailable / conversionFactor;
     row.querySelector('.so-available').textContent = Atlas.format.amount(qtyAvailable);
 
     markDirty();
