@@ -496,26 +496,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       Atlas.format.parseNumber(option.value) === baseUomId
     );
     const baseUom = baseUomOption ? baseUomOption.text.trim() : 'BASE UOM';
-    // const conversion = await Atlas.dialog.number({
-    //   title: 'UOM Conversion',
-    //   html: `<div class="text-center">
-    //             <p>
-    //               ATLAS does not yet have a<br>conversion defined for <span class="font-weight-500 text-danger">${selectedUom}</span>.
-    //             </p>
-    //             <p>
-    //               The base UOM for this product is
-    //               <span class="font-weight-500 text-info">${baseUom}</span>.
-    //             </p>
-    //             <p>
-    //               How many <span class="font-weight-500 text-info">${baseUom}</span> does <span class="font-weight-500 text-danger">1 ${selectedUom}</span> represent?
-    //             </p>
-    //           </div>
-    //         `,
-    //   inputPlaceholder: `1 ${selectedUom} = ? ${baseUom}`, //'Conversion',
-    //   min: 0.0001,
-    //   confirmText: 'Use Conversion'
-    // });
-
     const unitsPerBase = await Atlas.dialog.number({
       title: 'UOM Conversion',
       html: `<div class="text-center">

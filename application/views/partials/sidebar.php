@@ -51,13 +51,7 @@
   <?php /*** logo */ ?>
   <div class="d-flex justify-content-center mt-2">
     <img src="<?= base_url('assets/images/atlas-sidebar-logo-sm.png'); ?>" alt="ATLAS"
-      class="brand-image" style="
-        width: 100%;
-        max-width: 210px;
-        height: 42px;
-        object-fit: contain;
-        opacity: 1;
-      ">
+      class="brand-image" style="width: 100%; max-width: 210px; height: 42px; object-fit: contain; opacity: 1;">
   </div>
 
   <?php /*** brand */ ?>
@@ -81,13 +75,7 @@
       <div class="image">
 
         <?php if (!empty($sidebarUser->avatar)): ?>
-          <img  id="sidebarUserAvatar" src="<?= base_url($sidebarUser->avatar); ?>" alt="User Avatar"
-            class="img-circle elevation-2"
-            style="
-              width: 34px;
-              height: 34px;
-              object-fit: contain;
-            ">
+          <img  id="sidebarUserAvatar" src="<?= base_url($sidebarUser->avatar); ?>" alt="User Avatar" class="img-circle elevation-2" style="width: 34px; height: 34px; object-fit: contain;">
         <?php else: ?>
           <i class="fas fa-user-circle fa-2x text-purple"></i>
         <?php endif; ?>
@@ -107,11 +95,7 @@
     </div>
 
     <nav class="mt-2">
-      <ul
-        class="nav nav-pills nav-sidebar flex-column"
-        data-widget="treeview"
-        role="menu"
-        data-accordion="true">
+      <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="true">
         <?php $sectionHeader = NULL; ?>
         <?php foreach ($menu as $item): ?>
 
@@ -132,9 +116,7 @@
               <?php $sectionHeader = NULL; ?>
             <?php endif; ?>
             <li class="nav-item">
-              <a
-                href="<?= atlas_url($item['url']); ?>"
-                class="nav-link <?= ($currentRoute == $item['url']) ? 'active' : ''; ?>">
+              <a href="<?= atlas_url($item['url']); ?>" class="nav-link <?= ($currentRoute == $item['url']) ? 'active' : ''; ?>">
                 <i class="nav-icon <?= $item['icon']; ?>"></i>
                 <p class="<?= ($currentRoute == $item['url']) ? '' : ''; ?>">
                   <?= $item['title']; ?>
@@ -178,9 +160,7 @@
             ?>
 
             <li class="nav-item <?= $open ? 'menu-open' : ''; ?>">
-              <a
-                href="#"
-                class="nav-link <?= $open ? 'active' : ''; ?>">
+              <a href="#" class="nav-link <?= $open ? 'active' : ''; ?>">
                 <i class="nav-icon <?= $item['icon']; ?>"></i>
                 <p>
                   <?= $item['title']; ?>
@@ -191,9 +171,7 @@
               <ul class="nav nav-treeview">
                 <?php foreach ($accessibleChildren as $child): ?>
                   <li class="nav-item">
-                    <a
-                      href="<?= atlas_url($child['url']); ?>"
-                      class="nav-link <?= ($currentRoute == $child['url']) ? 'active' : ''; ?>">
+                    <a href="<?= atlas_url($child['url']); ?>" class="nav-link <?= ($currentRoute == $child['url']) ? 'active' : ''; ?>">
                       <i class="nav-icon <?= $child['icon']; ?>"></i>
                       <p class="<?= ($currentRoute == $child['url']) ? 'font-weight-normal' : ''; ?>">
                         <?= $child['title']; ?>

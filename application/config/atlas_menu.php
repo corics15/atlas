@@ -208,6 +208,18 @@ $config['atlas_menu'] = [
         'url'   => 'reports/sales-per-customer-salesman',
         'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
+      [
+        'title' => 'Supplier Sales Detail',
+        'icon'  => 'fas fa-list-ol',
+        'url'   => 'reports/supplier-sales-detail',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
+      ],
+      [
+        'title' => 'Customer Sales Order Detail',
+        'icon'  => 'fas fa-list-ul',
+        'url'   => 'reports/sales-order-detail',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
+      ],
     ]
   ],
 

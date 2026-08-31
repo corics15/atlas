@@ -67,20 +67,29 @@
         </div>
       <?php endif; ?>
 
-      <div class="">
-        <label for="selBranch">Branch</label>
-        <select id="selBranch" name="branch_id" class="form-control form-control-sm custom-select">
-          <?php foreach ($branches as $branch): ?>
-            <option
-              value="<?= $branch->id; ?>"
-              <?= (int)$branch->id === (int)$branch_id
-                ? 'selected'
-                : ''; ?>>
-              <?= htmlspecialchars($branch->branch_name); ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-      </div>
+      <?php if (!empty($branches)): ?>
+        <div class="">
+          <label for="selBranch">Branch</label>
+          <select id="selBranch" name="branch_id" class="form-control form-control-sm custom-select">
+            <?php foreach ($branches as $branch): ?>
+              <option
+                value="<?= $branch->id; ?>"
+                <?= (int)$branch->id === (int)$branch_id
+                  ? 'selected'
+                  : ''; ?>>
+                <?= htmlspecialchars($branch->branch_name); ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+      <?php endif; ?>
+
+      <?php if ($showSearchBox) : ?>
+        <div class="">
+          <label for="txtGenericSearch">Search</label>
+          <input id="txtGenericSearch" type="text" name="keyword" value="<?= htmlspecialchars($keyword ?? ''); ?>" class="form-control form-control-sm" placeholder="<?= $searchPlaceHolder ?? 'Search...' ?>">
+        </div>
+      <?php endif; ?>
 
       <button type="submit" class="btn btn-sm btn-default">
         <i class="fas fa-search mr-1"></i>

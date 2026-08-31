@@ -46,6 +46,7 @@ class Reports extends MY_Controller
     $this->data['salesPerSupplier'] = [];
     $this->data['url'] = 'sales-per-supplier';
     $this->data['showActionButton'] = false;
+    $this->data['showSearchBox'] = false;
 
     if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
       $this->data['salesPerSupplier'] = $this->Reports_model->getSalesPerSupplier($filters);
@@ -146,6 +147,7 @@ class Reports extends MY_Controller
     $this->data['salesPerSupplierSalesman'] = [];
     $this->data['url'] = 'sales-per-supplier-salesman';
     $this->data['showActionButton'] = false;
+    $this->data['showSearchBox'] = false;
 
     if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
       $this->data['salesPerSupplierSalesman'] = $this->Reports_model->getSalesPerSupplierSalesman($filters);
@@ -269,6 +271,7 @@ class Reports extends MY_Controller
     $this->data['salesPerCustomer'] = [];
     $this->data['url'] = 'sales-per-customer';
     $this->data['showActionButton'] = false;
+    $this->data['showSearchBox'] = false;
 
     if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
       $this->data['salesPerCustomer'] = $this->Reports_model->getSalesPerCustomer($filters);
@@ -382,6 +385,7 @@ class Reports extends MY_Controller
     $this->data['salesPerCustomerSalesman'] = [];
     $this->data['url'] = 'sales-per-customer-salesman';
     $this->data['showActionButton'] = false;
+    $this->data['showSearchBox'] = false;
 
     if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
       $this->data['salesPerCustomerSalesman'] = $this->Reports_model->getSalesPerCustomerSalesman($filters);
@@ -493,6 +497,143 @@ class Reports extends MY_Controller
         'title' => 'Sales Per Customer / Salesman'
       ]
     );
+  }
+
+  public function supplier_sales_detail()
+  {
+    $this->setPage('Supplier Sales Detail Report');
+    $this->pageScript = 'sales_detail';
+
+    /*** filters */
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'supplier_id' => (int)($filter['supplier_id'] ?? $this->input->get('supplier_id')),
+      'salesman_id' => (int)($filter['salesman_id'] ?? $this->input->get('salesman_id')),
+      'keyword' => ($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+
+    $this->data['suppliers'] = $this->Supplier_model->getDropdown();
+    $this->data['salesmen'] = $this->Salesman_model->getDropdown();
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['salesDetails'] = [];
+    $this->data['recordCount'] = 0;
+    $this->data['total_qty'] = 0;
+    $this->data['total_gross'] = 0;
+    $this->data['total_net'] = 0;
+    $this->data['total_unit_price'] = 0;
+    $this->data['total_discount_amount'] = 0;
+    $this->data['total_discount_percent'] = 0;
+
+    $this->data['url'] = 'supplier-sales-detail';
+    $this->data['showActionButton'] = false;
+    $this->data['showSearchBox'] = true;
+
+    if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
+      $this->data['salesDetails'] = $this->Reports_model->getSalesDetail($filters);
+
+      foreach ($this->data['salesDetails'] as $row) {
+        $this->data['total_qty'] += (float)$row->qty;
+        $this->data['total_gross'] += (float)$row->gross_amount;
+        $this->data['total_net'] += (float)$row->net_amount;
+        $this->data['total_unit_price'] += (float)$row->unit_price;
+        $this->data['total_discount_amount'] += (float)$row->discount_amount;
+        $this->data['total_discount_percent'] += (float)$row->discount_percent;
+      }
+
+      $this->data['recordCount'] = count($this->data['salesDetails']);
+    }
+
+    $this->data['searchPlaceHolder'] = 'Search barcode, DR, Customer...';
+    $this->data['tableContent'] = $this->load->view(
+        'reports/sales_detail/table',
+        $this->data,
+        TRUE
+      );
+
+    $this->data['toolbar'] = [
+      'excel' => [
+        'id' => 'btnDownloadSalesDetailExcel',
+        'icon' => 'fas fa-file-excel',
+        'text' => 'Download as Excel'
+      ],
+      'refresh' => [
+        'id' => 'btnRefreshSalesDetail',
+        'icon' => 'fas fa-sync',
+        'text' => 'Refresh'
+      ]
+    ];
+
+    $this->render('reports/sales_detail/index');
+  }
+
+  public function sales_order_detail()
+  {
+    $this->setPage('Customer Sales Order Detail Report');
+    $this->pageScript = 'sales_order_detail';
+
+    $filter = $this->decodeFilter($this->input->get('filter'));
+
+    $filters = [
+      'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
+      'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
+      'customer_id' => (int)($filter['customer_id'] ?? $this->input->get('customer_id')),
+      'salesman_id' => (int)($filter['salesman_id'] ?? $this->input->get('salesman_id')),
+      'keyword' => ($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+
+    $this->data['salesOrderDetails'] = [];
+    $this->data['recordCount'] = 0;
+    $this->data['total_qty'] = 0;
+    $this->data['total_item_count'] = 0;
+    $this->data['total_amount'] = 0;
+    $this->data['url'] = 'sales-order-detail';
+    $this->data['showActionButton'] = false;
+    $this->data['showSearchBox'] = true;
+
+    $this->data['customers'] = $this->Customer_model->getDropdown();
+    $this->data['salesmen'] = $this->Salesman_model->getDropdown();
+    if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
+      $this->data['salesOrderDetails'] = $this->Reports_model->getSalesOrderDetail($filters);
+
+      foreach ($this->data['salesOrderDetails'] as $row) {
+        $this->data['total_qty'] += (float)$row->qty;
+        $this->data['total_item_count'] += (float)$row->item_count;
+        $this->data['total_amount'] += (float)$row->total_amount;
+      }
+
+      $this->data['recordCount'] = count($this->data['salesOrderDetails']);
+    }
+
+    $this->data['tableContent'] = $this->load->view('reports/sales_order_detail/table',
+      $this->data,
+      TRUE
+    );
+
+    $this->data['toolbar'] = [
+      'excel' => [
+        'id' => 'btnDownloadSalesOrderDetailExcel',
+        'icon' => 'fas fa-file-excel',
+        'text' => 'Download as Excel'
+      ],
+      'refresh' => [
+        'id' => 'btnRefreshSalesOrderDetail',
+        'icon' => 'fas fa-sync',
+        'text' => 'Refresh'
+      ]
+    ];
+
+    $this->render('reports/sales_order_detail/index');
   }
 
 }
