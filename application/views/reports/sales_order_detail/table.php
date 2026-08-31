@@ -31,7 +31,7 @@
         <td class="text-center" data-a-h="center"><?= htmlspecialchars($row->uom ?? ''); ?></td>
         <td class="text-center" data-t="n" data-format="#,##0" data-a-h="center"><?= number_format((float)$row->qty, 0); ?></td>
         <td><?= htmlspecialchars($row->salesman_name ?? ''); ?></td>
-        <td class="text-center" data-a-h="center"><?= htmlspecialchars($row->terms ?? ''); ?></td>
+        <td class="text-center" data-a-h="center"><?= htmlspecialchars($row->terms_name ?? ''); ?></td>
         <td><?= htmlspecialchars($row->remarks ?? ''); ?></td>
         <td class="text-center" data-t="n" data-format="#,##0" data-a-h="center"><?= number_format($row->item_count, 0); ?></td>
         <td class="text-right" data-t="n" data-format="#,##0.00"><?= number_format($row->total_amount, 2); ?></td>

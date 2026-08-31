@@ -606,13 +606,20 @@ class Reports extends MY_Controller
     if ($filters['date_from'] !== '' && $filters['date_to'] !== '') {
       $this->data['salesOrderDetails'] = $this->Reports_model->getSalesOrderDetail($filters);
 
+      $countedSalesOrders = [];
+
       foreach ($this->data['salesOrderDetails'] as $row) {
         $this->data['total_qty'] += (float)$row->qty;
-        $this->data['total_item_count'] += (float)$row->item_count;
-        $this->data['total_amount'] += (float)$row->total_amount;
+
+        if (!isset($countedSalesOrders[$row->so_no])) {
+          $this->data['total_item_count'] += (float)$row->item_count;
+          $this->data['total_amount'] += (float)$row->total_amount;
+
+          $countedSalesOrders[$row->so_no] = true;
+        }
       }
 
-      $this->data['recordCount'] = count($this->data['salesOrderDetails']);
+      $this->data['recordCount'] = count($countedSalesOrders);
     }
 
     $this->data['tableContent'] = $this->load->view('reports/sales_order_detail/table',

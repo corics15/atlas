@@ -4,7 +4,7 @@
     <div class="small-box bg-light mb-0">
       <div class="inner">
         <h4><?= number_format($recordCount); ?></h4>
-        <p>Sales Order Detail Rows</p>
+        <p>Sales Order</p>
       </div>
 
       <div class="icon">
@@ -30,7 +30,7 @@
     <div class="small-box bg-light mb-0">
       <div class="inner">
         <h4><?= number_format($total_item_count, 0); ?></h4>
-        <p>Total Item Count</p>
+        <p>Total Lines</p>
       </div>
 
       <div class="icon">
@@ -43,7 +43,7 @@
     <div class="small-box bg-light mb-0">
       <div class="inner">
         <h4><?= number_format($total_amount, 2); ?></h4>
-        <p>Total Amount</p>
+        <p>SO Total Amount</p>
       </div>
 
       <div class="icon">

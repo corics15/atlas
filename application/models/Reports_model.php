@@ -659,7 +659,7 @@ class Reports_model extends MY_Model
         ->join('m_terms t', 't.id = so.terms_id', 'left')
         ->where('so.status <>', 'CANCELLED')
         ->order_by('so.order_date', 'DESC')
-        ->order_by('so.so_no',)
+        ->order_by('so.so_no', 'ASC')
         // ->order_by('sod.id', 'ASC')
         ->get()
         ->result();
