@@ -43,7 +43,7 @@
     <div class="small-box bg-light mb-0">
       <div class="inner">
         <h4><?= number_format($total_amount, 2); ?></h4>
-        <p>SO Total Amount</p>
+        <p>Total SO Amount</p>
       </div>
 
       <div class="icon">
