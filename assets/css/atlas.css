@@ -161,7 +161,7 @@ div.table-responsive table div.custom-checkbox {
   overflow-x: hidden;
 }
 
-/*** reduced font size */
+/*** reduced menu font size */
 .main-sidebar {
   font-size: 0.82rem;
 }
@@ -180,7 +180,21 @@ div.table-responsive table div.custom-checkbox {
   padding-bottom: 0.45rem;
 }
 
-/*** end reduced font size */
+/*** end reduced menu font size */
+
+/*** reduced icon size */
+.nav-sidebar>.nav-item .nav-icon.fa,
+.nav-sidebar>.nav-item .nav-icon.fab,
+.nav-sidebar>.nav-item .nav-icon.fad,
+.nav-sidebar>.nav-item .nav-icon.fal,
+.nav-sidebar>.nav-item .nav-icon.far,
+.nav-sidebar>.nav-item .nav-icon.fas,
+.nav-sidebar>.nav-item .nav-icon.ion,
+.nav-sidebar>.nav-item .nav-icon.svg-inline--fa {
+  font-size: 0.775rem;
+}
+
+/*** end reduced icon size */
 
 /***** end sidebar */
 
@@ -434,6 +448,17 @@ span.badge {
   background-color: #3fc7c1 !important;
 }
 
+.letter-spacing-1 {
+  letter-spacing: 1px;
+}
+
+.letter-spacing-2 {
+  letter-spacing: 2px;
+}
+
+.letter-spacing-3 {
+  letter-spacing: 3px;
+}
 
 /** checkboxes */
 .custom-control-input:checked~.custom-control-label::before {

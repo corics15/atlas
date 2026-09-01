@@ -70,7 +70,4 @@
   </div>
 </section>
 
-<input
-    type="hidden"
-    id="hidInventoryAdjustmentId"
-    value="<?= isset($inventoryAdjustment) ? $inventoryAdjustment->id : ''; ?>">
+<input type="hidden" id="hidInventoryAdjustmentId" value="<?= isset($inventoryAdjustment) ? $inventoryAdjustment->id : ''; ?>">

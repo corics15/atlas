@@ -18,35 +18,30 @@
 
     <?php /*** document header */ ?>
     <table class="report-borderless" style="table-layout:auto;line-height:8px">
-
       <tr>
         <td><strong>SO No.</strong></td>
         <td><?= htmlspecialchars($header->so_no) ?></td>
         <td><strong>Order Date</strong></td>
         <td><?= date('m/d/Y', strtotime($header->order_date)) ?></td>
       </tr>
-
       <tr>
         <td><strong>Customer</strong></td>
         <td><?= htmlspecialchars($header->customer_name) ?></td>
         <td><strong>Status</strong></td>
         <td><?= htmlspecialchars($header->status) ?></td>
       </tr>
-
       <tr>
         <td><strong>Salesman</strong></td>
         <td><?= htmlspecialchars($header->salesman_name) ?></td>
         <td><strong>Terms</strong></td>
         <td><?= htmlspecialchars($header->terms_name ?? '') ?></td>
       </tr>
-
       <tr>
         <td><strong>Remarks</strong></td>
         <td colspan="3">
           <?= nl2br(htmlspecialchars($header->remarks ?? '')) ?>
         </td>
       </tr>
-
     </table>
     <?php /*** end document header */ ?>
 
@@ -134,31 +129,36 @@
     </table>
     <?php /*** end totals */ ?>
 
-    <br><br>
+    <br><br><br>
 
     <?php /*** signatures */ ?>
-    <table class="table report-borderless">
+    <table class="report-borderless" style="line-height:5px">
       <tr>
-        <td width="33%" class="text-center">
-          <strong><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></strong>
-
-          _______________________________
-          <br>
-          Prepared By
-        </td>
-
-        <td width="34%"></td>
-        <td width="33%" class="text-center">
-
-          _______________________________
-          <br>
-
-          Approved By
-        </td>
+        <td class="text-center font-weight-bold"><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>_______________________________</td>
+        <td>_______________________________</td>
+        <td>_______________________________</td>
+        <td>_______________________________</td>
+      </tr>
+      <tr>
+        <td class="text-center">Prepared By</td>
+        <td class="text-center">Approved By</td>
+        <td class="text-center">Checked By</td>
+        <td class="text-center">Received By</td>
       </tr>
     </table>
     <?php /*** end signatures */ ?>
 
+  </div>
+
+  <div style="text-align:right;font-size:10px;margin-top:20px;">
+    Printed By: <strong><?= strtoupper(htmlspecialchars($this->session->userdata('username'))); ?></strong>
+    <?= date('m/d/Y h:i A'); ?>
   </div>
 
   <?php if ($i < count($documents) - 1): ?>

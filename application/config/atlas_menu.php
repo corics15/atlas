@@ -173,6 +173,12 @@ $config['atlas_menu'] = [
         'url'   => 'accounts-receivable-aging',
         'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
       ],
+      [
+        'title' => 'Chart of Accounts',
+        'url'   => 'chart-of-accounts',
+        'icon'  => 'far fa-circle',
+        'access'=> ['ADMIN', 'MANAGER']
+      ],
     ],
   ],
 
