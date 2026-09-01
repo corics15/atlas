@@ -269,7 +269,8 @@ class Inventory_adjustment_model extends CI_Model
           $adjustment->adjustment_no,
           $detail,
           $newBalance,
-          $postedBy
+          $postedBy,
+          $branchId
         );
       }
 
@@ -408,7 +409,7 @@ class Inventory_adjustment_model extends CI_Model
    * @param int    $postedBy
    * @return int
    */
-  private function recordStockMovement($adjustmentId, $adjustmentNo, $detail, $newBalance, $postedBy)
+  private function recordStockMovement($adjustmentId, $adjustmentNo, $detail, $newBalance, $postedBy, $branchId)
   {
     $adjustment = (float) $detail->adjustment_qty;
 
@@ -423,7 +424,8 @@ class Inventory_adjustment_model extends CI_Model
       'balance_after'    => $newBalance,
       'unit_cost'        => 0,
       'remarks'          => $detail->remarks,
-      'entered_by'       => $postedBy
+      'entered_by'       => $postedBy,
+      'branch_id'        => $branchId
     ];
 
     return $this->Stock_ledger_model->record($ledgerData);
