@@ -38,6 +38,19 @@ class Chart_of_accounts extends MY_Controller
       TRUE
     );
 
+    $this->data['toolbar'] = [
+      'excel' => [
+        'id'   => 'btnDownloadExcel',
+        'icon' => 'fas fa-file-excel',
+        'text' => 'Download as Excel'
+      ],
+      'refresh' => [
+        'id'   => 'btnRefresh',
+        'text' => 'Refresh',
+        'icon' => 'fas fa-sync'
+      ]
+    ];
+
     $this->render('chart_of_accounts/index');
   }
 

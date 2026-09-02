@@ -4,11 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const accountType = document.getElementById('selAccountType');
   const normalBalance = document.getElementById('selNormalBalance');
   const accountGroup = document.getElementById('selAccountGroup');
-  const saveButton = document.getElementById('btnSaveChartOfAccount');
-  const newButton = document.getElementById('btnNewAccount');
+  const btnSaveChartOfAccount = document.getElementById('btnSaveChartOfAccount');
+  const btnNewAccount = document.getElementById('btnNewAccount');
+  const btnRefresh = document.getElementById('btnRefresh');
+  const btnDownloadExcel = document.getElementById('btnDownloadExcel');
 
   /*** new */
-  newButton?.addEventListener('click', () => Atlas.page.redirect(`chart-of-accounts/create`));
+  btnNewAccount?.addEventListener('click', () => Atlas.page.redirect(`chart-of-accounts/create`));
 
   /*** event trigger */
   parentAccount?.addEventListener('change', () => {
@@ -34,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /*** save */
-  saveButton?.addEventListener('click', async () => {
+  btnSaveChartOfAccount?.addEventListener('click', async () => {
     clearFieldErrors();
 
     const accountCode = document.getElementById('txtAccountCode');
@@ -101,6 +103,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Atlas.toast.success(result.message);
     setTimeout(() => Atlas.page.refresh(), 1200);
+  });
+
+  /*** refresh */
+  btnRefresh?.addEventListener('click', () => Atlas.page.redirect(`chart-of-accounts`));
+
+  /*** excel download */
+  btnDownloadExcel?.addEventListener('click', () => {
+    Atlas.excel.download(
+      document.getElementById('tblChartOfAccounts'),
+      {
+        title: 'Chart Of Accounts',
+        generatedBy: Atlas.config.userName,
+        fileName: 'chart-of-accounts',
+        sheetName: 'COA',
+        /*** start with 0, index based */
+        // totals: [
+        //   {
+        //     column: 5,
+        //     value: 'TOTAL'
+        //   },
+        //   {
+        //     column: 6,
+        //     value: window.itemCount || 0,
+        //     type: 'n',
+        //     format: '#,##0'
+        //   },
+        //   {
+        //     column: 7,
+        //     value: window.totalAmount || 0,
+        //     type: 'n',
+        //     format: '#,##0.00'
+        //   },
+        // ]
+      }
+    );
   });
 
   /*** error markers */
