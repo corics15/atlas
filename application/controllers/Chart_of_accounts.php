@@ -47,7 +47,8 @@ class Chart_of_accounts extends MY_Controller
       'refresh' => [
         'id'   => 'btnRefresh',
         'text' => 'Refresh',
-        'icon' => 'fas fa-sync'
+        'icon' => 'fas fa-sync',
+        'url'  => 'chart-of-accounts',
       ]
     ];
 

@@ -22,9 +22,15 @@ class Terms extends MY_Controller
     );
 
     $this->pageScript = 'terms';
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['terms'] = $this->Term_model->getAll($keyword);
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $this->data['terms'] = $this->Term_model->getAll($filters['keyword']);
     $this->data['recordCount'] = count($this->data['terms']);
 
     $this->data['tableContent'] = $this->load->view(
@@ -52,9 +58,11 @@ class Terms extends MY_Controller
       'refresh' => [
           'id' => 'btnRefreshTerm',
           'text' => 'Refresh',
-          'icon' => 'fas fa-sync'
+          'icon' => 'fas fa-sync',
+          'url'  => 'terms',
       ]
     ];
+    $this->data['searchPlaceHolder'] = 'Search terms...';
 
     $this->render('terms/index');
   }

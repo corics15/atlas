@@ -42,7 +42,8 @@ class Inventory extends MY_Controller
       'refresh' => [
         'id'   => 'btnRefreshInventory',
         'icon' => 'fas fa-sync-alt',
-        'text' => 'Refresh'
+        'text' => 'Refresh',
+        'url'  => 'inventory',
       ]
     ];
 

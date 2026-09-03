@@ -26,9 +26,15 @@ class Customers extends MY_Controller
     );
 
     $this->pageScript = 'customers';
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['customers'] = $this->Customer_model->getAll($keyword);
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $this->data['customers'] = $this->Customer_model->getAll($filters['keyword']);
     $this->data['outlets'] = $this->Outlet_type_model->getDropdown();
     $this->data['terms'] = $this->Term_model->getDropdown();
     $this->data['recordCount'] = count($this->data['customers']);
@@ -58,11 +64,13 @@ class Customers extends MY_Controller
       'refresh' => [
           'id' => 'btnRefreshCustomer',
           'text' => 'Refresh',
-          'icon' => 'fas fa-sync'
+          'icon' => 'fas fa-sync',
+          'url'  => 'customers',
       ]
     ];
 
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
+    $this->data['searchPlaceHolder'] = 'Search customers...';
 
     $this->render('customers/index');
   }

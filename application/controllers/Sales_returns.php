@@ -83,7 +83,8 @@ class Sales_returns extends MY_Controller
         'refresh' => [
             'id'   => 'btnRefreshSalesReturn',
             'text' => 'Refresh',
-            'icon' => 'fas fa-sync'
+            'icon' => 'fas fa-sync',
+            'url'  => 'sales-returns',
         ]
     ];
 

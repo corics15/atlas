@@ -91,7 +91,8 @@ class Stock_transfers extends MY_Controller
       'refresh' => [
         'id'   => 'btnRefreshStockTransfer',
         'text' => 'Refresh',
-        'icon' => 'fas fa-sync'
+        'icon' => 'fas fa-sync',
+        'url'  => 'stock-transfers',
       ]
     ];
 

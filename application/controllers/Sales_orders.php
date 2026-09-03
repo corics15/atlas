@@ -41,13 +41,12 @@ class Sales_orders extends MY_Controller
       'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
       'status' => trim($filter['status'] ?? $this->input->get('status')),
     ];
+
+    $this->data['searchPlaceHolder'] = 'Search...';
     $this->data = array_merge(
       $this->data,
       $filters
-    );
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['searchPlaceHolder'] = 'Search...';
+    );    
 
     $this->pageScript = 'sales_orders';
     $this->data['salesOrders'] = $this->Sales_order_model->getAll($filters);
@@ -103,7 +102,8 @@ class Sales_orders extends MY_Controller
       'refresh' => [
         'id'   => 'btnRefreshSalesOrder',
         'text' => 'Refresh',
-        'icon' => 'fas fa-sync'
+        'icon' => 'fas fa-sync',
+        'url'  => 'sales-orders',
       ]
     ];
 

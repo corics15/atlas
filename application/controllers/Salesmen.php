@@ -23,9 +23,15 @@ class Salesmen extends MY_Controller
     );
 
     $this->pageScript = 'salesmen';
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['salesmen'] = $this->Salesman_model->getAll($keyword);
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $this->data['salesmen'] = $this->Salesman_model->getAll($filters['keyword']);
     $this->data['recordCount'] = count($this->data['salesmen']);
     $this->data['tableContent'] = $this->load->view(
       'salesmen/table',
@@ -52,9 +58,11 @@ class Salesmen extends MY_Controller
       'refresh' => [
           'id' => 'btnRefreshSalesmen',
           'text' => 'Refresh',
-          'icon' => 'fas fa-sync'
+          'icon' => 'fas fa-sync',
+          'url'  => 'salesmen',
       ]
     ];
+    $this->data['searchPlaceHolder'] = 'Search salesmen...';
 
     $this->render('salesmen/index');
   }
@@ -62,11 +70,6 @@ class Salesmen extends MY_Controller
   public function save()
   {
     $postData = $this->input->post();
-    // $this->form_validation->set_rules(
-    //   'salesman_code',
-    //   'Code',
-    //   'required|trim'
-    // );
 
     $this->form_validation->set_rules(
       'first_name',

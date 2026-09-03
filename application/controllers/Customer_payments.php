@@ -107,7 +107,8 @@ class Customer_payments extends MY_Controller
       'refresh' => [
         'id'   => 'btnRefreshCustomerPayment',
         'text' => 'Refresh',
-        'icon' => 'fas fa-sync'
+        'icon' => 'fas fa-sync',
+        'url'  => 'customer-payments',
       ]
     ];
 

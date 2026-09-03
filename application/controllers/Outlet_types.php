@@ -23,9 +23,15 @@ class Outlet_types extends MY_Controller
     );
 
     $this->pageScript = 'outlet_types';
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['outlet_types'] = $this->Outlet_type_model->getAll($keyword);
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $this->data['outlet_types'] = $this->Outlet_type_model->getAll($filters['keyword']);
     $this->data['recordCount'] = count($this->data['outlet_types']);
 
     $this->data['tableContent'] = $this->load->view(
@@ -53,9 +59,11 @@ class Outlet_types extends MY_Controller
       'refresh' => [
           'id' => 'btnRefreshOutletType',
           'text' => 'Refresh',
-          'icon' => 'fas fa-sync'
+          'icon' => 'fas fa-sync',
+          'url'  => 'outlet-types',
       ]
     ];
+    $this->data['searchPlaceHolder'] = 'Search outlet types...';
 
     $this->render('outlet_types/index');
   }

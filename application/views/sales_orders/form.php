@@ -152,7 +152,4 @@
   </div>
 </section>
 
-<input
-    type="hidden"
-    id="hidSalesOrderId"
-    value="<?= isset($salesOrderId) ? $salesOrderId : ''; ?>">
+<input type="hidden" id="hidSalesOrderId" value="<?= isset($salesOrderId) ? $salesOrderId : ''; ?>">

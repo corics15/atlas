@@ -150,6 +150,12 @@ $config['atlas_menu'] = [
 
     'children' => [
       [
+        'title' => 'Check Voucher',
+        'icon'  => 'fas fa-file-signature',
+        'url'   => 'check-vouchers',
+        'access' => ['ADMIN', 'MANAGER', 'STAFF'],
+      ],      
+      [
         'title' => 'Customer Payments',
         'icon'  => 'fas fa-money-check-alt',
         'url'   => 'customer-payments',
@@ -253,6 +259,12 @@ $config['atlas_menu'] = [
         'title' => 'Document Numbering',
         'icon'  => 'fas fa-list-ol',
         'url'   => 'document-numbering',
+        'access' => ['ADMIN'],
+      ],
+      [
+        'title' => 'Bank Accounts',
+        'icon'  => 'fas fa-university',
+        'url'   => 'bank-accounts',
         'access' => ['ADMIN'],
       ],
     ]

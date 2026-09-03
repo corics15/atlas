@@ -25,8 +25,6 @@ class Delivery_receipts extends MY_Controller
     ];
 
     $filter = $this->decodeFilter($this->input->get('filter'));
-    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
     $filters = [
       'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
       'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
@@ -94,7 +92,8 @@ class Delivery_receipts extends MY_Controller
       'refresh' => [
           'id' => 'btnRefreshDeliveryReceipt',
           'text' => 'Refresh',
-          'icon' => 'fas fa-sync'
+          'icon' => 'fas fa-sync',
+          'url'  => 'delivery-receipts',
         ]
     ];
 

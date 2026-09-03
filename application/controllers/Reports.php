@@ -565,7 +565,8 @@ class Reports extends MY_Controller
       'refresh' => [
         'id' => 'btnRefreshSalesDetail',
         'icon' => 'fas fa-sync',
-        'text' => 'Refresh'
+        'text' => 'Refresh',
+        'url'  => 'reports/supplier-sales-detail',
       ]
     ];
 
@@ -636,7 +637,8 @@ class Reports extends MY_Controller
       'refresh' => [
         'id' => 'btnRefreshSalesOrderDetail',
         'icon' => 'fas fa-sync',
-        'text' => 'Refresh'
+        'text' => 'Refresh',
+        'url'  => 'reports/sales-order-detail',
       ]
     ];
 

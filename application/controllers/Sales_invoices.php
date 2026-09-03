@@ -87,7 +87,8 @@ class Sales_invoices extends MY_Controller
       'refresh' => [
         'id'   => 'btnRefreshSalesInvoice',
         'text' => 'Refresh',
-        'icon' => 'fas fa-sync'
+        'icon' => 'fas fa-sync',
+        'url'  => 'sales-invoices',
       ]
     ];
 

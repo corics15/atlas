@@ -1,9 +1,7 @@
 <div class="d-flex justify-content-end mb-3">
 
   <div class="btn-group">
-    <button class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">
-    Actions
-    </button>
+    <button class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown">Actions</button>
 
     <div class="dropdown-menu dropdown-menu-right">
 
@@ -11,7 +9,7 @@
       <button
         id="<?= $toolbar['new']['id']; ?>"
         class="dropdown-item">
-          <i class="<?= $toolbar['new']['icon']; ?>"></i>
+          <i class="<?= $toolbar['new']['icon']; ?> mr-2"></i>
         <?= $toolbar['new']['text']; ?>
       </button>
       <?php endif ?>
@@ -20,7 +18,7 @@
       <button
         id="<?= $toolbar['edit']['id']; ?>"
         class="dropdown-item">
-      <i class="<?= $toolbar['edit']['icon']; ?>"></i>
+      <i class="<?= $toolbar['edit']['icon']; ?> mr-2"></i>
       <?= $toolbar['edit']['text']; ?>
       </button>
       <?php endif ?>
@@ -29,7 +27,7 @@
       <button
         id="<?= $toolbar['post']['id']; ?>"
         class="dropdown-item">
-        <i class="<?= $toolbar['post']['icon']; ?>"></i>
+        <i class="<?= $toolbar['post']['icon']; ?> mr-2"></i>
         <?= $toolbar['post']['text']; ?>
       </button>
       <?php endif ?>
@@ -38,7 +36,7 @@
       <button
         id="<?= $toolbar['resetPassword']['id']; ?>"
         class="dropdown-item">
-          <i class="<?= $toolbar['resetPassword']['icon']; ?>"></i>
+          <i class="<?= $toolbar['resetPassword']['icon']; ?> mr-2"></i>
         <?= $toolbar['resetPassword']['text']; ?>
       </button>
       <?php endif ?>
@@ -47,7 +45,7 @@
       <button
         id="<?= $toolbar['activate']['id']; ?>"
         class="dropdown-item">
-          <i class="<?= $toolbar['activate']['icon']; ?>"></i>
+          <i class="<?= $toolbar['activate']['icon']; ?> mr-2"></i>
         <?= $toolbar['activate']['text']; ?>
       </button>
       <?php endif ?>
@@ -56,7 +54,7 @@
       <button
         id="<?= $toolbar['deactivate']['id']; ?>"
         class="dropdown-item">
-          <i class="<?= $toolbar['deactivate']['icon']; ?>"></i>
+          <i class="<?= $toolbar['deactivate']['icon']; ?> mr-2"></i>
         <?= $toolbar['deactivate']['text']; ?>
       </button>
       <?php endif ?>
@@ -65,7 +63,7 @@
       <button
         id="<?= $toolbar['inventoryInquiry']['id']; ?>"
         class="dropdown-item">
-        <i class="<?= $toolbar['inventoryInquiry']['icon']; ?>"></i>
+        <i class="<?= $toolbar['inventoryInquiry']['icon']; ?> mr-2"></i>
         <?= $toolbar['inventoryInquiry']['text']; ?>
       </button>
       <?php endif ?>
@@ -74,7 +72,7 @@
       <button
         id="<?= $toolbar['stockLedger']['id']; ?>"
         class="dropdown-item">
-        <i class="<?= $toolbar['stockLedger']['icon']; ?>"></i>
+        <i class="<?= $toolbar['stockLedger']['icon']; ?> mr-2"></i>
         <?= $toolbar['stockLedger']['text']; ?>
       </button>
       <?php endif ?>
@@ -83,7 +81,7 @@
       <button
         id="<?= $toolbar['print']['id']; ?>"
         class="dropdown-item">
-          <i class="<?= $toolbar['print']['icon']; ?>"></i>
+          <i class="<?= $toolbar['print']['icon']; ?> mr-2"></i>
         <?= $toolbar['print']['text']; ?>
       </button>
       <?php endif ?>
@@ -92,7 +90,7 @@
       <button
         id="<?= $toolbar['cancel']['id']; ?>"
         class="dropdown-item">
-          <i class="<?= $toolbar['cancel']['icon']; ?>"></i>
+          <i class="<?= $toolbar['cancel']['icon']; ?> mr-2"></i>
       <?= $toolbar['cancel']['text']; ?>
       </button>
       <?php endif ?>
@@ -101,7 +99,7 @@
       <button
         id="<?= $toolbar['excel']['id']; ?>"
         class="dropdown-item">
-        <i class="<?= $toolbar['excel']['icon']; ?>"></i>
+        <i class="<?= $toolbar['excel']['icon']; ?> mr-2"></i>
         <?= $toolbar['excel']['text']; ?>
       </button>
       <?php endif ?>      
@@ -110,7 +108,7 @@
       <button
         id="<?= $toolbar['receive']['id']; ?>"
         class="dropdown-item">
-          <i class="<?= $toolbar['receive']['icon']; ?>"></i>
+          <i class="<?= $toolbar['receive']['icon']; ?> mr-2"></i>
         <?= $toolbar['receive']['text']; ?>
       </button>
       <?php endif ?>      
@@ -119,7 +117,7 @@
       <button
         id="<?= $toolbar['create-dr']['id']; ?>"
         class="dropdown-item">
-        <i class="<?= $toolbar['create-dr']['icon']; ?>"></i>
+        <i class="<?= $toolbar['create-dr']['icon']; ?> mr-2"></i>
         <?= $toolbar['create-dr']['text']; ?>
       </button>
       <?php endif ?>
@@ -128,20 +126,31 @@
       <button
         id="<?= $toolbar['create']['id']; ?>"
         class="dropdown-item">
-        <i class="<?= $toolbar['create']['icon']; ?>"></i>
+        <i class="<?= $toolbar['create']['icon']; ?> mr-2"></i>
         <?= $toolbar['create']['text']; ?>
       </button>
+      <?php endif ?>
+
+      <?php /*** transaction details set on check-vouchers*/  if (!empty($toolbar['transactions'])) : ?>
+      <a
+        href="<?= base_url($toolbar['transactions']['url']) ?>"
+        id="<?= $toolbar['transactions']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['transactions']['icon']; ?> mr-2"></i>
+        <?= $toolbar['transactions']['text']; ?>
+      </a>
       <?php endif ?>
 
       <div class="dropdown-divider"></div>
 
       <?php  /*** refresh page */ ?>
-      <button
+      <a
+        href="<?= base_url($toolbar['refresh']['url']) ?>"
         id="<?= $toolbar['refresh']['id']; ?>"
         class="dropdown-item">
-          <i class="<?= $toolbar['refresh']['icon']; ?>"></i>
+          <i class="<?= $toolbar['refresh']['icon']; ?> mr-2"></i>
       <?= $toolbar['refresh']['text']; ?>
-      </button>
+      </a>
     </div>
   </div>
 

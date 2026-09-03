@@ -22,9 +22,15 @@ class Uom extends MY_Controller
     );
 
     $this->pageScript = 'uom';
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['uoms'] = $this->Uom_model->getAll($keyword);
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $this->data['uoms'] = $this->Uom_model->getAll($filters['keyword']);
     $this->data['recordCount'] = count($this->data['uoms']);
 
     $this->data['tableContent'] = $this->load->view(
@@ -52,9 +58,11 @@ class Uom extends MY_Controller
       'refresh' => [
           'id' => 'btnRefreshUom',
           'text' => 'Refresh',
-          'icon' => 'fas fa-sync'
+          'icon' => 'fas fa-sync',
+          'url'  => 'uom',
       ]
     ];
+    $this->data['searchPlaceHolder'] = 'Seach UOMs...';
 
     $this->render('uom/index');
   }

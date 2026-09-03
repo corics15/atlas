@@ -77,7 +77,8 @@ class Purchase_returns extends MY_Controller
         'refresh' => [
             'id'   => 'btnRefreshPurchaseReturn',
             'text' => 'Refresh',
-            'icon' => 'fas fa-sync'
+            'icon' => 'fas fa-sync',
+            'url'  => 'purchase-returns',
         ]
     ];
 

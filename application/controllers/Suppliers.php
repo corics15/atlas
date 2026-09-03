@@ -23,9 +23,15 @@ class Suppliers extends MY_Controller
     );
 
     $this->pageScript = 'suppliers';
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['suppliers'] = $this->Supplier_model->getAll($keyword);
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $this->data['suppliers'] = $this->Supplier_model->getAll($filters['keyword']);
     $this->data['recordCount'] = count($this->data['suppliers']);
     $this->data['terms'] = $this->Term_model->getDropdown();
 
@@ -54,9 +60,11 @@ class Suppliers extends MY_Controller
       'refresh' => [
         'id' => 'btnRefreshSupplier',
         'text' => 'Refresh',
-        'icon' => 'fas fa-sync'
+        'icon' => 'fas fa-sync',
+        'url'  => 'suppliers',
       ]
     ];
+    $this->data['searchPlaceHolder'] = 'Search suppliers...';
 
     $this->render('suppliers/index');
   }

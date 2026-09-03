@@ -621,10 +621,14 @@ span.badge {
 }
 
 /*** labels */
-label {
+label:not(.swal2-input-label) {
   color: #104b4a;
   font-weight: normal !important;
   font-size: small;
+}
+
+label.swal2-input-label {
+  font-weight: 500 !important;
 }
 
 /*** select2 css */

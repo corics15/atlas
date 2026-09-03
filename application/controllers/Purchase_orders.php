@@ -126,14 +126,12 @@ class Purchase_orders extends MY_Controller
     ];
 
     $filter = $this->decodeFilter($this->input->get('filter'));
-    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
     $filters = [
       'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
       'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
       'supplier_id' => trim($filter['supplier_id'] ?? $this->input->get('supplier_id')),
       'status' => trim($filter['status'] ?? $this->input->get('status')),
-      'keyword' => $keyword,
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
     ];
 
     $this->data['suppliers'] = $this->Supplier_model->getDropdown();
@@ -141,6 +139,7 @@ class Purchase_orders extends MY_Controller
       $this->data,
       $filters
     );
+    $this->data['searchPlaceHolder'] = 'Search PO...';
     /*** end filters */
 
     $this->data['purchaseOrders'] = $this->Purchase_order_model->getAll($filters);
@@ -185,7 +184,8 @@ class Purchase_orders extends MY_Controller
       'refresh' => [
         'id'   => 'btnRefreshPurchaseOrder',
         'text' => 'Refresh',
-        'icon' => 'fas fa-sync'
+        'icon' => 'fas fa-sync',
+        'url'  => 'purchase-orders/list',
       ]
     ];
 

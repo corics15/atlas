@@ -79,7 +79,8 @@ class Inventory_adjustments extends MY_Controller
       'refresh' => [
         'id'   => 'btnRefreshInventoryAdjustment',
         'icon' => 'fas fa-sync-alt',
-        'text' => 'Refresh'
+        'text' => 'Refresh',
+        'url'  => 'inventory-adjustments',
       ]
     ];
 

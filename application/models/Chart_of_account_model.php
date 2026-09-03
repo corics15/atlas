@@ -232,27 +232,25 @@ class Chart_of_account_model extends CI_Model
       ];
 
       if ($isEdit) {
-          $saveData['updated_by'] = (int) $data['user_id'];
-          $saveData['updated_on'] = date('Y-m-d H:i:s');
+        $saveData['updated_by'] = (int) $data['user_id'];
+        $saveData['updated_on'] = date('Y-m-d H:i:s');
+        $this->db
+          ->where('id', $id)
+          ->update($this->table, $saveData);
 
-          $this->db
-            ->where('id', $id)
-            ->update($this->table, $saveData);
-
-          $accountId = $id;
-          $message = 'Chart of Account updated successfully.';
+        $accountId = $id;
+        $message = 'Chart of Account updated successfully.';
 
       } else {
 
-          $saveData['entered_by'] = (int) $data['user_id'];
+        $saveData['entered_by'] = (int) $data['user_id'];
+        $this->db->insert(
+          $this->table,
+          $saveData
+        );
 
-          $this->db->insert(
-            $this->table,
-            $saveData
-          );
-
-          $accountId = (int) $this->db->insert_id();
-          $message = 'Chart of Account saved successfully.';
+        $accountId = (int) $this->db->insert_id();
+        $message = 'Chart of Account saved successfully.';
       }
 
       if ($this->db->trans_status() === FALSE || !$accountId) {
@@ -304,6 +302,46 @@ class Chart_of_account_model extends CI_Model
       }
 
       return FALSE;
+  }
+
+  public function searchPostingAccounts($keyword, $limit = 10)
+  {
+    $keyword = trim($keyword);
+
+    if (strlen($keyword) < 2) {
+      return [];
+    }
+
+    $limit = (int) $limit;
+
+    if ($limit <= 0 || $limit > 20) {
+      $limit = 10;
+    }
+
+    $escaped = $this->db->escape_like_str($keyword);
+    return $this->db
+        ->select([
+          'coa.id',
+          'coa.account_code',
+          'coa.account_name',
+          'coa.account_type',
+          'coa.normal_balance'
+        ])
+        ->from($this->table . ' coa')
+        ->where('coa.is_active', TRUE)
+        ->where('coa.is_posting', TRUE)
+        ->group_start()
+            ->where(
+              "coa.account_code ILIKE '%{$escaped}%'"
+            )
+            ->or_where(
+              "coa.account_name ILIKE '%{$escaped}%'"
+            )
+        ->group_end()
+        ->order_by('coa.account_code', 'ASC')
+        ->limit($limit)
+        ->get()
+        ->result();
   }
 
 }

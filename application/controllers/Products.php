@@ -25,9 +25,15 @@ class Products extends MY_Controller
     );
 
     $this->pageScript = 'products';
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
-    $this->data['products'] = $this->Product_model->getAll($keyword);
+    $filter = $this->decodeFilter($this->input->get('filter'));
+    $filters = [
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
+    ];
+    $this->data = array_merge(
+      $this->data,
+      $filters
+    );
+    $this->data['products'] = $this->Product_model->getAll($filters['keyword']);
     $this->data['recordCount'] = count($this->data['products']);
 
     $this->data['tableContent'] = $this->load->view(
@@ -65,12 +71,14 @@ class Products extends MY_Controller
       'refresh' => [
         'id' => 'btnRefreshProduct',
         'text' => 'Refresh',
-        'icon' => 'fas fa-sync'
+        'icon' => 'fas fa-sync',
+        'url'  => 'products',
       ]
     ];
 
     $this->data['suppliers'] = $this->Supplier_model->getDropdown();
     $this->data['uoms'] = $this->Uom_model->getDropdown();
+    $this->data['searchPlaceHolder'] = 'Search products, barcode, packing...';
 
     $this->render('products/index');
   }

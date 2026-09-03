@@ -24,8 +24,6 @@ class Goods_receipts extends MY_Controller
       'CANCELLED',
     ];
     $filter = $this->decodeFilter($this->input->get('filter'));
-    $keyword = trim($filter['keyword'] ?? $this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
     $filters = [
       'date_from' => trim($filter['date_from'] ?? $this->input->get('date_from')),
       'date_to' => trim($filter['date_to'] ?? $this->input->get('date_to')),
@@ -67,7 +65,8 @@ class Goods_receipts extends MY_Controller
       'refresh' => [
         'id'   => 'btnRefreshGoodsReceipt',
         'icon' => 'fas fa-sync-alt',
-        'text' => 'Refresh'
+        'text' => 'Refresh',
+        'url'  => 'goods-receipts',
       ]
     ];
 

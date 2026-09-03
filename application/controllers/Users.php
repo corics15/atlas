@@ -32,6 +32,7 @@ class Users extends MY_Controller
     $this->data['recordCount'] = count($this->data['users']);
     $this->data['branches'] = $this->Branch_model->getDropdown();
     $this->data['access_levels'] = config_item('atlas')['access_levels'];
+    $this->data['searchPlaceHolder'] = 'Search users...';
 
     $this->data['tableContent'] = $this->load->view(
       'users/table',
@@ -63,7 +64,8 @@ class Users extends MY_Controller
         'refresh' => [
             'id' => 'btnRefreshUsers',
             'text' => 'Refresh',
-            'icon' => 'fas fa-sync'
+            'icon' => 'fas fa-sync',
+            'url'  => 'users',
         ]
     ];
 
