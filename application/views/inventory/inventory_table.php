@@ -23,7 +23,7 @@
   <?php if (empty($inventoryInquiry)): ?>
 
     <tr>
-      <td colspan="10" class="text-center text-muted py-3">
+      <td colspan="11" class="text-center text-muted py-3">
         No inventories found.
       </td>
     </tr>
@@ -39,10 +39,10 @@
         </div>
       </td>
       <td class="text-center">
-        <a href="<?= $row->url ?>" class="text-olive" data-t="s"><?= htmlspecialchars($row->case_barcode); ?></a>
+        <a href="<?= $row->url ?>" class="font-weight-500 text-olive" data-t="s"><?= htmlspecialchars($row->case_barcode); ?></a>
       </td>
       <td class="text-center">
-        <a href="<?= $row->url ?>" class="text-olive" data-t="s"><?= htmlspecialchars($row->barcode); ?></a>
+        <a href="<?= $row->url ?>" class="font-weight-500 text-olive" data-t="s"><?= htmlspecialchars($row->barcode); ?></a>
       </td>
       <td
         <?= mb_strlen($row->description) > 30 ? 'data-toggle="tooltip" title="'.htmlspecialchars($row->description).'"' : '' ?>

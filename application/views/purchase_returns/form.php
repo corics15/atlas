@@ -50,7 +50,7 @@
       <tr>
         <th>GRN No.</th>
         <td>
-          <a href="<?= $goodsReceipt->url ?>" class="text-olive" target="_blank">
+          <a href="<?= $goodsReceipt->url ?>" class="font-weight-500 text-olive" target="_blank">
             <i class="fa-external-link-alt fas fa-xs mr-1"></i>
             <?= htmlspecialchars($goodsReceipt->grn_no) ?>
           </a>

@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const txtTinNo = document.getElementById('txtTinNo');
 
   const hidSupplierId = document.getElementById('hidSupplierId');
-  const chkSelectAllSupplier = document.getElementById('chkSelectAllSupplier');
 
   Atlas.select.init('#selTerms', '#mdlSupplier');
 

@@ -69,7 +69,7 @@
         </td>
 
         <td class="text-center">
-          <a href="<?= $payment->url ?>" class="text-olive">
+          <a href="<?= $payment->url ?>" class="font-weight-500 text-olive">
             <?= htmlspecialchars($payment->payment_no); ?>
           </a>
         </td>

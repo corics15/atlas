@@ -6,8 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCancelPurchaseOrder = document.getElementById('btnCancelPurchaseOrder');
   const btnRefreshPurchaseOrder = document.getElementById('btnRefreshPurchaseOrder');
 
-  const chkSelectAllPurchaseOrder = document.getElementById('chkSelectAllPurchaseOrder');
-
   Atlas.select.init('#selSupplierFilter');
 
   Atlas.table.init({

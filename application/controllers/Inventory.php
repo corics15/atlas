@@ -16,17 +16,14 @@ class Inventory extends MY_Controller
     $this->setPage('Inventory Inquiry');
     $this->pageScript = 'inventory';
 
+    $filter = $this->decodeFilter($this->input->get('filter'));
     $filters = [
-      'keyword' => trim($this->input->get('keyword')),
+      'keyword' => trim($filter['keyword'] ?? $this->input->get('keyword')),
     ];
-
     $this->data = array_merge(
       $this->data,
       $filters
     );
-
-    $keyword = trim($this->input->get('keyword'));
-    $this->data['keyword'] = $keyword;
 
     $this->data['toolbar'] = [
       'stockLedger' => [

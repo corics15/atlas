@@ -64,6 +64,7 @@ class Check_vouchers extends MY_Controller
       ],
     ];
     $this->data['showDateFilter'] = TRUE;
+    $this->data['showStatusFilter'] = TRUE;
 
     $this->render('check_vouchers/index');
   }

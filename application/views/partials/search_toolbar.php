@@ -13,15 +13,13 @@
       </div>
     <?php endif; ?>
 
-    <?php if (!empty($suppliers)) : ?>
+    <?php if (!empty($showSupplierFilter) && !empty($suppliers)) : ?>
       <div style="min-width:280px; flex:1;">
         <label for="selSupplierFilter">Supplier</label>
         <select id="selSupplierFilter" name="supplier_id" class="form-control form-control-sm custom-select">
           <option value="">All Suppliers</option>
           <?php foreach ($suppliers as $supplier): ?>
-            <option
-              value="<?= $supplier->id; ?>"
-              <?= ($supplier_id == $supplier->id) ? 'selected' : ''; ?>>
+            <option value="<?= $supplier->id; ?>" <?= (($supplier_id ?? '') == $supplier->id) ? 'selected' : ''; ?>>
               <?= htmlspecialchars($supplier->supplier_name); ?>
             </option>
           <?php endforeach; ?>
@@ -29,13 +27,13 @@
       </div>
     <?php endif; ?>
 
-    <?php if (!empty($branches)) : ?>
+    <?php if (!empty($showBranchFilter) && !empty($branches)) : ?>
       <div style="min-width:200px;">
         <label for="selBranchFilter">Branch</label>
         <select id="selBranchFilter" name="branch_id" class="form-control form-control-sm custom-select">
           <option value="">All Branches</option>
           <?php foreach ($branches as $branch): ?>
-            <option value="<?= $branch->id; ?>" <?= ($branch_id == $branch->id) ? 'selected' : ''; ?>>
+            <option value="<?= $branch->id; ?>" <?= (($branch_id ?? '') == $branch->id) ? 'selected' : ''; ?>>
               <?= htmlspecialchars($branch->branch_name); ?>
             </option>
           <?php endforeach; ?>
@@ -43,7 +41,7 @@
       </div>
     <?php endif; ?>
 
-    <?php if (!empty($statuses)) : ?>
+    <?php if (!empty($showStatusFilter) && !empty($statuses)) : ?>
       <div style="min-width:150px;">
         <label for="selGenericStatus">Status</label>
         <select id="selGenericStatus" name="status" class="form-control form-control-sm custom-select">

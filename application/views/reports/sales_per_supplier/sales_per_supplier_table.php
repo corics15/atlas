@@ -27,7 +27,7 @@
         $netTotal += $netSales;
       ?>
       <tr>
-        <td><a href="#" class="js-supplier-drilldown text-olive" data-supplier-id="<?= (int)$row->supplier_id ?>"><?= htmlspecialchars($row->supplier_name); ?></a></td>
+        <td><a href="#" class="js-supplier-drilldown font-weight-500 text-olive" data-supplier-id="<?= (int)$row->supplier_id ?>"><?= htmlspecialchars($row->supplier_name); ?></a></td>
         <td class="text-right"><?= number_format((int)$row->invoice_count); ?></td>
         <td class="text-right"><?= number_format($grossSales, 2); ?></td>
         <td class="text-right"><?= number_format($discountAmount, 2); ?></td>

@@ -79,6 +79,17 @@ div.table-responsive table div.custom-checkbox {
   margin-top: 0 !important;
 }
 
+.atlas-page-title {
+  font-size: 2rem;
+}
+
+@media (max-width: 575.98px) {
+  .atlas-page-title {
+    font-size: 1.35rem !important;
+    line-height: 1.2;
+  }
+}
+
 /***** Navigation and sidebar */
 .main-sidebar {
   font-size: 0.875rem;

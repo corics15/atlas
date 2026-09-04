@@ -61,17 +61,17 @@
                   <select id="selFromBranch" class="form-control form-control-sm no-event" disabled>
                     <option value="">Select Branch</option>
                     <?php foreach ($branches as $branch): ?>
-<option
-  value="<?= $branch->id ?>"
-  <?php
-    if (isset($stockTransfer)) {
-      echo $stockTransfer->from_branch_id == $branch->id ? 'selected' : '';
-    } else {
-      echo $currentBranchId == $branch->id ? 'selected' : '';
-    }
-  ?>>
-  <?= htmlspecialchars($branch->branch_name) ?>
-</option>
+                      <option
+                        value="<?= $branch->id ?>"
+                        <?php
+                          if (isset($stockTransfer)) {
+                            echo $stockTransfer->from_branch_id == $branch->id ? 'selected' : '';
+                          } else {
+                            echo $currentBranchId == $branch->id ? 'selected' : '';
+                          }
+                        ?>>
+                        <?= htmlspecialchars($branch->branch_name) ?>
+                      </option>
                     <?php endforeach; ?>
                   </select>
                 </td>

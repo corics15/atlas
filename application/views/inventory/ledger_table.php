@@ -50,7 +50,7 @@
         <td class="text-center">
           <a
             href="<?= htmlspecialchars($row->reference_url) ?>"
-            class="text-olive"
+            class="font-weight-500 text-olive"
             data-toggle="tooltip" title="Open Transaction" target="_blank">
             <i class="fas fa-external-link-alt fa-xs mr-1"></i>
             <?= htmlspecialchars($row->reference_no); ?>

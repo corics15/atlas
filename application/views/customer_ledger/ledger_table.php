@@ -36,7 +36,7 @@
         <td class="text-center"><?= date('m/d/Y', strtotime($row->transaction_date)) ?></td>
         <td class="text-center">
           <?php if ($url): ?>
-            <a href="<?= $url ?>" class="text-olive" target="_blank">
+            <a href="<?= $url ?>" class="font-weight-500 text-olive" target="_blank">
               <i class="fas fa-external-link-alt fa-xs mr-1"></i>
               <?= htmlspecialchars($row->reference_no) ?>
             </a>
