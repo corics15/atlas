@@ -38,12 +38,18 @@
   $currentRoute = str_replace('_', '-', $currentController);
 
   if ($currentMethod !== 'index') {
-    $currentRoute .= '/' . str_replace(
-      '_',
-      '-',
-      $currentMethod
-    );
+    $currentRoute .= '/' . str_replace('_', '-', $currentMethod);
   }
+
+  $isActiveRoute = function ($url) use ($currentRoute) {
+    $route = trim($currentRoute, '/');
+    $url = trim($url, '/');
+
+    $routeModule = explode('/', $route)[0];
+    $urlModule = explode('/', $url)[0];
+
+    return $routeModule === $urlModule;
+  };
 ?>
 
 <aside class="main-sidebar sidebar-dark-olive elevation-4">
@@ -71,7 +77,7 @@
   <div class="sidebar">
 
     <?php /*** user */ ?>
-    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+    <div class="d-flex mb-3 mt-1 pb-1 user-panel">
       <div class="image">
 
         <?php if (!empty($sidebarUser->avatar)): ?>
@@ -116,11 +122,9 @@
               <?php $sectionHeader = NULL; ?>
             <?php endif; ?>
             <li class="nav-item">
-              <a href="<?= atlas_url($item['url']); ?>" class="nav-link <?= ($currentRoute == $item['url']) ? 'active' : ''; ?>">
+              <a href="<?= atlas_url($item['url']); ?>" class="nav-link <?= $isActiveRoute($item['url']) ? 'active' : ''; ?>">
                 <i class="nav-icon <?= $item['icon']; ?>"></i>
-                <p class="<?= ($currentRoute == $item['url']) ? '' : ''; ?>">
-                  <?= $item['title']; ?>
-                </p>
+                <p><?= $item['title']; ?></p>
               </a>
             </li>
 
@@ -152,8 +156,8 @@
               $open = false;
 
               foreach ($accessibleChildren as $child) {
-                if ($currentRoute == $child['url']) {
-                  $open = true;
+                if ($isActiveRoute($child['url'])) {
+                  $open = TRUE;
                   break;
                 }
               }
@@ -171,9 +175,9 @@
               <ul class="nav nav-treeview">
                 <?php foreach ($accessibleChildren as $child): ?>
                   <li class="nav-item">
-                    <a href="<?= atlas_url($child['url']); ?>" class="nav-link <?= ($currentRoute == $child['url']) ? 'active' : ''; ?>">
+                    <a href="<?= atlas_url($child['url']); ?>" class="nav-link <?= $isActiveRoute($child['url']) ? 'active' : ''; ?>">
                       <i class="nav-icon <?= $child['icon']; ?>"></i>
-                      <p class="<?= ($currentRoute == $child['url']) ? 'font-weight-normal' : ''; ?>">
+                      <p class="<?= $isActiveRoute($child['url']) ? 'font-weight-normal' : ''; ?>">
                         <?= $child['title']; ?>
                       </p>
                     </a>

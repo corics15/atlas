@@ -146,7 +146,7 @@ class Purchase_orders extends MY_Controller
     $totalAmt = 0;
     $itemCount = 0;
     foreach ($this->data['purchaseOrders'] as $po) {
-      $po->url = base_url('purchase-orders?id=' . $this->encodeId($po->id));
+      $po->url = base_url('purchase-orders/new?id=' . $this->encodeId($po->id));
       $itemCount += $po->item_count;
       $totalAmt += $po->total;
     }

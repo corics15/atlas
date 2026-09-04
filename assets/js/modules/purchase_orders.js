@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       purchaseOrderId = result.data.purchase_order_id;
 
       Atlas.toast.success(result.message);
-      setTimeout(() => Atlas.page.redirect(`purchase-orders?id=${Atlas.id.encode(result.data.purchase_order_id)}`), 1200);
+      setTimeout(() => Atlas.page.redirect(`purchase-orders/new?id=${Atlas.id.encode(result.data.purchase_order_id)}`), 1200);
       isEditMode = true;
       isDirty = false;
 

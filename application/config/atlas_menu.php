@@ -12,52 +12,6 @@ $config['atlas_menu'] = [
   ],
 
   [
-    'header' => 'MASTER DATA',
-  ],
-  [
-    'title' => 'Masters',
-    'icon'  => 'fas fa-database',
-
-    'children' => [
-      [
-        'title' => 'Customers',
-        'icon'  => 'fas fa-users',
-        'url'   => 'customers'
-      ],
-      [
-        'title' => 'Suppliers',
-        'icon'  => 'fas fa-truck',
-        'url'   => 'suppliers'
-      ],
-      [
-        'title' => 'Products',
-        'icon'  => 'fas fa-boxes',
-        'url'   => 'products'
-      ],
-      [
-        'title' => 'UOM',
-        'icon'  => 'fas fa-ruler',
-        'url'   => 'uom'
-      ],
-      [
-        'title' => 'Terms',
-        'icon'  => 'fas fa-file-invoice',
-        'url'   => 'terms'
-      ],
-      [
-        'title' => 'Salesmen',
-        'icon'  => 'fas fa-user-tie',
-        'url'   => 'salesmen'
-      ],
-      [
-        'title' => 'Outlet Types',
-        'icon'  => 'fas fa-store',
-        'url'   => 'outlet-types'
-      ],
-    ]
-  ],
-
-  [
     'header' => 'TRANSACTIONS',
   ],
   [
@@ -154,7 +108,7 @@ $config['atlas_menu'] = [
         'icon'  => 'fas fa-file-signature',
         'url'   => 'check-vouchers',
         'access' => ['ADMIN', 'MANAGER', 'STAFF'],
-      ],      
+      ],
       [
         'title' => 'Customer Payments',
         'icon'  => 'fas fa-money-check-alt',
@@ -231,6 +185,52 @@ $config['atlas_menu'] = [
         'icon'  => 'fas fa-list-ul',
         'url'   => 'reports/sales-order-detail',
         'access' => ['ADMIN', 'MANAGER', 'STAFF', 'VIEWER'],
+      ],
+    ]
+  ],
+
+  [
+    'header' => 'MASTER DATA',
+  ],
+  [
+    'title' => 'Masters',
+    'icon'  => 'fas fa-database',
+
+    'children' => [
+      [
+        'title' => 'Customers',
+        'icon'  => 'fas fa-users',
+        'url'   => 'customers'
+      ],
+      [
+        'title' => 'Suppliers',
+        'icon'  => 'fas fa-truck',
+        'url'   => 'suppliers'
+      ],
+      [
+        'title' => 'Products',
+        'icon'  => 'fas fa-boxes',
+        'url'   => 'products'
+      ],
+      [
+        'title' => 'UOM',
+        'icon'  => 'fas fa-ruler',
+        'url'   => 'uom'
+      ],
+      [
+        'title' => 'Terms',
+        'icon'  => 'fas fa-file-invoice',
+        'url'   => 'terms'
+      ],
+      [
+        'title' => 'Salesmen',
+        'icon'  => 'fas fa-user-tie',
+        'url'   => 'salesmen'
+      ],
+      [
+        'title' => 'Outlet Types',
+        'icon'  => 'fas fa-store',
+        'url'   => 'outlet-types'
       ],
     ]
   ],
