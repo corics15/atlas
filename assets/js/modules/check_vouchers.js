@@ -273,6 +273,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  /*** keyboard event for autocomplete */
+  document.addEventListener('keydown', e => {
+    const input = e.target.closest('.cv-account-code, .cv-account-name');
+    if (!input) return;
+
+    const container = input.closest('.cv-account-search')?.querySelector('.cv-account-suggestions');
+    if (!container || container.classList.contains('d-none')) return;
+
+    const items = [...container.querySelectorAll('.cv-account-suggestion')];
+    if (!items.length) return;
+
+    let index = items.findIndex(item => item.classList.contains('active'));
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      index = index < items.length - 1 ? index + 1 : 0;
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      index = index > 0 ? index - 1 : items.length - 1;
+    } else if (e.key === 'Enter') {
+      if (index < 0) return;
+
+      e.preventDefault();
+      items[index].click();
+      return;
+    } else {
+      return;
+    }
+
+    items.forEach(item => item.classList.remove('active'));
+    items[index].classList.add('active');
+    items[index].scrollIntoView({ block: 'nearest' });
+  });
+
+  /*** F2 shortcut for Add Account */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'F2') return;
+
+    e.preventDefault();
+    btnAddAccount?.click();
+  });
+
   updatePayeeFields();
   updatePaymentFields();
   initializeDetails();
@@ -342,11 +384,12 @@ const initializeDetails = () => {
 };
 
 const addDetailRow = (detail = {}) => {
-  if (!tblCheckVoucherDetails) {
-    return;
-  }
+  if (!tblCheckVoucherDetails) return;
 
   tblCheckVoucherDetails.insertAdjacentHTML('beforeend', createDetailRow(detail));
+
+  const lastRow = tblCheckVoucherDetails.lastElementChild;
+  lastRow?.querySelector('.cv-account-code')?.focus();
 };
 
 const createDetailRow = (detail = {}) => {
@@ -435,6 +478,7 @@ const showAccountSuggestions = (row, input, accounts) => {
     return;
   }
 
+  document.querySelector(`.accounts-table`).classList.remove(`table-responsive`);
   accounts.forEach(account => {
     const item = document.createElement('button');
     item.type = 'button';
@@ -442,7 +486,7 @@ const showAccountSuggestions = (row, input, accounts) => {
     item.dataset.id = account.id;
     item.dataset.accountCode = account.account_code;
     item.dataset.accountName = account.account_name;
-    item.innerHTML = `<span class="font-weight-500">
+    item.innerHTML = `<span class="font-weight-500 text-olive">
                           ${escapeHtml(account.account_code)}
                         </span>
                         <span class="ml-2">
@@ -467,6 +511,7 @@ const hideAccountSuggestions = () => {
     container.classList.add('d-none');
     container.innerHTML = '';
   });
+  document.querySelector(`.accounts-table`).classList.add(`table-responsive`);
 };
 
 const removeDetailRow = row => {

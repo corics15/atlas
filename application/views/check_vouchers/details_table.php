@@ -34,7 +34,7 @@
   </div>
 
   <div class="card-body p-0">
-    <div class="table-responsive">
+    <div class="table-responsive accounts-table">
       <table class="table table-bordered table-sm mb-0" id="accountingDetailsTable">
         <thead class="thead-orange">
           <tr>
@@ -112,7 +112,8 @@
 
           <div>
             <span class="font-weight-500">3.</span>
-            Add the accounting distribution and enter the appropriate
+            Add the accounting distribution, select the appropriate
+            <span class="font-weight-500 text-danger">Account</span>, then enter the
             <span class="font-weight-500 text-danger">Debit</span> and
             <span class="font-weight-500 text-danger">Credit</span> amounts.
           </div>
@@ -129,16 +130,21 @@
             <span class="font-weight-500 text-orange">Post Check Voucher</span>.
             Posting creates the corresponding Journal Voucher and prevents further editing.
           </div>
+
+          <div class="mt-1 text-info">
+            <i class="fas fa-keyboard mr-1"></i>
+            <span class="font-weight-500">Keyboard:</span>
+            Press <span class="font-weight-500">F2</span> to add an account,
+            <span class="font-weight-500">↑ / ↓</span> to browse account suggestions, and
+            <span class="font-weight-500">Enter</span> to select,
+            <span class="font-weight-500">Tab</span> to cycle through each inputs.
+          </div>
         </div>
       </div>
 
       <div class="col-md-4">
         <?php if ($isEditable): ?>
           <button type="button" id="btnSaveCheckVoucher" class="btn btn-sm btn-default btn-block">Save Check Voucher</button>
-
-          <?php //if (!empty($id)): ?>
-            <!-- <button type="button" id="btnPostCheckVoucher" class="btn btn-sm btn-warning btn-block">Post Check Voucher</button> -->
-          <?php //endif; ?>
         <?php endif; ?>
       </div>
     </div>

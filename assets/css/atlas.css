@@ -491,6 +491,43 @@ span.badge {
   background-color: #e19b1b;
 }
 
+/* Check Voucher - Account Autosuggest */
+.cv-account-suggestions {
+  background: #fafbfc;
+  border: 1px solid #b2bd74;
+  border-radius: 0.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
+  overflow: hidden;
+  width: auto !important;
+  font-size: smaller;
+}
+
+.cv-account-suggestion {
+  background: #fafbfc;
+  border-left: 0;
+  border-right: 0;
+  border-color: #edf0f2;
+}
+
+.cv-account-suggestion:first-child {
+  border-top: 0;
+}
+
+.cv-account-suggestion:last-child {
+  border-bottom: 0;
+}
+
+.cv-account-suggestion:hover,
+.cv-account-suggestion:focus {
+  background: #f1f3f5;
+}
+
+.cv-account-suggestion.active {
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+  color: inherit;
+}
+
 /* center table cell content vertically */
 .table td,
 .table th {
