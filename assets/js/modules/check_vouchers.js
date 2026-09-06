@@ -315,6 +315,20 @@ document.addEventListener('DOMContentLoaded', () => {
     btnAddAccount?.click();
   });
 
+  /*** Tab on last field - add account */
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Tab' || e.shiftKey) return;
+
+    const remarks = e.target.closest('.cv-detail-remarks');
+    if (!remarks) return;
+
+    const row = remarks.closest('tr');
+    if (!row || row !== tblCheckVoucherDetails.lastElementChild) return;
+
+    e.preventDefault();
+    addDetailRow();
+  });
+
   updatePayeeFields();
   updatePaymentFields();
   initializeDetails();
