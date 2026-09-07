@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.page.redirect('purchase-orders', { id: id });
+    Atlas.page.redirect('purchase-orders', { id: Atlas.id.encode(id) });
   });
 
   /*** receive goods */
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    Atlas.page.redirect('goods-receipts/create', { po: id });
+    Atlas.page.redirect('goods-receipts/create', { po: Atlas.id.encode(id) });
   });
 
   /*** refresh purchase order */
@@ -123,16 +123,12 @@ const getSelectedPurchaseOrderId = () => {
   const checked = Atlas.table.selected();
 
   if (checked.length === 0) {
-    Atlas.toast.warning(
-      'Please select a Purchase Order.'
-    );
+    Atlas.toast.warning('Please select a Purchase Order.');
     return null;
   }
 
   if (checked.length > 1) {
-    Atlas.toast.warning(
-      'Please select only one Purchase Order. Multiple selection is supported only for Print and Cancel.'
-    );
+    Atlas.toast.warning('Please select only one Purchase Order. Multiple selection is supported only for Print and Cancel.');
 
     return null;
   }
@@ -185,6 +181,4 @@ const updateToolbarState = (selected = Atlas.table.selected()) => {
   }
 }
 
-const getSelectedPurchaseOrders = () => {
-  return Atlas.table.selected();
-}
+const getSelectedPurchaseOrders = () => Atlas.table.selected();

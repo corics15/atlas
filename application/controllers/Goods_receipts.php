@@ -226,8 +226,10 @@ class Goods_receipts extends MY_Controller
       $this->data['error_message'] = 'Only OPEN or PARTIAL Purchase Orders can receive goods.';
     }
 
+    $this->data['purchaseOrder']['header']->url = base_url('purchase-orders?id=' . $this->encodeId($this->data['purchaseOrder']['header']->id));
     $this->setPage('Receive Goods');
     $this->pageScript = 'goods_receipts';
+
     $this->render('goods_receipts/create');
   }
 
