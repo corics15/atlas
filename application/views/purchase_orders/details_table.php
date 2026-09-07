@@ -23,7 +23,7 @@
             <th class="text-center">UOM</th>
             <th class="text-right">Qty</th>
             <th class="text-right">Price</th>
-            <th class="text-right">Discount</th>
+            <th class="text-right">Discount %</th>
             <th class="text-right">Amount</th>
             <th></th>
           </tr>
