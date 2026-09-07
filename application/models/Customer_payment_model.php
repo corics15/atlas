@@ -266,6 +266,7 @@ class Customer_payment_model extends CI_Model
 
     /*** opening balance */
     $openingBalance = 0;
+
     if ($dateFrom !== '') {
       $row = $this->db->query(
         "SELECT COALESCE(SUM(x.debit - x.credit), 0) AS opening_balance
@@ -275,22 +276,13 @@ class Customer_payment_model extends CI_Model
           WHERE si.customer_id = ?
           AND si.status = 'POSTED'
           AND si.invoice_date < ?
-
           UNION ALL
-
-          SELECT 0::numeric AS debit, COALESCE(a.amount_applied, 0) AS credit
+          SELECT 0::numeric AS debit, cp.amount_received AS credit
           FROM t_customer_payments cp
-          LEFT JOIN (
-            SELECT customer_payment_id, SUM(amount_applied) AS amount_applied
-            FROM t_customer_payment_allocations
-            GROUP BY customer_payment_id
-          ) a ON a.customer_payment_id = cp.id
           WHERE cp.customer_id = ?
           AND cp.status = 'POSTED'
           AND cp.payment_date < ?
-
           UNION ALL
-
           SELECT 0::numeric AS debit, cm.amount AS credit
           FROM t_credit_memos cm
           WHERE cm.customer_id = ?
@@ -311,7 +303,6 @@ class Customer_payment_model extends CI_Model
     $invoiceWhere = '';
     $paymentWhere = '';
     $creditMemoWhere = '';
-
     $params = [$openingBalance, $customerId];
 
     if ($dateFrom !== '') {
@@ -379,15 +370,10 @@ class Customer_payment_model extends CI_Model
           cp.payment_no AS reference_no,
           'CUSTOMER PAYMENT' AS transaction_type,
           0::numeric AS debit,
-          COALESCE(a.amount_applied, 0) AS credit,
+          cp.amount_received AS credit,
           cp.id AS transaction_id,
           2 AS sort_order
         FROM t_customer_payments cp
-        LEFT JOIN (
-          SELECT customer_payment_id, SUM(amount_applied) AS amount_applied
-          FROM t_customer_payment_allocations
-          GROUP BY customer_payment_id
-        ) a ON a.customer_payment_id = cp.id
         WHERE cp.customer_id = ?
         AND cp.status = 'POSTED'
         {$paymentWhere}
