@@ -278,6 +278,7 @@ class Check_voucher_model extends CI_Model
           throw new Exception('Please select an Account for all accounting entries.');
         }
 
+        log_message('error', 'CV DEBUG account_id=' . print_r($detail->account_id ?? null, true));
         $account = $this->db->select("id, account_code, account_name")
             ->where('id', (int) $detail->account_id)
             ->where('is_active', true)
