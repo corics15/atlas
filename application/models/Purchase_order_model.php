@@ -515,7 +515,7 @@ class Purchase_order_model extends CI_Model
               )
               VALUES
               (
-                ?,?,?,?,?,?,?,?,
+                ?,?,?,?,?,?,?,
                 CURRENT_TIMESTAMP
               )
     ";
