@@ -257,9 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   );
 
   /*** load existing payment allocations */
-  if (
-    window.customerPaymentId > 0 && selCustomer?.value
-  ) {
+  if (window.customerPaymentId > 0 && selCustomer?.value) {
     await loadOutstandingInvoices();
   }
 

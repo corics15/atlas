@@ -649,6 +649,46 @@ class Sales_return_model extends CI_Model
         }
         /*** end inventory update */
 
+        /*** create Credit Memo */
+        $existingCreditMemo = $this->db
+            ->select('id, cm_no')
+            ->where('sales_return_id', (int)$return->id)
+            ->get('t_credit_memos')
+            ->row();
+
+        if ($existingCreditMemo) {
+          throw new Exception(
+            "Credit Memo {$existingCreditMemo->cm_no} already exists for Sales Return {$return->sr_no}."
+          );
+        }
+
+        $creditMemoNo = $this->Document_number_model->generate('CM');
+
+        $this->db->insert(
+          't_credit_memos',
+          [
+            'cm_no'            => $creditMemoNo,
+            'credit_memo_date' => $return->return_date,
+            'customer_id'      => $return->customer_id,
+            'sales_invoice_id' => $return->sales_invoice_id,
+            'sales_return_id'  => $return->id,
+            'amount'           => round((float)$return->total_amount, 2),
+            'remarks'          => "SALES RETURN {$return->sr_no}",
+            'status'           => 'POSTED',
+            'entered_by'       => $this->session->userdata('user_id'),
+            'entered_on'       => date('Y-m-d H:i:s'),
+            'posted_by'        => $this->session->userdata('user_id'),
+            'posted_on'        => date('Y-m-d H:i:s')
+          ]
+        );
+
+        if (!$this->db->affected_rows()) {
+          throw new Exception(
+            "Unable to create Credit Memo for Sales Return {$return->sr_no}."
+          );
+        }
+        /*** end create Credit Memo */
+
         /*** mark as posted sales return */
         $this->db
             ->where('id', $id)

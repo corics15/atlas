@@ -203,7 +203,10 @@ class Customer_payment_model extends CI_Model
           si.invoice_date,
           si.total_amount,
           COALESCE(p.amount_paid, 0) AS amount_paid,
-          si.total_amount - COALESCE(p.amount_paid, 0) AS balance
+          COALESCE(cm.amount_credited, 0) AS amount_credited,
+          si.total_amount
+            - COALESCE(p.amount_paid, 0)
+            - COALESCE(cm.amount_credited, 0) AS balance
         ", FALSE)
         ->from('t_sales_invoices si')
         ->join(
@@ -212,8 +215,7 @@ class Customer_payment_model extends CI_Model
               cpa.sales_invoice_id,
               SUM(cpa.amount_applied) AS amount_paid
             FROM t_customer_payment_allocations cpa
-            INNER JOIN t_customer_payments cp
-              ON cp.id = cpa.customer_payment_id
+            INNER JOIN t_customer_payments cp ON cp.id = cpa.customer_payment_id
             WHERE cp.status = 'POSTED'
             GROUP BY cpa.sales_invoice_id
           ) p",
@@ -221,10 +223,25 @@ class Customer_payment_model extends CI_Model
           'left',
           FALSE
         )
+        ->join(
+          "(
+            SELECT
+              sales_invoice_id,
+              SUM(amount) AS amount_credited
+            FROM t_credit_memos
+            WHERE status = 'POSTED'
+            GROUP BY sales_invoice_id
+          ) cm",
+          'cm.sales_invoice_id = si.id',
+          'left',
+          FALSE
+        )
         ->where('si.customer_id', $customerId)
         ->where('si.status', 'POSTED')
         ->where(
-          'si.total_amount - COALESCE(p.amount_paid, 0) > 0',
+          'si.total_amount
+            - COALESCE(p.amount_paid, 0)
+            - COALESCE(cm.amount_credited, 0) > 0',
           NULL,
           FALSE
         )
@@ -234,7 +251,7 @@ class Customer_payment_model extends CI_Model
         ->result();
   }
 
-  public function getCustomerLedger( $customerId, $dateFrom = null, $dateTo = null)
+  public function getCustomerLedger($customerId, $dateFrom = null, $dateTo = null)
   {
     $customerId = (int)$customerId;
     $dateFrom = trim($dateFrom ?? '');
@@ -243,54 +260,59 @@ class Customer_payment_model extends CI_Model
     if ($customerId <= 0) {
       return [
         'opening_balance' => 0,
-        'transactions' => []
+        'transactions'    => []
       ];
     }
 
     /*** opening balance */
     $openingBalance = 0;
-
     if ($dateFrom !== '') {
-      $row = $this->db
-          ->query(
-            "SELECT COALESCE(SUM(x.debit - x.credit), 0) AS opening_balance
-            FROM (
-              SELECT si.total_amount AS debit, 0::numeric AS credit
-              FROM t_sales_invoices si
-              WHERE si.customer_id = ?
-              AND si.status = 'POSTED'
-              AND si.invoice_date < ?
-              UNION ALL
-              SELECT 0::numeric AS debit, COALESCE(a.amount_applied, 0) AS credit
-              FROM t_customer_payments cp
-              LEFT JOIN (
-                SELECT customer_payment_id, SUM(amount_applied) AS amount_applied
-                FROM t_customer_payment_allocations
-                GROUP BY customer_payment_id
-              ) a ON a.customer_payment_id = cp.id
-              WHERE cp.customer_id = ?
-              AND cp.status = 'POSTED'
-              AND cp.payment_date < ?
-            ) x",
-            [
-              $customerId,
-              $dateFrom,
-              $customerId,
-              $dateFrom
-            ]
-          )
-          ->row();
+      $row = $this->db->query(
+        "SELECT COALESCE(SUM(x.debit - x.credit), 0) AS opening_balance
+        FROM (
+          SELECT si.total_amount AS debit, 0::numeric AS credit
+          FROM t_sales_invoices si
+          WHERE si.customer_id = ?
+          AND si.status = 'POSTED'
+          AND si.invoice_date < ?
+
+          UNION ALL
+
+          SELECT 0::numeric AS debit, COALESCE(a.amount_applied, 0) AS credit
+          FROM t_customer_payments cp
+          LEFT JOIN (
+            SELECT customer_payment_id, SUM(amount_applied) AS amount_applied
+            FROM t_customer_payment_allocations
+            GROUP BY customer_payment_id
+          ) a ON a.customer_payment_id = cp.id
+          WHERE cp.customer_id = ?
+          AND cp.status = 'POSTED'
+          AND cp.payment_date < ?
+
+          UNION ALL
+
+          SELECT 0::numeric AS debit, cm.amount AS credit
+          FROM t_credit_memos cm
+          WHERE cm.customer_id = ?
+          AND cm.status = 'POSTED'
+          AND cm.credit_memo_date < ?
+        ) x",
+        [
+          $customerId, $dateFrom,
+          $customerId, $dateFrom,
+          $customerId, $dateFrom
+        ]
+      )->row();
 
       $openingBalance = round((float)$row->opening_balance, 2);
     }
 
-    /*** transaction date conditions */
+    /*** transaction conditions */
     $invoiceWhere = '';
     $paymentWhere = '';
-    $params = [
-      $openingBalance,
-      $customerId
-    ];
+    $creditMemoWhere = '';
+
+    $params = [$openingBalance, $customerId];
 
     if ($dateFrom !== '') {
       $invoiceWhere .= ' AND si.invoice_date >= ?';
@@ -314,59 +336,82 @@ class Customer_payment_model extends CI_Model
       $params[] = $dateTo;
     }
 
-    $transactions = $this->db
-        ->query(
-          "SELECT
-            x.transaction_date,
-            x.reference_no,
-            x.transaction_type,
-            x.debit,
-            x.credit,
-            ? + SUM(x.debit - x.credit) OVER (
-              ORDER BY x.transaction_date, x.sort_order, x.transaction_id
-              ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-            ) AS balance,
-            x.transaction_id
-          FROM (
-            SELECT
-              si.invoice_date AS transaction_date,
-              si.si_no AS reference_no,
-              'SALES INVOICE' AS transaction_type,
-              si.total_amount AS debit,
-              0::numeric AS credit,
-              si.id AS transaction_id,
-              1 AS sort_order
-            FROM t_sales_invoices si
-            WHERE si.customer_id = ?
-            AND si.status = 'POSTED'
-            {$invoiceWhere}
-            UNION ALL
-            SELECT
-              cp.payment_date AS transaction_date,
-              cp.payment_no AS reference_no,
-              'CUSTOMER PAYMENT' AS transaction_type,
-              0::numeric AS debit,
-              COALESCE(a.amount_applied, 0) AS credit,
-              cp.id AS transaction_id,
-              2 AS sort_order
-            FROM t_customer_payments cp
-            LEFT JOIN (
-              SELECT customer_payment_id, SUM(amount_applied) AS amount_applied
-              FROM t_customer_payment_allocations
-              GROUP BY customer_payment_id
-            ) a ON a.customer_payment_id = cp.id
-            WHERE cp.customer_id = ?
-            AND cp.status = 'POSTED'
-            {$paymentWhere}
-          ) x
-          ORDER BY x.transaction_date, x.sort_order, x.transaction_id",
-          $params
-        )
-        ->result();
+    $params[] = $customerId;
+
+    if ($dateFrom !== '') {
+      $creditMemoWhere .= ' AND cm.credit_memo_date >= ?';
+      $params[] = $dateFrom;
+    }
+
+    if ($dateTo !== '') {
+      $creditMemoWhere .= ' AND cm.credit_memo_date <= ?';
+      $params[] = $dateTo;
+    }
+
+    $transactions = $this->db->query(
+      "SELECT
+        x.transaction_date,
+        x.reference_no,
+        x.transaction_type,
+        x.debit,
+        x.credit,
+        ? + SUM(x.debit - x.credit) OVER (
+          ORDER BY x.transaction_date, x.sort_order, x.transaction_id
+          ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS balance,
+        x.transaction_id
+      FROM (
+        SELECT
+          si.invoice_date AS transaction_date,
+          si.si_no AS reference_no,
+          'SALES INVOICE' AS transaction_type,
+          si.total_amount AS debit,
+          0::numeric AS credit,
+          si.id AS transaction_id,
+          1 AS sort_order
+        FROM t_sales_invoices si
+        WHERE si.customer_id = ?
+        AND si.status = 'POSTED'
+        {$invoiceWhere}
+        UNION ALL
+        SELECT
+          cp.payment_date AS transaction_date,
+          cp.payment_no AS reference_no,
+          'CUSTOMER PAYMENT' AS transaction_type,
+          0::numeric AS debit,
+          COALESCE(a.amount_applied, 0) AS credit,
+          cp.id AS transaction_id,
+          2 AS sort_order
+        FROM t_customer_payments cp
+        LEFT JOIN (
+          SELECT customer_payment_id, SUM(amount_applied) AS amount_applied
+          FROM t_customer_payment_allocations
+          GROUP BY customer_payment_id
+        ) a ON a.customer_payment_id = cp.id
+        WHERE cp.customer_id = ?
+        AND cp.status = 'POSTED'
+        {$paymentWhere}
+        UNION ALL
+        SELECT
+          cm.credit_memo_date AS transaction_date,
+          cm.cm_no AS reference_no,
+          'CREDIT MEMO' AS transaction_type,
+          0::numeric AS debit,
+          cm.amount AS credit,
+          cm.id AS transaction_id,
+          3 AS sort_order
+        FROM t_credit_memos cm
+        WHERE cm.customer_id = ?
+        AND cm.status = 'POSTED'
+        {$creditMemoWhere}
+      ) x
+      ORDER BY x.transaction_date, x.sort_order, x.transaction_id",
+      $params
+    )->result();
 
     return [
       'opening_balance' => $openingBalance,
-      'transactions' => $transactions
+      'transactions'    => $transactions
     ];
   }
 
@@ -548,32 +593,33 @@ class Customer_payment_model extends CI_Model
           );
         }
 
-        /*** previously POSTED payments only */
+        /*** authoritative current invoice balance */
         $previous = $this->db
-            ->select(
-              'COALESCE(SUM(cpa.amount_applied), 0) AS amount_paid',
-              FALSE
+            ->query(
+              "SELECT
+                COALESCE((
+                  SELECT SUM(cpa.amount_applied)
+                  FROM t_customer_payment_allocations cpa
+                  INNER JOIN t_customer_payments cp ON cp.id = cpa.customer_payment_id
+                  WHERE cpa.sales_invoice_id = ?
+                  AND cp.status = 'POSTED'
+                ), 0) AS amount_paid,
+                COALESCE((
+                  SELECT SUM(cm.amount)
+                  FROM t_credit_memos cm
+                  WHERE cm.sales_invoice_id = ?
+                  AND cm.status = 'POSTED'
+                ), 0) AS amount_credited",
+              [
+                $salesInvoiceId,
+                $salesInvoiceId
+              ]
             )
-            ->from(
-              't_customer_payment_allocations cpa'
-            )
-            ->join(
-              't_customer_payments cp',
-              'cp.id = cpa.customer_payment_id'
-            )
-            ->where(
-              'cpa.sales_invoice_id',
-              $salesInvoiceId
-            )
-            ->where(
-              'cp.status',
-              'POSTED'
-            )
-            ->get()
             ->row();
 
         $amountPaid = round((float)$previous->amount_paid, 2);
-        $balance = round((float)$invoice->total_amount - $amountPaid, 2);
+        $amountCredited = round((float)$previous->amount_credited, 2);
+        $balance = round((float)$invoice->total_amount - $amountPaid - $amountCredited, 2);
 
         if ($amountApplied > $balance) {
           throw new Exception(
@@ -684,44 +730,40 @@ class Customer_payment_model extends CI_Model
           }
 
           if ($invoice->status !== 'POSTED') {
-            throw new Exception(
-              "Sales Invoice {$invoice->si_no} is not POSTED."
-            );
+            throw new Exception("Sales Invoice {$invoice->si_no} is not POSTED."            );
           }
 
-          if (
-            (int)$invoice->customer_id !==
-            (int)$customerPayment->customer_id
-          ) {
+          if ((int)$invoice->customer_id !== (int)$customerPayment->customer_id) {
             throw new Exception("Sales Invoice {$invoice->si_no} does not belong to the payment customer.");
           }
 
-          /*** authoritative previously posted amount */
+          /*** authoritative current invoice balance */
           $previous = $this->db
-              ->select(
-                'COALESCE(SUM(cpa.amount_applied), 0) AS amount_paid',
-                FALSE
+              ->query(
+                "SELECT
+                  COALESCE((
+                    SELECT SUM(cpa.amount_applied)
+                    FROM t_customer_payment_allocations cpa
+                    INNER JOIN t_customer_payments cp ON cp.id = cpa.customer_payment_id
+                    WHERE cpa.sales_invoice_id = ?
+                    AND cp.status = 'POSTED'
+                  ), 0) AS amount_paid,
+                  COALESCE((
+                    SELECT SUM(cm.amount)
+                    FROM t_credit_memos cm
+                    WHERE cm.sales_invoice_id = ?
+                    AND cm.status = 'POSTED'
+                  ), 0) AS amount_credited",
+                [
+                  (int)$invoice->id,
+                  (int)$invoice->id
+                ]
               )
-              ->from(
-                't_customer_payment_allocations cpa'
-              )
-              ->join(
-                't_customer_payments cp',
-                'cp.id = cpa.customer_payment_id'
-              )
-              ->where(
-                'cpa.sales_invoice_id',
-                (int)$invoice->id
-              )
-              ->where(
-                'cp.status',
-                'POSTED'
-              )
-              ->get()
               ->row();
 
           $amountPaid = round((float)$previous->amount_paid, 2);
-          $balance = round((float)$invoice->total_amount - $amountPaid, 2);
+          $amountCredited = round((float)$previous->amount_credited, 2);
+          $balance = round((float)$invoice->total_amount - $amountPaid - $amountCredited, 2);
           $amountApplied = round((float)$allocation->amount_applied, 2);
 
           if ($amountApplied > $balance) {
@@ -864,79 +906,43 @@ class Customer_payment_model extends CI_Model
   public function getArAging($asOfDate, $customerId = NULL)
   {
     $sql = "SELECT
-              si.customer_id,
-              c.customer_name,
-              SUM(
-                CASE
-                  WHEN aging.days_past_due <= 0
-                  THEN aging.balance
-                  ELSE 0
-                END
-              ) AS current_amount,
-              SUM(
-                CASE
-                  WHEN aging.days_past_due BETWEEN 1 AND 30
-                  THEN aging.balance
-                  ELSE 0
-                END
-              ) AS days_1_30,
-              SUM(
-                CASE
-                  WHEN aging.days_past_due BETWEEN 31 AND 60
-                  THEN aging.balance
-                  ELSE 0
-                END
-              ) AS days_31_60,
-              SUM(
-                CASE
-                  WHEN aging.days_past_due BETWEEN 61 AND 90
-                  THEN aging.balance
-                  ELSE 0
-                END
-              ) AS days_61_90,
-              SUM(
-                CASE
-                  WHEN aging.days_past_due > 90
-                  THEN aging.balance
-                  ELSE 0
-                END
-              ) AS over_90,
-              SUM(aging.balance) AS total_balance
-            FROM t_sales_invoices si
-            INNER JOIN m_customers c ON c.id = si.customer_id
-            LEFT JOIN m_terms t ON t.id = si.terms_id
-            CROSS JOIN LATERAL (
-              SELECT
-                (
-                  si.invoice_date +
-                  COALESCE(t.days_due, 0)
-                ) AS due_date,
-                (
-                  ?::date -
-                  (
-                    si.invoice_date +
-                    COALESCE(t.days_due, 0)
-                  )
-                ) AS days_past_due,
-                (
-                  si.total_amount -
-                  COALESCE(
-                    (
-                      SELECT SUM(a.amount_applied)
-                      FROM t_customer_payment_allocations a
-                      INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
-                      WHERE a.sales_invoice_id = si.id
-                        AND cp.status = 'POSTED'
-                        AND cp.payment_date <= ?::date
-                    ),
-                    0
-                  )
-                ) AS balance
-            ) aging
-            WHERE si.status = 'POSTED' AND si.invoice_date <= ?::date
-          ";
+      si.customer_id,
+      c.customer_name,
+      SUM(CASE WHEN aging.days_past_due <= 0 THEN aging.balance ELSE 0 END) AS current_amount,
+      SUM(CASE WHEN aging.days_past_due BETWEEN 1 AND 30 THEN aging.balance ELSE 0 END) AS days_1_30,
+      SUM(CASE WHEN aging.days_past_due BETWEEN 31 AND 60 THEN aging.balance ELSE 0 END) AS days_31_60,
+      SUM(CASE WHEN aging.days_past_due BETWEEN 61 AND 90 THEN aging.balance ELSE 0 END) AS days_61_90,
+      SUM(CASE WHEN aging.days_past_due > 90 THEN aging.balance ELSE 0 END) AS over_90,
+      SUM(aging.balance) AS total_balance
+    FROM t_sales_invoices si
+    INNER JOIN m_customers c ON c.id = si.customer_id
+    LEFT JOIN m_terms t ON t.id = si.terms_id
+    CROSS JOIN LATERAL (
+      SELECT
+        si.invoice_date + COALESCE(t.days_due, 0) AS due_date,
+        ?::date - (si.invoice_date + COALESCE(t.days_due, 0)) AS days_past_due,
+        si.total_amount
+          - COALESCE((
+            SELECT SUM(a.amount_applied)
+            FROM t_customer_payment_allocations a
+            INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
+            WHERE a.sales_invoice_id = si.id
+            AND cp.status = 'POSTED'
+            AND cp.payment_date <= ?::date
+          ), 0)
+          - COALESCE((
+            SELECT SUM(cm.amount)
+            FROM t_credit_memos cm
+            WHERE cm.sales_invoice_id = si.id
+            AND cm.status = 'POSTED'
+            AND cm.credit_memo_date <= ?::date
+          ), 0) AS balance
+    ) aging
+    WHERE si.status = 'POSTED'
+    AND si.invoice_date <= ?::date ";
 
     $params = [
+      $asOfDate,
       $asOfDate,
       $asOfDate,
       $asOfDate
@@ -947,14 +953,49 @@ class Customer_payment_model extends CI_Model
       $params[] = (int)$customerId;
     }
 
-    $sql .= "GROUP BY
-              si.customer_id,
-              c.customer_name
-            HAVING SUM(aging.balance) > 0
-            ORDER BY c.customer_name";
+    $sql .= "GROUP BY si.customer_id, c.customer_name
+      HAVING SUM(aging.balance) > 0
+      ORDER BY c.customer_name";
+
+    return $this->db->query($sql, $params)->result();
+  }
+
+  public function getAvailableCustomerCredits($customerId)
+  {
+    $customerId = (int)$customerId;
+
+    if ($customerId <= 0) {
+      return [];
+    }
 
     return $this->db
-        ->query($sql, $params)
+        ->select("
+          cm.id,
+          cm.cm_no,
+          cm.credit_memo_date,
+          cm.sales_invoice_id,
+          cm.sales_return_id,
+          cm.amount,
+          COALESCE(a.amount_applied, 0) AS amount_applied,
+          cm.amount - COALESCE(a.amount_applied, 0) AS available_credit
+        ", FALSE)
+        ->from('t_credit_memos cm')
+        ->join(
+          "(
+            SELECT credit_memo_id, SUM(amount_applied) AS amount_applied
+            FROM t_credit_memo_allocations
+            GROUP BY credit_memo_id
+          ) a",
+          'a.credit_memo_id = cm.id',
+          'left',
+          FALSE
+        )
+        ->where('cm.customer_id', $customerId)
+        ->where('cm.status', 'POSTED')
+        ->where('cm.amount - COALESCE(a.amount_applied, 0) > 0', NULL, FALSE)
+        ->order_by('cm.credit_memo_date', 'ASC')
+        ->order_by('cm.id', 'ASC')
+        ->get()
         ->result();
   }
 
