@@ -407,11 +407,14 @@ class Purchase_order_model extends CI_Model
               d.*,
               p.barcode,
               p.description,
-              u.uom
-          ")
+              u.uom,
+              (d.qty * d.price) AS gross_amount,
+              (d.qty * d.price) * (d.discount / 100.0) AS discount_amount,
+              (d.qty * d.price) * (1 - (d.discount / 100.0)) AS amount
+          ", FALSE)
           ->from('t_purchase_order_details d')
           ->join('m_products p', 'p.id = d.product_id')
-          ->join('m_uom u', 'u.id = p.uom_id')
+          ->join('m_uom u', 'u.id = d.uom_id', 'left')
           ->where('purchase_order_id', $id)
           ->order_by('d.id')
           ->get()

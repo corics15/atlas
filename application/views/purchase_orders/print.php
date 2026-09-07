@@ -1,12 +1,3 @@
-<!-- <!DOCTYPE html>
-<html>
-  <head>
-    <title>Purchase Order</title>
-    <link rel="stylesheet" href="<= atlas_asset('assets/css/print.css'); ?>">
-    <link rel="shortcut icon" href="<= atlas_asset($app['shortcut_ico']) ?>" type="image/x-icon">
-  </head>
-  <body> -->
-
     <?php /*** header */ ?>
     <?php
       $company = atlas_company();
@@ -73,7 +64,7 @@
             <th width="8%">UOM</th>
             <th width="8%" class="text-right">Qty</th>
             <th width="12%" class="text-right">Price</th>
-            <th width="12%" class="text-right">Discount</th>
+            <th width="12%" class="text-right">Discount %</th>
             <th width="14%" class="text-right">Amount</th>
           </tr>
         </thead>
@@ -82,7 +73,8 @@
             $total = 0;
             $index = 1;
             foreach($document->details as $detail):
-              $amount = ($detail->qty * $detail->price) - $detail->discount;
+              // $amount = ($detail->qty * $detail->price) - $detail->discount;
+              $amount = ($detail->qty * $detail->price) * (1 - ($detail->discount / 100));
               $total += $amount;
             ?>
           <tr>
@@ -153,9 +145,3 @@
     <?php endforeach; ?>
 
     <?php $this->load->view('partials/reports/scripts'); ?>
-
-    <!-- <script>
-      window.print();
-    </script>
-  </body>
-</html> -->
