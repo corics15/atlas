@@ -623,7 +623,7 @@ class Sales_return_model extends CI_Model
 
         /*** validate source sales invoice */
         $salesInvoice = $this->db
-            ->select('id, si_no, status')
+            ->select('id, si_no, status, total_amount')
             ->where('id', $return->sales_invoice_id)
             ->get('t_sales_invoices')
             ->row();
@@ -662,31 +662,59 @@ class Sales_return_model extends CI_Model
           );
         }
 
-        $creditMemoNo = $this->Document_number_model->generate('CM');
+          /*** calculate available customer credit */
+          $paymentRow = $this->db->query("SELECT COALESCE(SUM(a.amount_applied), 0) AS paid_amount
+                                            FROM t_customer_payment_allocations a
+                                            INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
+                                            WHERE a.sales_invoice_id = ?
+                                            AND cp.status = 'POSTED'",
+                                            [(int)$return->sales_invoice_id]
+                                          )->row();
 
-        $this->db->insert(
-          't_credit_memos',
-          [
-            'cm_no'            => $creditMemoNo,
-            'credit_memo_date' => $return->return_date,
-            'customer_id'      => $return->customer_id,
-            'sales_invoice_id' => $return->sales_invoice_id,
-            'sales_return_id'  => $return->id,
-            'amount'           => round((float)$return->total_amount, 2),
-            'remarks'          => "SALES RETURN {$return->sr_no}",
-            'status'           => 'POSTED',
-            'entered_by'       => $this->session->userdata('user_id'),
-            'entered_on'       => date('Y-m-d H:i:s'),
-            'posted_by'        => $this->session->userdata('user_id'),
-            'posted_on'        => date('Y-m-d H:i:s')
-          ]
-        );
+          $previousCreditMemoRow = $this->db->query("SELECT COALESCE(SUM(amount), 0) AS credited_amount
+                                                      FROM t_credit_memos
+                                                      WHERE sales_invoice_id = ?
+                                                      AND status = 'POSTED'",
+                                                      [(int)$return->sales_invoice_id]
+                                                    )->row();
 
-        if (!$this->db->affected_rows()) {
-          throw new Exception(
-            "Unable to create Credit Memo for Sales Return {$return->sr_no}."
+          $invoiceAmount = round((float)$salesInvoice->total_amount, 2);
+          $paidAmount = round((float)$paymentRow->paid_amount, 2);
+          $previousCreditAmount = round((float)$previousCreditMemoRow->credited_amount, 2);
+          $creditMemoAmount = round((float)$return->total_amount, 2);
+
+          $outstandingBeforeCredit = max(0, round($invoiceAmount - $paidAmount - $previousCreditAmount, 2));
+          $amountAppliedToSourceInvoice = min($creditMemoAmount, $outstandingBeforeCredit);
+
+          $availableCredit = max(0, round($creditMemoAmount - $amountAppliedToSourceInvoice, 2));
+          /*** end calculate available customer credit */
+
+          $creditMemoNo = $this->Document_number_model->generate('CM');
+
+          $this->db->insert(
+            't_credit_memos',
+            [
+              'cm_no'            => $creditMemoNo,
+              'credit_memo_date' => $return->return_date,
+              'customer_id'      => $return->customer_id,
+              'sales_invoice_id' => $return->sales_invoice_id,
+              'sales_return_id'  => $return->id,
+              'amount'           => $creditMemoAmount,
+              'available_credit' => $availableCredit,
+              'remarks'          => "SALES RETURN {$return->sr_no}",
+              'status'           => 'POSTED',
+              'entered_by'       => $this->session->userdata('user_id'),
+              'entered_on'       => date('Y-m-d H:i:s'),
+              'posted_by'        => $this->session->userdata('user_id'),
+              'posted_on'        => date('Y-m-d H:i:s')
+            ]
           );
-        }
+
+          if (!$this->db->affected_rows()) {
+            throw new Exception(
+              "Unable to create Credit Memo for Sales Return {$return->sr_no}."
+            );
+          }
         /*** end create Credit Memo */
 
         /*** mark as posted sales return */

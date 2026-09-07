@@ -197,58 +197,73 @@ class Customer_payment_model extends CI_Model
     }
 
     return $this->db
-        ->select("
-          si.id,
-          si.si_no,
-          si.invoice_date,
-          si.total_amount,
-          COALESCE(p.amount_paid, 0) AS amount_paid,
-          COALESCE(cm.amount_credited, 0) AS amount_credited,
-          si.total_amount
-            - COALESCE(p.amount_paid, 0)
-            - COALESCE(cm.amount_credited, 0) AS balance
-        ", FALSE)
-        ->from('t_sales_invoices si')
-        ->join(
-          "(
-            SELECT
-              cpa.sales_invoice_id,
-              SUM(cpa.amount_applied) AS amount_paid
-            FROM t_customer_payment_allocations cpa
-            INNER JOIN t_customer_payments cp ON cp.id = cpa.customer_payment_id
-            WHERE cp.status = 'POSTED'
-            GROUP BY cpa.sales_invoice_id
-          ) p",
-          'p.sales_invoice_id = si.id',
-          'left',
-          FALSE
-        )
-        ->join(
-          "(
-            SELECT
-              sales_invoice_id,
-              SUM(amount) AS amount_credited
-            FROM t_credit_memos
-            WHERE status = 'POSTED'
-            GROUP BY sales_invoice_id
-          ) cm",
-          'cm.sales_invoice_id = si.id',
-          'left',
-          FALSE
-        )
-        ->where('si.customer_id', $customerId)
-        ->where('si.status', 'POSTED')
-        ->where(
-          'si.total_amount
-            - COALESCE(p.amount_paid, 0)
-            - COALESCE(cm.amount_credited, 0) > 0',
-          NULL,
-          FALSE
-        )
-        ->order_by('si.invoice_date', 'ASC')
-        ->order_by('si.id', 'ASC')
-        ->get()
-        ->result();
+      ->select("
+        si.id,
+        si.si_no,
+        si.invoice_date,
+        si.total_amount,
+        COALESCE(p.amount_paid, 0) AS amount_paid,
+        COALESCE(cm.amount_credited, 0) AS amount_credited,
+        COALESCE(cma.credit_applied, 0) AS credit_applied,
+        si.total_amount
+          - COALESCE(p.amount_paid, 0)
+          - COALESCE(cm.amount_credited, 0)
+          - COALESCE(cma.credit_applied, 0) AS balance
+      ", FALSE)
+      ->from('t_sales_invoices si')
+      ->join(
+        "(
+          SELECT
+            cpa.sales_invoice_id,
+            SUM(cpa.amount_applied) AS amount_paid
+          FROM t_customer_payment_allocations cpa
+          INNER JOIN t_customer_payments cp ON cp.id = cpa.customer_payment_id
+          WHERE cp.status = 'POSTED'
+          GROUP BY cpa.sales_invoice_id
+        ) p",
+        'p.sales_invoice_id = si.id',
+        'left',
+        FALSE
+      )
+      ->join(
+        "(
+          SELECT
+            sales_invoice_id,
+            SUM(amount) AS amount_credited
+          FROM t_credit_memos
+          WHERE status = 'POSTED'
+          GROUP BY sales_invoice_id
+        ) cm",
+        'cm.sales_invoice_id = si.id',
+        'left',
+        FALSE
+      )
+      ->join(
+        "(
+          SELECT
+            sales_invoice_id,
+            SUM(amount_applied) AS credit_applied
+          FROM t_credit_memo_allocations
+          GROUP BY sales_invoice_id
+        ) cma",
+        'cma.sales_invoice_id = si.id',
+        'left',
+        FALSE
+      )
+      ->where('si.customer_id', $customerId)
+      ->where('si.status', 'POSTED')
+      ->where(
+        'si.total_amount
+          - COALESCE(p.amount_paid, 0)
+          - COALESCE(cm.amount_credited, 0)
+          - COALESCE(cma.credit_applied, 0) > 0',
+        NULL,
+        FALSE
+      )
+      ->order_by('si.invoice_date', 'ASC')
+      ->order_by('si.id', 'ASC')
+      ->get()
+      ->result();
   }
 
   public function getCustomerLedger($customerId, $dateFrom = null, $dateTo = null)
@@ -922,12 +937,19 @@ class Customer_payment_model extends CI_Model
             WHERE cm.sales_invoice_id = si.id
             AND cm.status = 'POSTED'
             AND cm.credit_memo_date <= ?::date
+          ), 0)
+          - COALESCE((
+            SELECT SUM(cma.amount_applied)
+            FROM t_credit_memo_allocations cma
+            WHERE cma.sales_invoice_id = si.id
+            AND cma.applied_on::date <= ?::date
           ), 0) AS balance
     ) aging
     WHERE si.status = 'POSTED'
     AND si.invoice_date <= ?::date ";
 
     $params = [
+      $asOfDate,
       $asOfDate,
       $asOfDate,
       $asOfDate,
@@ -983,6 +1005,184 @@ class Customer_payment_model extends CI_Model
         ->order_by('cm.id', 'ASC')
         ->get()
         ->result();
+  }
+
+  public function getAvailableCreditMemos($customerId)
+  {
+    $customerId = (int)$customerId;
+
+    if ($customerId <= 0) {
+      return [];
+    }
+
+    return $this->db->query(
+      "SELECT
+        cm.id,
+        cm.cm_no,
+        cm.credit_memo_date,
+        cm.sales_invoice_id,
+        si.si_no,
+        cm.amount,
+        cm.available_credit,
+        COALESCE(SUM(a.amount_applied), 0) AS amount_applied,
+        cm.available_credit - COALESCE(SUM(a.amount_applied), 0) AS balance
+      FROM t_credit_memos cm
+      INNER JOIN t_sales_invoices si ON si.id = cm.sales_invoice_id
+      LEFT JOIN t_credit_memo_allocations a ON a.credit_memo_id = cm.id
+      WHERE cm.customer_id = ?
+      AND cm.status = 'POSTED'
+      AND cm.available_credit > 0
+      GROUP BY
+        cm.id,
+        cm.cm_no,
+        cm.credit_memo_date,
+        cm.sales_invoice_id,
+        si.si_no,
+        cm.amount,
+        cm.available_credit
+      HAVING cm.available_credit - COALESCE(SUM(a.amount_applied), 0) > 0
+      ORDER BY cm.credit_memo_date, cm.id",
+      [$customerId]
+    )->result();
+  }
+
+  public function applyCreditMemo($creditMemoId, $salesInvoiceId, $amount, $remarks = null)
+  {
+    try {
+      $creditMemoId = (int)$creditMemoId;
+      $salesInvoiceId = (int)$salesInvoiceId;
+      $amount = round((float)$amount, 2);
+
+      if ($creditMemoId <= 0 || $salesInvoiceId <= 0 || $amount <= 0) {
+        throw new Exception('Invalid Credit Memo allocation.');
+      }
+
+      $this->db->trans_begin();
+
+      /*** validate Credit Memo */
+      $creditMemo = $this->db
+        ->select('id, cm_no, customer_id, sales_invoice_id, available_credit, status')
+        ->where('id', $creditMemoId)
+        ->get('t_credit_memos')
+        ->row();
+
+      if (!$creditMemo || $creditMemo->status !== 'POSTED') {
+        throw new Exception('Invalid or non-posted Credit Memo.');
+      }
+
+      /*** validate target Sales Invoice */
+      $salesInvoice = $this->db
+        ->select('id, si_no, customer_id, total_amount, status')
+        ->where('id', $salesInvoiceId)
+        ->get('t_sales_invoices')
+        ->row();
+
+      if (!$salesInvoice || $salesInvoice->status !== 'POSTED') {
+        throw new Exception('Invalid or non-posted Sales Invoice.');
+      }
+
+      if ((int)$creditMemo->customer_id !== (int)$salesInvoice->customer_id) {
+        throw new Exception('Credit Memo and Sales Invoice must belong to the same Customer.');
+      }
+
+      if ((int)$creditMemo->sales_invoice_id === $salesInvoiceId) {
+        throw new Exception('Reusable Credit Memo cannot be allocated to its source Sales Invoice.');
+      }
+
+      /*** remaining reusable Credit Memo balance */
+      $row = $this->db->query(
+        "SELECT COALESCE(SUM(amount_applied), 0) AS amount_applied
+        FROM t_credit_memo_allocations
+        WHERE credit_memo_id = ?",
+        [$creditMemoId]
+      )->row();
+
+      $creditUsed = round((float)$row->amount_applied, 2);
+      $creditBalance = max(0, round((float)$creditMemo->available_credit - $creditUsed, 2));
+
+      if ($amount > $creditBalance) {
+        throw new Exception("Amount exceeds available Credit Memo balance of " . number_format($creditBalance, 2) . ".");
+      }
+
+      /*** current target SI balance */
+      $paymentRow = $this->db->query(
+        "SELECT COALESCE(SUM(a.amount_applied), 0) AS amount_paid
+        FROM t_customer_payment_allocations a
+        INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
+        WHERE a.sales_invoice_id = ?
+        AND cp.status = 'POSTED'",
+        [$salesInvoiceId]
+      )->row();
+
+      $creditRow = $this->db->query(
+        "SELECT COALESCE(SUM(cm.amount), 0) AS amount_credited
+        FROM t_credit_memos cm
+        WHERE cm.sales_invoice_id = ?
+        AND cm.status = 'POSTED'",
+        [$salesInvoiceId]
+      )->row();
+
+      $allocationRow = $this->db->query(
+        "SELECT COALESCE(SUM(amount_applied), 0) AS credit_applied
+        FROM t_credit_memo_allocations
+        WHERE sales_invoice_id = ?",
+        [$salesInvoiceId]
+      )->row();
+
+      $invoiceBalance = max(
+        0,
+        round(
+          (float)$salesInvoice->total_amount
+          - (float)$paymentRow->amount_paid
+          - (float)$creditRow->amount_credited
+          - (float)$allocationRow->credit_applied,
+          2
+        )
+      );
+
+      if ($invoiceBalance <= 0) {
+        throw new Exception("Sales Invoice {$salesInvoice->si_no} has no outstanding balance.");
+      }
+
+      if ($amount > $invoiceBalance) {
+        throw new Exception("Amount exceeds Sales Invoice balance of " . number_format($invoiceBalance, 2) . ".");
+      }
+
+      /*** save allocation */
+      $this->db->insert('t_credit_memo_allocations', [
+        'credit_memo_id'  => $creditMemoId,
+        'sales_invoice_id' => $salesInvoiceId,
+        'amount_applied'   => $amount,
+        'applied_by'       => $this->session->userdata('user_id'),
+        'applied_on'       => date('Y-m-d H:i:s'),
+        'remarks'          => $remarks
+      ]);
+
+      if (!$this->db->affected_rows()) {
+        throw new Exception('Unable to apply Credit Memo.');
+      }
+
+      if (!$this->db->trans_status()) {
+        throw new Exception('Unable to apply Credit Memo.');
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Credit Memo applied successfully.',
+        'data'    => []
+      ];
+
+    } catch (Exception $ex) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data'    => []
+      ];
+    }
   }
 
 }

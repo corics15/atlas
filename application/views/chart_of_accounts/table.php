@@ -25,7 +25,7 @@
       <tr data-id="<?= $row->id; ?>">
 
         <td class="text-center" data-a-h="center" data-t="n" data-num-fmt="####">
-          <a href="<?= $row->url; ?>" class="text-olive">
+          <a href="<?= $row->url; ?>" class="font-weight-500 text-olive">
             <?= htmlspecialchars($row->account_code); ?>
           </a>
         </td>

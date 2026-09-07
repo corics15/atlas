@@ -269,4 +269,50 @@ class Customer_payments extends MY_Controller
     );
   }
 
+  public function available_credits()
+  {
+    if (!$this->input->is_ajax_request()) {
+      show_404();
+    }
+
+    $customerId = (int)$this->getJsonRequest('customer_id');
+    $credits = $this->Customer_payment_model->getAvailableCreditMemos($customerId);
+
+    return $this->jsonResponse(
+      TRUE,
+      '',
+      [
+        'credits' => $credits
+      ]
+    );
+  }
+
+  public function apply_credit()
+  {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
+    if (!$this->input->is_ajax_request()) {
+      show_404();
+    }
+
+    $request = json_decode($this->input->raw_input_stream);
+
+    $result = $this->Customer_payment_model->applyCreditMemo(
+      $request->credit_memo_id ?? 0,
+      $request->sales_invoice_id ?? 0,
+      $request->amount ?? 0,
+      $request->remarks ?? null
+    );
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
 }

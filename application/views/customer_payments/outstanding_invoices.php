@@ -13,6 +13,7 @@
         </div>
       </div>
 
+      <?php /*** outstanding invoice list */ ?>
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-sm table-bordered table-hover mb-0" id="tblOutstandingInvoices">
@@ -39,6 +40,36 @@
       </div>
     </div>
 
+    <?php /*** customer credits, if applicable */ ?>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Available Customer Credit</h3>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered table-hover mb-0" id="tblAvailableCredits">
+            <thead class="thead-orange">
+              <tr>
+                <th class="text-center">CM No.</th>
+                <th class="text-center">CM Date</th>
+                <th class="text-center">Source SI</th>
+                <th class="text-right">Available Credit</th>
+                <th class="text-center">Apply To SI</th>
+                <th class="text-right">Apply Credit</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="7" class="text-center text-muted py-3">Select a customer to view available credit.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <?php /*** footer */ ?>
     <div class="card">
       <div class="card-body">
         <div class="row">
