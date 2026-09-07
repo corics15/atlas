@@ -319,9 +319,12 @@ const calculateRowTotal = (row) => {
   const qty = Number(row.querySelector('.po-qty').value || 0);
   const price = Number(row.querySelector('.po-price').value || 0);
   const discount = Number(row.querySelector('.po-discount').value || 0);
-  const amount = (qty * price) - discount;
 
-  row.querySelector('.po-total').textContent = Atlas.format.amount(amount);// amount.toFixed(2);
+  const gross = qty * price;
+  const discountAmount = gross * (discount / 100);
+  const amount = gross - discountAmount;
+
+  row.querySelector('.po-total').textContent = Atlas.format.amount(amount);
   calculateGrandTotal();
 }
 
@@ -470,8 +473,8 @@ const validatePurchaseOrder = () => {
       return false;
     }
 
-    if (discount < 0) {
-      Atlas.toast.warning(`Invalid discount on row ${i + 1}.`);
+    if (discount < 0 || discount > 100) {
+      Atlas.toast.warning(`Invalid discount percentage on row ${i + 1}.`);
       row.querySelector('.po-discount').focus();
       return false;
     }
