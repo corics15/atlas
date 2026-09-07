@@ -622,7 +622,7 @@ const buildCheckVoucherPayload = () => {
     }
 
     checkVoucher.details.push({
-      account_id: Atlas.format.integer(row.dataset.accountId),
+      account_id: parseInt(row.dataset.accountId, 10),
       debit: Atlas.format.parseNumber(row.querySelector('.cv-debit').value || 0),
       credit: Atlas.format.parseNumber(row.querySelector('.cv-credit').value || 0),
       remarks: row.querySelector('.cv-detail-remarks').value.trim()
