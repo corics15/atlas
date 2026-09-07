@@ -510,7 +510,6 @@ class Purchase_order_model extends CI_Model
                 price,
                 discount,
                 uom_id,
-                conversion_factor,
                 entered_by,
                 entered_on
               )
@@ -531,7 +530,6 @@ class Purchase_order_model extends CI_Model
           $detail->price,
           $detail->discount,
           $detail->uom_id,
-          $detail->conversion_factor,
           $this->session->userdata('user_id'),
         ]
       );
