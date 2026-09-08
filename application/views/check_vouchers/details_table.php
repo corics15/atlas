@@ -38,7 +38,7 @@
       <table class="table table-bordered table-sm mb-0" id="accountingDetailsTable">
         <thead class="thead-orange">
           <tr>
-            <th style="width:15%;">Account Code</th>
+            <th style="width:15%;" class="text-center">Account Code</th>
             <th>Account Description</th>
             <th style="width:13%;" class="text-right">Debit</th>
             <th style="width:13%;" class="text-right">Credit</th>
@@ -59,7 +59,7 @@
           <?php if (!$isEditable): ?>
             <?php foreach ($details as $detail): ?>
               <tr>
-                <td><?= htmlspecialchars($detail->account_code) ?></td>
+                <td class="text-center"><?= htmlspecialchars($detail->account_code) ?></td>
                 <td><?= htmlspecialchars($detail->account_name) ?></td>
                 <td class="text-right"><?= $detail->debit > 0 ? number_format((float) $detail->debit, 2) : '' ?></td>
                 <td class="text-right"><?= $detail->credit > 0 ? number_format((float) $detail->credit, 2) : '' ?></td>
