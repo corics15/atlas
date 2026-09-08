@@ -176,6 +176,11 @@ class Purchase_orders extends MY_Controller
         'text' => 'Print PO',
         'icon' => 'fas fa-print'
       ],
+      'pdf' => [
+        'id'   => 'btnViewPDF',
+        'text' => 'View As PDF',
+        'icon' => 'fas fa-file-pdf'
+      ],
       'cancel' => [
         'id'   => 'btnCancelPurchaseOrder',
         'text' => 'Cancel PO',
@@ -232,6 +237,30 @@ class Purchase_orders extends MY_Controller
     $this->load->view(
       'purchase_orders/print',
       $this->data
+    );
+  }
+
+  public function pdf()
+  {
+    $ids = $this->input->post('ids');
+
+    if (empty($ids)) {
+      show_error('No Purchase Order selected.');
+    }
+
+    $this->data['documents'] = $this->Purchase_order_model->getDocument($ids);
+
+    $html = $this->load->view(
+      'purchase_orders/pdf_print',
+      $this->data,
+      TRUE
+    );
+
+    $this->load->library('atlas_pdf');
+
+    $this->atlas_pdf->render(
+      $html,
+      'purchase-orders-'.$this->randomString(5).'.pdf',
     );
   }
 }

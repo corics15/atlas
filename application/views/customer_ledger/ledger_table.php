@@ -27,8 +27,11 @@
           case 'CUSTOMER PAYMENT':
             $url = $row->cp_url;
             break;
+          case 'CREDIT MEMO':
+            $url = $row->cm_url;
+            break;
           default:
-            $url = 'javascript:void(0)';
+            $url = NULL;
             break;
         }
       ?>

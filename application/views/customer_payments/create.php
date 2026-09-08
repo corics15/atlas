@@ -4,6 +4,7 @@
 
 <script>
   window.customerPaymentId = <?= (int)($customerPaymentId ?? 0); ?>;
+  window.branchId = <?= $userBranch ?>;
   window.customerPaymentAllocations = <?= json_encode(
     array_map(function ($allocation) {
       return [

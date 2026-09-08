@@ -2,14 +2,8 @@
   <tr>
     <th width="40" class="text-center">
       <div class="custom-checkbox custom-control ml-2 mt-1">
-        <input
-          type="checkbox"
-          class="custom-control-input"
-          id="chkSelectAllPurchaseOrder">
-        <label
-          class="custom-control-label"
-          for="chkSelectAllPurchaseOrder">
-        </label>
+        <input type="checkbox" class="custom-control-input" id="chkSelectAllPurchaseOrder">
+        <label class="custom-control-label" for="chkSelectAllPurchaseOrder"></label>
       </div>
     </th>
     <th class="text-center">Date</th>

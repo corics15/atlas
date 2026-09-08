@@ -86,6 +86,15 @@
       </button>
       <?php endif ?>
 
+      <?php /*** pdf */  if (!empty($toolbar['pdf'])) : ?>
+      <button
+        id="<?= $toolbar['pdf']['id']; ?>"
+        class="dropdown-item">
+          <i class="<?= $toolbar['pdf']['icon']; ?> mr-2"></i>
+        <?= $toolbar['pdf']['text']; ?>
+      </button>
+      <?php endif ?>
+
       <?php /*** cancel item */  if (!empty($toolbar['cancel'])) : ?>
       <button
         id="<?= $toolbar['cancel']['id']; ?>"

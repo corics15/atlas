@@ -174,4 +174,16 @@ class MY_Controller extends CI_Controller
     return (int) $decoded;
   }
 
+  protected function randomString($length = 8)
+  {
+    $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    $result = '';
+
+    for ($i = 0; $i < $length; $i++) {
+      $result .= $characters[random_int(0, strlen($characters) - 1)];
+    }
+
+    return $result;
+  }
+
 }

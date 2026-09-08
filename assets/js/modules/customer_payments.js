@@ -31,8 +31,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   Atlas.select.init('#selPaymentMethod');
   Atlas.select.init('#selCollectedBy');
 
-  /*** default to main branch */
-  $('#selBranch').val(1000).trigger('change');
+  /*** default to user branch */
+  if (window.branchId)
+    $('#selBranch').val(branchId).trigger('change');
+
   /*** dirty tracking */
   Atlas.select.onChange('#selBranch', () => markDirty());
   Atlas.select.onChange('#selPaymentMethod', () => markDirty());

@@ -5,7 +5,15 @@
       <a href="<?= base_url('purchase-orders/list') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
 
       <button type="button" class="btn btn-sm btn-link" id="btnReceiveGoods" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-dolly mr-2"></i>Receive Goods</button>
-      <button type="button" class="btn btn-sm btn-link" id="btnPrintPurchaseOrder"><i class="fa fa-print mr-2"></i>Print</button>
+
+      <div class="btn-group">
+        <button class="btn btn-sm btn-link dropdown-toggle" data-toggle="dropdown"><i class="fa fa-print mr-2"></i>Print</button>
+        <div class="dropdown-menu dropdown-menu-right">
+          <button type="button" class="btn btn-sm btn-link" id="btnPrintPurchaseOrder"><i class="fa fa-print mr-2"></i>Print</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnViewPDF"><i class="fa fa-file-pdf mr-2"></i>View As PDF</button>
+        </div>
+      </div>
+
       <button type="button" class="btn btn-sm btn-link" id="btnCancelPurchaseOrder" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
 
     </div>

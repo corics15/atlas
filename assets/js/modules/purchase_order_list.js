@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCancelPurchaseOrder = document.getElementById('btnCancelPurchaseOrder');
   const btnRefreshPurchaseOrder = document.getElementById('btnRefreshPurchaseOrder');
 
+  const btnViewPDF = document.getElementById('btnViewPDF');
+
   Atlas.select.init('#selSupplierFilter');
 
   Atlas.table.init({
@@ -117,6 +119,18 @@ document.addEventListener('DOMContentLoaded', () => {
     Atlas.print.post('purchase-orders/print', ids);
   });
 
+  /*** view as pdf */
+  btnViewPDF.addEventListener('click', () => {
+    const ids = Atlas.table.selectedIds();
+
+    if (ids.length === 0) {
+      Atlas.toast.warning('Please select at least one Purchase Order.');
+      return;
+    }
+
+    Atlas.print.post('purchase-orders/pdf', ids);
+  });
+
 });
 
 const getSelectedPurchaseOrderId = () => {
@@ -149,6 +163,7 @@ const updateToolbarState = (selected = Atlas.table.selected()) => {
   btnPrintPurchaseOrder.disabled = true;
   btnCancelPurchaseOrder.disabled = true;
   btnReceiveGoods.disabled = true;
+  btnViewPDF.disabled = true;
 
   if (selected.length === 0) {
     return;
@@ -156,6 +171,7 @@ const updateToolbarState = (selected = Atlas.table.selected()) => {
 
   //** print supports one or more */
   btnPrintPurchaseOrder.disabled = false;
+  btnViewPDF.disabled = false;
 
   //** edit and receive supports exactly one OPEN PO */
   if (selected.length === 1) {

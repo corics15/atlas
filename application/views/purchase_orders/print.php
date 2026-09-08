@@ -1,147 +1,131 @@
-    <?php /*** header */ ?>
+  <?php /*** header */ ?>
+  <?php
+    $company = atlas_company();
+
+    $contactNo = null;
+    $mobile    = trim($company->mobile_no ?? '');
+    $telephone = trim($company->telephone_no ?? '');
+
+    if ($mobile !== '' && $telephone !== '') {
+        $contactNo = htmlspecialchars($mobile . ' / ' . $telephone);
+    } elseif ($mobile !== '') {
+        $contactNo = htmlspecialchars($mobile);
+    } elseif ($telephone !== '') {
+        $contactNo = htmlspecialchars($telephone);
+    }
+  ?>
+  <?php foreach ($documents as $documentIndex => $document): ?>
+
+    <?php $header = $document->header; ?>
+
     <?php
-      $company = atlas_company();
-
-      $contactNo = null;
-      $mobile    = trim($company->mobile_no ?? '');
-      $telephone = trim($company->telephone_no ?? '');
-
-      if ($mobile !== '' && $telephone !== '') {
-          $contactNo = htmlspecialchars($mobile . ' / ' . $telephone);
-      } elseif ($mobile !== '') {
-          $contactNo = htmlspecialchars($mobile);
-      } elseif ($telephone !== '') {
-          $contactNo = htmlspecialchars($telephone);
-      }
+      /*** report header */
+      $this->load->view(
+        'partials/reports/header',
+        [
+          'title'  => 'Purchase Order',
+          'period' => null
+        ]
+      );
     ?>
-    <?php foreach ($documents as $index => $document): ?>
 
-      <?php $header = $document->header; ?>
+    <table class="report-borderless" style="line-height:12px;table-layout:auto">
+      <tr>
+        <td><strong>Supplier:</strong></td>
+        <td><?= htmlspecialchars($header->supplier_name) ?></td>
+        <td><strong>PO No:</strong></td>
+        <td><?= htmlspecialchars($header->po_no) ?></td>
+      </tr>
+      <tr>
+        <td><strong>Address:</strong></td>
+        <td><?= htmlspecialchars($header->address) ?></td>
+        <td><strong>PO Date:</strong></td>
+        <td><?= date('m/d/Y', strtotime($header->po_date)) ?></td>
+      </tr>
+      <tr>
+        <td><strong>Contact:</strong></td>
+        <td><?= htmlspecialchars($header->contact_person) ?></td>
+        <td><strong>Terms:</strong></td>
+        <td><?= htmlspecialchars($header->terms_name) ?></td>
+      </tr>
+      <tr>
+        <td><strong>Remarks</strong></td>
+        <td colspan="3"><?= htmlspecialchars($header->remarks) ?></td>
+      </tr>
+    </table>
 
-      <?php
-        /*** report header */
-        $this->load->view(
-          'partials/reports/header',
-          [
-            'title'  => 'Purchase Order',
-            'period' => null
-          ]
-        );
-      ?>
+    <br>
 
-      <table class="report-borderless" style="line-height:8px;table-layout:auto">
+    <?php /*** details table */ ?>
+    <table class="report-table">
+      <thead>
         <tr>
-          <td><strong>Supplier:</strong></td>
-          <td><?= htmlspecialchars($header->supplier_name) ?></td>
-          <td><strong>PO No:</strong></td>
-          <td><?= htmlspecialchars($header->po_no) ?></td>
+          <th class="text-center" width="5%">#</th>
+          <th>Description</th>
+          <th width="8%">UOM</th>
+          <th width="8%" class="text-right">Qty</th>
+          <th width="12%" class="text-right">Price</th>
+          <th width="12%" class="text-right">Discount %</th>
+          <th width="14%" class="text-right">Amount</th>
         </tr>
+      </thead>
+      <tbody>
+        <?php
+          $total = 0;
+          $rowIndex = 1;
+          foreach($document->details as $detail):
+            $amount = ($detail->qty * $detail->price) * (1 - ($detail->discount / 100));
+            $total += $amount;
+          ?>
         <tr>
-          <td><strong>Address:</strong></td>
-          <td><?= date('m/d/Y', strtotime($header->po_date)) ?></td>
-          <td><strong>Terms:</strong></td>
-          <td><?= htmlspecialchars($header->terms_name) ?></td>
+          <td class="text-center"><?= $rowIndex ?>.</td>
+          <td><?= htmlspecialchars($detail->description) ?></td>
+          <td class="text-center"><?= htmlspecialchars($detail->uom) ?></td>
+          <td class="text-right"><?= number_format($detail->qty, 0) ?></td>
+          <td class="text-right"><?= number_format($detail->price, 2) ?></td>
+          <td class="text-right"><?= number_format($detail->discount, 2) ?></td>
+          <td class="text-right"><?= number_format($amount, 2) ?></td>
         </tr>
+        <?php $rowIndex++; endforeach; ?>
         <tr>
-          <td><strong>Contact:</strong></td>
-          <td><?= htmlspecialchars($header->contact_person) ?></td>
+          <td colspan="6" class="text-right"><strong>Grand Total</strong></td>
+          <td class="text-right"><strong><?= number_format($total, 2) ?></strong></td>
         </tr>
-      </table>
+      </tbody>
+    </table>
 
-      <?php /*** remarks */ ?>
-      <br>
-      <strong>Remarks</strong>
-      <div style="padding:8px;min-height:30px;margin-bottom:5px">
-      <?= nl2br(htmlspecialchars($header->remarks)) ?>
-      </div>
+    <?php /*** signatories */ ?>
+    <table style="border:none;">
+      <tr>
+        <td style="border:none;text-align:center;width:25%;height:70px;vertical-align:bottom;">
+          <strong><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></strong>
+          _________________________<br>
+          Prepared By
+        </td>
+        <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
+          _________________________<br>
+          Checked By
+        </td>
+        <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
+          _________________________<br>
+          Approved By
+        </td>
+        <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
+          _________________________<br>
+          Received By
+        </td>
+      </tr>
+    </table>
 
-      <?php /*** details table */ ?>
-      <table class="report-table">
-        <thead>
-          <tr>
-            <th class="text-center" width="5%">#</th>
-            <th>Description</th>
-            <th width="8%">UOM</th>
-            <th width="8%" class="text-right">Qty</th>
-            <th width="12%" class="text-right">Price</th>
-            <th width="12%" class="text-right">Discount %</th>
-            <th width="14%" class="text-right">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php
-            $total = 0;
-            $index = 1;
-            foreach($document->details as $detail):
-              // $amount = ($detail->qty * $detail->price) - $detail->discount;
-              $amount = ($detail->qty * $detail->price) * (1 - ($detail->discount / 100));
-              $total += $amount;
-            ?>
-          <tr>
-            <td class="text-center"><?= $index ?>.</td>
-            <td><?= htmlspecialchars($detail->description) ?></td>
-            <td class="text-center">
-              <?= htmlspecialchars($detail->uom) ?>
-            </td>
-            <td class="text-right">
-              <?= number_format($detail->qty,2) ?>
-            </td>
-            <td class="text-right">
-              <?= number_format($detail->price,2) ?>
-            </td>
-            <td class="text-right">
-              <?= number_format($detail->discount,2) ?>
-            </td>
-            <td class="text-right">
-              <?= number_format($amount,2) ?>
-            </td>
-          </tr>
-          <?php $index++; endforeach; ?>
-          <tr>
-            <td colspan="6" class="text-right">
-              <strong>Grand Total</strong>
-            </td>
-            <td class="text-right">
-              <strong>
-              <?= number_format($total,2) ?>
-              </strong>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div style="text-align:right;font-size:10px;margin-top:20px;">
+      Printed By:
+      <?= htmlspecialchars($this->session->userdata('username')).' '.date('m/d/Y h:i A'); ?>
+    </div>
 
-      <?php /*** signatories */ ?>
-      <table style="border:none;">
-        <tr>
-          <td style="border:none;text-align:center;width:25%;height:70px;vertical-align:bottom;">
-            <strong><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></strong>
-            _________________________<br>
-            Prepared By
-          </td>
-          <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
-            _________________________<br>
-            Checked By
-          </td>
-          <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
-            _________________________<br>
-            Approved By
-          </td>
-          <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
-            _________________________<br>
-            Received By
-          </td>
-        </tr>
-      </table>
+    <?php if ($documentIndex < count($documents) - 1): ?>
+      <div class="page-break"></div>
+    <?php endif; ?>
 
-      <div style="text-align:right;font-size:10px;margin-top:20px;">
-        Printed By:
-        <?= htmlspecialchars($this->session->userdata('username')).' '.date('m/d/Y h:i A'); ?>
-      </div>
+  <?php endforeach; ?>
 
-      <?php if ($index < count($documents) - 1): ?>
-        <div class="page-break"></div>
-      <?php endif; ?>
-
-    <?php endforeach; ?>
-
-    <?php $this->load->view('partials/reports/scripts'); ?>
+  <?php $this->load->view('partials/reports/scripts'); ?>

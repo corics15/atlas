@@ -11,6 +11,8 @@ const selSupplier = document.getElementById('selSupplier');
 const btnSavePurchaseOrder = document.getElementById('btnSavePurchaseOrder');
 const btnCancelPurchaseOrder = document.getElementById('btnCancelPurchaseOrder');
 
+const btnViewPDF = document.getElementById('btnViewPDF');
+
 let isEditMode = false;
 let purchaseOrderId = null;
 let isDirty = false;
@@ -221,7 +223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  /*** print footer */
+  /*** print */
   btnPrintPurchaseOrder.addEventListener('click', () => {
     if (window.purchaseOrderId > 0) {
       ids = []
@@ -233,14 +235,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  /*** receive goods footer */
+  /*** receive goods */
   btnReceiveGoods?.addEventListener('click', () => {
     if (window.purchaseOrderId > 0)
       Atlas.page.redirect('goods-receipts/create', { po: Atlas.id.encode(window.purchaseOrderId) })
     else Atlas.toast.warning(`Create a Purchase Order first.`);
   });
 
-  /*** cancel purchase order footer */
+  /*** cancel purchase order */
   btnCancelPurchaseOrder?.addEventListener('click', async () => {
     if (window.purchaseOrderId === 0) {
       Atlas.toast.warning(`Create a Purchase Order first.`);
@@ -285,6 +287,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     Atlas.toast.success(result.message);
     setTimeout(() => Atlas.page.refresh(), 2000);
+  });
+
+  /*** view as pdf */
+  btnViewPDF.addEventListener('click', () => {
+    if (window.purchaseOrderId > 0) {
+      const ids = [window.purchaseOrderId];
+
+      Atlas.print.post('purchase-orders/pdf', ids);
+    } else {
+      Atlas.toast.warning('Create a Purchase Order first.');
+    }
   });
 
   if (window.purchaseOrderId > 0) {

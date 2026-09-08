@@ -129,6 +129,7 @@ class Customer_payments extends MY_Controller
     $this->data['customers'] = $this->Customer_model->getDropdown();
     $this->data['salesmen'] = $this->Salesman_model->getDropdown();
     $this->data['branches'] = $this->Branch_model->getDropdown();
+    $this->data['userBranch'] = $this->session->userdata('branch_id');
 
     $this->data['isEdit'] = false;
     $this->data['isEditable'] = true;
