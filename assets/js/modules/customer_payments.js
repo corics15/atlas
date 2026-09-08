@@ -35,13 +35,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (window.branchId)
     $('#selBranch').val(branchId).trigger('change');
 
-  /*** dirty tracking */
-  Atlas.select.onChange('#selBranch', () => markDirty());
-  Atlas.select.onChange('#selPaymentMethod', () => markDirty());
-  Atlas.select.onChange('#selCollectedBy', () => markDirty());
+  /*** dirty tracking, clear validation */
+  dtPaymentDate?.addEventListener('change', () => clearInvalid(dtPaymentDate));
+  txtAmountReceived?.addEventListener('input', () => clearInvalid(txtAmountReceived));
+
+  Atlas.select.onChange('#selCustomer', () => {
+    clearInvalid(selCustomer);
+    markDirty();
+  });
+  Atlas.select.onChange('#selBranch', () => {
+    clearInvalid(selBranch);
+    markDirty();
+  });
+  Atlas.select.onChange('#selPaymentMethod', () => {
+    clearInvalid(selPaymentMethod);
+    markDirty();
+  });
+
   document.addEventListener('input', (e) => {
     if (e.target.id === 'txtAmountReceived') {
       calculatePaymentAllocationTotals();
+      clearInvalid(txtAmountReceived);
       markDirty();
     }
 
@@ -390,7 +404,7 @@ const loadOutstandingInvoices = async () => {
   if (!customerId) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" class="text-center text-muted py-3">
+        <td colspan="7" class="text-center text-muted py-3">
           Select a customer to view outstanding invoices.
         </td>
       </tr>
@@ -416,7 +430,7 @@ const loadOutstandingInvoices = async () => {
   if (invoices.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" class="text-center text-muted py-3">
+        <td colspan="7" class="text-center text-muted py-3">
           No outstanding invoices found.
         </td>
       </tr>
@@ -436,6 +450,7 @@ const loadOutstandingInvoices = async () => {
 
     const amountApplied = savedAllocation ? Number(savedAllocation.amount_applied) : 0;
     const amountValue = amountApplied === 0 ? '' : `value="${amountApplied.toFixed(2)}"`;
+    const creditAmount = Atlas.format.parseNumber(invoice.amount_credited || 0) + Atlas.format.parseNumber(invoice.credit_applied || 0);
 
     return `
     <tr
@@ -445,10 +460,9 @@ const loadOutstandingInvoices = async () => {
       <td class="text-center">${Atlas.format.formatDate(escapeHtml(invoice.invoice_date))}</td>
       <td class="text-right">${Atlas.format.amount(invoice.total_amount)}</td>
       <td class="text-right">${Atlas.format.amount(invoice.amount_paid)}</td>
+      <td class="text-right">${Atlas.format.amount(creditAmount)}</td>
       <td class="text-right">${Atlas.format.amount(invoice.balance)}</td>
-      <td>
-        <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right txtApplyAmount" ${amountValue} placeholder="0.00">
-      </td>
+      <td><input type="number" step="0.01" min="0" class="form-control form-control-sm text-right txtApplyAmount" ${amountValue} placeholder="0.00"></td>
     </tr>
   `;
 
@@ -588,32 +602,41 @@ const validateCustomerPayment = () => {
   const amountReceived = Atlas.format.parseNumber(txtAmountReceived?.value || 0);
   const paymentMethod = selPaymentMethod?.value || '';
 
+  clearInvalid(dtPaymentDate);
+  clearInvalid(selCustomer);
+  clearInvalid(selBranch);
+  clearInvalid(txtAmountReceived);
+  clearInvalid(selPaymentMethod);
+
   if (!dtPaymentDate?.value) {
+    setInvalid(dtPaymentDate);
     Atlas.toast.warning('Payment Date is required.');
     dtPaymentDate?.focus();
     return false;
   }
 
   if (!customerId) {
+    setInvalid(selCustomer);
     Atlas.toast.warning('Please select a Customer.');
     return false;
   }
 
   if (!branchId) {
+    setInvalid(selBranch);
     Atlas.toast.warning('Please select a Branch.');
     return false;
   }
 
   if (amountReceived <= 0) {
+    setInvalid(txtAmountReceived);
     Atlas.toast.warning('Amount Received must be greater than zero.');
-
     txtAmountReceived?.focus();
     return false;
   }
 
   if (!paymentMethod) {
+    setInvalid(selPaymentMethod);
     Atlas.toast.warning('Please select a Payment Method.');
-
     return false;
   }
 
@@ -660,6 +683,34 @@ const validateCustomerPayment = () => {
   }
 
   return true;
+};
+
+const setInvalid = control => {
+  if (!control) return;
+
+  control.classList.add('is-invalid');
+
+  if (control.tagName === 'SELECT') {
+    const select2 = $(control).data('select2');
+
+    if (select2?.$selection) {
+      select2.$selection.css('border-color', '#dc3545');
+    }
+  }
+};
+
+const clearInvalid = control => {
+  if (!control) return;
+
+  control.classList.remove('is-invalid');
+
+  if (control.tagName === 'SELECT') {
+    const select2 = $(control).data('select2');
+
+    if (select2?.$selection) {
+      select2.$selection.css('border-color', '');
+    }
+  }
 };
 
 const escapeHtml = value => {

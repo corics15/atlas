@@ -133,7 +133,7 @@ class Sales_return_model extends CI_Model
         ->row();
   }
 
-  public function getDetails($id)
+  public function getDetailsOLD($id)
   {
     $branchId = (int) $this->session->userdata('branch_id');
 
@@ -172,6 +172,40 @@ class Sales_return_model extends CI_Model
         )
         ->get()
         ->result();
+  }
+
+  public function getDetails($id)
+  {
+    $branchId = (int)$this->session->userdata('branch_id');
+
+    return $this->db->query("SELECT
+                                srd.*,
+                                sid.qty AS si_qty,
+                                sid.qty - COALESCE(prev.qty_returned, 0) AS qty_returnable,
+                                p.barcode,
+                                p.uom_id AS base_uom_id,
+                                p.description,
+                                COALESCE(bi.qty_on_hand, 0) AS qty_available,
+                                u.uom
+                              FROM t_sales_return_details srd
+                              INNER JOIN t_sales_invoice_details sid ON sid.id = srd.sales_invoice_detail_id
+                              INNER JOIN m_products p ON p.id = srd.product_id
+                              LEFT JOIN t_branch_inventory bi ON bi.product_id = srd.product_id AND bi.branch_id = ?
+                              LEFT JOIN m_uom u ON u.id = srd.uom_id
+                              LEFT JOIN (
+                                SELECT
+                                  srd2.sales_invoice_detail_id,
+                                  SUM(srd2.qty) AS qty_returned
+                                FROM t_sales_return_details srd2
+                                INNER JOIN t_sales_returns sr2 ON sr2.id = srd2.sales_return_id
+                                WHERE sr2.status <> 'CANCELLED' AND sr2.id <> ?
+                                GROUP BY srd2.sales_invoice_detail_id
+                              ) prev
+                                ON prev.sales_invoice_detail_id = srd.sales_invoice_detail_id
+                              WHERE srd.sales_return_id = ?
+                              ORDER BY srd.id
+                            ", [$branchId, $id, $id]
+                            )->result();
   }
 
   public function getSalesInvoice($salesInvoiceId)

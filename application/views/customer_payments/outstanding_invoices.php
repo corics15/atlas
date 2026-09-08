@@ -20,18 +20,19 @@
 
             <thead class="thead-orange">
               <tr>
-                <th width="160" class="text-center">SI No.</th>
-                <th width="120" class="text-center">Invoice Date</th>
-                <th width="140" class="text-right">SI Amount</th>
-                <th width="140" class="text-right">Paid</th>
-                <th width="140" class="text-right">Balance</th>
-                <th width="160" class="text-right">Apply Amount</th>
+                <th class="text-center">SI No.</th>
+                <th class="text-center">Invoice Date</th>
+                <th class="text-right">SI Amount</th>
+                <th class="text-right">Paid</th>
+                <th class="text-right">Credit</th>
+                <th class="text-right">Balance</th>
+                <th class="text-right">Apply Amount</th>
               </tr>
             </thead>
 
             <tbody>
               <tr>
-                <td colspan="6" class="text-center text-muted py-3">Select a customer to view outstanding invoices.</td>
+                <td colspan="7" class="text-center text-muted py-3">Select a customer to view outstanding invoices.</td>
               </tr>
             </tbody>
 

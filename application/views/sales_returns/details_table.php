@@ -22,14 +22,15 @@
                 <tr>
                   <th class="text-center" width="3%">#</th>
                   <th class="text-center"  width="13%">Barcode</th>
-                  <th width="30%">Description</th>
-                  <th class="text-right" width="6%">Available</th>
-                  <th class="text-right" width="6%">Qty</th>
+                  <th width="22%">Description</th>
+                  <th class="text-right" width="7%">Qty Invoiced</th>
+                  <th class="text-right" width="8%">Available to Return</th>
+                  <th class="text-right" width="7%">Return Qty</th>
                   <th class="text-center" width="6%">UOM</th>
                   <th class="text-right" width="8%">Unit Price</th>
                   <th class="text-center" width="8%">Discount Type</th>
                   <th class="text-right" width="6%">Discount</th>
-                  <th width="130" class="text-right" width="12%">Net Amount</th>
+                  <th class="text-right" width="12%">Net Amount</th>
                 </tr>
               </thead>
 
@@ -69,7 +70,7 @@
                       </td>
 
                       <?php /*** description */ ?>
-                      <td class="so-description">
+                      <td class="so-description" <?= mb_strlen($detail->description) > 30 ? 'data-toggle="tooltip" title="'.htmlspecialchars($detail->description).'"' : '' ?>>
                         <?php
                           $description = htmlspecialchars($detail->description);
                           echo (mb_strlen($description) > 30)
@@ -78,14 +79,24 @@
                         ?>
                       </td>
 
-                      <?php /*** available */ ?>
-                      <td class="so-available text-right">
-                        <?= number_format($detail->qty_available, 0) ?>
+                      <?php
+                        $qtyInvoiced = (float)$detail->si_qty;
+                        $qtyReturnable = $isEdit ? (float)$detail->qty_returnable : (float)$detail->qty;
+                      ?>
+
+                      <?php /*** qty invoiced */ ?>
+                      <td class="text-right">
+                        <?= number_format($qtyInvoiced, 0) ?>
                       </td>
 
-                      <?php /*** qty */ ?>
+                      <?php /*** qty returnable */ ?>
+                      <td class="so-available text-right">
+                        <?= number_format($qtyReturnable, 0) ?>
+                      </td>
+
+                      <?php /*** qty to return */ ?>
                       <td class="text-right">
-                        <input type="number" step="any" class="form-control form-control-sm text-right so-qty" value="<?= number_format($detail->qty, 0) ?>">
+                        <input type="number" step="any" min="0" max="<?= $qtyReturnable ?>" class="form-control form-control-sm text-right so-qty" value="<?= $isEdit ? number_format($detail->qty, 0) : '' ?>" placeholder="<?= number_format($qtyReturnable, 0) ?>">
                       </td>
 
                       <?php /*** uom */ ?>
@@ -167,7 +178,7 @@
                 <?php else: ?>
 
                   <tr>
-                    <td colspan="10" class="text-center text-muted py-3">
+                    <td colspan="11" class="text-center text-muted py-3">
                       <i class="fas fa-info-circle mr-1"></i>
                       No items are available for return from this Sales Invoice.
                     </td>
@@ -210,12 +221,12 @@
 
                 <div>
                   <span class="font-weight-500">2.</span>
-                  Check the <span class="font-weight-500 text-danger">Available</span> quantity for each item before entering a return.
+                  Check the <span class="font-weight-500 text-danger">Available to Return</span> quantity for each item.
                 </div>
 
                 <div>
                   <span class="font-weight-500">3.</span>
-                  Enter the quantity being returned under <span class="font-weight-500 text-danger">Qty</span>.
+                  Enter the actual quantity being returned under <span class="font-weight-500 text-danger">Return Qty</span>.
                   Only items from the original Sales Invoice may be returned.
                 </div>
 

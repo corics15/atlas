@@ -204,6 +204,7 @@ class Customer_payments extends MY_Controller
     $this->data['customerPaymentId'] = $customerPaymentId;
     $this->data['isEdit'] = true;
     $this->data['isEditable'] = $customerPayment->status === 'OPEN';
+    $this->data['userBranch'] = $this->session->userdata('branch_id');
 
     $this->render('customer_payments/create');
   }
