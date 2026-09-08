@@ -24,7 +24,7 @@
                 <th class="text-center">Invoice Date</th>
                 <th class="text-right">SI Amount</th>
                 <th class="text-right">Paid</th>
-                <th class="text-right">Credit</th>
+                <th class="text-right"><i class="fas fa-info-circle text-brown mr-1" data-toggle="tooltip" title="" data-original-title="Non-cash adjustment/credit"></i>Credit Memo</th>
                 <th class="text-right">Balance</th>
                 <th class="text-right">Apply Amount</th>
               </tr>
@@ -51,9 +51,9 @@
           <table class="table table-sm table-bordered table-hover mb-0" id="tblAvailableCredits">
             <thead class="thead-orange">
               <tr>
-                <th class="text-center">CM No.</th>
-                <th class="text-center">CM Date</th>
-                <th class="text-center">Source SI</th>
+                <th class="text-center">Source No.</th>
+                <th class="text-center">Date</th>
+                <th class="text-center">Origin</th>
                 <th class="text-right">Available Credit</th>
                 <th class="text-center">Apply To SI</th>
                 <th class="text-right">Apply Credit</th>

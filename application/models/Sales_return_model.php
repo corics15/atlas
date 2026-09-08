@@ -133,47 +133,6 @@ class Sales_return_model extends CI_Model
         ->row();
   }
 
-  public function getDetailsOLD($id)
-  {
-    $branchId = (int) $this->session->userdata('branch_id');
-
-    return $this->db
-        ->select("
-            sid.*,
-            p.barcode,
-            p.uom_id AS base_uom_id,
-            p.description,
-            COALESCE(bi.qty_on_hand, 0) AS qty_available,
-            u.uom
-        ")
-        ->from('t_sales_return_details sid')
-        ->join(
-            'm_products p',
-            'p.id = sid.product_id',
-            'left'
-        )
-        ->join(
-            't_branch_inventory bi',
-            "bi.product_id = sid.product_id AND bi.branch_id = {$branchId}",
-            'left'
-        )
-        ->join(
-            'm_uom u',
-            'u.id = sid.uom_id',
-            'left'
-        )
-        ->where(
-            'sid.sales_return_id',
-            $id
-        )
-        ->order_by(
-            'sid.id',
-            'ASC'
-        )
-        ->get()
-        ->result();
-  }
-
   public function getDetails($id)
   {
     $branchId = (int)$this->session->userdata('branch_id');
@@ -558,11 +517,11 @@ class Sales_return_model extends CI_Model
             ->get('t_sales_return_details')
             ->row();
 
-        $discountedAmount = round(          (float)$totals->discounted_amount,          2        );
+        $discountedAmount = round((float)$totals->discounted_amount, 2);
         $subtotal = 0;
         $vatAmount = 0;
         $totalAmount = 0;
-        $vatDecimal =          $vatRate / 100;
+        $vatDecimal = $vatRate / 100;
 
         /*** VAT inclusive */
         if ($vatMode === 'INCLUSIVE') {

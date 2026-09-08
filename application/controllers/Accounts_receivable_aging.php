@@ -59,4 +59,35 @@ class Accounts_receivable_aging extends MY_Controller
     $this->render('accounts_receivable_aging/index');
   }
 
+  public function details()
+  {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF',
+      'VIEWER'
+    ]);
+
+    $customerId = (int)$this->input->get('customer_id');
+    $asOfDate = trim($this->input->get('as_of_date') ?? date('Y-m-d'));
+
+    if ($customerId <= 0) {
+      return $this->jsonResponse(
+        FALSE,
+        'Invalid Customer.'
+      );
+    }
+
+    $details = $this->Customer_payment_model->getArAgingDetails(
+      $asOfDate,
+      $customerId
+    );
+
+    return $this->jsonResponse(
+      TRUE,
+      '',
+      $details
+    );
+  }
+
 }

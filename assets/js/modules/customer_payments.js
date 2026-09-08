@@ -283,21 +283,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   /*** apply customer credit */
   tblAvailableCredits?.addEventListener('click', async e => {
     const button = e.target.closest('.btnApplyCustomerCredit');
+    if (!button) return;
 
-    if (!button) {
-      return;
-    }
+    const row = button.closest('tr[data-credit-type]');
+    if (!row) return;
 
-    const row = button.closest('tr[data-credit-memo-id]');
-    if (!row) {
-      return;
-    }
-
+    const type = row.dataset.creditType;
+    const creditId = parseInt(row.dataset.creditId, 10);
+    const creditBalance = Atlas.format.parseNumber(row.dataset.creditBalance || 0);
     const select = row.querySelector('.selCreditTargetInvoice');
     const input = row.querySelector('.txtCreditApplyAmount');
-
-    const creditMemoId = parseInt(row.dataset.creditMemoId, 10);
-    const creditBalance = Atlas.format.parseNumber(row.dataset.creditBalance || 0);
     const salesInvoiceId = parseInt(select?.value || 0, 10);
     const amount = Atlas.format.parseNumber(input?.value || 0);
 
@@ -330,25 +325,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const confirmed = await Atlas.dialog.confirm(
       'Confirm Credit Application',
-      `Apply <span class="text-orange">${Atlas.format.amount(amount)}</span> customer credit to <span class="text-teal">${selectedOption.textContent.split(' - ')[0]}</span>?`
+      `Apply <span class="text-orange">${Atlas.format.amount(amount)}</span> from <span class="text-info">${escapeHtml(row.children[0].textContent.trim())}</span> to <span class="text-teal">${selectedOption.textContent.split(' - ')[0]}</span>?`
     );
 
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     button.disabled = true;
 
     try {
-      const response = await Atlas.ajax.post(
-        'customer-payments/apply-credit',
-        {
-          credit_memo_id: creditMemoId,
-          sales_invoice_id: salesInvoiceId,
-          amount: amount,
-          remarks: null
-        }
-      );
+      const endpoint = type === 'CP'
+        ? 'customer-payments/apply-payment-credit'
+        : 'customer-payments/apply-credit';
+
+      const payload = {
+        sales_invoice_id: salesInvoiceId,
+        amount: amount,
+        remarks: null
+      };
+
+      if (type === 'CP') {
+        payload.customer_payment_id = creditId;
+      } else {
+        payload.credit_memo_id = creditId;
+      }
+
+      const response = await Atlas.ajax.post(endpoint, payload);
 
       if (!response.success) {
         Atlas.toast.error(response.message);
@@ -359,6 +360,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       await loadOutstandingInvoices();
       await loadAvailableCredits();
+
     } finally {
       button.disabled = false;
     }
@@ -472,9 +474,7 @@ const loadOutstandingInvoices = async () => {
 };
 
 const loadAvailableCredits = async () => {
-  if (!tblAvailableCredits) {
-    return;
-  }
+  if (!tblAvailableCredits) return;
 
   const tbody = tblAvailableCredits.querySelector('tbody');
   const customerId = Atlas.format.parseNumber(selCustomer?.value || 0);
@@ -482,7 +482,7 @@ const loadAvailableCredits = async () => {
   if (!customerId) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="text-center text-muted py-3">
+        <td colspan="7" class="text-center text-muted py-3">
           Select a customer to view available credit.
         </td>
       </tr>
@@ -502,7 +502,25 @@ const loadAvailableCredits = async () => {
     return;
   }
 
-  const credits = response.data?.credits || [];
+  const creditMemos = (response.data?.credit_memos || []).map(credit => ({
+    type: 'CM',
+    id: credit.id,
+    no: credit.cm_no,
+    date: credit.credit_memo_date,
+    source: credit.si_no,
+    balance: credit.balance
+  }));
+
+  const paymentCredits = (response.data?.payment_credits || []).map(credit => ({
+    type: 'CP',
+    id: credit.id,
+    no: credit.payment_no,
+    date: credit.payment_date,
+    source: 'Unapplied Payment',
+    balance: credit.balance
+  }));
+
+  const credits = [...creditMemos, ...paymentCredits];
 
   if (credits.length === 0) {
     tbody.innerHTML = `
@@ -517,11 +535,12 @@ const loadAvailableCredits = async () => {
 
   tbody.innerHTML = credits.map(credit => `
     <tr
-      data-credit-memo-id="${credit.id}"
+      data-credit-type="${credit.type}"
+      data-credit-id="${credit.id}"
       data-credit-balance="${credit.balance}">
-      <td class="text-center">${escapeHtml(credit.cm_no)}</td>
-      <td class="text-center">${Atlas.format.formatDate(escapeHtml(credit.credit_memo_date))}</td>
-      <td class="text-center">${escapeHtml(credit.si_no)}</td>
+      <td class="text-center">${escapeHtml(credit.no)}</td>
+      <td class="text-center">${Atlas.format.formatDate(escapeHtml(credit.date))}</td>
+      <td class="text-center">${escapeHtml(credit.source)}</td>
       <td class="text-right">${Atlas.format.amount(credit.balance)}</td>
       <td>
         <select class="form-control form-control-sm custom-select selCreditTargetInvoice">
@@ -533,8 +552,7 @@ const loadAvailableCredits = async () => {
       </td>
       <td class="text-center">
         <button type="button" class="btn btn-sm btn-link btnApplyCustomerCredit font-sm">
-          <i class="fas fa-check-circle mr-1"></i>
-          Apply
+          <i class="fas fa-check-circle mr-1"></i>Apply
         </button>
       </td>
     </tr>
@@ -548,9 +566,7 @@ const loadAvailableCredits = async () => {
       const invoiceNo = row.children[0]?.textContent.trim() || '';
       const balance = Atlas.format.parseNumber(row.dataset.balance || 0);
 
-      if (!invoiceId || balance <= 0) {
-        return;
-      }
+      if (!invoiceId || balance <= 0) return;
 
       const option = document.createElement('option');
       option.value = invoiceId;

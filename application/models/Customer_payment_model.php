@@ -229,7 +229,7 @@ class Customer_payment_model extends CI_Model
         "(
           SELECT
             sales_invoice_id,
-            SUM(amount) AS amount_credited
+            SUM(amount - available_credit) AS amount_credited
           FROM t_credit_memos
           WHERE status = 'POSTED'
           GROUP BY sales_invoice_id
@@ -783,6 +783,8 @@ class Customer_payment_model extends CI_Model
           throw new Exception("Applied amount for {$customerPayment->payment_no} exceeds the amount received.");
         }
 
+        $availableCredit = round((float)$customerPayment->amount_received - $totalApplied,  2);
+
         /*** post customer payment */
         $this->db
             ->where(
@@ -797,10 +799,11 @@ class Customer_payment_model extends CI_Model
               't_customer_payments',
               [
                 'status' => 'POSTED',
+                'available_credit' => $availableCredit,
                 'posted_by' => $this->session->userdata('user_id'),
                 'posted_on' => date('Y-m-d H:i:s'),
                 'updated_by' => $this->session->userdata('user_id'),
-                'updated_on' => date('Y-m-d H:i:s')
+                'updated_on' => date('Y-m-d H:i:s'),
               ]
             );
 
@@ -929,10 +932,14 @@ class Customer_payment_model extends CI_Model
             INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
             WHERE a.sales_invoice_id = si.id
             AND cp.status = 'POSTED'
-            AND cp.payment_date <= ?::date
+            AND (
+              (a.allocation_type = 'PAYMENT' AND cp.payment_date <= ?::date)
+              OR
+              (a.allocation_type = 'CREDIT' AND a.applied_on::date <= ?::date)
+            )
           ), 0)
           - COALESCE((
-            SELECT SUM(cm.amount)
+            SELECT SUM(cm.amount - cm.available_credit)
             FROM t_credit_memos cm
             WHERE cm.sales_invoice_id = si.id
             AND cm.status = 'POSTED'
@@ -953,6 +960,7 @@ class Customer_payment_model extends CI_Model
       $asOfDate,
       $asOfDate,
       $asOfDate,
+      $asOfDate,
       $asOfDate
     ];
 
@@ -966,6 +974,86 @@ class Customer_payment_model extends CI_Model
       ORDER BY c.customer_name";
 
     return $this->db->query($sql, $params)->result();
+  }
+
+  public function getArAgingDetails($asOfDate, $customerId)
+  {
+    return $this->db->query(
+      "SELECT
+        si.id,
+        si.si_no,
+        si.invoice_date,
+        si.total_amount,
+        si.total_amount
+          - COALESCE((
+            SELECT SUM(a.amount_applied)
+            FROM t_customer_payment_allocations a
+            INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
+            WHERE a.sales_invoice_id = si.id
+            AND cp.status = 'POSTED'
+            AND (
+              (a.allocation_type = 'PAYMENT' AND cp.payment_date <= ?::date)
+              OR
+              (a.allocation_type = 'CREDIT' AND a.applied_on::date <= ?::date)
+            )
+          ), 0)
+          - COALESCE((
+            SELECT SUM(cm.amount - cm.available_credit)
+            FROM t_credit_memos cm
+            WHERE cm.sales_invoice_id = si.id
+            AND cm.status = 'POSTED'
+            AND cm.credit_memo_date <= ?::date
+          ), 0)
+          - COALESCE((
+            SELECT SUM(cma.amount_applied)
+            FROM t_credit_memo_allocations cma
+            WHERE cma.sales_invoice_id = si.id
+            AND cma.applied_on::date <= ?::date
+          ), 0) AS balance,
+        COALESCE((
+          SELECT SUM(a.amount_applied)
+          FROM t_customer_payment_allocations a
+          INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
+          WHERE a.sales_invoice_id = si.id
+          AND cp.status = 'POSTED'
+          AND (
+            (a.allocation_type = 'PAYMENT' AND cp.payment_date <= ?::date)
+            OR
+            (a.allocation_type = 'CREDIT' AND a.applied_on::date <= ?::date)
+          )
+        ), 0) AS amount_paid,
+        COALESCE((
+          SELECT SUM(cm.amount - cm.available_credit)
+          FROM t_credit_memos cm
+          WHERE cm.sales_invoice_id = si.id
+          AND cm.status = 'POSTED'
+          AND cm.credit_memo_date <= ?::date
+        ), 0)
+        +
+        COALESCE((
+          SELECT SUM(cma.amount_applied)
+          FROM t_credit_memo_allocations cma
+          WHERE cma.sales_invoice_id = si.id
+          AND cma.applied_on::date <= ?::date
+        ), 0) AS credit_memo
+      FROM t_sales_invoices si
+      WHERE si.customer_id = ?
+      AND si.status = 'POSTED'
+      AND si.invoice_date <= ?::date
+      ORDER BY si.invoice_date, si.id",
+      [
+        $asOfDate,
+        $asOfDate,
+        $asOfDate,
+        $asOfDate,
+        $asOfDate,
+        $asOfDate,
+        $asOfDate,
+        $asOfDate,
+        (int)$customerId,
+        $asOfDate
+      ]
+    )->result();
   }
 
   public function getAvailableCustomerCredits($customerId)
@@ -1183,6 +1271,184 @@ class Customer_payment_model extends CI_Model
         'data'    => []
       ];
     }
+  }
+
+  public function applyPaymentCredit($customerPaymentId, $salesInvoiceId, $amount, $remarks = null)
+  {
+    try {
+      $customerPaymentId = (int)$customerPaymentId;
+      $salesInvoiceId = (int)$salesInvoiceId;
+      $amount = round((float)$amount, 2);
+
+      if ($customerPaymentId <= 0 || $salesInvoiceId <= 0 || $amount <= 0) {
+        throw new Exception('Invalid Customer Payment credit allocation.');
+      }
+
+      $this->db->trans_begin();
+
+      $payment = $this->db
+        ->select('id, payment_no, customer_id, amount_received, available_credit, status')
+        ->where('id', $customerPaymentId)
+        ->get('t_customer_payments')
+        ->row();
+
+      $invoice = $this->db
+        ->select('id, si_no, customer_id, total_amount, status')
+        ->where('id', $salesInvoiceId)
+        ->get('t_sales_invoices')
+        ->row();
+
+      if (!$payment || $payment->status !== 'POSTED') {
+        throw new Exception('Invalid or non-posted Customer Payment.');
+      }
+
+      if (!$invoice || $invoice->status !== 'POSTED') {
+        throw new Exception('Invalid or non-posted Sales Invoice.');
+      }
+
+      if ((int)$payment->customer_id !== (int)$invoice->customer_id) {
+        throw new Exception('Customer Payment and Sales Invoice must belong to the same Customer.');
+      }
+
+      $row = $this->db->query(
+        "SELECT
+          ? - COALESCE((
+            SELECT SUM(amount_applied)
+            FROM t_customer_payment_allocations
+            WHERE customer_payment_id = ?
+            AND allocation_type = 'CREDIT'
+          ), 0) AS payment_balance,
+          ? - COALESCE((
+            SELECT SUM(a.amount_applied)
+            FROM t_customer_payment_allocations a
+            INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
+            WHERE a.sales_invoice_id = ? AND cp.status = 'POSTED'
+          ), 0)
+          - COALESCE((
+            SELECT SUM(amount)
+            FROM t_credit_memos
+            WHERE sales_invoice_id = ? AND status = 'POSTED'
+          ), 0)
+          - COALESCE((
+            SELECT SUM(amount_applied)
+            FROM t_credit_memo_allocations
+            WHERE sales_invoice_id = ?
+          ), 0) AS invoice_balance",
+        [
+          $payment->available_credit,
+          $customerPaymentId,
+          $invoice->total_amount,
+          $salesInvoiceId,
+          $salesInvoiceId,
+          $salesInvoiceId
+        ]
+      )->row();
+
+      $paymentBalance = max(0, round((float)$row->payment_balance, 2));
+      $invoiceBalance = max(0, round((float)$row->invoice_balance, 2));
+
+      if ($amount > $paymentBalance) {
+        throw new Exception('Amount exceeds available Customer Payment credit of ' . number_format($paymentBalance, 2) . '.');
+      }
+
+      if ($invoiceBalance <= 0) {
+        throw new Exception("Sales Invoice {$invoice->si_no} has no outstanding balance.");
+      }
+
+      if ($amount > $invoiceBalance) {
+        throw new Exception('Amount exceeds Sales Invoice balance of ' . number_format($invoiceBalance, 2) . '.');
+      }
+
+      $existing = $this->db
+        ->select('id, amount_applied')
+        ->where('customer_payment_id', $customerPaymentId)
+        ->where('sales_invoice_id', $salesInvoiceId)
+        ->where('allocation_type', 'CREDIT')
+        ->get('t_customer_payment_allocations')
+        ->row();
+
+      if ($existing) {
+        $this->db
+          ->where('id', $existing->id)
+          ->update('t_customer_payment_allocations', [
+            'amount_applied' => round((float)$existing->amount_applied + $amount, 2),
+            'applied_by' => $this->session->userdata('user_id'),
+            'applied_on' => date('Y-m-d H:i:s'),
+            'remarks' => $remarks
+          ]);
+      } else {
+        $this->db->insert('t_customer_payment_allocations', [
+          'customer_payment_id' => $customerPaymentId,
+          'sales_invoice_id' => $salesInvoiceId,
+          'amount_applied' => $amount,
+          'allocation_type' => 'CREDIT',
+          'applied_by' => $this->session->userdata('user_id'),
+          'applied_on' => date('Y-m-d H:i:s'),
+          'remarks' => $remarks
+        ]);
+      }
+
+      if (!$this->db->affected_rows()) {
+        throw new Exception('Unable to apply Customer Payment credit.');
+      }
+
+      if (!$this->db->trans_status()) {
+        throw new Exception('Unable to apply Customer Payment credit.');
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Customer Payment credit applied successfully.',
+        'data' => []
+      ];
+
+    } catch (Exception $ex) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data' => []
+      ];
+    }
+  }
+
+  public function getAvailablePaymentCredits($customerId)
+  {
+    $customerId = (int)$customerId;
+
+    if ($customerId <= 0) {
+      return [];
+    }
+
+    return $this->db->query(
+      "SELECT
+        cp.id,
+        cp.payment_no,
+        cp.payment_date,
+        cp.amount_received,
+        cp.available_credit,
+        COALESCE(SUM(a.amount_applied), 0) AS amount_applied,
+        cp.available_credit - COALESCE(SUM(a.amount_applied), 0) AS balance
+      FROM t_customer_payments cp
+      LEFT JOIN t_customer_payment_allocations a
+        ON a.customer_payment_id = cp.id
+        AND a.allocation_type = 'CREDIT'
+      WHERE cp.customer_id = ?
+      AND cp.status = 'POSTED'
+      AND cp.available_credit > 0
+      GROUP BY
+        cp.id,
+        cp.payment_no,
+        cp.payment_date,
+        cp.amount_received,
+        cp.available_credit
+      HAVING cp.available_credit - COALESCE(SUM(a.amount_applied), 0) > 0
+      ORDER BY cp.payment_date, cp.id",
+      [$customerId]
+    )->result();
   }
 
 }

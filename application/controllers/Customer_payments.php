@@ -279,12 +279,14 @@ class Customer_payments extends MY_Controller
 
     $customerId = (int)$this->getJsonRequest('customer_id');
     $credits = $this->Customer_payment_model->getAvailableCreditMemos($customerId);
+    $paymentCredits = $this->Customer_payment_model->getAvailablePaymentCredits($customerId);
 
     return $this->jsonResponse(
       TRUE,
       '',
       [
-        'credits' => $credits
+        'credit_memos' => $credits,
+        'payment_credits' => $paymentCredits,
       ]
     );
   }
@@ -308,6 +310,31 @@ class Customer_payments extends MY_Controller
       $request->sales_invoice_id ?? 0,
       $request->amount ?? 0,
       $request->remarks ?? null
+    );
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
+  public function apply_payment_credit()
+  {
+    if (!$this->input->is_ajax_request()) {
+      show_404();
+    }
+
+    $customerPaymentId = (int)$this->getJsonRequest('customer_payment_id');
+    $salesInvoiceId = (int)$this->getJsonRequest('sales_invoice_id');
+    $amount = (float)$this->getJsonRequest('amount');
+    $remarks = $this->getJsonRequest('remarks');
+
+    $result = $this->Customer_payment_model->applyPaymentCredit(
+      $customerPaymentId,
+      $salesInvoiceId,
+      $amount,
+      $remarks
     );
 
     return $this->jsonResponse(

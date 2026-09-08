@@ -31,7 +31,12 @@
         <td class="text-right"><?= (float)$row->days_31_60 > 0 ? number_format((float)$row->days_31_60, 2) : '' ?></td>
         <td class="text-right"><?= (float)$row->days_61_90 > 0 ? number_format((float)$row->days_61_90, 2) : '' ?></td>
         <td class="text-right"><?= (float)$row->over_90 ? number_format((float)$row->over_90, 2) : '' ?></td>
-        <td class="text-right font-weight-500"><?= number_format((float)$row->total_balance, 2) ?></td>
+        <!-- <td class="text-right font-weight-500"><?= number_format((float)$row->total_balance, 2) ?></td> -->
+        <td class="text-right">
+          <a href="#" class="js-aging-details font-weight-500 text-olive btn-link" data-customer-id="<?= (int)$row->customer_id ?>" data-customer-name="<?= htmlspecialchars($row->customer_name) ?>">
+            <?= number_format((float)$row->total_balance, 2) ?>
+          </a>
+        </td>
       </tr>
 
     <?php endforeach; ?>
