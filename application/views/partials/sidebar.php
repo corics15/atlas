@@ -45,10 +45,17 @@
     $route = trim($currentRoute, '/');
     $url = trim($url, '/');
 
-    $routeModule = explode('/', $route)[0];
-    $urlModule = explode('/', $url)[0];
+    if (substr($url, -5) === '/list') {
+      $module = substr($url, 0, -5);
 
-    return $routeModule === $urlModule;
+      return $route === $url || $route === $module;
+    }
+
+    if (strpos($url, '/') !== false) {
+      return $route === $url;
+    }
+
+    return explode('/', $route)[0] === $url;
   };
 ?>
 
