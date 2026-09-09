@@ -62,9 +62,6 @@ class Dashboard extends MY_Controller
 
     $this->pageScript = 'dashboard';
 
-    echo $this->db->database;
-exit;
-
     $this->render('dashboard/index');
   }
 }
