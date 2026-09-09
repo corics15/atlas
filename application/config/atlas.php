@@ -6,6 +6,7 @@ $config['atlas'] = [
   'app_version'   => '0.7.5.2',
   'developer'     => 'O R H T E J',
   'timezone'      => 'Asia/Manila',
+  'environment'   => getenv('ATLAS_ENV') ?: 'CLIENT',
   'shortcut_ico'  => 'assets/images/atlas.ico',
   'default_password' => 'p1234567890d',
   'access_levels' => [

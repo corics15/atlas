@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="theme-color" content="#fbba6f">
 
-    <title><?= $app['app_name']; ?></title>
+    <title><?= $app['environment'] === 'DEV' ? '[DEV] ' : '' ?><?= $app['app_name']; ?></title>
 
     <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/plugins/fontawesome-free/css/all.min.css'); ?>">
     <link rel="stylesheet" href="<?= atlas_asset('assets/adminlte/dist/css/adminlte.min.css'); ?>">
@@ -29,6 +29,13 @@
       <div class="content-wrapper">
         <section class="content pt-3">
           <div class="container-fluid">
+
+            <?php if ($app['environment'] === 'DEV'): ?>
+              <div class="alert alert-warning text-center py-1 mb-3 font-weight-500">
+                <i class="fas fa-flask mr-1"></i>
+                DEVELOPMENT ENVIRONMENT — TEST DATA ONLY
+              </div>
+            <?php endif; ?>
 
             <?php $this->load->view($content); ?>
 
