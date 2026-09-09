@@ -149,6 +149,39 @@ class AtlasDialog {
     return Atlas.format.parseNumber(result.value);
   }
 
+  async details(options) {
+    const result = await Swal.fire({
+      icon: options.icon || 'question',
+      title: options.title,
+      html: `
+          <div class="text-left">
+            <label class="font-sm mb-1 text-olive">${options.firstLabel || 'Reference No.'}</label>
+            <input id="atlasDialogFirst" type="text" class="form-control form-control-sm bg-transparent text-white-50 mb-3" placeholder="${options.firstPlaceholder || ''}" value="${options.firstValue || ''}">
+            <label class="font-sm mb-1 text-olive">${options.secondLabel || 'Remarks'}</label>
+            <textarea id="atlasDialogSecond" class="form-control form-control-sm bg-transparent text-white-50" rows="3" placeholder="${options.secondPlaceholder || ''}">${options.secondValue || ''}</textarea>
+          </div>
+        `,
+      showCancelButton: true,
+      confirmButtonText: options.confirmText || 'OK',
+      cancelButtonText: options.cancelText || 'Cancel',
+      focusConfirm: false,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      theme: 'bootstrap-4-dark',
+      preConfirm: () => ({
+        first: document.getElementById('atlasDialogFirst').value.trim(),
+        second: document.getElementById('atlasDialogSecond').value.trim()
+      })
+    });
+
+    if (!result.isConfirmed) {
+      return null;
+    }
+
+    return result.value;
+  }
+
 }
 
 window.Atlas = window.Atlas || {};

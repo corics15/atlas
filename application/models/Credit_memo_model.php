@@ -25,4 +25,22 @@ class Credit_memo_model extends CI_Model
       ->row();
   }
 
+  public function getAllocations($creditMemoId)
+  {
+    return $this->db
+        ->select('
+          a.id,
+          a.amount_applied,
+          a.applied_on,
+          si.id AS sales_invoice_id,
+          si.si_no
+        ')
+        ->from('t_credit_memo_allocations a')
+        ->join('t_sales_invoices si', 'si.id = a.sales_invoice_id', 'inner')
+        ->where('a.credit_memo_id', (int)$creditMemoId)
+        ->order_by('a.applied_on', 'ASC')
+        ->get()
+        ->result();
+  }
+
 }

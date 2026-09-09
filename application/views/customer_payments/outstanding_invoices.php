@@ -55,7 +55,7 @@
                 <th class="text-center">Date</th>
                 <th class="text-center">Origin</th>
                 <th class="text-right">Available Credit</th>
-                <th class="text-center">Apply To SI</th>
+                <th class="text-center">Apply To SI No.</th>
                 <th class="text-right">Apply Credit</th>
                 <th class="text-center">Action</th>
               </tr>
@@ -63,6 +63,35 @@
             <tbody>
               <tr>
                 <td colspan="7" class="text-center text-muted py-3">Select a customer to view available credit.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <?php /*** customer credit refund history */ ?>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Customer Credit Refunds</h3>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered table-hover mb-0" id="tblCustomerCreditRefunds">
+            <thead class="thead-orange">
+              <tr>
+                <th class="text-center">Refund Date</th>
+                <th class="text-center">Source No.</th>
+                <th class="text-center">Reference No.</th>
+                <th class="text-right">Amount</th>
+                <th>Remarks</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="7" class="text-center text-muted py-3">Select a customer to view credit refunds.</td>
               </tr>
             </tbody>
           </table>

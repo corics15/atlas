@@ -344,4 +344,104 @@ class Customer_payments extends MY_Controller
     );
   }
 
+  public function refund_payment_credit()
+  {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
+    $request = $this->getJsonRequest();
+
+    $customerPaymentId = (int)($request['customer_payment_id'] ?? 0);
+    $refundDate = trim($request['refund_date'] ?? '');
+    $amount = round((float)($request['amount'] ?? 0), 2);
+    $referenceNo = trim($request['reference_no'] ?? '');
+    $remarks = trim($request['remarks'] ?? '');
+
+    try {
+      if (empty($refundDate)) {
+        throw new Exception('Refund Date is required.');
+      }
+
+      $this->Customer_payment_model->refundPaymentCredit(
+        $customerPaymentId,
+        $refundDate,
+        $amount,
+        $referenceNo,
+        $remarks
+      );
+
+      $this->jsonResponse(
+        TRUE,
+        'Customer credit refunded successfully.'
+      );
+
+    } catch (Exception $e) {
+      $this->jsonResponse(
+        FALSE,
+        $e->getMessage()
+      );
+    }
+  }
+
+  public function payment_credit_refunds()
+  {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
+    $request = $this->getJsonRequest();
+    $customerId = (int)($request['customer_id'] ?? 0);
+
+    try {
+      $refunds = $this->Customer_payment_model->getPaymentCreditRefunds($customerId);
+
+      $this->jsonResponse(
+        TRUE,
+        'Customer Credit Refunds loaded successfully.',
+        $refunds
+      );
+    } catch (Exception $e) {
+      $this->jsonResponse(
+        FALSE,
+        $e->getMessage()
+      );
+    }
+  }
+
+  public function cancel_payment_credit_refund()
+  {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
+    $request = $this->getJsonRequest();
+
+    $refundId = (int)($request['refund_id'] ?? 0);
+    $cancelReason = trim($request['cancel_reason'] ?? '');
+
+    try {
+      $this->Customer_payment_model->cancelPaymentCreditRefund(
+        $refundId,
+        $cancelReason
+      );
+
+      $this->jsonResponse(
+        TRUE,
+        'Customer Credit Refund cancelled successfully.'
+      );
+    } catch (Exception $e) {
+      $this->jsonResponse(
+        FALSE,
+        $e->getMessage()
+      );
+    }
+  }
+
 }

@@ -471,6 +471,33 @@ span.badge {
   letter-spacing: 3px;
 }
 
+/* tooltips */
+.tooltip .tooltip-inner {
+  background-color: #042503;
+  color: #fff;
+  font-size: 12px;
+  border-radius: 10px;
+  border: none;
+  box-shadow: none;
+}
+
+.tooltip.bs-tooltip-top .arrow::before {
+  border-top-color: #042503;
+}
+
+.tooltip.bs-tooltip-right .arrow::before {
+  border-right-color: #042503;
+}
+
+.tooltip.bs-tooltip-bottom .arrow::before {
+  border-bottom-color: #042503;
+}
+
+.tooltip.bs-tooltip-left .arrow::before {
+  border-left-color: #042503;
+}
+
+
 /** checkboxes */
 .custom-control-input:checked~.custom-control-label::before {
   color: #fff;

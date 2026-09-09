@@ -283,33 +283,40 @@ class Customer_payment_model extends CI_Model
     $openingBalance = 0;
 
     if ($dateFrom !== '') {
-      $row = $this->db->query(
-        "SELECT COALESCE(SUM(x.debit - x.credit), 0) AS opening_balance
-        FROM (
-          SELECT si.total_amount AS debit, 0::numeric AS credit
-          FROM t_sales_invoices si
-          WHERE si.customer_id = ?
-          AND si.status = 'POSTED'
-          AND si.invoice_date < ?
-          UNION ALL
-          SELECT 0::numeric AS debit, cp.amount_received AS credit
-          FROM t_customer_payments cp
-          WHERE cp.customer_id = ?
-          AND cp.status = 'POSTED'
-          AND cp.payment_date < ?
-          UNION ALL
-          SELECT 0::numeric AS debit, cm.amount AS credit
-          FROM t_credit_memos cm
-          WHERE cm.customer_id = ?
-          AND cm.status = 'POSTED'
-          AND cm.credit_memo_date < ?
-        ) x",
-        [
-          $customerId, $dateFrom,
-          $customerId, $dateFrom,
-          $customerId, $dateFrom
-        ]
-      )->row();
+      $row = $this->db->query("SELECT COALESCE(SUM(x.debit - x.credit), 0) AS opening_balance
+                                FROM (
+                                  SELECT si.total_amount AS debit, 0::numeric AS credit
+                                    FROM t_sales_invoices si
+                                    WHERE si.customer_id = ?
+                                    AND si.status = 'POSTED'
+                                    AND si.invoice_date < ?
+                                  UNION ALL
+                                    SELECT 0::numeric AS debit, cp.amount_received AS credit
+                                    FROM t_customer_payments cp
+                                    WHERE cp.customer_id = ?
+                                    AND cp.status = 'POSTED'
+                                    AND cp.payment_date < ?
+                                  UNION ALL
+                                    SELECT r.amount AS debit, 0::numeric AS credit
+                                    FROM t_customer_payment_refunds r
+                                    INNER JOIN t_customer_payments cp ON cp.id = r.customer_payment_id
+                                    WHERE cp.customer_id = ?
+                                    AND r.status = 'POSTED'
+                                    AND r.refund_date < ?
+                                  UNION ALL
+                                    SELECT 0::numeric AS debit, cm.amount AS credit
+                                    FROM t_credit_memos cm
+                                    WHERE cm.customer_id = ?
+                                    AND cm.status = 'POSTED'
+                                    AND cm.credit_memo_date < ?
+                                ) x",
+                                [
+                                  $customerId, $dateFrom,
+                                  $customerId, $dateFrom,
+                                  $customerId, $dateFrom,
+                                  $customerId, $dateFrom
+                                ]
+                              )->row();
 
       $openingBalance = round((float)$row->opening_balance, 2);
     }
@@ -318,97 +325,120 @@ class Customer_payment_model extends CI_Model
     $invoiceWhere = '';
     $paymentWhere = '';
     $creditMemoWhere = '';
+    $refundWhere = '';
     $params = [$openingBalance, $customerId];
 
+    /*** sales invoices */
     if ($dateFrom !== '') {
       $invoiceWhere .= ' AND si.invoice_date >= ?';
       $params[] = $dateFrom;
     }
-
     if ($dateTo !== '') {
       $invoiceWhere .= ' AND si.invoice_date <= ?';
       $params[] = $dateTo;
     }
 
+    /*** payments */
     $params[] = $customerId;
-
     if ($dateFrom !== '') {
       $paymentWhere .= ' AND cp.payment_date >= ?';
       $params[] = $dateFrom;
     }
-
     if ($dateTo !== '') {
       $paymentWhere .= ' AND cp.payment_date <= ?';
       $params[] = $dateTo;
     }
 
+    /*** credit memos */
     $params[] = $customerId;
-
     if ($dateFrom !== '') {
       $creditMemoWhere .= ' AND cm.credit_memo_date >= ?';
       $params[] = $dateFrom;
     }
-
     if ($dateTo !== '') {
       $creditMemoWhere .= ' AND cm.credit_memo_date <= ?';
       $params[] = $dateTo;
     }
 
-    $transactions = $this->db->query(
-      "SELECT
-        x.transaction_date,
-        x.reference_no,
-        x.transaction_type,
-        x.debit,
-        x.credit,
-        ? + SUM(x.debit - x.credit) OVER (
-          ORDER BY x.transaction_date, x.sort_order, x.transaction_id
-          ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-        ) AS balance,
-        x.transaction_id
-      FROM (
-        SELECT
-          si.invoice_date AS transaction_date,
-          si.si_no AS reference_no,
-          'SALES INVOICE' AS transaction_type,
-          si.total_amount AS debit,
-          0::numeric AS credit,
-          si.id AS transaction_id,
-          1 AS sort_order
-        FROM t_sales_invoices si
-        WHERE si.customer_id = ?
-        AND si.status = 'POSTED'
-        {$invoiceWhere}
-        UNION ALL
-        SELECT
-          cp.payment_date AS transaction_date,
-          cp.payment_no AS reference_no,
-          'CUSTOMER PAYMENT' AS transaction_type,
-          0::numeric AS debit,
-          cp.amount_received AS credit,
-          cp.id AS transaction_id,
-          2 AS sort_order
-        FROM t_customer_payments cp
-        WHERE cp.customer_id = ?
-        AND cp.status = 'POSTED'
-        {$paymentWhere}
-        UNION ALL
-        SELECT
-          cm.credit_memo_date AS transaction_date,
-          cm.cm_no AS reference_no,
-          'CREDIT MEMO' AS transaction_type,
-          0::numeric AS debit,
-          cm.amount AS credit,
-          cm.id AS transaction_id,
-          3 AS sort_order
-        FROM t_credit_memos cm
-        WHERE cm.customer_id = ?
-        AND cm.status = 'POSTED'
-        {$creditMemoWhere}
-      ) x
-      ORDER BY x.transaction_date, x.sort_order, x.transaction_id",
-      $params
-    )->result();
+    /*** refunds */
+    $params[] = $customerId;
+    if ($dateFrom !== '') {
+      $refundWhere .= ' AND r.refund_date >= ?';
+      $params[] = $dateFrom;
+    }
+    if ($dateTo !== '') {
+      $refundWhere .= ' AND r.refund_date <= ?';
+      $params[] = $dateTo;
+    }
+
+    $transactions = $this->db->query("SELECT
+                                        x.transaction_date,
+                                        x.reference_no,
+                                        x.transaction_type,
+                                        x.debit,
+                                        x.credit,
+                                        ? + SUM(x.debit - x.credit) OVER (
+                                          ORDER BY x.transaction_date, x.sort_order, x.transaction_id
+                                          ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                                        ) AS balance,
+                                        x.transaction_id
+                                      FROM (
+                                        SELECT
+                                          si.invoice_date AS transaction_date,
+                                          si.si_no AS reference_no,
+                                          'SALES INVOICE' AS transaction_type,
+                                          si.total_amount AS debit,
+                                          0::numeric AS credit,
+                                          si.id AS transaction_id,
+                                          1 AS sort_order
+                                        FROM t_sales_invoices si
+                                        WHERE si.customer_id = ?
+                                        AND si.status = 'POSTED'
+                                        {$invoiceWhere}
+                                        UNION ALL
+                                          SELECT
+                                            cp.payment_date AS transaction_date,
+                                            cp.payment_no AS reference_no,
+                                            'CUSTOMER PAYMENT' AS transaction_type,
+                                            0::numeric AS debit,
+                                            cp.amount_received AS credit,
+                                            cp.id AS transaction_id,
+                                            2 AS sort_order
+                                          FROM t_customer_payments cp
+                                          WHERE cp.customer_id = ?
+                                          AND cp.status = 'POSTED'
+                                          {$paymentWhere}
+                                        UNION ALL
+                                          SELECT
+                                            cm.credit_memo_date AS transaction_date,
+                                            cm.cm_no AS reference_no,
+                                            'CREDIT MEMO' AS transaction_type,
+                                            0::numeric AS debit,
+                                            cm.amount AS credit,
+                                            cm.id AS transaction_id,
+                                            3 AS sort_order
+                                          FROM t_credit_memos cm
+                                          WHERE cm.customer_id = ?
+                                          AND cm.status = 'POSTED'
+                                          {$creditMemoWhere}
+                                        UNION ALL
+                                          SELECT
+                                            r.refund_date AS transaction_date,
+                                            COALESCE(NULLIF(r.reference_no, ''), cp.payment_no) AS reference_no,
+                                            'CUSTOMER CREDIT REFUND' AS transaction_type,
+                                            r.amount AS debit,
+                                            0::numeric AS credit,
+                                            cp.id AS transaction_id,
+                                            4 AS sort_order
+                                          FROM t_customer_payment_refunds r
+                                          INNER JOIN t_customer_payments cp ON cp.id = r.customer_payment_id
+                                          WHERE cp.customer_id = ?
+                                          AND r.status = 'POSTED'
+                                          {$refundWhere}
+                                      ) x
+                                      ORDER BY x.transaction_date, x.sort_order, x.transaction_id",
+                                      $params
+                                    )->result();
 
     return [
       'opening_balance' => $openingBalance,
@@ -856,6 +886,34 @@ class Customer_payment_model extends CI_Model
 
         if ($customerPayment->status === 'CANCELLED') {
           throw new Exception("{$customerPayment->payment_no} is already CANCELLED.");
+        }
+
+        if ($customerPayment->status === 'POSTED') {
+          $usage = $this->db->query(
+            "SELECT
+              EXISTS(
+                SELECT 1
+                FROM t_customer_payment_allocations
+                WHERE customer_payment_id = ?
+                AND allocation_type = 'CREDIT'
+              ) AS has_credit_allocations,
+              EXISTS(
+                SELECT 1
+                FROM t_customer_payment_refunds
+                WHERE customer_payment_id = ?
+                AND status = 'POSTED'
+              ) AS has_refunds",
+            [
+              $customerPayment->id,
+              $customerPayment->id
+            ]
+          )->row();
+
+          if ($usage->has_credit_allocations === 't' || $usage->has_refunds === 't') {
+            throw new Exception(
+              "{$customerPayment->payment_no} cannot be cancelled because its unapplied credit has already been used or refunded."
+            );
+          }
         }
 
         $this->db
@@ -1317,17 +1375,27 @@ class Customer_payment_model extends CI_Model
             FROM t_customer_payment_allocations
             WHERE customer_payment_id = ?
             AND allocation_type = 'CREDIT'
-          ), 0) AS payment_balance,
-          ? - COALESCE((
-            SELECT SUM(a.amount_applied)
-            FROM t_customer_payment_allocations a
-            INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
-            WHERE a.sales_invoice_id = ? AND cp.status = 'POSTED'
           ), 0)
           - COALESCE((
             SELECT SUM(amount)
+            FROM t_customer_payment_refunds
+            WHERE customer_payment_id = ?
+            AND status = 'POSTED'
+          ), 0) AS payment_balance,
+
+          ? - COALESCE((
+            SELECT SUM(a.amount_applied)
+            FROM t_customer_payment_allocations a
+            INNER JOIN t_customer_payments cp
+              ON cp.id = a.customer_payment_id
+            WHERE a.sales_invoice_id = ?
+            AND cp.status = 'POSTED'
+          ), 0)
+          - COALESCE((
+            SELECT SUM(amount - available_credit)
             FROM t_credit_memos
-            WHERE sales_invoice_id = ? AND status = 'POSTED'
+            WHERE sales_invoice_id = ?
+            AND status = 'POSTED'
           ), 0)
           - COALESCE((
             SELECT SUM(amount_applied)
@@ -1336,6 +1404,7 @@ class Customer_payment_model extends CI_Model
           ), 0) AS invoice_balance",
         [
           $payment->available_credit,
+          $customerPaymentId,
           $customerPaymentId,
           $invoice->total_amount,
           $salesInvoiceId,
@@ -1430,25 +1499,205 @@ class Customer_payment_model extends CI_Model
         cp.payment_date,
         cp.amount_received,
         cp.available_credit,
-        COALESCE(SUM(a.amount_applied), 0) AS amount_applied,
-        cp.available_credit - COALESCE(SUM(a.amount_applied), 0) AS balance
+        COALESCE(a.amount_applied, 0) AS amount_applied,
+        COALESCE(r.amount_refunded, 0) AS amount_refunded,
+        cp.available_credit
+          - COALESCE(a.amount_applied, 0)
+          - COALESCE(r.amount_refunded, 0) AS balance
       FROM t_customer_payments cp
-      LEFT JOIN t_customer_payment_allocations a
-        ON a.customer_payment_id = cp.id
-        AND a.allocation_type = 'CREDIT'
+      LEFT JOIN (
+        SELECT
+          customer_payment_id,
+          SUM(amount_applied) AS amount_applied
+        FROM t_customer_payment_allocations
+        WHERE allocation_type = 'CREDIT'
+        GROUP BY customer_payment_id
+      ) a ON a.customer_payment_id = cp.id
+      LEFT JOIN (
+        SELECT
+          customer_payment_id,
+          SUM(amount) AS amount_refunded
+        FROM t_customer_payment_refunds
+        WHERE status = 'POSTED'
+        GROUP BY customer_payment_id
+      ) r ON r.customer_payment_id = cp.id
       WHERE cp.customer_id = ?
       AND cp.status = 'POSTED'
       AND cp.available_credit > 0
-      GROUP BY
-        cp.id,
-        cp.payment_no,
-        cp.payment_date,
-        cp.amount_received,
-        cp.available_credit
-      HAVING cp.available_credit - COALESCE(SUM(a.amount_applied), 0) > 0
+      AND cp.available_credit
+        - COALESCE(a.amount_applied, 0)
+        - COALESCE(r.amount_refunded, 0) > 0
       ORDER BY cp.payment_date, cp.id",
       [$customerId]
     )->result();
+  }
+
+  public function getPaymentCreditRefunds($customerId)
+  {
+    $customerId = (int)$customerId;
+
+    if ($customerId <= 0) {
+      return [];
+    }
+
+    return $this->db->query(
+      "SELECT
+        r.id,
+        r.refund_date,
+        r.amount,
+        r.reference_no,
+        r.remarks,
+        r.status,
+        r.cancel_reason,
+        r.cancelled_on,
+        cp.id AS customer_payment_id,
+        cp.payment_no AS source_no
+      FROM t_customer_payment_refunds r
+      INNER JOIN t_customer_payments cp
+        ON cp.id = r.customer_payment_id
+      WHERE cp.customer_id = ?
+      ORDER BY r.refund_date DESC, r.id DESC",
+      [$customerId]
+    )->result();
+  }
+
+  public function refundPaymentCredit( $customerPaymentId, $refundDate, $amount, $referenceNo = NULL, $remarks = NULL)
+  {
+    $customerPaymentId = (int)$customerPaymentId;
+    $amount = round((float)$amount, 2);
+    $userId = (int)$this->session->userdata('user_id');
+
+    if ($customerPaymentId <= 0 || $amount <= 0) {
+      throw new Exception('Invalid refund request.');
+    }
+
+    $this->db->trans_begin();
+
+    try {
+      $payment = $this->db->query(
+        "SELECT
+          cp.id,
+          cp.status,
+          cp.available_credit,
+          cp.available_credit
+            - COALESCE((
+              SELECT SUM(a.amount_applied)
+              FROM t_customer_payment_allocations a
+              WHERE a.customer_payment_id = cp.id
+              AND a.allocation_type = 'CREDIT'
+            ), 0)
+            - COALESCE((
+              SELECT SUM(r.amount)
+              FROM t_customer_payment_refunds r
+              WHERE r.customer_payment_id = cp.id
+              AND r.status = 'POSTED'
+            ), 0) AS balance
+        FROM t_customer_payments cp
+        WHERE cp.id = ?
+        FOR UPDATE",
+        [$customerPaymentId]
+      )->row();
+
+      if (!$payment) {
+        throw new Exception('Customer Payment not found.');
+      }
+
+      if ($payment->status !== 'POSTED') {
+        throw new Exception('Only POSTED Customer Payments can be refunded.');
+      }
+
+      $balance = round((float)$payment->balance, 2);
+
+      if ($amount > $balance) {
+        throw new Exception(
+          'Refund amount cannot exceed the available customer credit.'
+        );
+      }
+
+      $this->db->insert('t_customer_payment_refunds', [
+        'customer_payment_id' => $customerPaymentId,
+        // 'refund_date' => $refundDate,
+        'refund_date' => date('Y-m-d'),
+        'amount' => $amount,
+        'reference_no' => $referenceNo ?: NULL,
+        'remarks' => $remarks ?: NULL,
+        'entered_by' => $userId ?: NULL
+      ]);
+
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception('Unable to save Customer Credit Refund.');
+      }
+
+      $this->db->trans_commit();
+      return TRUE;
+
+    } catch (Exception $e) {
+      $this->db->trans_rollback();
+      throw $e;
+    }
+  }
+
+  public function cancelPaymentCreditRefund($refundId, $cancelReason = NULL)
+  {
+    $refundId = (int)$refundId;
+    $userId = (int)$this->session->userdata('user_id');
+
+    if ($refundId <= 0) {
+      throw new Exception('Invalid Customer Credit Refund.');
+    }
+
+    $this->db->trans_begin();
+
+    try {
+      $refund = $this->db->query(
+        "SELECT
+          id,
+          customer_payment_id,
+          amount,
+          status
+        FROM t_customer_payment_refunds
+        WHERE id = ?
+        FOR UPDATE",
+        [$refundId]
+      )->row();
+
+      if (!$refund) {
+        throw new Exception('Customer Credit Refund not found.');
+      }
+
+      if ($refund->status === 'CANCELLED') {
+        throw new Exception('Customer Credit Refund is already CANCELLED.');
+      }
+
+      if ($refund->status !== 'POSTED') {
+        throw new Exception('Only POSTED Customer Credit Refunds can be cancelled.');
+      }
+
+      $this->db
+        ->where('id', $refundId)
+        ->where('status', 'POSTED')
+        ->update('t_customer_payment_refunds', [
+          'status' => 'CANCELLED',
+          'cancel_reason' => trim($cancelReason ?? '') !== '' ? strtoupper(trim($cancelReason)) : NULL,
+          'cancelled_by' => $userId ?: NULL,
+          'cancelled_on' => date('Y-m-d H:i:s')
+        ]);
+
+      if (!$this->db->affected_rows()) {
+        throw new Exception('Unable to cancel Customer Credit Refund.');
+      }
+
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception('Unable to cancel Customer Credit Refund.');
+      }
+
+      $this->db->trans_commit();
+      return TRUE;
+
+    } catch (Exception $e) {
+      $this->db->trans_rollback();
+      throw $e;
+    }
   }
 
 }

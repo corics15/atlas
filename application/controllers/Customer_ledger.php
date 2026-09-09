@@ -59,6 +59,8 @@ class Customer_ledger extends MY_Controller
           $row->cp_url = base_url('customer-payments/edit/' . $this->encodeId($row->transaction_id));
         } elseif ($row->transaction_type === 'CREDIT MEMO') {
           $row->cm_url = base_url('credit-memos/view/' . $this->encodeId($row->transaction_id));
+        } elseif ($row->transaction_type === 'CUSTOMER CREDIT REFUND') {
+          $row->ccr_url = base_url('customer-payments/edit/' . $this->encodeId($row->transaction_id));
         }
       }
 

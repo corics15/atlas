@@ -2,6 +2,8 @@
 
 <section class="content">
   <div class="container-fluid">
+
+    <?php /*** summary */ ?>
     <div class="card">
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
@@ -77,5 +79,45 @@
         </div>
       </div>
     </div>
+
+    <?php /*** details */ ?>
+    <?php if (!empty($allocations)): ?>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Credit Applications</h3>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered table-hover mb-0">
+            <thead class="thead-orange">
+              <tr>
+                <th class="text-center">Applied On</th>
+                <th class="text-center">Applied To</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($allocations as $row): ?>
+              <tr>
+                <td class="text-center">
+                  <?= date('m/d/Y H:i', strtotime($row->applied_on)) ?>
+                </td>
+                <td class="text-center">
+                  <a href="<?= $row->si_url ?>" class="font-weight-500 text-olive" target="_blank">
+                    <i class="fas fa-external-link-alt fa-xs mr-1"></i><?= htmlspecialchars($row->si_no) ?>
+                  </a>
+                </td>
+                <td class="text-right">
+                  <?= number_format((float)$row->amount_applied, 2) ?>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
+
   </div>
 </section>

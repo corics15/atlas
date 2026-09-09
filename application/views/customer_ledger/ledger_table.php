@@ -30,6 +30,9 @@
           case 'CREDIT MEMO':
             $url = $row->cm_url;
             break;
+          case 'CUSTOMER CREDIT REFUND':
+            $url = $row->ccr_url;
+            break;
           default:
             $url = NULL;
             break;

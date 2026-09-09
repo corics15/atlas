@@ -28,10 +28,15 @@ class Credit_memos extends MY_Controller
     if (!$this->data['creditMemo']) {
       show_404();
     }
-
     $creditMemo = $this->data['creditMemo'];
     $creditMemo->si_url = base_url('sales-invoices/edit/' . $this->encodeId($creditMemo->sales_invoice_id));
     $creditMemo->sr_url = base_url('sales-returns/edit/' . $this->encodeId($creditMemo->sales_return_id));
+
+    $allocations = $this->Credit_memo_model->getAllocations($id);
+    foreach ($allocations as $row) {
+      $row->si_url = base_url('sales-invoices/edit/' . $this->encodeId($row->sales_invoice_id));
+    }
+    $this->data['allocations'] = $allocations;
 
     $this->setPage('Credit Memo');
 
