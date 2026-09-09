@@ -28,7 +28,10 @@
                 <th width="90" class="text-right">Delivered</th>
                 <th width="90" class="text-right">Remaining</th>
                 <th width="90" class="text-right">
-                  <i class="fas fa-info-circle text-brown mr-1" data-toggle="tooltip" title="Available quantity to deliver"></i>AQTD
+                  <i class="fas fa-info-circle text-brown mr-1" data-toggle="tooltip" title="Quantity reserved by other OPEN Delivery Receipts"></i>Reserved
+                </th>
+                <th width="90" class="text-right">
+                  <i class="fas fa-info-circle text-brown mr-1" data-toggle="tooltip" title="Available quantity to deliver after deducting quantities already reserved by other OPEN Delivery Receipts"></i>AQTD
                 </th>
                 <th width="90" class="text-right">Stock</th>
                 <th width="110" class="text-right">Deliver Qty</th>
@@ -56,6 +59,7 @@
                   <td class="text-right"><?= number_format($row->qty_ordered, 0); ?></td>
                   <td class="text-right"><?= number_format($row->qty_delivered, 0); ?></td>
                   <td class="text-right"><?= number_format($row->qty_remaining, 0); ?></td>
+                  <td class="text-right"><?= number_format($row->qty_reserved ?? 0, 0); ?></td>
                   <td class="text-right"><?= number_format($row->qty_available_to_deliver, 0); ?></td>
                   <td class="text-right">
 
@@ -70,9 +74,10 @@
 
                   </td>
                   <td>
-                    <input type="number" class="form-control form-control-sm text-right dr-deliver-qty" min="0" max="<?= $row->qty_available_to_deliver; ?>" step="any"
-                        value="0"
-                        <?= isset($deliveryReceiptId) ? 'readonly' : '' ?>>
+                    <input type="number" class="form-control form-control-sm text-right dr-deliver-qty" min="0" max="<?= $row->qty_available_to_deliver; ?>" step="any" autocomplete="off"
+                      data-saved-qty="<?= isset($deliveryReceiptId) ? $row->dr_qty : 0 ?>"
+                      value="<?= isset($deliveryReceiptId) ? $row->dr_qty : 0 ?>"
+                      <?= isset($deliveryReceiptId) ? 'readonly' : '' ?>>
                   </td>
                 </tr>
               <?php $index++; endforeach; ?>

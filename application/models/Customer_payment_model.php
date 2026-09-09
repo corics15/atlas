@@ -99,14 +99,8 @@ class Customer_payment_model extends CI_Model
           'left',
           FALSE
         )
-        ->order_by(
-          'cp.payment_date',
-          'DESC'
-        )
-        ->order_by(
-          'cp.id',
-          'DESC'
-        )
+        ->order_by('cp.payment_date', 'DESC')
+        ->order_by('cp.payment_no', 'DESC')
         ->get()
         ->result();
   }

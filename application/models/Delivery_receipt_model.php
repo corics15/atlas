@@ -90,32 +90,59 @@ class Delivery_receipt_model extends CI_Model
     $branchId = (int)$this->session->userdata('branch_id');
 
     return $this->db->query("SELECT
-                                drd.id,
+                              drd.id,
+                              drd.sales_order_detail_id,
+                              drd.product_id,
+                              drd.uom_id,
+                              drd.conversion_factor,
+                              p.uom_id AS base_uom_id,
+                              p.barcode,
+                              p.description,
+                              u.uom,
+                              sod.qty AS qty_ordered,
+                              COALESCE(posted.qty_delivered, 0) AS qty_delivered,
+                              COALESCE(reserved.qty_reserved, 0) AS qty_reserved,
+                              (sod.qty - COALESCE(posted.qty_delivered, 0)) AS qty_remaining,
+                              (
+                                sod.qty
+                                - COALESCE(posted.qty_delivered, 0)
+                                - COALESCE(reserved.qty_reserved, 0)
+                              ) AS qty_available_to_deliver,
+                              COALESCE(inv.qty_on_hand, 0) AS qty_available,
+                              drd.qty AS dr_qty,
+                              (drd.qty * drd.conversion_factor) AS qty_reverse
+                            FROM t_delivery_receipt_details drd
+                            INNER JOIN t_sales_order_details sod ON sod.id = drd.sales_order_detail_id
+                            INNER JOIN m_products p ON p.id = drd.product_id
+                            LEFT JOIN m_uom u ON u.id = drd.uom_id
+                            LEFT JOIN t_branch_inventory inv ON inv.product_id = drd.product_id AND inv.branch_id = ?
+                            LEFT JOIN (
+                              SELECT
                                 drd.sales_order_detail_id,
-                                drd.product_id,
-                                drd.uom_id,
-                                drd.conversion_factor,
-                                p.uom_id AS base_uom_id,
-                                p.barcode,
-                                p.description,
-                                u.uom,
-                                sod.qty AS qty_ordered,
-                                drd.qty AS qty_delivered,
-                                COALESCE(inv.qty_on_hand, 0) AS qty_available,
-                                0 AS qty_remaining,
-                                0 AS qty_available_to_deliver,
-                                (drd.qty * drd.conversion_factor) AS qty_reverse -- used for cancellation events
+                                SUM(drd.qty) AS qty_delivered
                               FROM t_delivery_receipt_details drd
-                              INNER JOIN t_sales_order_details sod ON sod.id = drd.sales_order_detail_id
-                              INNER JOIN m_products p ON p.id = drd.product_id
-                              LEFT JOIN m_uom u ON u.id = drd.uom_id
-                              LEFT JOIN t_branch_inventory inv ON inv.product_id = drd.product_id AND inv.branch_id = ?
-                              WHERE drd.delivery_receipt_id = ?
-                              ORDER BY drd.id
-                            ",
+                              INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
+                              WHERE dr.status = 'POSTED'
+                              GROUP BY drd.sales_order_detail_id
+                            ) posted
+                              ON posted.sales_order_detail_id = sod.id
+                            LEFT JOIN (
+                              SELECT
+                                drd.sales_order_detail_id,
+                                SUM(drd.qty) AS qty_reserved
+                              FROM t_delivery_receipt_details drd
+                              INNER JOIN t_delivery_receipts dr ON dr.id = drd.delivery_receipt_id
+                              WHERE dr.status = 'OPEN'
+                                AND dr.id <> ?
+                              GROUP BY drd.sales_order_detail_id
+                            ) reserved
+                              ON reserved.sales_order_detail_id = sod.id
+                            WHERE drd.delivery_receipt_id = ?
+                            ORDER BY drd.id",
                             [
                               $branchId,
-                              $deliveryReceiptId
+                              (int)$deliveryReceiptId,
+                              (int)$deliveryReceiptId
                             ])->result();
   }
 
@@ -225,10 +252,8 @@ class Delivery_receipt_model extends CI_Model
           'm_customers c',
           'c.id = dr.customer_id'
         )
-        ->order_by(
-          'dr.delivery_date',
-          'DESC'
-        )
+        ->order_by('dr.delivery_date', 'DESC')
+        ->order_by('dr.dr_no', 'DESC')
         ->get()
         ->result();
   }

@@ -97,10 +97,8 @@ class Sales_invoice_model extends CI_Model
             'si.invoice_date',
             'DESC'
         )
-        ->order_by(
-            'si.invoice_date',
-            'DESC'
-        )
+        ->order_by('si.invoice_date', 'DESC')
+        ->order_by('si.si_no', 'DESC')
         ->get()
         ->result();
   }

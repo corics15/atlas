@@ -115,7 +115,7 @@ class Check_voucher_model extends CI_Model
           'ba.account_no'
         ])
         ->order_by('cv.voucher_date', 'DESC')
-        ->order_by('cv.id', 'DESC')
+        ->order_by('cv.cv_no', 'DESC')
         ->get()
         ->result();
   }

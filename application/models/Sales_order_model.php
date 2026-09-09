@@ -188,10 +188,8 @@ class Sales_order_model extends CI_Model
           't.id = so.terms_id',
           'left'
       )
-      ->order_by(
-          'so.order_date',
-          'DESC'
-      )
+      ->order_by('so.order_date', 'DESC')
+      ->order_by('so.so_no', 'DESC')
       ->get()
       ->result();
   }

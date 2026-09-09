@@ -88,10 +88,8 @@ class Sales_return_model extends CI_Model
             'inv.invoice_date',
             'DESC'
         )
-        ->order_by(
-            'sr.id',
-            'DESC'
-        )
+        ->order_by('sr.return_date', 'DESC')
+        ->order_by('sr.sr_no', 'DESC')
         ->get()
         ->result();
   }

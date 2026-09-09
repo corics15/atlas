@@ -21,6 +21,12 @@ let isLoading = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
 
+  if (window.deliveryReceiptId) {
+    document.querySelectorAll('.dr-deliver-qty').forEach(input => {
+      input.value = input.dataset.savedQty;
+    });
+  }
+
   Atlas.table.init({
     checkbox: '.chkDeliveryReceipt',
     selectAll: '#chkSelectAllDeliveryReceipt',
