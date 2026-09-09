@@ -46,6 +46,9 @@
                       data-conversion-factor="<?= $detail->conversion_factor ?>"
                       data-sales-invoice-detail-id="<?= $detail->sales_invoice_detail_id ?>"
                       data-unit-price="<?= (float)($detail->unit_price ?? 0) ?>"
+                      data-si-qty="<?= (float)($detail->si_qty ?? 0) ?>"
+                      data-discount-type="<?= htmlspecialchars($detail->discount_type ?? '') ?>"
+                      data-discount-percent="<?= (float)($detail->discount_percent ?? 0) ?>"
                       data-discount-amount="<?= (float)(
                         $detail->discount_amount
                         ?? (

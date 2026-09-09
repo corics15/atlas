@@ -242,9 +242,28 @@ const calculateSalesReturnTotals = () => {
 
     const qty = Atlas.format.parseNumber(row.querySelector('.so-qty')?.value || 0);
     const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
-    const rowDiscount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
+    // const rowDiscount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
 
-    grossAmount += qty * unitPrice;
+    // grossAmount += qty * unitPrice;
+    // discountAmount += rowDiscount;
+
+    const discountType = (row.dataset.discountType || '').toUpperCase();
+    const discountPercent = Atlas.format.parseNumber(row.dataset.discountPercent || 0);
+    const invoiceQty = Atlas.format.parseNumber(row.dataset.siQty || 0);
+    const invoiceDiscount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
+
+    const rowGross = qty * unitPrice;
+    let rowDiscount = 0;
+
+    if (qty > 0) {
+      if (discountType === 'PERCENT') {
+        rowDiscount = rowGross * (discountPercent / 100);
+      } else if (discountType === 'AMOUNT' && invoiceQty > 0) {
+        rowDiscount = invoiceDiscount * (qty / invoiceQty);
+      }
+    }
+
+    grossAmount += rowGross;
     discountAmount += rowDiscount;
   });
 

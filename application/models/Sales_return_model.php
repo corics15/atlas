@@ -664,12 +664,16 @@ class Sales_return_model extends CI_Model
                                             [(int)$return->sales_invoice_id]
                                           )->row();
 
-          $previousCreditMemoRow = $this->db->query("SELECT COALESCE(SUM(amount), 0) AS credited_amount
-                                                      FROM t_credit_memos
-                                                      WHERE sales_invoice_id = ?
-                                                      AND status = 'POSTED'",
-                                                      [(int)$return->sales_invoice_id]
-                                                    )->row();
+          $previousCreditMemoRow = $this->db->query("SELECT
+                                                      COALESCE(
+                                                        SUM(amount - available_credit),
+                                                        0
+                                                      ) AS credited_amount
+                                                    FROM t_credit_memos
+                                                    WHERE sales_invoice_id = ?
+                                                    AND status = 'POSTED'",
+                                                    [(int)$return->sales_invoice_id]
+                                                  )->row();
 
           $invoiceAmount = round((float)$salesInvoice->total_amount, 2);
           $paidAmount = round((float)$paymentRow->paid_amount, 2);
