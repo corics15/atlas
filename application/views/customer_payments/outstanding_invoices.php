@@ -70,6 +70,55 @@
       </div>
     </div>
 
+    <?php /*** customer payment credit application history */ ?>
+    <?php
+      $creditApplications = array_filter($allocations ?? [], function($allocation) {
+        return $allocation->allocation_type === 'CREDIT';
+      });
+    ?>
+
+    <?php if (!empty($creditApplications)): ?>
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Credit Applications</h3>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered table-hover mb-0">
+              <thead class="thead-orange">
+                <tr>
+                  <th class="text-center">Applied On</th>
+                  <th class="text-center">Applied To</th>
+                  <th class="text-right">Amount</th>
+                  <th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($creditApplications as $application): ?>
+                  <tr>
+                    <td class="text-center">
+                      <?= $application->applied_on
+                        ? date('m/d/Y h:i A', strtotime($application->applied_on))
+                        : '-' ?>
+                    </td>
+                    <td class="text-center">
+                      <?= html_escape($application->si_no) ?>
+                    </td>
+                    <td class="text-right">
+                      <?= number_format((float)$application->amount_applied, 2) ?>
+                    </td>
+                    <td>
+                      <?= html_escape($application->remarks ?? '') ?>
+                    </td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <?php endif; ?>
+
     <?php /*** customer credit refund history */ ?>
     <div class="card">
       <div class="card-header">
@@ -182,6 +231,14 @@
 
               <div>
                 <span class="font-weight-500">9.</span>
+                After Customer Payment credit is applied to an invoice, the transaction will appear under
+                <span class="font-weight-500 text-indigo-2">Credit Applications</span>.
+                This section shows when the credit was applied, which Sales Invoice received it, the amount applied,
+                and any remarks entered.
+              </div>
+
+              <div>
+                <span class="font-weight-500">10.</span>
                 Customer credit with source
                 <span class="font-weight-500 text-success">CP</span>
                 came from an actual Customer Payment that was previously received but not fully applied.
@@ -191,7 +248,7 @@
               </div>
 
               <div>
-                <span class="font-weight-500">10.</span>
+                <span class="font-weight-500">11.</span>
                 Customer credit with source
                 <span class="font-weight-500 text-info">CM</span>
                 came from a <span class="font-weight-500">Credit Memo</span>, usually created from a Sales Return.
@@ -200,14 +257,14 @@
               </div>
 
               <div>
-                <span class="font-weight-500">11.</span>
+                <span class="font-weight-500">12.</span>
                 If a Customer Payment credit is refunded, the transaction will appear under
                 <span class="font-weight-500 text-indigo-2">Customer Credit Refunds</span>.
                 A refund should only be made when money is actually being returned to the customer.
               </div>
 
               <div>
-                <span class="font-weight-500">12.</span>
+                <span class="font-weight-500">13.</span>
                 Before leaving the transaction, always verify the
                 <span class="font-weight-500">Amount Received</span>,
                 <span class="font-weight-500">Apply Amount</span>,

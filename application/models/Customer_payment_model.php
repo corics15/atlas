@@ -460,9 +460,7 @@ class Customer_payment_model extends CI_Model
       }
 
       if ($amountReceived <= 0) {
-        throw new Exception(
-          'Amount received must be greater than zero.'
-        );
+        throw new Exception('Amount received must be greater than zero.');
       }
 
       if (
@@ -511,33 +509,23 @@ class Customer_payment_model extends CI_Model
       else {
 
         $current = $this->db
-            ->where(
-              'id',
-              (int)$customerPayment->id
-            )
+            ->where('id', (int)$customerPayment->id)
             ->get('t_customer_payments')
             ->row();
 
         if (!$current) {
-          throw new Exception(
-            'Customer Payment not found.'
-          );
+          throw new Exception('Customer Payment not found.');
         }
 
         if ($current->status !== 'OPEN') {
-          throw new Exception(
-            "Cannot modify a {$current->status} Customer Payment."
-          );
+          throw new Exception("Cannot modify a {$current->status} Customer Payment.");
         }
 
         $customerPaymentId = (int)$current->id;
         $paymentNo = $current->payment_no;
 
         $this->db
-            ->where(
-              'id',
-              $customerPaymentId
-            )
+            ->where('id', $customerPaymentId)
             ->update(
               't_customer_payments',
               [
@@ -555,14 +543,7 @@ class Customer_payment_model extends CI_Model
             );
 
         /*** replace OPEN allocations */
-        $this->db
-            ->where(
-              'customer_payment_id',
-              $customerPaymentId
-            )
-            ->delete(
-              't_customer_payment_allocations'
-            );
+        $this->db->where('customer_payment_id', $customerPaymentId)->delete('t_customer_payment_allocations');
       }
 
       /*** validate + insert allocations */
@@ -578,44 +559,26 @@ class Customer_payment_model extends CI_Model
         }
 
         if ($salesInvoiceId <= 0) {
-          throw new Exception(
-            'Invalid Sales Invoice allocation.'
-          );
+          throw new Exception('Invalid Sales Invoice allocation.');
         }
 
         /*** authoritative invoice */
         $invoice = $this->db
-            ->select(
-              'id, si_no, customer_id, status, total_amount'
-            )
-            ->where(
-              'id',
-              $salesInvoiceId
-            )
-            ->get(
-              't_sales_invoices'
-            )
+            ->select('id, si_no, customer_id, status, total_amount')
+            ->where('id', $salesInvoiceId)
+            ->get('t_sales_invoices')
             ->row();
 
         if (!$invoice) {
-          throw new Exception(
-            'Sales Invoice not found.'
-          );
+          throw new Exception('Sales Invoice not found.');
         }
 
         if ($invoice->status !== 'POSTED') {
-          throw new Exception(
-            "Sales Invoice {$invoice->si_no} is not POSTED."
-          );
+          throw new Exception("Sales Invoice {$invoice->si_no} is not POSTED.");
         }
 
-        if (
-          (int)$invoice->customer_id !==
-          $customerId
-        ) {
-          throw new Exception(
-            "Sales Invoice {$invoice->si_no} does not belong to the selected customer."
-          );
+        if ((int)$invoice->customer_id !== $customerId) {
+          throw new Exception("Sales Invoice {$invoice->si_no} does not belong to the selected customer.");
         }
 
         /*** authoritative current invoice balance */
@@ -630,7 +593,7 @@ class Customer_payment_model extends CI_Model
                   AND cp.status = 'POSTED'
                 ), 0) AS amount_paid,
                 COALESCE((
-                  SELECT SUM(cm.amount)
+                  SELECT SUM(cm.amount - cm.available_credit)
                   FROM t_credit_memos cm
                   WHERE cm.sales_invoice_id = ?
                   AND cm.status = 'POSTED'
@@ -647,17 +610,13 @@ class Customer_payment_model extends CI_Model
         $balance = round((float)$invoice->total_amount - $amountPaid - $amountCredited, 2);
 
         if ($amountApplied > $balance) {
-          throw new Exception(
-            "Applied amount for {$invoice->si_no} exceeds its outstanding balance."
-          );
+          throw new Exception("Applied amount for {$invoice->si_no} exceeds its outstanding balance.");
         }
 
         $totalApplied += $amountApplied;
 
         if ($totalApplied > $amountReceived) {
-          throw new Exception(
-            'Total applied amount cannot exceed the amount received.'
-          );
+          throw new Exception('Total applied amount cannot exceed the amount received.');
         }
 
         $this->db->insert(
@@ -672,9 +631,7 @@ class Customer_payment_model extends CI_Model
       }
 
       if ($this->db->trans_status() === FALSE) {
-        throw new Exception(
-          'Unable to save Customer Payment.'
-        );
+        throw new Exception('Unable to save Customer Payment.');
       }
 
       $this->db->trans_commit();
@@ -725,29 +682,17 @@ class Customer_payment_model extends CI_Model
 
         /*** get allocations */
         $allocations = $this->db
-            ->where(
-              'customer_payment_id',
-              (int)$customerPayment->id
-            )
-            ->get(
-              't_customer_payment_allocations'
-            )
+            ->where('customer_payment_id', (int)$customerPayment->id)
+            ->get('t_customer_payment_allocations')
             ->result();
 
         $totalApplied = 0;
 
         foreach ($allocations as $allocation) {
           $invoice = $this->db
-              ->select(
-                'id, si_no, customer_id, status, total_amount'
-              )
-              ->where(
-                'id',
-                (int)$allocation->sales_invoice_id
-              )
-              ->get(
-                't_sales_invoices'
-              )
+              ->select('id, si_no, customer_id, status, total_amount')
+              ->where('id', (int)$allocation->sales_invoice_id)
+              ->get('t_sales_invoices')
               ->row();
 
           if (!$invoice) {
@@ -774,7 +719,7 @@ class Customer_payment_model extends CI_Model
                     AND cp.status = 'POSTED'
                   ), 0) AS amount_paid,
                   COALESCE((
-                    SELECT SUM(cm.amount)
+                    SELECT SUM(cm.amount - cm.available_credit)
                     FROM t_credit_memos cm
                     WHERE cm.sales_invoice_id = ?
                     AND cm.status = 'POSTED'
@@ -800,10 +745,7 @@ class Customer_payment_model extends CI_Model
 
         $totalApplied = round($totalApplied, 2);
 
-        if (
-          $totalApplied >
-          round((float)$customerPayment->amount_received, 2)
-        ) {
+        if ($totalApplied > round((float)$customerPayment->amount_received, 2)) {
           throw new Exception("Applied amount for {$customerPayment->payment_no} exceeds the amount received.");
         }
 
@@ -811,14 +753,8 @@ class Customer_payment_model extends CI_Model
 
         /*** post customer payment */
         $this->db
-            ->where(
-              'id',
-              (int)$customerPayment->id
-            )
-            ->where(
-              'status',
-              'OPEN'
-            )
+            ->where('id', (int)$customerPayment->id)
+            ->where('status', 'OPEN')
             ->update(
               't_customer_payments',
               [
@@ -1255,7 +1191,7 @@ class Customer_payment_model extends CI_Model
       )->row();
 
       $creditRow = $this->db->query(
-        "SELECT COALESCE(SUM(cm.amount), 0) AS amount_credited
+        "SELECT COALESCE(SUM(cm.amount - cm.available_credit), 0) AS amount_credited
         FROM t_credit_memos cm
         WHERE cm.sales_invoice_id = ?
         AND cm.status = 'POSTED'",
@@ -1422,34 +1358,15 @@ class Customer_payment_model extends CI_Model
         throw new Exception('Amount exceeds Sales Invoice balance of ' . number_format($invoiceBalance, 2) . '.');
       }
 
-      $existing = $this->db
-        ->select('id, amount_applied')
-        ->where('customer_payment_id', $customerPaymentId)
-        ->where('sales_invoice_id', $salesInvoiceId)
-        ->where('allocation_type', 'CREDIT')
-        ->get('t_customer_payment_allocations')
-        ->row();
-
-      if ($existing) {
-        $this->db
-          ->where('id', $existing->id)
-          ->update('t_customer_payment_allocations', [
-            'amount_applied' => round((float)$existing->amount_applied + $amount, 2),
-            'applied_by' => $this->session->userdata('user_id'),
-            'applied_on' => date('Y-m-d H:i:s'),
-            'remarks' => $remarks
-          ]);
-      } else {
-        $this->db->insert('t_customer_payment_allocations', [
-          'customer_payment_id' => $customerPaymentId,
-          'sales_invoice_id' => $salesInvoiceId,
-          'amount_applied' => $amount,
-          'allocation_type' => 'CREDIT',
-          'applied_by' => $this->session->userdata('user_id'),
-          'applied_on' => date('Y-m-d H:i:s'),
-          'remarks' => $remarks
-        ]);
-      }
+      $this->db->insert('t_customer_payment_allocations', [
+        'customer_payment_id' => $customerPaymentId,
+        'sales_invoice_id' => $salesInvoiceId,
+        'amount_applied' => $amount,
+        'allocation_type' => 'CREDIT',
+        'applied_by' => $this->session->userdata('user_id'),
+        'applied_on' => date('Y-m-d H:i:s'),
+        'remarks' => $remarks
+      ]);
 
       if (!$this->db->affected_rows()) {
         throw new Exception('Unable to apply Customer Payment credit.');
