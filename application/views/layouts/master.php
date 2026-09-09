@@ -31,7 +31,7 @@
           <div class="container-fluid">
 
             <?php if ($app['environment'] === 'DEV'): ?>
-              <div class="alert alert-warning text-center py-1 mb-3 font-weight-500">
+              <div class="alert alert-default-warning font-weight-500 mb-3 py-1 text-center">
                 <i class="fas fa-flask mr-1"></i>
                 DEVELOPMENT ENVIRONMENT — TEST DATA ONLY
               </div>
