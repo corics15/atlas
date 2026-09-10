@@ -1,6 +1,6 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center" data-exclude="true">
+    <th class="text-center" data-exclude="true">
       <div class="custom-control custom-checkbox ml-2 mt-1">
         <input type="checkbox" class="custom-control-input" id="chkSelectAllSalesOrder">
         <label class="custom-control-label" for="chkSelectAllSalesOrder"></label>
@@ -39,21 +39,11 @@
           <label class="custom-control-label" for="chkSalesOrder-<?= $row->id ?>"></label>
         </div>
       </td>
-      <td class="text-center">
-        <?= date('m/d/Y', strtotime($row->order_date)) ?>
-      </td>
-      <td class="text-center">
-        <a href="<?= $row->url ?>" class="font-weight-500 text-olive"><?= $row->so_no ?></a>
-      </td>
-      <td>
-        <?= htmlspecialchars($row->customer_name) ?>
-      </td>
-      <td>
-        <?= htmlspecialchars($row->salesman_name) ?>
-      </td>
-      <td class="text-center">
-        <?= htmlspecialchars($row->terms_name) ?>
-      </td>
+      <td class="text-center"><?= date('m/d/Y', strtotime($row->order_date)) ?></td>
+      <td class="text-center"><a href="<?= $row->url ?>" class="font-weight-500 text-olive"><?= $row->so_no ?></a></td>
+      <td><?= htmlspecialchars($row->customer_name) ?></td>
+      <td><?= htmlspecialchars($row->salesman_name) ?></td>
+      <td class="text-center"><?= htmlspecialchars($row->terms_name) ?></td>
       <td data-excel-value="<?= htmlspecialchars($row->remarks) ?>">
         <?php
           $remarks = htmlspecialchars($row->remarks);
@@ -64,8 +54,8 @@
       </td>
 
       <td class="text-center" data-t="n" data-num-fmt="#,##0"><?= number_format($row->item_count, 0) ?></td>
-      <td class="text-right" data-t="n" data-num-fmt="#,##0.00"><?= number_format($row->total_amount, 2) ?></td>
-      <td class="text-center" data-t="n" data-num-fmt="#,##0"><?= number_format($row->remaining_items, 0) ?></td>
+      <td class="font-weight-500 text-right" data-t="n" data-num-fmt="#,##0.00" data-f-bold="true"><?= number_format($row->total_amount, 2) ?></td>
+      <td class="font-weight-500 text-center" data-t="n" data-num-fmt="#,##0" data-f-bold="true"><?= number_format($row->remaining_items, 0) ?></td>
 
       <td class="text-center">
         <?php

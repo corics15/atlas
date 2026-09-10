@@ -61,7 +61,12 @@ class Sales_return_model extends CI_Model
             inv.id AS sales_invoice_id,
             c.customer_name,
             concat(s.first_name, ' ', s.last_name) AS salesman_name,
-            t.terms_name
+            t.terms_name,
+            COALESCE((
+              SELECT SUM(sd.qty)
+              FROM t_sales_return_details sd
+              WHERE sd.sales_return_id  = sr.id 
+            ), 0) AS item_count            
         ")
         ->from('t_sales_returns sr')
         ->join(
@@ -83,10 +88,6 @@ class Sales_return_model extends CI_Model
             'm_terms t',
             't.id = sr.terms_id',
             'left'
-        )
-        ->order_by(
-            'inv.invoice_date',
-            'DESC'
         )
         ->order_by('sr.return_date', 'DESC')
         ->order_by('sr.sr_no', 'DESC')

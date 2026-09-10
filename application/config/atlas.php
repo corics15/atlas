@@ -3,7 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $config['atlas'] = [
   'app_name'      => 'ATLAS ERP Suite',
-  'app_version'   => '0.7.5.3',
+  'app_version'   => '0.7.5.4',
   'developer'     => 'O R H T E J',
   'timezone'      => 'Asia/Manila',
   'environment'   => getenv('ATLAS_ENV') ?: 'CLIENT',

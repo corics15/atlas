@@ -107,18 +107,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  /*** "enter" key event after entering qty */
+  /*** enter key after editing PO line */
   document.addEventListener('keydown', (e) => {
-
-    if (!e.target.classList.contains('po-qty')) {
-      return;
-    }
-
-    if (e.key !== 'Enter') {
+    if (!e.target.matches('.po-qty, .po-price, .po-discount') || e.key !== 'Enter') {
       return;
     }
 
     e.preventDefault();
+
     const row = e.target.closest('tr');
     if (!row.dataset.productId) {
       Atlas.toast.warning('Please select a product.');
@@ -126,12 +122,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    /*** check if there's an empty row below */
     const nextRow = row.nextElementSibling;
     if (nextRow && !nextRow.dataset.productId) {
       nextRow.querySelector('.po-barcode').focus();
       return;
     }
+
     addDetailRow();
   });
 

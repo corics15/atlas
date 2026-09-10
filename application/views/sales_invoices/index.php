@@ -12,7 +12,7 @@
 
         </div>
 
-        <?php $this->load->view('partials/record_count'); ?>
+        <?php $this->load->view('sales_invoices/mini_summary.php'); ?>
 
         <div class="table-responsive table-scroll">
           <table class="table table-sm table-bordered table-hover">

@@ -1,6 +1,6 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center">
+    <th class="text-center">
       <div class="custom-checkbox custom-control ml-2 mt-1">
         <input type="checkbox" class="custom-control-input" id="chkSelectAllPurchaseOrder">
         <label class="custom-control-label" for="chkSelectAllPurchaseOrder"></label>
@@ -41,12 +41,8 @@
             : $supplierName;
         ?>
       </td>
-      <td class="text-center">
-        <?= number_format($po->item_count) ?>
-      </td>
-      <td class="text-right">
-        <?= number_format($po->total, 2) ?>
-      </td>
+      <td class="text-center"><?= number_format($po->item_count) ?></td>
+      <td class="font-weight-500 text-right"><?= number_format($po->total, 2) ?></td>
       <td>
         <?php
           $remarks = htmlspecialchars($po->remarks);

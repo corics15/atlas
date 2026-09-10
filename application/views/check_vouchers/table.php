@@ -20,8 +20,8 @@
   <?php else: ?>
     <?php foreach ($checkVouchers as $cv): ?>
       <tr>
-        <td class="font-weight-500 text-center"><a href="<?= $cv->url ?>" class="font-weight-500 text-olive"><?= htmlspecialchars($cv->cv_no) ?></a></td>
-        <td class="text-center"><?= date('m/d/Y', strtotime($cv->voucher_date)) ?></td>
+        <td class="font-weight-500 text-center" data-a-h="center"><a href="<?= $cv->url ?>" class="font-weight-500 text-olive"><?= htmlspecialchars($cv->cv_no) ?></a></td>
+        <td class="text-center" data-a-h="center"><?= date('m/d/Y', strtotime($cv->voucher_date)) ?></td>
         <td><?= htmlspecialchars($cv->payee_name) ?></td>
         <td class="text-center"><?= htmlspecialchars(str_replace('_', ' ', $cv->payment_method)) ?></td>
         <td>
@@ -31,8 +31,8 @@
         </td>
         <td class="text-center"><?= htmlspecialchars($cv->check_no ?? '') ?></td>
         <td class="text-center"><?= htmlspecialchars($cv->reference_no ?? '') ?></td>
-        <td class="text-right"><?= number_format((float) $cv->amount, 2) ?></td>
-        <td class="text-center">
+        <td class="font-weight-500 text-right" data-t="n" data-num-fmt="#,##0.00" data-f-bold="true"><?= number_format((float) $cv->amount, 2) ?></td>
+        <td class="text-center" data-a-h="center">
           <?php
             switch (htmlspecialchars($cv->status)) {
               case 'DRAFT':

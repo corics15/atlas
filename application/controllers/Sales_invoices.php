@@ -43,13 +43,19 @@ class Sales_invoices extends MY_Controller
 
     $this->data['searchPlaceHolder'] = 'Search...';
 
+    $itemCount = 0;
+    $totalAmount = 0;
     $this->data['salesInvoices'] = $this->Sales_invoice_model->getAll($filters);
     foreach ($this->data['salesInvoices'] as $si) {
       $si->url = base_url('sales-invoices/edit/' . $this->encodeId($si->id));
       $si->dr_url = base_url('delivery-receipts/edit/' . $this->encodeId($si->dr_id));
+      $itemCount += $si->item_count;
+      $totalAmount += $si->total_amount;
     }
 
     $this->data['recordCount'] = count($this->data['salesInvoices']);
+    $this->data['itemCount'] = $itemCount;
+    $this->data['totalAmount'] = $totalAmount;
 
     $this->data['tableContent'] =
         $this->load->view(

@@ -1,6 +1,6 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center">
+    <th class="text-center">
       <div class="custom-control custom-checkbox ml-2 mt-1">
         <input type="checkbox" class="custom-control-input" id="chkSelectAllSalesReturn">
         <label class="custom-control-label" for="chkSelectAllSalesReturn"></label>
@@ -12,14 +12,16 @@
     <th>Customer</th>
     <th>Salesman</th>
     <th class="text-center">Terms</th>
+    <th class="text-center">Return Qty</th>
+    <th class="text-right">Total</th>
     <th>Remarks</th>
-    <th width="110" class="text-center">Status</th>
+    <th class="text-center">Status</th>
   </tr>
 </thead>
 <tbody>
   <?php if (count($salesReturns) == 0): ?>
     <tr>
-      <td colspan="9" class="text-center text-muted py-3">
+      <td colspan="11" class="text-center text-muted py-3">
         No Sales Return found.
       </td>
     </tr>
@@ -35,49 +37,41 @@
           <label class="custom-control-label" for="chkSalesReturn-<?= $row->id ?>"></label>
         </div>
       </td>
-      <td class="text-center">
-        <?= date('m/d/Y', strtotime($row->return_date)) ?>
-      </td>
-      <td class="text-center">
-        <a href="<?= $row->url ?>" class="font-weight-500 text-olive"><?= $row->sr_no ?></a>
-      </td>
+      <td class="text-center"><?= date('m/d/Y', strtotime($row->return_date)) ?></td>
+      <td class="text-center"><a href="<?= $row->url ?>" class="font-weight-500 text-olive"><?= $row->sr_no ?></a></td>
       <td class="text-center">
         <a href="<?= $row->si_url  ?>" class="font-weight-500 text-olive" target="_blank">
           <i class="fas fa-external-link-alt fa-xs mr-1"></i>
           <?= $row->si_no ?>
         </a>
       </td>
+      <td><?= htmlspecialchars($row->customer_name) ?></td>
+      <td><?= htmlspecialchars($row->salesman_name) ?></td>
+      <td class="text-center"><?= htmlspecialchars($row->terms_name) ?></td>
+      <td class="text-center"><?= number_format($row->item_count, 0) ?></td>
+      <td class="font-weight-500 text-right"><?= number_format($row->total_amount, 2) ?></td>
       <td>
-        <?= htmlspecialchars($row->customer_name) ?>
-      </td>
-      <td>
-        <?= htmlspecialchars($row->salesman_name) ?>
-      </td>
-      <td class="text-center">
-        <?= htmlspecialchars($row->terms_name) ?>
-      </td>
-      <td>
-        <?= htmlspecialchars($row->remarks) ?>
+        <?php
+          $remarks = htmlspecialchars($row->remarks);
+          echo (mb_strlen($remarks) > 30)
+            ? mb_strimwidth($remarks, 0, 30, '...')
+            : $remarks;
+        ?>
       </td>
 
       <td class="text-center">
         <?php
           $badge = 'secondary';
-
           switch ($row->status) {
-
             case 'OPEN':
               $badge = 'secondary';
               break;
-          
             case 'POSTED':
               $badge = 'success';
               break;
-
             case 'CANCELLED':
               $badge = 'danger';
               break;
-          
           }
           ?>
         <span class="badge badge-<?= $badge ?>">

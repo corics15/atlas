@@ -38,12 +38,16 @@ class Check_vouchers extends MY_Controller
       'status' => trim($filter['status'] ?? $this->input->get('status')),
     ];
 
+    $totalAmount = 0;
     $this->data = array_merge($this->data, $filters);
     $this->data['checkVouchers'] = $this->Check_voucher_model->getAll($filters);
-    $this->data['recordCount'] = count($this->data['checkVouchers']);
+
     foreach ($this->data['checkVouchers'] as $cv) {
       $cv->url = base_url('check-vouchers/edit/' . $this->encodeId($cv->id));
+      $totalAmount += $cv->amount;
     }
+    $this->data['recordCount'] = count($this->data['checkVouchers']);
+    $this->data['totalAmount'] = $totalAmount;
 
     $this->pageScript = 'check_vouchers';
     $this->data['searchPlaceHolder'] = 'Search CV No., Payee, Check No., Reference...';
@@ -55,6 +59,11 @@ class Check_vouchers extends MY_Controller
         'text' => 'Transaction Details',
         'icon' => 'fas fa-align-justify',
         'url'  => 'check-vouchers/transaction-details',
+      ],
+      'excel' => [
+        'id'   => 'btnDownloadExcel',
+        'icon' => 'fas fa-file-excel',
+        'text' => 'Download as Excel'
       ],
       'refresh' => [
         'id'   => 'btnRefresh',
@@ -247,6 +256,11 @@ class Check_vouchers extends MY_Controller
         'text' => 'Back to Registry',
         'icon' => 'fas fa-align-justify',
         'url'  => 'check-vouchers',
+      ],
+      'excel' => [
+        'id'   => 'btnDownloadExcel',
+        'icon' => 'fas fa-file-excel',
+        'text' => 'Download as Excel'
       ],
       'refresh' => [
         'id'   => 'btnRefresh',

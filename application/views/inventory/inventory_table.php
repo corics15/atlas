@@ -1,6 +1,6 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center" data-exclude="true">
+    <th class="text-center" data-exclude="true">
       <div class="custom-control custom-checkbox ml-2 mt-1">
         <input type="checkbox" class="custom-control-input" id="chkSelectAllInventory">
         <label class="custom-control-label" for="chkSelectAllInventory"></label>
@@ -38,12 +38,8 @@
           <label class="custom-control-label" for="chkInventoryInquiry-<?= $row->product_id ?>"></label>
         </div>
       </td>
-      <td class="text-center">
-        <a href="<?= $row->url ?>" class="font-weight-500 text-olive" data-t="s"><?= htmlspecialchars($row->case_barcode); ?></a>
-      </td>
-      <td class="text-center">
-        <a href="<?= $row->url ?>" class="font-weight-500 text-olive" data-t="s"><?= htmlspecialchars($row->barcode); ?></a>
-      </td>
+      <td class="text-center"><a href="<?= $row->url ?>" class="font-weight-500 text-olive" data-t="s"><?= htmlspecialchars($row->case_barcode); ?></a></td>
+      <td class="text-center"><a href="<?= $row->url ?>" class="font-weight-500 text-olive" data-t="s"><?= htmlspecialchars($row->barcode); ?></a></td>
       <td
         <?= mb_strlen($row->description) > 30 ? 'data-toggle="tooltip" title="'.htmlspecialchars($row->description).'"' : '' ?>
         data-excel-value="<?= htmlspecialchars($row->description) ?>">
@@ -64,10 +60,10 @@
         ?>
       </td>
       <td class="text-center"><?= htmlspecialchars($row->uom); ?></td>
-      <td class="text-right" data-t="n" data-num-fmt="#,##0"><?= number_format($row->qty_on_hand); ?></td>
-      <td class="text-right" data-t="n" data-num-fmt="#,##0.00"><?= number_format($row->cost, 2); ?></td>
-      <td class="text-right" data-t="n" data-num-fmt="#,##0.00"><?= number_format($row->selling_price, 2); ?></td>
-      <td class="text-right" data-t="n" data-num-fmt="#,##0.00"><?= number_format($row->inventory_value, 2); ?></td>
+      <td class="font-weight-500 text-right" data-t="n" data-num-fmt="#,##0" data-f-bold="true"><?= number_format($row->qty_on_hand); ?></td>
+      <td class="font-weight-500 text-right" data-t="n" data-num-fmt="#,##0.00" data-f-bold="true"><?= number_format($row->cost, 2); ?></td>
+      <td class="font-weight-500 text-right" data-t="n" data-num-fmt="#,##0.00" data-f-bold="true"><?= number_format($row->selling_price, 2); ?></td>
+      <td class="font-weight-500 text-right" data-t="n" data-num-fmt="#,##0.00" data-f-bold="true"><?= number_format($row->inventory_value, 2); ?></td>
     </tr>
     <?php endforeach; ?>
 

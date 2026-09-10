@@ -44,13 +44,19 @@ class Sales_returns extends MY_Controller
 
     $this->data['searchPlaceHolder'] = 'Search...';
 
+    $itemCount = 0;
+    $totalAmount = 0;
     $this->data['salesReturns'] = $this->Sales_return_model->getAll($filters);
     foreach ($this->data['salesReturns'] as $sr) {
       $sr->url = base_url('sales-returns/edit/' . $this->encodeId($sr->id));
       $sr->si_url = base_url('sales-invoices/edit/' . $this->encodeId($sr->sales_invoice_id));
+      $itemCount += $sr->item_count;
+      $totalAmount += $sr->total_amount;
     }
 
     $this->data['recordCount'] = count($this->data['salesReturns']);
+    $this->data['itemCount'] = $itemCount;
+    $this->data['totalAmount'] = $totalAmount;
 
     $this->data['tableContent'] =
         $this->load->view(

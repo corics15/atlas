@@ -1,14 +1,14 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center">
+    <th class="text-center">
       <div class="custom-control custom-checkbox ml-2 mt-1">
         <input type="checkbox" class="custom-control-input" id="chkSelectAllGoodsReceipt">
         <label class="custom-control-label" for="chkSelectAllGoodsReceipt"></label>
       </div>
     </th>
-    <th width="120" class="text-center">Date</th>
-    <th width="140" class="text-center">GRN No.</th>
-    <th width="160" class="text-center">PO No.</th>
+    <th class="text-center">Date</th>
+    <th class="text-center">GRN No.</th>
+    <th class="text-center">PO No.</th>
     <th>Supplier</th>
     <th class="text-center">Item Count</th>
     <th class="text-right">Total Amount</th>
@@ -54,7 +54,7 @@
         ?>
       </td>
       <td class="text-center"><?= number_format($row->item_count) ?></td>
-      <td class="text-right"><?= number_format($row->total_amount, 2) ?></td>
+      <td class="font-weight-500 text-right"><?= number_format($row->total_amount, 2) ?></td>
       <td class="text-center">
         <?php
           switch (htmlspecialchars($row->status)) {

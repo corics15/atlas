@@ -1,25 +1,27 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center">
+    <th class="text-center">
       <div class="custom-control custom-checkbox ml-2 mt-1">
         <input type="checkbox" class="custom-control-input" id="chkSelectAllSalesInvoice">
         <label class="custom-control-label" for="chkSelectAllSalesInvoice"></label>
       </div>
     </th>
     <th class="text-center">Date</th>
-    <th class="text-center" width="140">SI No.</th>
-    <th class="text-center" width="150">DR No.</th>
+    <th class="text-center">SI No.</th>
+    <th class="text-center">DR No.</th>
     <th>Customer</th>
     <th>Salesman</th>
     <th class="text-center">Terms</th>
+    <th class="text-center">Item Count</th>
+    <th class="text-right">Total</th>
     <th>Remarks</th>
-    <th width="110" class="text-center">Status</th>
+    <th class="text-center">Status</th>
   </tr>
 </thead>
 <tbody>
   <?php if (count($salesInvoices) == 0): ?>
     <tr>
-      <td colspan="9" class="text-center text-muted py-3">
+      <td colspan="11" class="text-center text-muted py-3">
         No Sales Invoice found.
       </td>
     </tr>
@@ -35,12 +37,8 @@
           <label class="custom-control-label" for="chkSalesInvoice-<?= $row->id ?>"></label>
         </div>
       </td>
-      <td class="text-center">
-        <?= date('m/d/Y', strtotime($row->invoice_date)) ?>
-      </td>
-      <td class="text-center">
-        <a href="<?= $row->url ?>" class="font-weight-500 text-olive"><?= $row->si_no ?></a>
-      </td>
+      <td class="text-center"><?= date('m/d/Y', strtotime($row->invoice_date)) ?></td>
+      <td class="text-center"><a href="<?= $row->url ?>" class="font-weight-500 text-olive"><?= $row->si_no ?></a></td>
       <td class="text-center">
         <a href="<?= $row->dr_url ?>" class="font-weight-500 text-olive" target="_blank">
           <i class="fa-external-link-alt fas fa-xs mr-1"></i><?= $row->dr_no ?>
@@ -54,12 +52,10 @@
             : $customerName;
         ?>
       </td>
-      <td>
-        <?= htmlspecialchars($row->salesman_name) ?>
-      </td>
-      <td class="text-center">
-        <?= htmlspecialchars($row->terms_name) ?>
-      </td>
+      <td><?= htmlspecialchars($row->salesman_name) ?></td>
+      <td class="text-center"><?= htmlspecialchars($row->terms_name) ?></td>
+      <td class="text-center"><?= number_format($row->item_count, 0) ?></td>
+      <td class="font-weight-500 text-right"><?= number_format($row->total_amount, 2) ?></td>
       <td>
         <?php
           $remarks = htmlspecialchars($row->remarks);

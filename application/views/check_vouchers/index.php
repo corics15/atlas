@@ -12,7 +12,7 @@
 
         </div>
 
-        <?php $this->load->view('partials/record_count'); ?>
+        <?php $this->load->view('check_vouchers/mini_summary_registry'); ?>
 
         <div class="table-responsive table-scroll">
           <table class="table table-sm table-bordered table-hover" id="tblCheckVoucherList">
@@ -26,3 +26,7 @@
     </div>
   </div>
 </section>
+
+<script>
+  window.totalAmount = <?= $totalAmount ?>;
+</script>

@@ -12,7 +12,7 @@
 
         </div>
 
-        <?php $this->load->view('check_vouchers/mini_summary'); ?>
+        <?php $this->load->view('check_vouchers/mini_summary_details'); ?>
 
         <?php $this->load->view('partials/table'); ?>
 

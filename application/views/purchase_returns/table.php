@@ -1,6 +1,6 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center">
+    <th class="text-center">
       <div class="custom-control custom-checkbox ml-2 mt-1">
         <input type="checkbox" class="custom-control-input" id="chkSelectAllPurchaseReturn">
         <label class="custom-control-label" for="chkSelectAllPurchaseReturn"></label>
@@ -12,7 +12,7 @@
     <th class="text-center">GRN Date</th>
     <th>Supplier</th>
     <th>Remarks</th>
-    <th width="110" class="text-center">Status</th>
+    <th class="text-center">Status</th>
   </tr>
 </thead>
 <tbody>
@@ -34,21 +34,13 @@
           <label class="custom-control-label" for="chkPurchaseReturn-<?= $row->id ?>"></label>
         </div>
       </td>
-      <td class="text-center">
-        <a href="<?= $row->url ?>" class="font-weight-500 text-olive"><?= $row->pr_no ?></a>
-      </td>
-      <td class="text-center">
-        <?= date('m/d/Y', strtotime($row->return_date)) ?>
-      </td>
+      <td class="text-center"><a href="<?= $row->url ?>" class="font-weight-500 text-olive"><?= $row->pr_no ?></a></td>
+      <td class="text-center"><?= date('m/d/Y', strtotime($row->return_date)) ?></td>
       <td class="text-center">
         <a href="<?= $row->gr_url  ?>" class="font-weight-500 text-olive" target="_blank"><i class="fa-external-link-alt fas fa-xs mr-1"></i><?= $row->grn_no ?></a>
       </td>
-      <td class="text-center">
-        <?= date('m/d/Y', strtotime($row->grn_date)) ?>
-      </td>
-      <td>
-        <?= htmlspecialchars($row->supplier_name) ?>
-      </td>
+      <td class="text-center"><?= date('m/d/Y', strtotime($row->grn_date)) ?></td>
+      <td><?= htmlspecialchars($row->supplier_name) ?></td>
       <td>
         <?php
           $remarks = htmlspecialchars($row->remarks);

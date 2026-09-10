@@ -31,6 +31,8 @@ const lblTotalDebit = document.getElementById('totalDebit');
 const lblTotalCredit = document.getElementById('totalCredit');
 const lblBalanceDifference = document.getElementById('balanceDifference');
 
+const btnDownloadExcel = document.getElementById('btnDownloadExcel');
+
 let accountSearchTimer = null;
 let accountSearchSequence = 0;
 
@@ -43,10 +45,70 @@ document.addEventListener('DOMContentLoaded', () => {
   Atlas.select.init('#paymentMethod');
   Atlas.select.init('#bankAccountId');
 
+  /*** new Check Voucher */
   btnNewCheckVoucher?.addEventListener('click', () => Atlas.page.redirect('check-vouchers/create'));
 
   /*** back */
   btnBackToCheckVouchers?.addEventListener('click', () => Atlas.page.redirect(`check-vouchers`));
+
+  /*** excel download */
+  btnDownloadExcel?.addEventListener('click', () => {
+    if (document.getElementById('tblCheckVoucherList')) {
+      table = `tblCheckVoucherList`;
+      Atlas.excel.download(
+        document.getElementById('tblCheckVoucherList'),
+        {
+          title: 'Check Voucher',
+          generatedBy: Atlas.config.userName,
+          fileName: 'cv-registry',
+          sheetName: 'CVRegistry',
+          /*** start with 0, index based */
+          totals: [
+            {
+              column: 6,
+              value: 'TOTAL'
+            },
+            {
+              column: 7,
+              value: window.totalAmount || 0,
+              type: 'n',
+              format: '#,##0.00'
+            },
+          ]
+        }
+      );
+    } else {
+      Atlas.excel.download(
+        document.getElementById('tblCheckVoucherTransactionList'),
+        {
+          title: 'Check Voucher Details',
+          generatedBy: Atlas.config.userName,
+          fileName: 'cv-transactions',
+          sheetName: 'CVTransactions',
+          /*** start with 0, index based */
+          // totals: [
+          //   {
+          //     column: 6,
+          //     value: 'TOTAL'
+          //   },
+          //   {
+          //     column: 7,
+          //     value: window.totalDebit || 0,
+          //     type: 'n',
+          //     format: '#,##0.00'
+          //   },
+          //   {
+          //     column: 8,
+          //     value: window.totalCredit || 0,
+          //     type: 'n',
+          //     format: '#,##0.00'
+          //   },
+          // ]
+        }
+      );
+    }
+
+  });
 
   if (!document.getElementById('checkVoucherForm')) {
     return;

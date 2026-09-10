@@ -1,6 +1,6 @@
 <thead class="thead-orange">
   <tr>
-    <th width="40" class="text-center" data-exclude="true">
+    <th class="text-center" data-exclude="true">
       <div class="custom-control custom-checkbox ml-2 mt-1">
         <input type="checkbox" class="custom-control-input" id="chkSelectAllDeliveryReceipt"/>
         <label class="custom-control-label" for="chkSelectAllDeliveryReceipt"></label>
@@ -50,22 +50,13 @@
           </div>
         </td>
 
-        <td class="text-center">
-          <?= date('m/d/Y', strtotime($row->delivery_date)); ?>
-        </td>
-
-        <td class="text-center">
-          <a href="<?= $row->url ?>" class="font-weight-500 text-olive">
-            <?= htmlspecialchars($row->dr_no); ?>
-          </a>
-        </td>
-
+        <td class="text-center"><?= date('m/d/Y', strtotime($row->delivery_date)); ?></td>
+        <td class="text-center"><a href="<?= $row->url ?>" class="font-weight-500 text-olive"><?= htmlspecialchars($row->dr_no); ?></a></td>
         <td class="text-center">
           <a href="<?= $row->so_url ?>" class="font-weight-500 text-olive" target="_blank">
             <i class="fa-external-link-alt fas fa-xs mr-1"></i><?= htmlspecialchars($row->so_no); ?>
           </a>
         </td>
-
         <td data-excel-value="<?= htmlspecialchars($row->customer_name) ?>">
           <?php
             $customerName = htmlspecialchars($row->customer_name);
@@ -83,7 +74,7 @@
           ?>
         </td>
         <td class="text-center" data-t="n" data-num-fmt="#,##0"><?= number_format($row->item_count, 0) ?></td>
-        <td class="text-right" data-t="n" data-num-fmt="#,##0.00"><?= number_format($row->total_amount, 2) ?></td>
+        <td class="font-weight-500 text-right" data-t="n" data-num-fmt="#,##0.00" data-f-bold="true"><?= number_format($row->total_amount, 2) ?></td>
         <td class="text-center"><?= $status; ?></td>
       </tr>
 

@@ -64,8 +64,13 @@ class Sales_invoice_model extends CI_Model
             so.so_no,
             so.id AS so_id,
             c.customer_name,
-            concat(s.first_name, ' ', s.last_name) AS salesman_name,
-            t.terms_name
+            CONCAT(s.first_name, ' ', s.last_name) AS salesman_name,
+            t.terms_name,
+            COALESCE((
+              SELECT SUM(sid.qty)
+              FROM t_sales_invoice_details sid
+              WHERE sid.sales_invoice_id = si.id
+            ), 0) AS item_count
         ")
         ->from('t_sales_invoices si')
         ->join(

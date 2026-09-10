@@ -1,16 +1,16 @@
 <thead class="thead-orange">
   <tr>
-    <th width="30" class="text-center">
+    <th class="text-center">
       <div class="custom-checkbox custom-control ml-2 mt-1">
         <input type="checkbox" class="custom-control-input chkInventoryAdjustment" id="chkIAId">
         <label class="custom-control-label" for="chkIAId">
         </label>
       </div>
     </th>
-    <th width="120" class="text-center">Date</th>
-    <th width="160" class="text-center">Adjustment No.</th>
+    <th class="text-center">Date</th>
+    <th class="text-center">Adjustment No.</th>
     <th>Remarks</th>
-    <th width="120" class="text-center">Status</th>
+    <th class="text-center">Status</th>
   </tr>
 </thead>
 
@@ -29,14 +29,8 @@
     <tr data-id="<?= $row->id; ?>">
       <td class="text-center">
         <div class="custom-checkbox custom-control ml-2 mt-1">
-          <input
-            type="checkbox"
-            class="custom-control-input chkInventoryAdjustment"
-            id="ckia-<?= $row->id ?>">
-          <label
-            class="custom-control-label"
-            for="ckia-<?= $row->id ?>">
-          </label>
+          <input type="checkbox" class="custom-control-input chkInventoryAdjustment" id="ckia-<?= $row->id ?>">
+          <label class="custom-control-label" for="ckia-<?= $row->id ?>"></label>
         </div>
       </td>
       <td class="text-center"><?= date('m/d/Y', strtotime(htmlspecialchars($row->adjustment_date))); ?></td>
