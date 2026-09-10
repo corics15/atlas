@@ -134,6 +134,7 @@ class Check_vouchers extends MY_Controller
       TRUE
     );
     $this->data['isEditable'] = $hasAccess && $checkVoucher->status === 'DRAFT';
+    $this->data['checkVoucherId'] = $checkVoucherId;
 
     $this->render('check_vouchers/create');
   }
@@ -276,6 +277,78 @@ class Check_vouchers extends MY_Controller
     $this->data['showDateFilter'] = TRUE;
 
     $this->render('check_vouchers/transaction_details');
+  }
+
+  public function print()
+  {
+    $ids = $this->input->post('ids');
+
+    if (!$ids) {
+      show_404();
+    }
+
+    $documents = [];
+
+    foreach ($ids as $id) {
+      $header = $this->Check_voucher_model->get($id);
+
+      if (!$header) {
+        continue;
+      }
+
+      $documents[] = (object)[
+        'header'  => $header,
+        'details' => $this->Check_voucher_model->getDetails($id)
+      ];
+    }
+
+    $this->load->view(
+      'check_vouchers/print',
+      [
+        'documents' => $documents,
+        'title' => 'Check Voucher',
+      ]
+    );
+  }
+
+  public function pdf()
+  {
+    $ids = $this->input->post('ids');
+
+    if (!$ids) {
+      show_404();
+    }
+
+    $documents = [];
+
+    foreach ($ids as $id) {
+      $header = $this->Check_voucher_model->get($id);
+
+      if (!$header) {
+        continue;
+      }
+
+      $documents[] = (object)[
+        'header'  => $header,
+        'details' => $this->Check_voucher_model->getDetails($id)
+      ];
+    }
+
+    $html = $this->load->view(
+      'check_vouchers/pdf_print',
+      [
+        'documents' => $documents,
+        'title' => 'Check Voucher'
+      ],
+      TRUE
+    );
+
+    $this->load->library('atlas_pdf');
+
+    $this->atlas_pdf->render(
+      $html,
+      'check-voucher-'.$this->randomString(5).'.pdf'
+    );
   }
 
 }

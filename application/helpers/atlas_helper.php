@@ -36,3 +36,27 @@ function atlas_company()
   $CI->load->model('Company_model');
   return $CI->Company_model->get();
 }
+
+if (!function_exists('amount_in_words')) {
+  function amount_in_words($amount)
+  {
+    $amount = round((float)$amount, 2);
+
+    $pesos = (int)floor($amount);
+    $centavos = (int)round(($amount - $pesos) * 100);
+
+    $formatter = new NumberFormatter(
+      'en',
+      NumberFormatter::SPELLOUT
+    );
+
+    $words = $formatter->format($pesos);
+
+    return strtoupper(
+      $words .
+      ' PESOS AND ' .
+      str_pad($centavos, 2, '0', STR_PAD_LEFT) .
+      '/100 ONLY'
+    );
+  }
+}

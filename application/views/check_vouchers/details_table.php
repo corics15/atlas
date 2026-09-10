@@ -25,6 +25,16 @@
         <?php endif; ?>
       <?php endif; ?>
 
+      <?php if (!empty($id)): ?>
+        <div class="btn-group">
+          <button class="btn btn-sm btn-link dropdown-toggle" data-toggle="dropdown"><i class="fa fa-print mr-2"></i>Print</button>
+          <div class="dropdown-menu dropdown-menu-right">
+            <button type="button" class="btn btn-sm btn-link" id="btnPrintCheckVoucher"><i class="fa fa-print mr-2"></i>Print</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnViewPDF"><i class="fa fa-file-pdf mr-2"></i>View As PDF</button>
+          </div>
+        </div>
+      <?php endif; ?>
+
       <?php if (!empty($id) && in_array($status, ['DRAFT', 'POSTED'], true)): ?>
         <button type="button" id="btnCancelCheckVoucher" class="btn btn-sm btn-link text-danger ml-auto">
           <i class="fa fa-ban mr-2"></i>Cancel
@@ -168,3 +178,5 @@
     ) ?>
   </script>
 <?php endif; ?>
+
+<script>window.checkVoucherId = <?= (int) $checkVoucherId ?></script>

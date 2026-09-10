@@ -28,7 +28,7 @@
   }
 
   th {
-    border: 0.5px solid #000;
+    border: 0.2px solid #000;
     background: #efefef;
     padding: 6px;
   }
@@ -38,7 +38,7 @@
   }
 
   td {
-    border: 0.5px solid #000;
+    border: 0.2px solid #000;
     padding: 5px;
   }
 
@@ -62,7 +62,7 @@
 
   .report-table tfoot tr th {
     border: none;
-    border-top: 0.5px solid #000;
+    border-top: 0.2px solid #000;
   }
 
   .text-center {
@@ -110,7 +110,7 @@
   }
 
   .signature-line {
-    border-top: 1px solid #000;
+    border-top: 0.2px solid #000;
     width: 220px;
     margin: auto;
     padding-top: 4px;
@@ -140,14 +140,14 @@
   }
 
   .report-table th {
-    border: 1px solid #000;
+    border: 0.2px solid #000;
     padding: 6px;
     background: #efefef;
     font-size: 10px;
   }
 
   .report-table td {
-    border:1px solid #000;
+    border: 0.2px solid #000;
     padding:5px;
   }
 
@@ -156,14 +156,17 @@
     font-weight: bold;
   }
 
-  .report-bordered th,
+  .report-bordered tbody th {
+    border: 0.5px solid #000;
+  }
+
   .report-bordered td {
-    border:0.5px solid #bdbdbd;
+    border: 0.2px solid #bdbdbd;
   }
 
   .report-borderless th,
   .report-borderless td {
-    border:none;
+    border: none;
   }
 
   .report-striped tbody tr:nth-child(even) {
@@ -186,6 +189,17 @@
 
   .no-border {
     border: none !important;
+  }
+
+  .border-left-bottom-right {
+    border-left: 0.2px solid #000;
+    border-bottom: 0.2px solid #000;
+    border-right: 0.2px solid #000;
+  }
+
+  .border-bottom-right {
+    border-bottom: 0.2px solid #000;
+    border-right: 0.2px solid #000;
   }
 
   .page-break {
@@ -244,7 +258,7 @@
 
   /*** current balance */
   .soa-current-balance {
-    border-top: 1px solid #333;
+    border-top: 0.2px solid #333;
     padding-top: 8px;
   }
 

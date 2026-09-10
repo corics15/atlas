@@ -32,6 +32,8 @@ const lblTotalCredit = document.getElementById('totalCredit');
 const lblBalanceDifference = document.getElementById('balanceDifference');
 
 const btnDownloadExcel = document.getElementById('btnDownloadExcel');
+const btnPrintCheckVoucher = document.getElementById('btnPrintCheckVoucher');
+const btnViewPDF = document.getElementById('btnViewPDF');
 
 let accountSearchTimer = null;
 let accountSearchSequence = 0;
@@ -85,30 +87,17 @@ document.addEventListener('DOMContentLoaded', () => {
           generatedBy: Atlas.config.userName,
           fileName: 'cv-transactions',
           sheetName: 'CVTransactions',
-          /*** start with 0, index based */
-          // totals: [
-          //   {
-          //     column: 6,
-          //     value: 'TOTAL'
-          //   },
-          //   {
-          //     column: 7,
-          //     value: window.totalDebit || 0,
-          //     type: 'n',
-          //     format: '#,##0.00'
-          //   },
-          //   {
-          //     column: 8,
-          //     value: window.totalCredit || 0,
-          //     type: 'n',
-          //     format: '#,##0.00'
-          //   },
-          // ]
         }
       );
     }
 
   });
+
+  /*** print Check Voucher */
+  btnPrintCheckVoucher?.addEventListener('click', printCheckVoucher);
+
+  /*** view as PDF */
+  btnViewPDF?.addEventListener('click', viewCheckVoucherPDF);
 
   if (!document.getElementById('checkVoucherForm')) {
     return;
@@ -779,4 +768,28 @@ const validateCheckVoucher = () => {
   }
 
   return true;
+};
+
+const printCheckVoucher = () => {
+  if (!window.checkVoucherId) {
+    Atlas.toast.warning('New Check Voucher, not yet saved yet.');
+    return;
+  }
+
+  Atlas.print.post(
+    'check-vouchers/print',
+    [window.checkVoucherId]
+  );
+};
+
+const viewCheckVoucherPDF = () => {
+  if (!window.checkVoucherId) {
+    Atlas.toast.warning('New Check Voucher, not yet saved yet.');
+    return;
+  }
+
+  Atlas.print.post(
+    'check-vouchers/pdf',
+    [window.checkVoucherId]
+  );
 };

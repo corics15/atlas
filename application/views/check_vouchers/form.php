@@ -22,7 +22,29 @@
 
   <div class="card mb-3">
     <div class="card-header">
-      <h3 class="card-title">Check Voucher Information</h3>
+
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Check Voucher Information</h3>
+
+        <?php if (!empty($cv)) : ?>
+          <?php
+            $statusClass = NULL;
+            switch ($cv->status) {
+              case 'POSTED':
+                $statusClass = 'text-success';
+                break;
+              case 'DRAFT':
+                $statusClass = 'text-secondary';
+                break;
+              default:
+                $statusClass = 'text-danger';
+                break;
+            }
+          ?>
+
+          <div class="ls-wider <?= $statusClass ?>" style="font-weight:500">[<?= $cv->status ?>]</div>
+        <?php endif; ?>
+      </div>
     </div>
     <div class="card-body">
 
@@ -50,12 +72,6 @@
                 </option>
               <?php endforeach; ?>
             </select>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="form-group">
-            <label>Status</label>
-            <input type="text" class="form-control form-control-sm" value="<?= htmlspecialchars($status) ?>" readonly>
           </div>
         </div>
       </div>
@@ -145,9 +161,6 @@
             <input type="date" id="checkDate" class="form-control form-control-sm" value="<?= htmlspecialchars($checkDate) ?>" <?= $disabled ?>>
           </div>
         </div>
-      </div>
-
-      <div class="row">
         <div class="col-md-6">
           <div class="form-group">
             <label for="referenceNo">Reference No.</label>
@@ -164,125 +177,3 @@
     </div>
   </div>
 </div>
-
-<?php if (false) : ?>
-<div id="checkVoucherForm" data-id="<?= htmlspecialchars($id) ?>" data-editable="<?= $isEditable ? '1' : '0' ?>">
-
-  <?php /*** voucher Info */ ?>
-  <div class="card mb-3">
-    <div class="card-header"><h3 class="card-title mb-0">Voucher</h3></div>
-    <div class="card-body">
-      <div class="form-row">
-        <div class="form-group col-md-3">
-          <label for="cvNo">CV No.</label>
-          <input type="text" id="cvNo" class="form-control form-control-sm" value="<?= htmlspecialchars($cvNo) ?>" readonly>
-        </div>
-        <div class="form-group col-md-3">
-          <label for="voucherDate">Voucher Date</label>
-          <input type="date" id="voucherDate" class="form-control form-control-sm" value="<?= htmlspecialchars($voucherDate) ?>" <?= $disabled ?>>
-        </div>
-        <div class="form-group col-md-3">
-          <label for="branchId">Branch</label>
-          <select id="branchId" class="form-control form-control-sm" <?= $disabled ?>>
-            <option value="">Select Branch</option>
-            <?php foreach ($branches as $branch): ?>
-              <option value="<?= (int) $branch->id ?>" <?= (int) $branchId === (int) $branch->id ? 'selected' : '' ?>>
-                <?= htmlspecialchars($branch->branch_name) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="form-group col-md-3">
-          <label>Status</label>
-          <input type="text" class="form-control form-control-sm" value="<?= htmlspecialchars($status) ?>" readonly>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <?php /*** payee Info */ ?>
-  <div class="card mb-3">
-    <div class="card-header"><h3 class="card-title mb-0">Payee</h3></div>
-    <div class="card-body">
-      <div class="form-row">
-        <div class="form-group col-md-3">
-          <label for="payeeType">Payee Type</label>
-          <select id="payeeType" class="form-control form-control-sm" <?= $disabled ?>>
-            <option value="SUPPLIER" <?= $payeeType === 'SUPPLIER' ? 'selected' : '' ?>>Supplier</option>
-            <option value="OTHER" <?= $payeeType === 'OTHER' ? 'selected' : '' ?>>Other</option>
-          </select>
-        </div>
-        <div class="form-group col-md-5" id="supplierField">
-          <label for="supplierId">Supplier</label>
-          <select id="supplierId" class="form-control form-control-sm" <?= $disabled ?>>
-            <option value="">Select Supplier</option>
-            <?php foreach ($suppliers as $supplier): ?>
-              <option value="<?= (int) $supplier->id ?>" <?= (int) $supplierId === (int) $supplier->id ? 'selected' : '' ?>>
-                <?= htmlspecialchars($supplier->supplier_name) ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="form-group col-md-4" id="otherPayeeField">
-          <label for="payeeName">Payee Name</label>
-          <input type="text" id="payeeName" class="form-control form-control-sm text-uppercase" value="<?= htmlspecialchars($payeeName) ?>" maxlength="200" <?= $disabled ?>>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <?php /*** payment Info */ ?>
-  <div class="card mb-3">
-    <div class="card-header"><h3 class="card-title mb-0">Payment</h3></div>
-    <div class="card-body">
-      <div class="form-row">
-        <div class="form-group col-md-3">
-          <label for="paymentMethod">Payment Method</label>
-          <select id="paymentMethod" class="form-control form-control-sm" <?= $disabled ?>>
-            <?php foreach (['CHECK'=>'Check','BANK_TRANSFER'=>'Bank Transfer','CASH'=>'Cash','OTHER'=>'Other'] as $value=>$label): ?>
-              <option value="<?= $value ?>" <?= $paymentMethod === $value ? 'selected' : '' ?>><?= $label ?></option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="form-group col-md-5" id="bankAccountField">
-          <label for="bankAccountId">Bank Account</label>
-          <select id="bankAccountId" class="form-control form-control-sm" <?= $disabled ?>>
-            <option value="">Select Bank Account</option>
-            <?php foreach ($bankAccounts as $bank): ?>
-              <option value="<?= (int) $bank->id ?>" <?= (int) $bankAccountId === (int) $bank->id ? 'selected' : '' ?>>
-                <?= htmlspecialchars($bank->bank_name . ' - ' . $bank->account_name . ' (' . $bank->account_no . ')') ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-        <div class="form-group col-md-2" id="checkFields">
-          <label for="checkNo">Check No.</label>
-          <input type="text" id="checkNo" class="form-control form-control-sm text-uppercase" value="<?= htmlspecialchars($checkNo) ?>" maxlength="100" <?= $disabled ?>>
-        </div>
-        <div class="form-group col-md-2">
-          <label for="checkDate">Check Date</label>
-          <input type="date" id="checkDate" class="form-control form-control-sm" value="<?= htmlspecialchars($checkDate) ?>" <?= $disabled ?>>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <?php /*** references */ ?>
-  <div class="card mb-3">
-    <div class="card-header"><h3 class="card-title mb-0">References</h3></div>
-    <div class="card-body">
-      <div class="form-row">
-        <div class="form-group col-md-6">
-          <label for="referenceNo">Reference No.</label>
-          <input type="text" id="referenceNo" class="form-control form-control-sm text-uppercase" value="<?= htmlspecialchars($referenceNo) ?>" maxlength="100" <?= $disabled ?>>
-        </div>
-        <div class="form-group col-md-6">
-          <label for="particulars">Particulars / Explanation</label>
-          <textarea id="particulars" class="form-control form-control-sm text-uppercase" rows="1" <?= $disabled ?>><?= htmlspecialchars($particulars) ?></textarea>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-<?php endif; ?>

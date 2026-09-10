@@ -56,7 +56,7 @@
     <br><br>
 
     <?php /*** details table */ ?>
-    <table class="report-borderlessx" style="line-height:15px">
+    <table style="line-height:15px">
       <thead style="border:1px solid #000">
         <tr>
           <th class="text-center border-left-end" width="5%">#</th>
@@ -77,18 +77,18 @@
             $total += $amount;
           ?>
         <tr>
-          <td class="text-center" width="5%"><?= $rowIndex ?>.</td>
-          <td width="41%"><?= htmlspecialchars($detail->description) ?></td>
-          <td class="text-center" width="8%"><?= htmlspecialchars($detail->uom) ?></td>
-          <td class="text-right" width="8%"><?= number_format($detail->qty, 0) ?></td>
-          <td class="text-right" width="12%"><?= number_format($detail->price, 2) ?></td>
-          <td class="text-right" width="12%"><?= number_format($detail->discount, 2) ?></td>
-          <td class="text-right" width="14%"><?= number_format($amount, 2) ?></td>
+          <td class="text-center border-left-bottom-right" width="5%"><?= $rowIndex ?>.</td>
+          <td class ="border-bottom-right" width="41%"><?= htmlspecialchars($detail->description) ?></td>
+          <td class="text-center border-bottom-right" width="8%"><?= htmlspecialchars($detail->uom) ?></td>
+          <td class="text-right border-bottom-right" width="8%"><?= number_format($detail->qty, 0) ?></td>
+          <td class="text-right border-bottom-right" width="12%"><?= number_format($detail->price, 2) ?></td>
+          <td class="text-right border-bottom-right" width="12%"><?= number_format($detail->discount, 2) ?></td>
+          <td class="text-right border-bottom-right" width="14%"><?= number_format($amount, 2) ?></td>
         </tr>
         <?php $rowIndex++; endforeach; ?>
         <tr>
-          <td colspan="6" class="text-right"><strong>Grand Total</strong></td>
-          <td class="text-right"><strong><?= number_format($total,2) ?></strong></td>
+          <td colspan="6" class="text-right border-left-bottom-right"><strong>Grand Total</strong></td>
+          <td class="text-right border-bottom-right"><strong><?= number_format($total,2) ?></strong></td>
         </tr>
       </tbody>
     </table>
@@ -96,32 +96,27 @@
     <br><br><br>
 
     <?php /*** signatories */ ?>
-    <table style="border:none;">
+    <table>
       <tr>
-        <td style="border:none;text-align:center;width:25%;height:70px;vertical-align:bottom;">
-          <strong class="font-7"><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></strong>
-          _________________________<br>
-          <span class="font-8">Prepared By</span>
-        </td>
-        <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
-          _________________________<br>
-          <span class="font-8">Checked By</span>
-        </td>
-        <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
-          _________________________<br>
-          <span class="font-8">Approved By</span>
-        </td>
-        <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
-          _________________________<br>
-          <span class="font-8">Received By</span>
-        </td>
+        <td class="font-7 text-center border-top-left-bottom"><strong><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></strong></td>
+        <td class="border-top-left-bottom"></td>
+        <td class="border-top-left-bottom"></td>
+        <td class="border-top-left-bottom-right"></td>
+      </tr>
+      <tr>
+        <td class="font-7 text-center border-left-bottom-right">Prepared By</td>
+        <td class="font-7 text-center border-bottom-right">Checked By</td>
+        <td class="font-7 text-center border-bottom-right">Approved By</td>
+        <td class="font-7 text-center border-bottom-right">Received By</td>
       </tr>
     </table>
 
-    <div class="font-7" style="text-align:right;margin-top:20px;">
-      Printed By:
-      <?= htmlspecialchars($this->session->userdata('username')).' '.date('m/d/Y h:i A'); ?>
-    </div>
+    <?php /*** printed by */ ?>
+    <table cellspacing="5">
+      <tr>
+        <td class="font-7 text-right" style="font-style:italic">Printed By: <?= htmlspecialchars($this->session->userdata('username')).' '.date('m/d/Y h:i A'); ?></td>
+      </tr>
+    </table>
 
     <?php if ($documentIndex < count($documents) - 1): ?>
       <br pagebreak="true" />
