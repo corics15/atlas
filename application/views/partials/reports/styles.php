@@ -202,6 +202,46 @@
     border-right: 0.2px solid #000;
   }
 
+  /** table borders */
+    .font-10 {
+      font-size: 10px;
+    }
+    .border-left-end {
+      border-left: 0.5px solid #000;
+      border-bottom: 0.5px solid #000;
+      border-top: 0.5px solid #000;
+    }
+    .border-right-end {
+      border-right: 0.5px solid #000;
+      border-bottom: 0.5px solid #000;
+      border-top: 0.5px solid #000;
+    }
+    .border-top-bottom {
+      border-bottom: 0.5px solid #000;
+      border-top: 0.5px solid #000;
+    }
+    .border-left-bottom-right {
+      border-left: 0.2px solid #000;
+      border-bottom: 0.2px solid #000;
+      border-right: 0.2px solid #000;
+    }
+    .border-bottom-right {
+      border-bottom: 0.2px solid #000;
+      border-right: 0.2px solid #000;
+    }
+    .border-top-left-bottom {
+      border-bottom: 0.2px solid #000;
+      border-top: 0.2px solid #000;
+      border-left: 0.2px solid #000;
+    }
+    .border-top-left-bottom-right {
+      border-bottom: 0.2px solid #000;
+      border-left: 0.2px solid #000;
+      border-top: 0.2px solid #000;
+      border-right: 0.2px solid #000;
+    }
+  /** */
+
   .page-break {
     display: block;
     page-break-after: always;

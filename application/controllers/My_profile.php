@@ -283,4 +283,152 @@ class My_profile extends MY_Controller
     );
   }
 
+  public function uploadSignature()
+  {
+    $userId = $this->session->userdata('user_id');
+
+    if (!$userId) {
+      return $this->jsonResponse(
+        false,
+        'Your session has expired.'
+      );
+    }
+
+    if (empty($_FILES['signature']['name'])) {
+      return $this->jsonResponse(
+        false,
+        'Please select a signature image.'
+      );
+    }
+
+    $uploadPath = FCPATH . 'uploads/signatures/';
+
+    if (!is_dir($uploadPath)) {
+      mkdir($uploadPath, 0755, TRUE);
+    }
+
+    $config = [
+      'upload_path'   => $uploadPath,
+      'allowed_types' => 'jpg|jpeg|png',
+      'max_size'      => 2048,
+      'encrypt_name'  => TRUE,
+      'remove_spaces' => TRUE,
+    ];
+
+    $this->load->library('upload', $config);
+
+    if (!$this->upload->do_upload('signature')) {
+      return $this->jsonResponse(
+        false,
+        strip_tags(
+          $this->upload->display_errors('', '')
+        )
+      );
+    }
+
+    $upload = $this->upload->data();
+    $signaturePath = 'uploads/signatures/' . $upload['file_name'];
+
+    /*** grab current user and old signature */
+    $currentUser = $this->User_model->get($userId);
+
+    if (!$currentUser) {
+      @unlink($upload['full_path']);
+
+      return $this->jsonResponse(
+        false,
+        'User account not found.'
+      );
+    }
+
+    $oldSignature = $currentUser->signature;
+
+    $updated = $this->User_model->updateSignature(
+      $userId,
+      $signaturePath
+    );
+
+    if (!$updated) {
+      @unlink($upload['full_path']);
+
+      return $this->jsonResponse(
+        false,
+        'Unable to update your signature.'
+      );
+    }
+
+    /*** remove old uploaded signature */
+    if ($oldSignature && strpos($oldSignature, 'uploads/signatures/') === 0) {
+      $oldSignatureFile = FCPATH . $oldSignature;
+
+      if (is_file($oldSignatureFile)) {
+        @unlink($oldSignatureFile);
+      }
+    }
+
+    return $this->jsonResponse(
+      true,
+      'Signature uploaded successfully.',
+      [
+        'signature' => base_url($signaturePath)
+      ]
+    );
+  }
+
+  public function removeSignature()
+  {
+    $userId = $this->session->userdata('user_id');
+
+    if (!$userId) {
+      return $this->jsonResponse(
+        false,
+        'Your session has expired.'
+      );
+    }
+
+    $currentUser = $this->User_model->get($userId);
+
+    if (!$currentUser) {
+      return $this->jsonResponse(
+        false,
+        'User account not found.'
+      );
+    }
+
+    if (empty($currentUser->signature)) {
+      return $this->jsonResponse(
+        false,
+        'You do not have a signature to remove.'
+      );
+    }
+
+    $oldSignature = $currentUser->signature;
+
+    $updated = $this->User_model->updateSignature(
+      $userId,
+      NULL
+    );
+
+    if (!$updated) {
+      return $this->jsonResponse(
+        false,
+        'Unable to remove your signature.'
+      );
+    }
+
+    /*** remove uploaded signature file */
+    if (strpos($oldSignature, 'uploads/signatures/') === 0) {
+      $signatureFile = FCPATH . $oldSignature;
+
+      if (is_file($signatureFile)) {
+        @unlink($signatureFile);
+      }
+    }
+
+    return $this->jsonResponse(
+      true,
+      'Signature removed successfully.'
+    );
+  }
+
 }

@@ -104,6 +104,7 @@ class User_model extends MY_Model
           u.salesman_id,
           u.access_level,
           u.avatar,
+          u.signature,
           b.branch_name
         ')
         ->from('m_users u')
@@ -131,6 +132,17 @@ class User_model extends MY_Model
         ->where('id', $userId)
         ->update('m_users', [
           'avatar'     => $avatar,
+          'updated_by' => $userId,
+          'updated_on' => date('Y-m-d H:i:s')
+        ]);
+  }
+
+  public function updateSignature($userId, $signature)
+  {
+    return $this->db
+        ->where('id', $userId)
+        ->update('m_users', [
+          'signature'  => $signature,
           'updated_by' => $userId,
           'updated_on' => date('Y-m-d H:i:s')
         ]);

@@ -42,15 +42,15 @@
   </style>
 <?php endif; ?>
 
-  <table class="report-borderless" style="table-layout:auto">
+  <table class="report-borderless" style="table-layout:auto;">
     <tr>
       <td class="text-center" width="13%">
         <?php if (!empty($company->logo)) : ?>
-          <img src="<?= atlas_asset($company->logo); ?>" width="75" alt="<?= htmlspecialchars($company->company_name); ?>">
+          <img src="<?= atlas_asset($company->logo); ?>" alt="<?= htmlspecialchars($company->company_name); ?>" style="height:75px;max-width:120px;object-fit:contain;">
         <?php endif; ?>
       </td>
       <td width="40%" style="border-left:5px solid #37474f">
-        <table style="line-height:12px">
+        <table style="line-height:10px">
           <tbody>
             <tr>
               <td class="company-name"><?= htmlspecialchars($company->company_name); ?></td>
@@ -71,4 +71,4 @@
       <td class="report-title" width="15%" style="text-align:left;border-left:5px solid #37474f"><?= ucwords($title); ?></td>
     </tr>
   </table>
-  <hr style="margin:12px 0 18px;">
+  <hr style="margin:12px 0 10px;">

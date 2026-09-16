@@ -193,14 +193,7 @@ class Inventory extends MY_Controller
       $filters
     );
 
-    $data['ledger'] = $this->Inventory_model->getStockLedger(
-      $productId,
-      $filters
-      // $fromDate,
-      // $toDate,
-      // $transactionType
-    );
-
+    $data['ledger'] = $this->Inventory_model->getStockLedger($productId, $filters);
     $data['title'] = 'Stock Ledger';
 
     $data['period'] =

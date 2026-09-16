@@ -302,11 +302,14 @@ class Check_vouchers extends MY_Controller
       ];
     }
 
+    $preparedBy = $this->User_model->get(  $this->session->userdata('user_id'));
+
     $this->load->view(
       'check_vouchers/print',
       [
         'documents' => $documents,
         'title' => 'Check Voucher',
+        'preparedBy' => $preparedBy,
       ]
     );
   }
@@ -334,11 +337,14 @@ class Check_vouchers extends MY_Controller
       ];
     }
 
+    $preparedBy = $this->User_model->get($this->session->userdata('user_id'));
+
     $html = $this->load->view(
       'check_vouchers/pdf_print',
       [
         'documents' => $documents,
-        'title' => 'Check Voucher'
+        'title' => 'Check Voucher',
+        'preparedBy' => $preparedBy,
       ],
       TRUE
     );

@@ -1,392 +1,482 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
+	const frmChangePassword = document.getElementById("frmChangePassword");
+	const btnChangeAvatar = document.getElementById("btnChangeAvatar");
+	const btnUseAvatar = document.getElementById("btnUseAvatar");
+	const btnUploadAvatar = document.getElementById("btnUploadAvatar");
+	const fileAvatar = document.getElementById("fileAvatar");
+	const btnCancelCustomAvatar = document.getElementById(
+		"btnCancelCustomAvatar",
+	);
+	const btnUploadCustomAvatar = document.getElementById(
+		"btnUploadCustomAvatar",
+	);
+	const btnSelectSignature = document.getElementById("btnSelectSignature");
+	const fileSignature = document.getElementById("fileSignature");
+	const btnRemoveSignature = document.getElementById("btnRemoveSignature");
 
-  const frmChangePassword = document.getElementById('frmChangePassword');
-  const btnChangeAvatar = document.getElementById('btnChangeAvatar');
-  const btnUseAvatar = document.getElementById('btnUseAvatar');
-  const btnUploadAvatar = document.getElementById('btnUploadAvatar');
-  const fileAvatar = document.getElementById('fileAvatar');
-  const btnCancelCustomAvatar = document.getElementById('btnCancelCustomAvatar');
-  const btnUploadCustomAvatar = document.getElementById('btnUploadCustomAvatar');
+	/*** change password event */
+	frmChangePassword?.addEventListener("submit", async (e) => {
+		e.preventDefault();
 
+		const currentPassword = document.getElementById("txtCurrentPassword").value;
+		const newPassword = document.getElementById("txtNewPassword").value;
+		const confirmPassword = document.getElementById("txtConfirmPassword").value;
 
+		document.getElementById("errCurrentPassword").textContent = "";
+		document.getElementById("errNewPassword").textContent = "";
+		document.getElementById("errConfirmPassword").textContent = "";
 
-  /*** change password event */
-  frmChangePassword?.addEventListener('submit', async (e) => {
-    e.preventDefault();
+		if (!currentPassword) {
+			document.getElementById("errCurrentPassword").textContent =
+				"Current password is required.";
+			return;
+		}
 
-    const currentPassword = document.getElementById('txtCurrentPassword').value;
-    const newPassword = document.getElementById('txtNewPassword').value;
-    const confirmPassword = document.getElementById('txtConfirmPassword').value;
+		if (!newPassword) {
+			document.getElementById("errNewPassword").textContent =
+				"New password is required.";
+			return;
+		}
 
-    document.getElementById('errCurrentPassword').textContent = '';
-    document.getElementById('errNewPassword').textContent = '';
-    document.getElementById('errConfirmPassword').textContent = '';
+		if (newPassword !== confirmPassword) {
+			document.getElementById("errConfirmPassword").textContent =
+				"Passwords do not match.";
+			return;
+		}
 
-    if (!currentPassword) {
-      document.getElementById('errCurrentPassword').textContent = 'Current password is required.';
-      return;
-    }
+		if (newPassword.length < 8) {
+			document.getElementById("errNewPassword").textContent =
+				"Password must be at least 8 characters long.";
+			return;
+		}
 
-    if (!newPassword) {
-      document.getElementById('errNewPassword').textContent = 'New password is required.';
-      return;
-    }
+		try {
+			const response = await Atlas.ajax.post("my-profile/changePassword", {
+				current_password: currentPassword,
+				new_password: newPassword,
+				confirm_password: confirmPassword,
+			});
 
-    if (newPassword !== confirmPassword) {
-      document.getElementById('errConfirmPassword').textContent = 'Passwords do not match.';
-      return;
-    }
+			if (!response.success) {
+				const message = response.message || "Unable to update password.";
 
-    if (newPassword.length < 8) {
-      document.getElementById('errNewPassword').textContent = 'Password must be at least 8 characters long.';
-      return;
-    }
+				if (message.toLowerCase().includes("current password")) {
+					document.getElementById("errCurrentPassword").textContent = message;
+				} else if (message.toLowerCase().includes("confirmation")) {
+					document.getElementById("errConfirmPassword").textContent = message;
+				} else if (message.toLowerCase().includes("new password")) {
+					document.getElementById("errNewPassword").textContent = message;
+				} else {
+					Atlas.toast.error(message);
+				}
 
-    try {
+				return;
+			}
 
-      const response = await Atlas.ajax.post(
-        'my-profile/changePassword',
-        {
-          current_password: currentPassword,
-          new_password: newPassword,
-          confirm_password: confirmPassword
-        }
-      );
+			Atlas.toast.success(response.message || "Password updated successfully.");
+			setTimeout(() => frmChangePassword.reset(), 3000);
+		} catch (error) {
+			Atlas.toast.error(
+				"An unexpected error occurred while updating your password.",
+			);
+		} finally {
+		}
+	});
 
-      if (!response.success) {
-        const message = response.message || 'Unable to update password.';
+	/*** toggle eyes on password */
+	document.querySelectorAll(".btn-toggle-password").forEach((btn) => {
+		btn.addEventListener("click", () => {
+			const input = document.getElementById(btn.dataset.target);
+			const icon = btn.querySelector("i");
 
-        if (message.toLowerCase().includes('current password')) {
-          document.getElementById('errCurrentPassword').textContent = message;
-        } else if (message.toLowerCase().includes('confirmation')) {
-          document.getElementById('errConfirmPassword').textContent = message;
-        } else if (message.toLowerCase().includes('new password')) {
-          document.getElementById('errNewPassword').textContent = message;
-        } else {
-          Atlas.toast.error(message);
-        }
+			if (!input) {
+				return;
+			}
 
-        return;
-      }
+			const isPassword = input.type === "password";
+			input.type = isPassword ? "text" : "password";
 
-      Atlas.toast.success(response.message || 'Password updated successfully.');
-      setTimeout(() => frmChangePassword.reset(), 3000);
-    } catch (error) {
-      Atlas.toast.error('An unexpected error occurred while updating your password.');
-    } finally { }
-  });
+			icon.classList.toggle("fa-eye", !isPassword);
+			icon.classList.toggle("fa-eye-slash", isPassword);
+		});
+	});
 
-  /*** toggle eyes on password */
-  document.querySelectorAll('.btn-toggle-password').forEach(btn => {
-    btn.addEventListener('click', () => {
+	/*** avatar picker */
+	btnChangeAvatar?.addEventListener("click", () => {
+		Atlas.modal.open({
+			id: "mdlAvatar",
+			title: "Choose Your Avatar",
+		});
+	});
 
-      const input = document.getElementById(btn.dataset.target);
-      const icon = btn.querySelector('i');
+	/*** avatar selection */
+	let selectedAvatar = null;
+	document.querySelectorAll(".avatar-option").forEach((button) => {
+		button.addEventListener("click", () => {
+			document.querySelectorAll(".avatar-option").forEach((item) => {
+				item.classList.remove("border", "border-success");
+			});
 
-      if (!input) {
-        return;
-      }
+			button.classList.add("border", "border-success");
+			selectedAvatar = button.dataset.avatar;
+			document.getElementById("btnUseAvatar").disabled = false;
+		});
+	});
 
-      const isPassword = input.type === 'password';
-      input.type = isPassword ? 'text' : 'password';
+	/*** use predefined avatar */
+	btnUseAvatar?.addEventListener("click", async () => {
+		if (!selectedAvatar) {
+			return;
+		}
 
-      icon.classList.toggle('fa-eye', !isPassword);
-      icon.classList.toggle('fa-eye-slash', isPassword);
-    });
-  });
+		btnUseAvatar.disabled = true;
 
-  /*** avatar picker */
-  btnChangeAvatar?.addEventListener('click', () => {
-    Atlas.modal.open({
-      id: 'mdlAvatar',
-      title: 'Choose Your Avatar'
-    });
-  });
+		try {
+			const result = await Atlas.ajax.post("my-profile/selectAvatar", {
+				avatar: selectedAvatar,
+			});
 
-  /*** avatar selection */
-  let selectedAvatar = null;
-  document.querySelectorAll('.avatar-option').forEach(button => {
-    button.addEventListener('click', () => {
-      document.querySelectorAll('.avatar-option').forEach(item => {
-        item.classList.remove('border', 'border-success');
-      });
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
 
-      button.classList.add('border', 'border-success');
-      selectedAvatar = button.dataset.avatar;
-      document.getElementById('btnUseAvatar').disabled = false;
-    });
-  });
+			const avatarImage = document.querySelector(
+				".box-profile .profile-user-img",
+			);
+			if (avatarImage && result.data.avatar) {
+				avatarImage.src = result.data.avatar;
+			}
 
-  /*** use predefined avatar */
-  btnUseAvatar?.addEventListener('click', async () => {
-    if (!selectedAvatar) {
-      return;
-    }
+			Atlas.toast.success(result.message);
+			setProfileAvatar(result.data?.avatar);
+			$("#mdlAvatar").modal("hide");
+			selectedAvatar = null;
 
-    btnUseAvatar.disabled = true;
+			document.querySelectorAll(".avatar-option").forEach((item) => {
+				item.classList.remove("border", "border-success");
+			});
 
-    try {
-      const result = await Atlas.ajax.post(
-        'my-profile/selectAvatar',
-        {
-          avatar: selectedAvatar
-        }
-      );
+			btnUseAvatar.disabled = true;
+		} finally {
+			btnUseAvatar.disabled = false;
+		}
+	});
 
-      if (!result.success) {
-        Atlas.toast.error(result.message);
-        return;
-      }
+	/*** use custom avatar selection */
+	btnUploadAvatar?.addEventListener("click", () => fileAvatar?.click());
+	fileAvatar?.addEventListener("change", () => {
+		const file = fileAvatar.files?.[0];
 
-      const avatarImage = document.querySelector('.box-profile .profile-user-img');
-      if (avatarImage && result.data.avatar) {
-        avatarImage.src = result.data.avatar;
-      }
+		if (!file) {
+			return;
+		}
 
-      Atlas.toast.success(result.message);
-      setProfileAvatar(result.data?.avatar);
-      $('#mdlAvatar').modal('hide');
-      selectedAvatar = null;
+		const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
-      document.querySelectorAll('.avatar-option').forEach(item => {
-        item.classList.remove('border', 'border-success');
-      });
+		if (!allowedTypes.includes(file.type)) {
+			Atlas.toast.error("Please select a JPG, PNG, or WEBP image.");
 
-      btnUseAvatar.disabled = true;
+			fileAvatar.value = "";
+			return;
+		}
 
-    } finally {
+		const maxSize = 2 * 1024 * 1024;
 
-      btnUseAvatar.disabled = false;
+		if (file.size > maxSize) {
+			Atlas.toast.error("Avatar image must not exceed 2 MB.");
 
-    }
-  });
+			fileAvatar.value = "";
+			return;
+		}
 
-  /*** use custom avatar selection */
-  btnUploadAvatar?.addEventListener('click', () => fileAvatar?.click());
-  fileAvatar?.addEventListener('change', () => {
-    const file = fileAvatar.files?.[0];
+		const previewUrl = URL.createObjectURL(file);
+		const preview = document.getElementById("customAvatarPreview");
+		const previewImage = document.getElementById("imgCustomAvatarPreview");
+		const fileName = document.getElementById("txtCustomAvatarName");
 
-    if (!file) {
-      return;
-    }
+		if (preview && previewImage && fileName) {
+			previewImage.src = previewUrl;
+			fileName.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+			preview.classList.remove("d-none");
+			Atlas.toast.success(`Image selected, click on Upload Picture to update`);
+		}
+	});
 
-    const allowedTypes = [
-      'image/jpeg',
-      'image/png',
-      'image/webp'
-    ];
+	/*** cancel uploading of custom avatar */
+	btnCancelCustomAvatar?.addEventListener("click", () => {
+		const preview = document.getElementById("customAvatarPreview");
+		const previewImage = document.getElementById("imgCustomAvatarPreview");
+		const fileName = document.getElementById("txtCustomAvatarName");
 
-    if (!allowedTypes.includes(file.type)) {
-      Atlas.toast.error('Please select a JPG, PNG, or WEBP image.');
+		if (preview) {
+			preview.classList.add("d-none");
+		}
 
-      fileAvatar.value = '';
-      return;
-    }
+		if (previewImage) {
+			previewImage.src = "";
+		}
 
-    const maxSize = 2 * 1024 * 1024;
+		if (fileName) {
+			fileName.textContent = "";
+		}
 
-    if (file.size > maxSize) {
-      Atlas.toast.error('Avatar image must not exceed 2 MB.');
+		if (fileAvatar) {
+			fileAvatar.value = "";
+		}
+	});
 
-      fileAvatar.value = '';
-      return;
-    }
+	/*** upload custom avatar */
+	btnUploadCustomAvatar?.addEventListener("click", async () => {
+		const file = fileAvatar?.files?.[0];
 
-    const previewUrl = URL.createObjectURL(file);
-    const preview = document.getElementById('customAvatarPreview');
-    const previewImage = document.getElementById('imgCustomAvatarPreview');
-    const fileName = document.getElementById('txtCustomAvatarName');
+		if (!file) {
+			Atlas.toast.warning("Please select an image first.");
+			return;
+		}
 
-    if (preview && previewImage && fileName) {
-      previewImage.src = previewUrl;
-      fileName.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-      preview.classList.remove('d-none');
-      Atlas.toast.success(`Image selected, click on Upload Picture to update`);
-    }
-  });
+		const formData = new FormData();
+		formData.append("avatar", file);
 
-  /*** cancel uploading of custom avatar */
-  btnCancelCustomAvatar?.addEventListener('click', () => {
-    const preview = document.getElementById('customAvatarPreview');
-    const previewImage = document.getElementById('imgCustomAvatarPreview');
-    const fileName = document.getElementById('txtCustomAvatarName');
+		try {
+			btnUploadCustomAvatar.disabled = true;
+			const result = await Atlas.ajax.post(`my-profile/uploadAvatar`, formData);
 
-    if (preview) {
-      preview.classList.add('d-none');
-    }
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
 
-    if (previewImage) {
-      previewImage.src = '';
-    }
+			Atlas.toast.success(result.message);
+			/*** apply the changes */
+			// const avatarImage = document.querySelector('.box-profile .profile-user-img');
+			// if (avatarImage && result.data?.avatar) {
+			//   avatarImage.src = result.data.avatar;
+			// }
+			setProfileAvatar(result.data?.avatar);
+			/*** end apply */
+			$("#mdlAvatar").modal("hide");
+			fileAvatar.value = "";
+			document.getElementById("customAvatarPreview")?.classList.add("d-none");
+		} catch (error) {
+			Atlas.toast.error(
+				"An unexpected error occurred while uploading your avatar.",
+			);
+		} finally {
+			btnUploadCustomAvatar.disabled = false;
+		}
+	});
 
-    if (fileName) {
-      fileName.textContent = '';
-    }
+	/*** report signature */
+	btnSelectSignature?.addEventListener("click", () => {
+		fileSignature?.click();
+	});
+	fileSignature?.addEventListener("change", async () => {
+		const file = fileSignature.files?.[0];
 
-    if (fileAvatar) {
-      fileAvatar.value = '';
-    }
-  });
+		if (!file) {
+			return;
+		}
 
-  /*** uploadd custom avatar */
-  btnUploadCustomAvatar?.addEventListener('click', async () => {
-    const file = fileAvatar?.files?.[0];
+		const allowedTypes = ["image/jpeg", "image/png"];
 
-    if (!file) {
-      Atlas.toast.warning('Please select an image first.');
-      return;
-    }
+		if (!allowedTypes.includes(file.type)) {
+			Atlas.toast.error("Please select a JPG or PNG image.");
+			fileSignature.value = "";
+			return;
+		}
 
-    const formData = new FormData();
-    formData.append('avatar', file);
+		const maxSize = 2 * 1024 * 1024;
 
-    try {
+		if (file.size > maxSize) {
+			Atlas.toast.error("Signature image must not exceed 2 MB.");
+			fileSignature.value = "";
+			return;
+		}
 
-      btnUploadCustomAvatar.disabled = true;
-      const result = await Atlas.ajax.post(
-        `my-profile/uploadAvatar`,
-        formData
-      );
+		const formData = new FormData();
+		formData.append("signature", file);
 
-      if (!result.success) {
-        Atlas.toast.error(result.message);
-        return;
-      }
+		try {
+			btnSelectSignature.disabled = true;
 
-      Atlas.toast.success(result.message);
-      /*** apply the changes */
-      // const avatarImage = document.querySelector('.box-profile .profile-user-img');
-      // if (avatarImage && result.data?.avatar) {
-      //   avatarImage.src = result.data.avatar;
-      // }
-      setProfileAvatar(result.data?.avatar);
-      /*** end apply */
-      $('#mdlAvatar').modal('hide');
-      fileAvatar.value = '';
-      document.getElementById('customAvatarPreview')?.classList.add('d-none');
+			const result = await Atlas.ajax.post(
+				"my-profile/uploadSignature",
+				formData,
+			);
 
-    } catch (error) {
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
 
-      Atlas.toast.error('An unexpected error occurred while uploading your avatar.');
+			setProfileSignature(result.data?.signature);
+			Atlas.toast.success(result.message);
+		} catch (error) {
+			Atlas.toast.error(
+				"An unexpected error occurred while uploading your signature.",
+			);
+		} finally {
+			btnSelectSignature.disabled = false;
+			fileSignature.value = "";
+		}
+	});
 
-    } finally {
+	/*** remove report signature */
+	btnRemoveSignature?.addEventListener("click", async () => {
+		const confirmed = await Atlas.dialog.confirm(
+			`Confirm Action`,
+			`<p>Remove your report signature?</p>`,
+		);
 
-      btnUploadCustomAvatar.disabled = false;
+		if (!confirmed) {
+			return;
+		}
 
-    }
-  });
+		try {
+			btnRemoveSignature.disabled = true;
 
+			const result = await Atlas.ajax.post("my-profile/removeSignature", {});
+
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
+
+			setProfileSignature(null);
+			Atlas.toast.success(result.message);
+		} catch (error) {
+			Atlas.toast.error(
+				"An unexpected error occurred while removing your signature.",
+			);
+		} finally {
+			btnRemoveSignature.disabled = false;
+		}
+	});
 });
 
 const setProfileAvatar = (avatarUrl) => {
+	if (!avatarUrl) {
+		return;
+	}
 
-  if (!avatarUrl) {
-    return;
-  }
+	/*** My Profile */
+	const profileContainer = document.getElementById("profileAvatarContainer");
 
-  /*** My Profile */
-  const profileContainer = document.getElementById('profileAvatarContainer');
+	if (profileContainer) {
+		let profileImage = profileContainer.querySelector("#imgProfileAvatar");
+		if (!profileImage || profileImage.tagName !== "IMG") {
+			profileImage = document.createElement("img");
 
-  if (profileContainer) {
-    let profileImage = profileContainer.querySelector('#imgProfileAvatar');
-    if (!profileImage || profileImage.tagName !== 'IMG') {
-      profileImage = document.createElement('img');
+			profileImage.id = "imgProfileAvatar";
+			profileImage.alt = "User Avatar";
+			profileImage.className = "img-fluid img-circle elevation-2";
 
-      profileImage.id = 'imgProfileAvatar';
-      profileImage.alt = 'User Avatar';
-      profileImage.className = 'img-fluid img-circle elevation-2';
+			profileImage.style.width = "110px";
+			profileImage.style.height = "110px";
+			profileImage.style.objectFit = "contain";
 
-      profileImage.style.width = '110px';
-      profileImage.style.height = '110px';
-      profileImage.style.objectFit = 'contain';
+			profileContainer.innerHTML = "";
+			profileContainer.appendChild(profileImage);
+		}
+		profileImage.src = avatarUrl;
+	}
 
-      profileContainer.innerHTML = '';
-      profileContainer.appendChild(profileImage);
-    }
-    profileImage.src = avatarUrl;
-  }
+	/*** Navbar   */
+	const navbarAvatar = document.getElementById("navbarUserAvatar");
+	if (navbarAvatar) {
+		navbarAvatar.src = avatarUrl;
+	} else {
+		const navbarLink = document.querySelector(
+			".main-header .nav-item.dropdown > a.nav-link",
+		);
+		if (navbarLink) {
+			const icon = navbarLink.querySelector("i.fa-user-circle");
+			if (icon) {
+				const image = document.createElement("img");
 
-  /*** Navbar   */
-  const navbarAvatar = document.getElementById('navbarUserAvatar');
-  if (navbarAvatar) {
-    navbarAvatar.src = avatarUrl;
+				image.id = "navbarUserAvatar";
+				image.src = avatarUrl;
+				image.alt = "User Avatar";
+				image.className = "img-circle mr-1";
 
-  } else {
-    const navbarLink = document.querySelector('.main-header .nav-item.dropdown > a.nav-link');
-    if (navbarLink) {
-      const icon = navbarLink.querySelector('i.fa-user-circle');
-      if (icon) {
-        const image = document.createElement('img');
+				image.style.width = "28px";
+				image.style.height = "28px";
+				image.style.objectFit = "contain";
 
-        image.id = 'navbarUserAvatar';
-        image.src = avatarUrl;
-        image.alt = 'User Avatar';
-        image.className = 'img-circle mr-1';
+				icon.replaceWith(image);
+			}
+		}
+	}
+	/*** end Navbar */
 
-        image.style.width = '28px';
-        image.style.height = '28px';
-        image.style.objectFit = 'contain';
+	/*** Sidebar */
+	const sidebarAvatar = document.getElementById("sidebarUserAvatar");
+	if (sidebarAvatar) {
+		sidebarAvatar.src = avatarUrl;
+	} else {
+		const sidebarUserPanel = document.querySelector(
+			".main-sidebar .user-panel",
+		);
 
-        icon.replaceWith(image);
-      }
-    }
-  }
-  /*** end Navbar */
+		if (sidebarUserPanel) {
+			const icon = sidebarUserPanel.querySelector(".image i.fa-user-circle");
+			if (icon) {
+				const image = document.createElement("img");
 
-  /*** Sidebar */
-  const sidebarAvatar = document.getElementById('sidebarUserAvatar');
-  if (sidebarAvatar) {
-    sidebarAvatar.src = avatarUrl;
+				image.id = "sidebarUserAvatar";
+				image.src = avatarUrl;
+				image.alt = "User Avatar";
+				image.className = "img-circle elevation-2";
 
-  } else {
-    const sidebarUserPanel = document.querySelector('.main-sidebar .user-panel');
+				image.style.width = "34px";
+				image.style.height = "34px";
+				image.style.objectFit = "contain";
 
-    if (sidebarUserPanel) {
-      const icon = sidebarUserPanel.querySelector('.image i.fa-user-circle');
-      if (icon) {
-        const image = document.createElement('img');
-
-        image.id = 'sidebarUserAvatar';
-        image.src = avatarUrl;
-        image.alt = 'User Avatar';
-        image.className = 'img-circle elevation-2';
-
-        image.style.width = '34px';
-        image.style.height = '34px';
-        image.style.objectFit = 'contain';
-
-        icon.replaceWith(image);
-      }
-    }
-  }
-  /*** end Sidebar */
+				icon.replaceWith(image);
+			}
+		}
+	}
+	/*** end Sidebar */
 };
 
-// const setProfileAvatar = (avatarUrl) => {
-//   if (!avatarUrl) {
-//     return;
-//   }
-//   const container = document.getElementById('profileAvatarContainer');
+const setProfileSignature = (signatureUrl) => {
+	const container = document.getElementById("signaturePreview");
+	const button = document.getElementById("btnSelectSignature");
+	const removeButton = document.getElementById("btnRemoveSignature");
 
-//   if (!container) {
-//     return;
-//   }
+	if (!container) {
+		return;
+	}
 
-//   let avatarImage = container.querySelector('#imgProfileAvatar');
-//   if (!avatarImage || avatarImage.tagName !== 'IMG') {
-//     avatarImage = document.createElement('img');
+	if (!signatureUrl) {
+		container.innerHTML = `
+      <div id="noSignature" class="text-muted text-center">
+        <i class="fas fa-signature fa-2x mb-2"></i>
+        <div>350 × 280 recommended area</div>
+      </div>
+    `;
 
-//     avatarImage.id = 'imgProfileAvatar';
-//     avatarImage.alt = 'User Avatar';
-//     avatarImage.className = 'img-fluid img-circle elevation-2';
+		if (button) {
+			button.innerHTML = '<i class="fas fa-upload mr-1"></i>Upload Signature';
+		}
 
-//     avatarImage.style.width = '110px';
-//     avatarImage.style.height = '110px';
-//     avatarImage.style.objectFit = 'contain';
+		removeButton?.classList.add("d-none");
+		return;
+	}
 
-//     container.innerHTML = '';
-//     container.appendChild(avatarImage);
-//   }
+	container.innerHTML = `
+    <img
+      id="imgSignature"
+      src="${signatureUrl}"
+      alt="My Signature"
+      style="max-width:100%;max-height:100%;object-fit:contain;"
+    >
+  `;
 
-//   avatarImage.src = avatarUrl;
-// };
+	if (button) {
+		button.innerHTML = '<i class="fas fa-upload mr-1"></i>Replace Signature';
+	}
+
+	removeButton?.classList.remove("d-none");
+};

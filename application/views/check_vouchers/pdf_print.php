@@ -29,6 +29,7 @@
 
     <div style="text-align:right;font-size:7px;"><strong><?= $copy ?></strong></div>
 
+    <?php /*** header */ ?>
     <table style="line-height:11px;">
       <tr>
         <td width="12%"><strong>CV No.</strong></td>
@@ -99,6 +100,7 @@
 
     <br><br>
 
+    <?php /*** details */ ?>
     <table style="line-height:11.5px">
       <thead>
         <tr>
@@ -156,12 +158,25 @@
       </tbody>
     </table>
 
-    <br><br><br>
+    <br>
+    <?php $signatureFile = !empty($preparedBy->signature) ? FCPATH . $preparedBy->signature : ''; ?>
+    <?php if (!$signatureFile && !is_file($signatureFile)): ?>
+      <br><br><?php /*** add filler if no signature found */ ?>
+    <?php endif; ?>
 
     <?php /*** signatories */ ?>
     <table>
       <tr>
-        <td class="font-7 text-center border-top-left-bottom"><strong><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></strong></td>
+        <td class="font-7 text-center border-top-left-bottom">
+
+          <?php if ($signatureFile && is_file($signatureFile)): ?>
+            <img src="<?= $signatureFile ?>" style="height:35px;max-width:120px;object-fit:contain;"><br>
+          <?php endif; ?>
+
+          <strong>
+            <?= htmlspecialchars($preparedBy->first_name . ' ' . $preparedBy->last_name) ?>
+          </strong>
+        </td>
         <td class="border-top-left-bottom"></td>
         <td class="border-top-left-bottom"></td>
         <td class="border-top-left-bottom-right"></td>

@@ -4,29 +4,18 @@
   <div class="container-fluid">
 
     <div class="row">
+
+      <?php /*** profile */ ?>
       <div class="col-md-4">
         <div class="card">
           <div class="card-body box-profile text-center">
 
             <div class="mb-3">
 
-            <?php if (false) : ?>
-              <?php if (!empty($profile->avatar)): ?>
-                <img src="<?= base_url($profile->avatar); ?>" alt="User Avatar" class="profile-user-img img-fluid img-circle elevation-2" style="width:110px;height:110px;object-fit:cover;">
-              <?php else: ?>
-                <i class="fas fa-user-circle text-purple" style="font-size:110px;"></i>
-              <?php endif; ?>
-            <?php endif; ?>
-
             <div id="profileAvatarContainer" class="d-flex justify-content-center align-items-center" style="width:110px;height:110px;margin:0 auto;">
               <?php if (!empty($profile->avatar)): ?>
 
-                <img id="imgProfileAvatar" src="<?= base_url($profile->avatar); ?>" alt="User Avatar" class="img-fluid img-circle elevation-2"
-                  style="
-                    width:110px;
-                    height:110px;
-                    object-fit:contain;
-                  ">
+                <img id="imgProfileAvatar" src="<?= base_url($profile->avatar); ?>" alt="User Avatar" class="img-fluid img-circle elevation-2" style="width:110px; height:110px; object-fit:contain;">
 
               <?php else: ?>
 
@@ -37,27 +26,13 @@
 
             </div>
 
-            <h3 class="profile-username">
-              <?= htmlspecialchars(
-                $profile->first_name . ' ' . $profile->last_name
-              ); ?>
-            </h3>
-
-            <p class="text-muted mb-1">
-              <?= htmlspecialchars($profile->username); ?>
-            </p>
-
-            <span class="badge badge-olive">
-              <?= htmlspecialchars(
-                config_item('atlas')['access_levels'][$profile->access_level]
-                  ?? $profile->access_level
-              ); ?>
-            </span>
+            <h3 class="profile-username"><?= htmlspecialchars($profile->first_name . ' ' . $profile->last_name); ?></h3>
+            <p class="text-muted mb-1"><?= htmlspecialchars($profile->username); ?></p>
+            <span class="badge badge-olive"><?= htmlspecialchars(config_item('atlas')['access_levels'][$profile->access_level] ?? $profile->access_level); ?></span>
 
             <hr>
 
             <dl class="row text-left mb-0">
-
               <dt class="col-sm-5 font-weight-500">Branch</dt>
               <dd class="col-sm-7">
                 <?= htmlspecialchars($profile->branch_name ?? '—'); ?>
@@ -67,7 +42,6 @@
               <dd class="col-sm-7">
                 <?= htmlspecialchars($profile->email ?? '—'); ?>
               </dd>
-
             </dl>
 
             <button type="button" id="btnChangeAvatar" class="btn btn-default btn-sm mt-3">
@@ -81,7 +55,8 @@
         </div>
       </div>
 
-      <div class="col-md-8">
+      <?php /*** change password */ ?>
+      <div class="col-md-4">
         <div class="card">
 
           <div class="card-header">
@@ -152,98 +127,62 @@
           </form>
         </div>
       </div>
+
+      <?php /*** signature */ ?>
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-signature mr-2"></i>
+              My Report Signature
+            </h3>
+          </div>
+
+          <div class="card-body">
+            <p class="text-muted small">
+              Your signature will be used when you appear as Prepared By on reports. This signature is only visible to you.
+            </p>
+            <div id="signaturePreview" class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width:350px;height:280px;max-width:100%;border:2px dotted #6c757d;">
+              <?php if (!empty($profile->signature)): ?>
+                <img id="imgSignature" src="<?= base_url($profile->signature); ?>" alt="My Signature" class="img-fluid" style="max-width:250px;height:80px;object-fit:contain;">
+              <?php else: ?>
+                <div id="noSignature" class="align-items-center d-flex flex-column py-3 text-muted">
+                  <i class="fas fa-signature fa-2x mb-2"></i>
+                  <div class="font-sm">No signature uploaded.</div>
+                </div>
+              <?php endif; ?>
+            </div>
+
+            <div class="text-center">
+              <button type="button" id="btnSelectSignature" class="btn btn-default btn-sm">
+                <i class="fas fa-upload mr-1"></i>
+                <?= !empty($profile->signature)
+                  ? 'Replace Signature'
+                  : 'Upload Signature'; ?>
+              </button>
+
+              <button type="button" id="btnRemoveSignature" class="btn btn-link btn-sm ml-1 <?= empty($profile->signature) ? 'd-none' : ''; ?>">
+                <i class="fas fa-trash-alt mr-1"></i>
+                Remove Signature
+              </button>
+
+              <input type="file" id="fileSignature" accept="image/jpeg,image/png" class="d-none">
+            </div>
+
+            <small class="form-text text-muted text-center mt-2">
+              JPG or PNG, maximum 2 MB.<br>
+              Recommended maximum: <span class="font-weight-500 text-maroon">350x280 pixels</span>.
+              Larger images may cause report content to move to the next page.
+            </small>
+
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
 </section>
 
 <?php /*** Avatar Picker Modal */ ?>
-<div class="modal fade" id="mdlAvatar" tabindex="-1" role="dialog" aria-labelledby="mdlAvatarLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="mdlAvatarLabel">
-          <i class="fas fa-user-circle mr-2"></i>
-          Choose Your Avatar
-        </h5>
-
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <h6>Select an avatar:</h6>
-        <div id="avatarGrid" class="row justify-content-center">
-
-          <?php foreach ($avatars as $index => $avatar): ?>
-            <div class="col-4 col-sm-3 col-md-2 mb-3 text-center">
-              <button type="button" class="btn p-1 avatar-option" data-avatar="<?= htmlspecialchars($avatar); ?>" title="Avatar <?= $index + 1; ?>">
-                <img src="<?= base_url($avatar); ?>" alt="Avatar <?= $index + 1; ?>" class="img-fluid rounded-circle"
-                  style="
-                    width: 82px;
-                    height: 82px;
-                    object-fit: contain;
-                  ">
-              </button>
-            </div>
-          <?php endforeach; ?>
-
-        </div>
-
-        <?php /*** custom avatar preview */ ?>
-        <div id="customAvatarPreview" class="text-center mt-4 d-none">
-          <hr>
-          <h6 class="mb-3">
-            <i class="fas fa-camera mr-1"></i>
-            Custom Avatar
-          </h6>
-          <img id="imgCustomAvatarPreview" src="" alt="Avatar Preview" class="img-fluid rounded-circle elevation-2"
-            style="
-              width: 120px;
-              height: 120px;
-              object-fit: contain;
-            ">
-
-          <div id="txtCustomAvatarName" class="text-muted small mt-2"></div>
-          <div class="mt-3">
-            <button type="button" id="btnCancelCustomAvatar" class="btn btn-default btn-sm">
-              Cancel
-            </button>
-
-            <button type="button" id="btnUploadCustomAvatar" class="btn btn-olive btn-sm">
-              <i class="fas fa-upload mr-1"></i>
-              Upload Picture
-            </button>
-          </div>
-        </div>
-        <?php /*** end custom */ ?>
-
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">
-          Cancel
-        </button>
-
-        <button type="button" id="btnUseAvatar" class="btn btn-olive btn-sm" disabled>
-          <i class="fas fa-check mr-1"></i>
-          Use Selected Avatar
-        </button>
-
-        <div class="text-muted my-2">
-          — or —
-        </div>
-
-        <button type="button" id="btnUploadAvatar" class="btn btn-outline-warning btn-sm">
-          <i class="fas fa-camera mr-1"></i>
-          Upload My Own Picture
-        </button>
-
-        <input type="file" id="fileAvatar" accept="image/jpeg,image/png,image/webp" class="d-none">
-      </div>
-
-    </div>
-  </div>
-</div>
+<?php $this->load->view('my_profile/modal'); ?>

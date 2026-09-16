@@ -89,7 +89,7 @@
         <br>
 
         <?php /*** accounting distribution */ ?>
-        <table class="report-bordered" style="line-height:7.5px">
+        <table class="report-bordered" style="line-height:7px;font-size:10px">
           <thead>
             <tr>
               <th class="text-center">#</th>
@@ -141,38 +141,34 @@
         </table>
         <?php /*** end accounting distribution */ ?>
 
-
-
-        <br><br><br>
-
-        <?php /*** signatures */ ?>
-        <table class="report-borderless" style="line-height:5px">
+        <?php /*** signatories */ ?>
+        <table class="report-borderless" style="line-height:8px;">
           <tr>
-            <td class="text-center font-weight-bold">
-              <?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?>
+            <td class="font-10 text-center" width="25%">
+
+              <?php if (!empty($preparedBy->signature)): ?>
+                <img src="<?= base_url($preparedBy->signature) ?>" alt="Signature" style="height:40px;max-width:120px;object-fit:contain;"><br>
+              <?php else: ?>
+                <br><br><br><br><?php /*** filler */ ?>
+              <?php endif; ?>
+              <strong><?= htmlspecialchars($preparedBy->first_name.' '.$preparedBy->last_name) ?></strong>
+
             </td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td width="25%"></td>
+            <td width="25%"></td>
+            <td width="25%"></td>
           </tr>
           <tr>
-            <td>_______________________________</td>
-            <td>_______________________________</td>
-            <td>_______________________________</td>
-            <td>_______________________________</td>
-          </tr>
-          <tr>
-            <td class="text-center">Prepared By</td>
-            <td class="text-center">Approved By</td>
-            <td class="text-center">Checked By</td>
-            <td class="text-center">Received By</td>
+            <td class="font-10 text-center">Prepared By</td>
+            <td class="font-10 font-10 text-center">Checked By</td>
+            <td class="font-10 font-10 text-center">Approved By</td>
+            <td class="font-10 font-10 text-center">Received By</td>
           </tr>
         </table>
-        <?php /*** end signatures */ ?>
 
       </div>
 
-      <div style="text-align:right;font-size:10px;margin-top:15px;">
+      <div style="text-align:right;font-size:8px;margin-top:10px;font-style:italic">
         Printed By:
         <strong><?= strtoupper(htmlspecialchars($this->session->userdata('username'))); ?></strong>
         <?= date('m/d/Y h:i A'); ?>
