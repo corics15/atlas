@@ -56,7 +56,7 @@
     <br><br>
 
     <?php /*** details table */ ?>
-    <table style="line-height:15px">
+    <table style="line-height:15px;font-size:8px">
       <thead style="border:1px solid #000">
         <tr>
           <th class="text-center border-left-end" width="5%">#</th>
@@ -93,21 +93,35 @@
       </tbody>
     </table>
 
-    <br><br><br>
+    <br><br>
+    <?php $signatureFile = !empty($preparedBy->signature) ? FCPATH . $preparedBy->signature : ''; ?>
+    <?php if (!$signatureFile && !is_file($signatureFile)): ?>
+      <br><br><?php /*** add filler if no signature found */ ?>
+    <?php endif; ?>
 
     <?php /*** signatories */ ?>
     <table>
       <tr>
-        <td class="font-7 text-center border-top-left-bottom"><strong><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></strong></td>
-        <td class="border-top-left-bottom"></td>
-        <td class="border-top-left-bottom"></td>
-        <td class="border-top-left-bottom-right"></td>
+        <td class="font-7 text-center">
+          <?php $signatureFile = !empty($preparedBy->signature) ? FCPATH . $preparedBy->signature : ''; ?>
+
+          <?php if ($signatureFile && is_file($signatureFile)): ?>
+            <img src="<?= $signatureFile ?>" style="height:28px;max-width:120px;object-fit:contain;"><br>
+          <?php endif; ?>
+
+          <strong>
+            <?= htmlspecialchars($preparedBy->first_name . ' ' . $preparedBy->last_name) ?>
+          </strong>
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
       </tr>
       <tr>
-        <td class="font-7 text-center border-left-bottom-right">Prepared By</td>
-        <td class="font-7 text-center border-bottom-right">Checked By</td>
-        <td class="font-7 text-center border-bottom-right">Approved By</td>
-        <td class="font-7 text-center border-bottom-right">Received By</td>
+        <td class="font-7 text-center border-top">Prepared By</td>
+        <td class="font-7 text-center border-top">Checked By</td>
+        <td class="font-7 text-center border-top">Approved By</td>
+        <td class="font-7 text-center border-top">Received By</td>
       </tr>
     </table>
 

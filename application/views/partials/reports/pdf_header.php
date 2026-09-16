@@ -45,6 +45,9 @@
   .font-12 {
 		font-size: 12px;
 	}
+  .font-13 {
+		font-size: 13px;
+	}
   .font-14 {
 		font-size: 14px;
 	}
@@ -85,6 +88,12 @@
     border-top: 0.2px solid #000;
     border-right: 0.2px solid #000;
   }
+  .border-bottom {
+    border-bottom: 0.2px solid #000;
+  }
+  .border-top {
+    border-top: 0.2px solid #000;
+  }
 </style>
 
 <table class="report-borderless">
@@ -113,7 +122,13 @@
     </td>
     <td width="25%"></td>
     <td width="0.5%" style="background-color:#37474f;"></td>
-    <td width="21.5%" class="font-14 font-weight-bold"><br><br><?= ucwords($title); ?></td>
+
+    <?php
+      $len = strlen($title);
+      $fontClass = ($len > 15) ? 'font-12' : 'font-14';
+    ?>
+
+    <td width="21.5%" class="<?= $fontClass ?> font-weight-bold"><br><br><?= ucwords($title); ?></td>
   </tr>
 </table>
 

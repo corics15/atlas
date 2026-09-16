@@ -95,31 +95,33 @@
     </table>
 
     <?php /*** signatories */ ?>
-    <table style="border:none;">
+    <table class="report-borderless" style="line-height:8px;">
       <tr>
-        <td style="border:none;text-align:center;width:25%;height:70px;vertical-align:bottom;">
-          <strong><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></strong>
-          _________________________<br>
-          Prepared By
+        <td class="font-10 text-center" width="25%">
+
+          <?php if (!empty($preparedBy->signature)): ?>
+            <img src="<?= base_url($preparedBy->signature) ?>" alt="Signature" style="height:40px;max-width:120px;object-fit:contain;"><br>
+          <?php else: ?>
+            <br><br><br><br><?php /*** filler */ ?>
+          <?php endif; ?>
+          <strong><?= htmlspecialchars($preparedBy->first_name.' '.$preparedBy->last_name) ?></strong>
+
         </td>
-        <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
-          _________________________<br>
-          Checked By
-        </td>
-        <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
-          _________________________<br>
-          Approved By
-        </td>
-        <td style="border:none;text-align:center;width:25%;vertical-align:bottom;">
-          _________________________<br>
-          Received By
-        </td>
+        <td width="25%"></td>
+        <td width="25%"></td>
+        <td width="25%"></td>
+      </tr>
+      <tr>
+        <td class="font-10 text-center">Prepared By</td>
+        <td class="font-10 font-10 text-center">Checked By</td>
+        <td class="font-10 font-10 text-center">Approved By</td>
+        <td class="font-10 font-10 text-center">Received By</td>
       </tr>
     </table>
 
-    <div style="text-align:right;font-size:10px;margin-top:20px;">
+    <div style="text-align:right;font-size:10px;margin-top:20px;font-style:italic">
       Printed By:
-      <?= htmlspecialchars($this->session->userdata('username')).' '.date('m/d/Y h:i A'); ?>
+      <strong><?= htmlspecialchars(strtoupper($this->session->userdata('username'))) ?></strong> <?= date('m/d/Y h:i A'); ?>
     </div>
 
     <?php if ($documentIndex < count($documents) - 1): ?>

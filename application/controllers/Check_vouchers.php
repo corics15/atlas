@@ -302,7 +302,7 @@ class Check_vouchers extends MY_Controller
       ];
     }
 
-    $preparedBy = $this->User_model->get(  $this->session->userdata('user_id'));
+    $preparedBy = $this->User_model->get($this->session->userdata('user_id'));
 
     $this->load->view(
       'check_vouchers/print',

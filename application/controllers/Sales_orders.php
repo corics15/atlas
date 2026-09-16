@@ -14,6 +14,7 @@ class Sales_orders extends MY_Controller
     $this->load->model('Uom_model');
     $this->load->model('Product_uom_model');
     $this->load->model('Company_model');
+    $this->load->model('User_model');
   }
 
   public function index()
@@ -46,7 +47,7 @@ class Sales_orders extends MY_Controller
     $this->data = array_merge(
       $this->data,
       $filters
-    );    
+    );
 
     $this->pageScript = 'sales_orders';
     $this->data['salesOrders'] = $this->Sales_order_model->getAll($filters);
@@ -93,6 +94,11 @@ class Sales_orders extends MY_Controller
         'id'   => 'btnPrintSalesOrder',
         'text' => 'Print',
         'icon' => 'fas fa-print'
+      ],
+      'pdf' => [
+        'id'   => 'btnViewSOPDF',
+        'text' => 'View As PDF',
+        'icon' => 'fas fa-file-pdf'
       ],
       'cancel' => [
         'id'   => 'btnCancelSalesOrder',
@@ -312,12 +318,59 @@ class Sales_orders extends MY_Controller
       ];
     }
 
+    $preparedBy = $this->User_model->get($this->session->userdata('user_id'));
+
     $this->load->view(
       'sales_orders/print',
       [
         'documents' => $documents,
-        'title' => 'Acknowledgement Receipt' /*** changed from Sales Order */
-      ]
+        'title' => 'Acknowledgement Receipt', /*** changed from Sales Order */
+        'preparedBy' => $preparedBy,
+      ],
     );
   }
+
+  public function pdf()
+  {
+    $ids = $this->input->post('ids');
+
+    if (!$ids) {
+      show_404();
+    }
+
+    $documents = [];
+
+    foreach ($ids as $id) {
+      $header = $this->Sales_order_model->get($id);
+
+      if (!$header) {
+        continue;
+      }
+
+      $documents[] = (object)[
+        'header'  => $header,
+        'details' => $this->Sales_order_model->getDetails($id)
+      ];
+    }
+
+    $preparedBy = $this->User_model->get($this->session->userdata('user_id'));
+
+    $html = $this->load->view(
+      'sales_orders/pdf_print',
+      [
+        'documents'  => $documents,
+        'title'      => 'Acknowledgement Receipt',
+        'preparedBy' => $preparedBy,
+      ],
+      TRUE
+    );
+
+    $this->load->library('atlas_pdf');
+
+    $this->atlas_pdf->render(
+      $html,
+      'sales-orders-'.$this->randomString(5).'.pdf'
+    );
+  }
+
 }

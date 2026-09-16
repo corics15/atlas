@@ -98,61 +98,53 @@
     <table class="report-borderless" style="line-height:8px">
       <tr>
         <td width="80%" class="text-right">Gross Amount</td>
-        <td class="text-right" width="20%">
-          <?= number_format($grossAmount, 2) ?>
-        </td>
+        <td class="text-right" width="20%"><?= number_format($grossAmount, 2) ?></td>
       </tr>
       <tr>
         <td class="text-right">Less Discount</td>
-        <td class="text-right">
-          <?= number_format($discountAmount, 2) ?>
-        </td>
+        <td class="text-right"><?= number_format($discountAmount, 2) ?></td>
       </tr>
       <tr>
         <td class="text-right">Subtotal</td>
-        <td class="text-right">
-          <?= number_format((float)$header->subtotal, 2) ?>
-        </td>
+        <td class="text-right"><?= number_format((float)$header->subtotal, 2) ?></td>
       </tr>
       <tr>
         <td class="text-right">VAT <?= number_format((float)$header->vat_rate, 2) ?>%</td>
-        <td class="text-right">
-          <?= number_format((float)$header->vat_amount, 2) ?>
-        </td>
+        <td class="text-right"><?= number_format((float)$header->vat_amount, 2) ?></td>
       </tr>
       <tr>
         <td class="text-right"><strong>TOTAL</strong></td>
-        <td class="text-right">
-          <strong><?= number_format((float)$header->total_amount, 2) ?></strong>
-        </td>
+        <td class="text-right"><strong><?= number_format((float)$header->total_amount, 2) ?></strong></td>
       </tr>
     </table>
     <?php /*** end totals */ ?>
 
-    <br><br><br>
+    <?php if (empty($preparedBy->signature)): ?>
+      <br><br><br><?php /*** filler, add <br> if necessary */ ?>
+    <?php endif; ?>
 
-    <?php /*** signatures */ ?>
-    <table class="report-borderless" style="line-height:5px">
+    <?php /*** signatories */ ?>
+    <table class="report-borderless" style="line-height:8px;">
       <tr>
-        <td class="text-center font-weight-bold"><?= $this->session->userdata('first_name').' '.$this->session->userdata('last_name') ?></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td class="font-10 text-center" width="25%">
+
+          <?php if (!empty($preparedBy->signature)): ?>
+            <img src="<?= base_url($preparedBy->signature) ?>" alt="Signature" style="height:35px;max-width:120px;object-fit:contain;"><br>
+          <?php endif; ?>
+          <strong><?= htmlspecialchars($preparedBy->first_name.' '.$preparedBy->last_name) ?></strong>
+
+        </td>
+        <td width="25%"></td>
+        <td width="25%"></td>
+        <td width="25%"></td>
       </tr>
       <tr>
-        <td>_______________________________</td>
-        <td>_______________________________</td>
-        <td>_______________________________</td>
-        <td>_______________________________</td>
-      </tr>
-      <tr>
-        <td class="text-center">Prepared By</td>
-        <td class="text-center">Approved By</td>
-        <td class="text-center">Checked By</td>
-        <td class="text-center">Received By</td>
+        <td class="font-10 text-center">Prepared By</td>
+        <td class="font-10 font-10 text-center">Checked By</td>
+        <td class="font-10 font-10 text-center">Approved By</td>
+        <td class="font-10 font-10 text-center">Received By</td>
       </tr>
     </table>
-    <?php /*** end signatures */ ?>
 
   </div>
 

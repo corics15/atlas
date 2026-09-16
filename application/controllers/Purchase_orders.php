@@ -233,6 +233,7 @@ class Purchase_orders extends MY_Controller
     }
 
     $this->data['documents'] = $this->Purchase_order_model->getDocument($ids);
+    $this->data['preparedBy'] = $this->User_model->get($this->session->userdata('user_id'));
 
     $this->load->view(
       'purchase_orders/print',
@@ -248,11 +249,15 @@ class Purchase_orders extends MY_Controller
       show_error('No Purchase Order selected.');
     }
 
-    $this->data['documents'] = $this->Purchase_order_model->getDocument($ids);
+    $documents = $this->Purchase_order_model->getDocument($ids);
+    $preparedBy = $this->User_model->get($this->session->userdata('user_id'));
 
     $html = $this->load->view(
       'purchase_orders/pdf_print',
-      $this->data,
+      [
+        'documents'  => $documents,
+        'preparedBy' => $preparedBy
+      ],
       TRUE
     );
 
