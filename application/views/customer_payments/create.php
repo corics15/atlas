@@ -13,4 +13,13 @@
       ];
     }, $allocations ?? [])
   ); ?>;
+  window.customerPaymentDeductions = <?= json_encode(
+    array_map(function ($deduction) {
+      return [
+        'sales_invoice_id' => (int)$deduction->sales_invoice_id,
+        'particulars' => $deduction->particulars,
+        'amount' => (float)$deduction->amount
+      ];
+    }, $deductions ?? [])
+  ); ?>;
 </script>

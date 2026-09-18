@@ -41,6 +41,38 @@
       </div>
     </div>
 
+    <?php /*** other deductions */ ?>
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Other Deductions</h3>
+        <div class="ml-auto">
+          <button type="button" class="btn btn-sm btn-link" id="btnAddCustomerPaymentDeduction" <?= !$isEditable ? 'disabled' : '' ?>>
+            <i class="fas fa-plus-circle mr-2"></i>Add Deduction
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered table-hover mb-0" id="tblCustomerPaymentDeductions">
+            <thead class="thead-orange">
+              <tr>
+                <th width="220" class="text-center">Sales Invoice</th>
+                <th>Particulars / Type</th>
+                <th width="180" class="text-right">Amount</th>
+                <th width="80" class="text-center"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="deduction-empty-row">
+                <td colspan="4" class="text-center text-muted py-3">No other deductions.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <?php /*** customer credits, if applicable */ ?>
     <div class="card">
       <div class="card-header">
@@ -275,6 +307,8 @@
             </div>
 
           </div>
+
+          <?php /*** payment summary */ ?>
           <div class="col-md-4">
             <table class="table table-sm mb-3">
               <tbody>
@@ -282,12 +316,18 @@
                   <td>Amount Received</td>
                   <td id="cpAmountReceived" class="text-right">0.00</td>
                 </tr>
-
                 <tr>
-                  <td>Amount Applied</td>
+                  <td>Payment Applied</td>
                   <td id="cpAmountApplied" class="text-right">0.00</td>
                 </tr>
-
+                <tr>
+                  <td>Other Deductions</td>
+                  <td id="cpOtherDeductions" class="text-right">0.00</td>
+                </tr>
+                <tr>
+                  <td>Total AR Settlement</td>
+                  <td id="cpTotalSettlement" class="text-right">0.00</td>
+                </tr>
                 <tr class="font-weight-500">
                   <td>Unapplied Amount</td>
                   <td id="cpAmountUnapplied" class="text-right">0.00</td>

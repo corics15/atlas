@@ -201,6 +201,7 @@ class Customer_payments extends MY_Controller
     $this->data['customerPayment'] = $customerPayment;
 
     $this->data['allocations'] = $this->Customer_payment_model->getAllocations($customerPaymentId);
+    $this->data['deductions'] = $this->Customer_payment_model->getDeductions($customerPaymentId);
     $this->data['customerPaymentId'] = $customerPaymentId;
     $this->data['isEdit'] = true;
     $this->data['isEditable'] = $customerPayment->status === 'OPEN';

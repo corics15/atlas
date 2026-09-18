@@ -182,6 +182,28 @@ class Customer_payment_model extends CI_Model
         ->result();
   }
 
+  public function getDeductions($customerPaymentId)
+  {
+    return $this->db
+      ->select("
+        cpd.*,
+        si.si_no,
+        si.invoice_date
+      ")
+      ->from('t_customer_payment_deductions cpd')
+      ->join(
+        't_sales_invoices si',
+        'si.id = cpd.sales_invoice_id'
+      )
+      ->where(
+        'cpd.customer_payment_id',
+        (int)$customerPaymentId
+      )
+      ->order_by('cpd.id', 'ASC')
+      ->get()
+      ->result();
+  }
+
   public function getOutstandingInvoices($customerId)
   {
     $customerId = (int)$customerId;
@@ -202,7 +224,8 @@ class Customer_payment_model extends CI_Model
         si.total_amount
           - COALESCE(p.amount_paid, 0)
           - COALESCE(cm.amount_credited, 0)
-          - COALESCE(cma.credit_applied, 0) AS balance
+          - COALESCE(cma.credit_applied, 0)
+          - COALESCE(d.amount_deducted, 0) AS balance
       ", FALSE)
       ->from('t_sales_invoices si')
       ->join(
@@ -244,13 +267,28 @@ class Customer_payment_model extends CI_Model
         'left',
         FALSE
       )
+      ->join(
+        "(
+          SELECT
+            cpd.sales_invoice_id,
+            SUM(cpd.amount) AS amount_deducted
+          FROM t_customer_payment_deductions cpd
+          INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+          WHERE cp.status = 'POSTED'
+          GROUP BY cpd.sales_invoice_id
+        ) d",
+        'd.sales_invoice_id = si.id',
+        'left',
+        FALSE
+      )
       ->where('si.customer_id', $customerId)
       ->where('si.status', 'POSTED')
       ->where(
         'si.total_amount
           - COALESCE(p.amount_paid, 0)
           - COALESCE(cm.amount_credited, 0)
-          - COALESCE(cma.credit_applied, 0) > 0',
+          - COALESCE(cma.credit_applied, 0)
+          - COALESCE(d.amount_deducted, 0) > 0',
         NULL,
         FALSE
       )
@@ -303,8 +341,16 @@ class Customer_payment_model extends CI_Model
                                     WHERE cm.customer_id = ?
                                     AND cm.status = 'POSTED'
                                     AND cm.credit_memo_date < ?
+                                  UNION ALL
+                                    SELECT 0::numeric AS debit, cpd.amount AS credit
+                                    FROM t_customer_payment_deductions cpd
+                                    INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+                                    WHERE cp.customer_id = ?
+                                    AND cp.status = 'POSTED'
+                                    AND cp.payment_date < ?
                                 ) x",
                                 [
+                                  $customerId, $dateFrom,
                                   $customerId, $dateFrom,
                                   $customerId, $dateFrom,
                                   $customerId, $dateFrom,
@@ -318,6 +364,7 @@ class Customer_payment_model extends CI_Model
     /*** transaction conditions */
     $invoiceWhere = '';
     $paymentWhere = '';
+    $deductionWhere = '';
     $creditMemoWhere = '';
     $refundWhere = '';
     $params = [$openingBalance, $customerId];
@@ -340,6 +387,17 @@ class Customer_payment_model extends CI_Model
     }
     if ($dateTo !== '') {
       $paymentWhere .= ' AND cp.payment_date <= ?';
+      $params[] = $dateTo;
+    }
+
+    /*** other deductions */
+    $params[] = $customerId;
+    if ($dateFrom !== '') {
+      $deductionWhere .= ' AND cp.payment_date >= ?';
+      $params[] = $dateFrom;
+    }
+    if ($dateTo !== '') {
+      $deductionWhere .= ' AND cp.payment_date <= ?';
       $params[] = $dateTo;
     }
 
@@ -407,6 +465,21 @@ class Customer_payment_model extends CI_Model
                                           {$paymentWhere}
                                         UNION ALL
                                           SELECT
+                                            cp.payment_date AS transaction_date,
+                                            cp.payment_no AS reference_no,
+                                            'OTHER DEDUCTION' AS transaction_type,
+                                            cpd.particulars AS remarks,
+                                            0::numeric AS debit,
+                                            cpd.amount AS credit,
+                                            cp.id AS transaction_id,
+                                            3 AS sort_order
+                                          FROM t_customer_payment_deductions cpd
+                                          INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+                                          WHERE cp.customer_id = ?
+                                          AND cp.status = 'POSTED'
+                                          {$deductionWhere}
+                                        UNION ALL
+                                          SELECT
                                             cm.credit_memo_date AS transaction_date,
                                             cm.cm_no AS reference_no,
                                             'CREDIT MEMO' AS transaction_type,
@@ -414,7 +487,7 @@ class Customer_payment_model extends CI_Model
                                             0::numeric AS debit,
                                             cm.amount AS credit,
                                             cm.id AS transaction_id,
-                                            3 AS sort_order
+                                            4 AS sort_order
                                           FROM t_credit_memos cm
                                           WHERE cm.customer_id = ?
                                           AND cm.status = 'POSTED'
@@ -428,7 +501,7 @@ class Customer_payment_model extends CI_Model
                                             r.amount AS debit,
                                             0::numeric AS credit,
                                             cp.id AS transaction_id,
-                                            4 AS sort_order
+                                            5 AS sort_order
                                           FROM t_customer_payment_refunds r
                                           INNER JOIN t_customer_payments cp ON cp.id = r.customer_payment_id
                                           WHERE cp.customer_id = ?
@@ -549,6 +622,7 @@ class Customer_payment_model extends CI_Model
 
         /*** replace OPEN allocations */
         $this->db->where('customer_payment_id', $customerPaymentId)->delete('t_customer_payment_allocations');
+        $this->db->where('customer_payment_id', $customerPaymentId)->delete('t_customer_payment_deductions');
       }
 
       /*** validate + insert allocations */
@@ -602,8 +676,22 @@ class Customer_payment_model extends CI_Model
                   FROM t_credit_memos cm
                   WHERE cm.sales_invoice_id = ?
                   AND cm.status = 'POSTED'
-                ), 0) AS amount_credited",
+                ), 0) AS amount_credited,
+                COALESCE((
+                  SELECT SUM(cma.amount_applied)
+                  FROM t_credit_memo_allocations cma
+                  WHERE cma.sales_invoice_id = ?
+                ), 0) AS credit_applied,
+                COALESCE((
+                  SELECT SUM(cpd.amount)
+                  FROM t_customer_payment_deductions cpd
+                  INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+                  WHERE cpd.sales_invoice_id = ?
+                  AND cp.status = 'POSTED'
+                ), 0) AS amount_deducted",
               [
+                $salesInvoiceId,
+                $salesInvoiceId,
                 $salesInvoiceId,
                 $salesInvoiceId
               ]
@@ -612,7 +700,17 @@ class Customer_payment_model extends CI_Model
 
         $amountPaid = round((float)$previous->amount_paid, 2);
         $amountCredited = round((float)$previous->amount_credited, 2);
-        $balance = round((float)$invoice->total_amount - $amountPaid - $amountCredited, 2);
+        $creditApplied = round((float)$previous->credit_applied, 2);
+        $amountDeducted = round((float)$previous->amount_deducted, 2);
+
+        $balance = round(
+          (float)$invoice->total_amount
+          - $amountPaid
+          - $amountCredited
+          - $creditApplied
+          - $amountDeducted,
+          2
+        );
 
         if ($amountApplied > $balance) {
           throw new Exception("Applied amount for {$invoice->si_no} exceeds its outstanding balance.");
@@ -634,6 +732,57 @@ class Customer_payment_model extends CI_Model
           ]
         );
       }
+
+      /*** validate + insert deductions */
+      foreach (($customerPayment->deductions ?? []) as $deduction) {
+        $salesInvoiceId = (int)($deduction->sales_invoice_id ?? 0);
+        $particulars = trim($deduction->particulars ?? '');
+        $amount = round((float)($deduction->amount ?? 0), 2);
+
+        if ($salesInvoiceId <= 0) {
+          throw new Exception('Sales Invoice is required for Other Deduction.');
+        }
+
+        if ($particulars === '') {
+          throw new Exception('Particulars / Type is required for Other Deduction.');
+        }
+
+        if ($amount <= 0) {
+          throw new Exception('Other Deduction amount must be greater than zero.');
+        }
+
+        /*** authoritative invoice */
+        $invoice = $this->db
+          ->select('id, si_no, customer_id, status')
+          ->where('id', $salesInvoiceId)
+          ->get('t_sales_invoices')
+          ->row();
+
+        if (!$invoice) {
+          throw new Exception('Sales Invoice for Other Deduction not found.');
+        }
+
+        if ($invoice->status !== 'POSTED') {
+          throw new Exception("Sales Invoice {$invoice->si_no} is not POSTED.");
+        }
+
+        if ((int)$invoice->customer_id !== $customerId) {
+          throw new Exception("Sales Invoice {$invoice->si_no} does not belong to the selected customer.");
+        }
+
+        $this->db->insert(
+          't_customer_payment_deductions',
+          [
+            'customer_payment_id' => $customerPaymentId,
+            'sales_invoice_id' => $salesInvoiceId,
+            'particulars' => trim(strtoupper($particulars)),
+            'amount' => $amount,
+            'entered_by' => $this->session->userdata('user_id'),
+            'entered_on' => date('Y-m-d H:i:s')
+          ]
+        );
+      }
+      /*** end validate + insert */
 
       if ($this->db->trans_status() === FALSE) {
         throw new Exception('Unable to save Customer Payment.');
@@ -753,6 +902,107 @@ class Customer_payment_model extends CI_Model
         if ($totalApplied > round((float)$customerPayment->amount_received, 2)) {
           throw new Exception("Applied amount for {$customerPayment->payment_no} exceeds the amount received.");
         }
+
+        /*** validate deductions */
+        $deductions = $this->db
+          ->where('customer_payment_id', (int)$customerPayment->id)
+          ->get('t_customer_payment_deductions')
+          ->result();
+
+        $deductionByInvoice = [];
+
+        foreach ($deductions as $deduction) {
+          $salesInvoiceId = (int)$deduction->sales_invoice_id;
+          $amountDeducted = round((float)$deduction->amount, 2);
+
+          if (!isset($deductionByInvoice[$salesInvoiceId])) {
+            $deductionByInvoice[$salesInvoiceId] = 0;
+          }
+
+          $deductionByInvoice[$salesInvoiceId] += $amountDeducted;
+        }
+
+        foreach ($deductionByInvoice as $salesInvoiceId => $amountDeducted) {
+          $invoice = $this->db
+            ->select('id, si_no, customer_id, status, total_amount')
+            ->where('id', $salesInvoiceId)
+            ->get('t_sales_invoices')
+            ->row();
+
+          if (!$invoice) {
+            throw new Exception('Sales Invoice for Other Deduction not found.');
+          }
+
+          if ($invoice->status !== 'POSTED') {
+            throw new Exception("Sales Invoice {$invoice->si_no} is not POSTED.");
+          }
+
+          if ((int)$invoice->customer_id !== (int)$customerPayment->customer_id) {
+            throw new Exception("Sales Invoice {$invoice->si_no} does not belong to the payment customer.");
+          }
+
+          $previous = $this->db->query(
+            "SELECT
+              COALESCE((
+                SELECT SUM(cpa.amount_applied)
+                FROM t_customer_payment_allocations cpa
+                INNER JOIN t_customer_payments cp ON cp.id = cpa.customer_payment_id
+                WHERE cpa.sales_invoice_id = ?
+                AND cp.status = 'POSTED'
+              ), 0) AS amount_paid,
+
+              COALESCE((
+                SELECT SUM(cm.amount - cm.available_credit)
+                FROM t_credit_memos cm
+                WHERE cm.sales_invoice_id = ?
+                AND cm.status = 'POSTED'
+              ), 0) AS amount_credited,
+
+              COALESCE((
+                SELECT SUM(cma.amount_applied)
+                FROM t_credit_memo_allocations cma
+                WHERE cma.sales_invoice_id = ?
+              ), 0) AS credit_applied,
+
+              COALESCE((
+                SELECT SUM(cpd.amount)
+                FROM t_customer_payment_deductions cpd
+                INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+                WHERE cpd.sales_invoice_id = ?
+                AND cp.status = 'POSTED'
+              ), 0) AS amount_deducted",
+            [
+              $salesInvoiceId,
+              $salesInvoiceId,
+              $salesInvoiceId,
+              $salesInvoiceId
+            ]
+          )->row();
+
+          $balance = round(
+            (float)$invoice->total_amount
+            - (float)$previous->amount_paid
+            - (float)$previous->amount_credited
+            - (float)$previous->credit_applied
+            - (float)$previous->amount_deducted,
+            2
+          );
+
+          $paymentForInvoice = 0;
+
+          foreach ($allocations as $allocation) {
+            if ((int)$allocation->sales_invoice_id === $salesInvoiceId) {
+              $paymentForInvoice += round((float)$allocation->amount_applied, 2);
+            }
+          }
+
+          if (round($paymentForInvoice + $amountDeducted, 2) > $balance) {
+            throw new Exception(
+              "Payment plus Other Deductions for {$invoice->si_no} exceed its current outstanding balance."
+            );
+          }
+        }
+        /*** end validate deductions */
 
         $availableCredit = round((float)$customerPayment->amount_received - $totalApplied,  2);
 
@@ -943,12 +1193,21 @@ class Customer_payment_model extends CI_Model
             FROM t_credit_memo_allocations cma
             WHERE cma.sales_invoice_id = si.id
             AND cma.applied_on::date <= ?::date
+          ), 0)
+        - COALESCE((
+            SELECT SUM(cpd.amount)
+            FROM t_customer_payment_deductions cpd
+            INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+            WHERE cpd.sales_invoice_id = si.id
+              AND cp.status = 'POSTED'
+              AND cp.payment_date <= ?
           ), 0) AS balance
     ) aging
     WHERE si.status = 'POSTED'
     AND si.invoice_date <= ?::date ";
 
     $params = [
+      $asOfDate,
       $asOfDate,
       $asOfDate,
       $asOfDate,
@@ -1002,6 +1261,14 @@ class Customer_payment_model extends CI_Model
             FROM t_credit_memo_allocations cma
             WHERE cma.sales_invoice_id = si.id
             AND cma.applied_on::date <= ?::date
+          ), 0)
+        - COALESCE((
+            SELECT SUM(cpd.amount)
+            FROM t_customer_payment_deductions cpd
+            INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+            WHERE cpd.sales_invoice_id = si.id
+              AND cp.status = 'POSTED'
+              AND cp.payment_date <= ?
           ), 0) AS balance,
         COALESCE((
           SELECT SUM(a.amount_applied)
@@ -1035,6 +1302,7 @@ class Customer_payment_model extends CI_Model
       AND si.invoice_date <= ?::date
       ORDER BY si.invoice_date, si.id",
       [
+        $asOfDate,
         $asOfDate,
         $asOfDate,
         $asOfDate,
@@ -1210,13 +1478,23 @@ class Customer_payment_model extends CI_Model
         [$salesInvoiceId]
       )->row();
 
+      $deductionRow = $this->db->query(
+        "SELECT COALESCE(SUM(cpd.amount), 0) AS amount_deducted
+        FROM t_customer_payment_deductions cpd
+        INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+        WHERE cpd.sales_invoice_id = ?
+        AND cp.status = 'POSTED'",
+        [$salesInvoiceId]
+      )->row();
+
       $invoiceBalance = max(
         0,
         round(
           (float)$salesInvoice->total_amount
           - (float)$paymentRow->amount_paid
           - (float)$creditRow->amount_credited
-          - (float)$allocationRow->credit_applied,
+          - (float)$allocationRow->credit_applied
+          - (float)$deductionRow->amount_deducted,
           2
         )
       );
@@ -1321,8 +1599,7 @@ class Customer_payment_model extends CI_Model
           ? - COALESCE((
             SELECT SUM(a.amount_applied)
             FROM t_customer_payment_allocations a
-            INNER JOIN t_customer_payments cp
-              ON cp.id = a.customer_payment_id
+            INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
             WHERE a.sales_invoice_id = ?
             AND cp.status = 'POSTED'
           ), 0)
@@ -1336,12 +1613,20 @@ class Customer_payment_model extends CI_Model
             SELECT SUM(amount_applied)
             FROM t_credit_memo_allocations
             WHERE sales_invoice_id = ?
+          ), 0)
+          - COALESCE((
+            SELECT SUM(cpd.amount)
+            FROM t_customer_payment_deductions cpd
+            INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+            WHERE cpd.sales_invoice_id = ?
+            AND cp.status = 'POSTED'
           ), 0) AS invoice_balance",
         [
           $payment->available_credit,
           $customerPaymentId,
           $customerPaymentId,
           $invoice->total_amount,
+          $salesInvoiceId,
           $salesInvoiceId,
           $salesInvoiceId,
           $salesInvoiceId

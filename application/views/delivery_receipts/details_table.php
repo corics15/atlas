@@ -8,10 +8,11 @@
         </h3>
         <div class="ml-auto">
           <button type="button" class="btn btn-sm btn-link" onClick="Atlas.page.back('delivery-receipts');"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
-            <button type="button" class="btn btn-sm btn-link" id="btnPostDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnCreateSalesInvoice" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-file-contract mr-2"></i>Create Sales Invoice</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnPrintDeliveryReceipt"><i class="fa fa-print mr-2"></i>Print</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnCancelDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnFillDeliverQty" <?= isset($deliveryReceiptId) ? 'disabled' : '' ?>><i class="fas fa-magic mr-2"></i>Fill Deliver Qty</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnPostDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCreateSalesInvoice" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-file-contract mr-2"></i>Create Sales Invoice</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnPrintDeliveryReceipt"><i class="fa fa-print mr-2"></i>Print</button>
+          <button type="button" class="btn btn-sm btn-link" id="btnCancelDeliveryReceipt" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
         </div>
       </div>
 
