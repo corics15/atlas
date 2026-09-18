@@ -159,12 +159,9 @@
                     <td>
                       <div class="input-group input-group-sm">
                         <input type="number" class="form-control form-control-sm text-right grn-conversion" value="<?= (float)$item->conversion_factor ?>" min="0.0001" step="any" readonly>
-                        <?php if ($goodsReceipt->status === 'DRAFT'): ?>
+                          <?php if ($goodsReceipt->status === 'DRAFT' && (int)$item->uom_id !== (int)$item->base_uom_id): ?>
                           <div class="input-group-append">
-                            <button
-                              type="button"
-                              class="btn btn-outline-warning btn-link btn-change-conversion"
-                              title="Change Conversion">
+                            <button type="button" class="btn btn-outline-warning btn-link btn-change-conversion" data-toggle="tooltip" title="Change Conversion">
                               <i class="fas fa-edit"></i>
                             </button>
                           </div>
@@ -197,21 +194,59 @@
           <div class="col-md-3">
             <table class="table table-sm mb-0">
               <tr>
-                <td class="total-text text-right">
-                  Total
-                </td>
-                <td id="lblTotal"
-                  class="text-right"
-                  width="180">
-                  <?= number_format($grandTotal, 2) ?>
-                </td>
+                <td class="total-text text-right">Total</td>
+                <td id="lblTotal" class="text-right" width="180"><?= number_format($grandTotal, 2) ?></td>
               </tr>
             </table>
           </div>
         </div>
 
         <div class="row">
-          <div class="col-md-9"></div>
+          <div class="col-md-9 d-flex align-items-end">
+
+            <div class="alert alert-light font-sm mb-2" role="alert">
+              <div class="font-weight-500 mb-1">
+                <i class="fas fa-info-circle mr-1 text-info"></i>
+                Goods Receipt Guide
+              </div>
+
+              <div>
+                <span class="font-weight-500">1.</span>
+                Review the received quantities and <span class="font-weight-500 text-danger">Conversion</span> before posting.
+              </div>
+
+              <div>
+                <span class="font-weight-500">2.</span>
+                <span class="font-weight-500 text-orange">Change Conversion</span> appears only when the received UOM differs from the product's base UOM.
+              </div>
+
+              <div>
+                <span class="font-weight-500">3.</span>
+                Change the conversion only when the supplier's actual packing differs from the displayed conversion.
+              </div>
+
+              <div>
+                <span class="font-weight-500">4.</span>
+                When posting a changed conversion, choose whether to apply it to
+                <span class="font-weight-500 text-success">This GR Only</span>
+                or
+                <span class="font-weight-500 text-success">Update Default Conversion</span>
+                for future receipts.
+              </div>
+
+              <div>
+                <span class="font-weight-500">5.</span>
+                The conversion saved with this Goods Receipt is retained as its historical conversion even if the product default changes later.
+              </div>
+
+              <div>
+                <span class="font-weight-500">6.</span>
+                Click <span class="font-weight-500 text-orange">Post</span> only after verifying the quantities and conversions.
+                Posting updates inventory and cannot be edited afterward.
+              </div>
+            </div>
+
+          </div>
           <div class="col-md-3">
             <button id="btnSaveChangesGoodsReceipt" class="btn btn-default btn-sm btn-block" <?= !$isEditable ? 'disabled' : '' ?>></i>Save Goods Receipt</button>
           </div>

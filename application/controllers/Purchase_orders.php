@@ -186,6 +186,11 @@ class Purchase_orders extends MY_Controller
         'text' => 'Cancel PO',
         'icon' => 'fas fa-ban'
       ],
+      'close' => [
+        'id'   => 'btnClosePurchaseOrder',
+        'text' => 'Close PO',
+        'icon' => 'fas fa-archive'
+      ],
       'refresh' => [
         'id'   => 'btnRefreshPurchaseOrder',
         'text' => 'Refresh',
@@ -216,6 +221,36 @@ class Purchase_orders extends MY_Controller
     }
 
     $result = $this->Purchase_order_model->cancelMany($ids, $cancelReason);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
+  public function close()
+  {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
+    $id = (int) $this->input->post('id');
+    $closeReason = $this->input->post('close_reason');
+
+    if ($id <= 0) {
+      return $this->jsonResponse(
+        false,
+        'Please select a Purchase Order.'
+      );
+    }
+
+    $result = $this->Purchase_order_model->close(
+      $id,
+      $closeReason
+    );
 
     return $this->jsonResponse(
       $result['success'],

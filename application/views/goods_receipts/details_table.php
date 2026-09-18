@@ -39,7 +39,7 @@
         <?php if ($item->conversion_factor !== NULL && (int)$item->uom_id !== (int)$item->base_uom_id): ?>
 
           <div class="input-group-append">
-            <button type="button" class="btn btn-outline-warning btn-link btn-change-conversion" title="Change Conversion">
+            <button type="button" class="btn btn-outline-warning btn-link btn-change-conversion" data-toggle="tooltip" title="Change Conversion">
               <i class="fas fa-edit"></i>
             </button>
           </div>

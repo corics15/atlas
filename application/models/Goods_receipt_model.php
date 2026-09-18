@@ -12,6 +12,30 @@ class Goods_receipt_model extends CI_Model
     $this->load->model('Document_number_model');
   }
 
+  /***
+   * GRN UOM CONVERSION RULE
+   *
+   * PO records what was ordered: product, UOM, quantity and price.
+   * GRN owns the conversion used when those goods enter inventory.
+   *
+   * The GRN stores conversion_factor as a transaction snapshot so a
+   * future change to the product's default UOM conversion does not
+   * alter historical receipts.
+   *
+   * Rules:
+   * - Product base UOM always has conversion 1.
+   * - Known non-base UOM starts with the current product/UOM default.
+   * - Unknown non-base UOM requires the receiver to enter conversion.
+   * - Receiver may override a known non-base conversion when actual
+   *   supplier packaging differs.
+   * - On POST, an unknown conversion becomes the product/UOM default.
+   * - If an existing default was changed, user chooses whether the
+   *   new conversion applies to THIS GR ONLY or becomes the new default.
+   *
+   * IMPORTANT:
+   * Do not move conversion ownership back to the Purchase Order.
+   */
+
   /*** initial status is DRAFT */
   public function save($grn)
   {

@@ -19,8 +19,9 @@
 
           <div>
             <span class="font-weight-500">2.</span>
-            Select the appropriate <span class="font-weight-500 text-danger">UOM</span> and enter the
-            <span class="font-weight-500 text-danger">Qty</span> to be ordered.
+            Select the <span class="font-weight-500 text-danger">UOM</span> being ordered from the supplier and enter the
+            <span class="font-weight-500 text-danger">Qty</span>.
+            UOM conversion is verified during <span class="font-weight-500 text-olive">Goods Receiving</span>.
           </div>
 
           <div>
@@ -31,7 +32,8 @@
 
           <div>
             <span class="font-weight-500">4.</span>
-            Press <span class="font-weight-500 text-success">Enter</span> after <span class="font-weight-500 text-danger">Qty</span> to continue to the next item.
+            Press <span class="font-weight-500 text-success">Enter</span> on either <span class="font-weight-500 text-danger">Qty</span>, <span class="font-weight-500 text-danger">Price</span> or
+            <span class="font-weight-500 text-danger">Discount</span> to continue to the next item.
           </div>
 
           <div>

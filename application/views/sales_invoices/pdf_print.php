@@ -17,7 +17,7 @@
     $this->load->view(
       'partials/reports/pdf_header',
       [
-        'title' => 'Acknowledgement Receipt'
+        'title' => 'Sales Invoice'
       ]
     );
   ?>
@@ -25,22 +25,26 @@
   <?php /*** document header */ ?>
   <table style="line-height:12px">
     <tr>
-      <td width="12%"><strong>SO No.</strong></td>
-      <td width="48%"><strong><?= htmlspecialchars($header->so_no) ?></strong></td>
-      <td width="15%"><strong>Order Date</strong></td>
-      <td width="25%"><?= date('m/d/Y', strtotime($header->order_date)) ?></td>
+      <td width="12%"><strong>SI No.</strong></td>
+      <td width="48%"><strong><?= htmlspecialchars($header->si_no) ?></strong></td>
+      <td width="15%"><strong>Invoice Date</strong></td>
+      <td width="25%"><?= date('m/d/Y', strtotime($header->invoice_date)) ?></td>
     </tr>
     <tr>
-      <td><strong>Customer</strong></td>
-      <td><strong><?= htmlspecialchars($header->customer_name) ?></strong></td>
+      <td><strong>SO No.</strong></td>
+      <td><?= htmlspecialchars($header->so_no) ?></td>
       <td><strong>Status</strong></td>
       <td><?= htmlspecialchars($header->status) ?></td>
     </tr>
     <tr>
-      <td><strong>Salesman</strong></td>
-      <td><?= htmlspecialchars($header->salesman_name) ?></td>
+      <td><strong>Customer</strong></td>
+      <td><strong><?= htmlspecialchars($header->customer_name) ?></strong></td>
       <td><strong>Terms</strong></td>
       <td><?= htmlspecialchars($header->terms_name ?? '') ?></td>
+    </tr>
+    <tr>
+      <td><strong>Salesman</strong></td>
+      <td colspan="3"><?= htmlspecialchars($header->salesman_name) ?></td>
     </tr>
     <tr>
       <td><strong>Remarks</strong></td>
@@ -140,15 +144,15 @@
           <?= htmlspecialchars($preparedBy->first_name . ' ' . $preparedBy->last_name) ?>
         </strong>
       </td>
-      <td class="border-bottom"></td>
-      <td class="border-bottom"></td>
+      <td class=""></td>
+      <td class=""></td>
       <td class="border-bottom"></td>
     </tr>
     <tr>
       <td class="font-7 text-center">Prepared By</td>
+      <td class="font-7 text-center"></td>
+      <td class="font-7 text-center"></td>
       <td class="font-7 text-center">Approved By</td>
-      <td class="font-7 text-center">Checked By</td>
-      <td class="font-7 text-center">Received By</td>
     </tr>
   </table>
 

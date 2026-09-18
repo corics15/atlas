@@ -11,7 +11,15 @@
           <a href="<?= base_url('sales-invoices') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
           <button type="button" class="btn btn-sm btn-link" id="btnPostSalesInvoice" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
           <button type="button" class="btn btn-sm btn-link" id="btnCreateSalesReturn" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-exchange-alt mr-2"></i>Create Sales Return</button>
-          <button type="button" class="btn btn-sm btn-link" id="btnPrintSalesInvoice"><i class="fa fa-print mr-2"></i>Print</button>
+
+          <div class="btn-group">
+            <button class="btn btn-sm btn-link dropdown-toggle" data-toggle="dropdown"><i class="fa fa-print mr-2"></i>Print</button>
+            <div class="dropdown-menu dropdown-menu-right">
+              <button type="button" class="btn btn-sm btn-link" id="btnPrintSalesInvoice"><i class="fa fa-print mr-2"></i>Print</button>
+              <button type="button" class="btn btn-sm btn-link" id="btnViewSIPDF"><i class="fa fa-file-pdf mr-2"></i>View As PDF</button>
+            </div>
+          </div>
+
           <button type="button" class="btn btn-sm btn-link" id="btnCancelSalesInvoice" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
         </div>
       </div>

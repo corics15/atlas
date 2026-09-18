@@ -7,12 +7,16 @@
 
     <div class="card">
 
-      <div class="card-header">
-        <h3 class="card-title">
-          Receiving Details
-        </h3>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Receiving Details</h3>
+
+        <div class="ml-auto">
+          <a href="<?= base_url('purchase-orders/list') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
+          <button type="button" class="btn btn-sm btn-link" id="btnFillReceiveNow"><i class="fas fa-magic mr-2"></i>Fill Receive Now</button>
+        </div>
       </div>
 
+      <?php /*** details page */ ?>
       <div class="card-body p-0">
         <div class="table-responsive">
 
@@ -24,6 +28,7 @@
         </div>
       </div>
 
+      <?php /*** footer */ ?>
       <div class="card-body">
         <?php if (!$error_message) : ?>
           <div class="row">
@@ -32,7 +37,7 @@
               <div class="alert alert-light font-sm mb-2" role="alert">
                 <div class="font-weight-500 mb-1">
                   <i class="fas fa-info-circle mr-1 text-info"></i>
-                  Goods Receipt Guide
+                  Receive Goods Guide
                 </div>
 
                 <div>
@@ -47,14 +52,15 @@
 
                 <div>
                   <span class="font-weight-500">3.</span>
-                  Enter the quantity currently received under <span class="font-weight-500 text-danger">Receive Now</span>.
-                  The quantity cannot exceed the remaining PO quantity.
+                  Enter the quantity physically received under <span class="font-weight-500 text-danger">Receive Now</span>.
+                  You may use <span class="font-weight-500 text-orange">Fill Receive Now</span> to copy the remaining quantities, then adjust any differences before saving.
                 </div>
 
                 <div>
                   <span class="font-weight-500">4.</span>
                   Review the <span class="font-weight-500 text-danger">Conversion</span> for each UOM.
-                  Change it only when the actual received packing conversion differs from the current value.
+                  The base UOM always uses a conversion of <span class="font-weight-500">1</span>.
+                  For other UOMs, change the conversion only when the supplier's actual packing differs from the displayed value.
                 </div>
 
                 <div>
@@ -77,7 +83,7 @@
             </div>
             <div class="col-md-3">
               <button type="button" id="btnSaveGoodsReceipt" class="btn btn-sm btn-default btn-block">
-                  Save Draft
+                Save Draft
               </button>
             </div>
           </div>

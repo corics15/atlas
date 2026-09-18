@@ -15,6 +15,7 @@
       </div>
 
       <button type="button" class="btn btn-sm btn-link" id="btnCancelPurchaseOrder" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
+      <button type="button" class="btn btn-sm btn-link" id="btnClosePurchaseOrder"><i class="fas fa-archive mr-1"></i>Close PO</button>
 
     </div>
   </div>

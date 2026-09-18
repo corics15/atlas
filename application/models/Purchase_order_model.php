@@ -377,6 +377,64 @@ class Purchase_order_model extends CI_Model
     ];
   }
 
+  public function close($id, $closeReason = NULL)
+  {
+    $purchaseOrder = $this->db
+      ->select('id, po_no, status')
+      ->from('t_purchase_orders')
+      ->where('id', $id)
+      ->where('is_active', TRUE)
+      ->get()
+      ->row();
+
+    if (!$purchaseOrder) {
+      return [
+        'success' => FALSE,
+        'message' => 'Purchase Order not found.',
+        'data' => NULL
+      ];
+    }
+
+    if ($purchaseOrder->status !== 'PARTIAL') {
+      return [
+        'success' => FALSE,
+        'message' => 'Only PARTIAL Purchase Orders can be closed.',
+        'data' => NULL
+      ];
+    }
+
+    $this->db
+      ->where('id', $id)
+      ->update(
+        't_purchase_orders',
+        [
+          'status'     => 'CLOSED',
+          'closed_by'  => $this->session->userdata('user_id'),
+          'closed_on'  => date('Y-m-d H:i:s'),
+          'close_reason' => $closeReason <> '' ? strtoupper(trim($closeReason)) : NULL,
+          'updated_by' => $this->session->userdata('user_id'),
+          'updated_on' => date('Y-m-d H:i:s')
+        ]
+      );
+
+    if ($this->db->affected_rows() === 0) {
+      return [
+        'success' => FALSE,
+        'message' => 'Unable to close Purchase Order.',
+        'data' => NULL
+      ];
+    }
+
+    return [
+      'success' => TRUE,
+      'message' => 'Purchase Order closed successfully.',
+      'data' => [
+        'id' => $purchaseOrder->id,
+        'po_no' => $purchaseOrder->po_no
+      ]
+    ];
+  }
+
   public function getDocument($ids)
   {
     if (!is_array($ids)) {
@@ -505,6 +563,10 @@ class Purchase_order_model extends CI_Model
 
   private function insertDetails($purchaseOrderId, $details)
   {
+    /***
+     * PO intentionally does not determine UOM conversion.
+     * Conversion is resolved and snapshotted during Goods Receiving.
+     */
     $sql = "INSERT INTO t_purchase_order_details
               (
                 purchase_order_id,

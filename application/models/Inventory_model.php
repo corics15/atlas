@@ -95,7 +95,20 @@ class Inventory_model extends CI_Model
     $this->validateGoodsReceiptPosting($grn);
 
     foreach ($details as $detail) {
-      /*** convert received qty to product base UOM */
+      /***
+       * GRN conversion is the receiving snapshot used to translate the
+       * PO/GRN transaction UOM into the product's base inventory UOM.
+       *
+       * Example:
+       * 10 BUNDLE received × 4 BAG/BUNDLE = 40 BAG inventory.
+        *
+        * A later change to m_product_uom must never change an already-posted
+        * GRN or its inventory history.
+       *
+       * IMPORTANT:
+       * Product base UOM always has conversion 1. Supplier packaging only
+       * requires conversion when the PO/GRN UOM differs from the base UOM.
+       */
       $detail->base_qty_receive = $detail->qty_receive * $detail->conversion_factor;
 
       /*** convert transaction UOM cost to product base UOM cost */

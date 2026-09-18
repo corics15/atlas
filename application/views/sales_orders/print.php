@@ -53,7 +53,6 @@
           <th class="text-center">#</th>
           <th class="text-center">Barcode</th>
           <th>Description</th>
-          <th class="text-center">Pkg</th>
           <th class="text-center">Qty</th>
           <th class="text-center">UOM</th>
           <th class="text-right">Unit Price</th>
@@ -74,7 +73,6 @@
             <td class="text-center"><?= $index + 1 ?>.</td>
             <td class="text-center"><?= htmlspecialchars($detail->barcode) ?></td>
             <td><?= htmlspecialchars($detail->description) ?></td>
-            <td class="text-center"><?= htmlspecialchars($detail->pkg ?? '') ?></td>
             <td class="text-center"><?= number_format((float)$detail->qty, 0) ?></td>
             <td class="text-center"><?= htmlspecialchars($detail->uom) ?></td>
             <td class="text-right"><?= number_format((float)$detail->unit_price, 2) ?></td>
@@ -150,7 +148,7 @@
 
   </div>
 
-  <div style="text-align:right;font-size:10px;margin-top:20px;">
+  <div style="text-align:right;font-size:8px;margin-top:20px;font-style:italic">
     Printed By: <strong><?= strtoupper(htmlspecialchars($this->session->userdata('username'))); ?></strong>
     <?= date('m/d/Y h:i A'); ?>
   </div>

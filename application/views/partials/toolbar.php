@@ -111,7 +111,7 @@
         <i class="<?= $toolbar['excel']['icon']; ?> mr-2"></i>
         <?= $toolbar['excel']['text']; ?>
       </button>
-      <?php endif ?>      
+      <?php endif ?>
 
       <?php  /*** receive items */ if (!empty($toolbar['receive'])) : ?>
       <button
@@ -120,9 +120,9 @@
           <i class="<?= $toolbar['receive']['icon']; ?> mr-2"></i>
         <?= $toolbar['receive']['text']; ?>
       </button>
-      <?php endif ?>      
+      <?php endif ?>
 
-      <?php /*** create DR item*/  if (!empty($toolbar['create-dr'])) : ?>
+      <?php /*** create DR item */  if (!empty($toolbar['create-dr'])) : ?>
       <button
         id="<?= $toolbar['create-dr']['id']; ?>"
         class="dropdown-item">
@@ -131,7 +131,7 @@
       </button>
       <?php endif ?>
 
-      <?php /*** create item*/  if (!empty($toolbar['create'])) : ?>
+      <?php /*** create item */  if (!empty($toolbar['create'])) : ?>
       <button
         id="<?= $toolbar['create']['id']; ?>"
         class="dropdown-item">
@@ -140,7 +140,7 @@
       </button>
       <?php endif ?>
 
-      <?php /*** transaction details set on check-vouchers*/  if (!empty($toolbar['transactions'])) : ?>
+      <?php /*** transaction details set on check-vouchers */  if (!empty($toolbar['transactions'])) : ?>
       <a
         href="<?= base_url($toolbar['transactions']['url']) ?>"
         id="<?= $toolbar['transactions']['id']; ?>"
@@ -148,6 +148,15 @@
         <i class="<?= $toolbar['transactions']['icon']; ?> mr-2"></i>
         <?= $toolbar['transactions']['text']; ?>
       </a>
+      <?php endif ?>
+
+      <?php /*** close a transaction */  if (!empty($toolbar['close'])) : ?>
+      <button
+        id="<?= $toolbar['close']['id']; ?>"
+        class="dropdown-item">
+        <i class="<?= $toolbar['close']['icon']; ?> mr-2"></i>
+        <?= $toolbar['close']['text']; ?>
+      </button>
       <?php endif ?>
 
       <div class="dropdown-divider"></div>

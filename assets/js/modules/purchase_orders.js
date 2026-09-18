@@ -1,367 +1,428 @@
-const txtPONo = document.getElementById('txtPONo');
-const tdRefNo = document.getElementById('tdRefNo');
-const txtPODate = document.getElementById('txtPODate');
-const selTerms = document.getElementById('selTerms');
-const txtRemarks = document.getElementById('txtRemarks');
-const txtCreditLimit = document.getElementById('txtCreditLimit');
-const lblTotal = document.getElementById('lblTotal');
-const tblPurchaseOrderDetails = document.getElementById('tblPurchaseOrderDetails');
+const txtPONo = document.getElementById("txtPONo");
+const tdRefNo = document.getElementById("tdRefNo");
+const txtPODate = document.getElementById("txtPODate");
+const selTerms = document.getElementById("selTerms");
+const txtRemarks = document.getElementById("txtRemarks");
+const txtCreditLimit = document.getElementById("txtCreditLimit");
+const lblTotal = document.getElementById("lblTotal");
+const tblPurchaseOrderDetails = document.getElementById(
+	"tblPurchaseOrderDetails",
+);
 
-const selSupplier = document.getElementById('selSupplier');
-const btnSavePurchaseOrder = document.getElementById('btnSavePurchaseOrder');
-const btnCancelPurchaseOrder = document.getElementById('btnCancelPurchaseOrder');
+const selSupplier = document.getElementById("selSupplier");
+const btnSavePurchaseOrder = document.getElementById("btnSavePurchaseOrder");
+const btnCancelPurchaseOrder = document.getElementById(
+	"btnCancelPurchaseOrder",
+);
+const btnClosePurchaseOrder = document.getElementById("btnClosePurchaseOrder");
 
-const btnViewPDF = document.getElementById('btnViewPDF');
+const btnViewPDF = document.getElementById("btnViewPDF");
 
 let isEditMode = false;
 let purchaseOrderId = null;
 let isDirty = false;
 let isLoading = false;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
+	Atlas.select.init("#selSupplier");
+	Atlas.select.init("#selTerms");
 
-  Atlas.select.init('#selSupplier');
-  Atlas.select.init('#selTerms');
+	Atlas.select.onChange("#selSupplier", (option) => {
+		$("#selTerms").val(option.dataset.termsId).trigger("change");
+		markDirty();
+	});
 
-  Atlas.select.onChange('#selSupplier', (option) => {
-    $('#selTerms').val(option.dataset.termsId).trigger('change');
-    markDirty();
-  });
+	Atlas.select.onChange(".po-product", (option, control) => {
+		const row = control.closest("tr");
 
-  Atlas.select.onChange('.po-product', (option, control) => {
-    const row = control.closest('tr');
+		row.querySelector(".po-description").value =
+			option.dataset.description ?? "";
+		row.querySelector(".po-uom").value = option.dataset.uom ?? "";
+		row.querySelector(".po-price").value = option.dataset.price ?? "0";
+	});
 
-    row.querySelector('.po-description').value = option.dataset.description ?? '';
-    row.querySelector('.po-uom').value = option.dataset.uom ?? '';
-    row.querySelector('.po-price').value = option.dataset.price ?? '0';
-  });
+	document.querySelectorAll(".po-product").forEach((control) => {
+		Atlas.select.init(control);
+	});
 
-  document.querySelectorAll('.po-product').forEach(control => {
-    Atlas.select.init(control);
-  });
+	/*** product finder event */
+	document.addEventListener("click", (e) => {
+		if (e.target.closest(".btn-product-finder")) {
+			const row = e.target.closest("tr");
+			Atlas.productFinder.show(row);
+		}
+	});
 
-  /*** product finder event */
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.btn-product-finder')) {
-      const row = e.target.closest('tr');
-      Atlas.productFinder.show(row);
-    }
-  });
+	/*** product finder shortcut */
+	document.addEventListener("keydown", (e) => {
+		if (e.key !== "F2") {
+			return;
+		}
 
-  /*** product finder shortcut */
-  document.addEventListener('keydown', (e) => {
-    if (e.key !== 'F2') {
-      return;
-    }
+		e.preventDefault();
 
-    e.preventDefault();
+		/*** do nothing if a modal is already open */
+		if (document.querySelector(".modal.show")) {
+			return;
+		}
 
-    /*** do nothing if a modal is already open */
-    if (document.querySelector('.modal.show')) {
-      return;
-    }
+		let row = e.target.closest?.("#tblPurchaseOrderDetails tr");
 
-    let row = e.target.closest?.('#tblPurchaseOrderDetails tr');
+		/*** if focus is outside the details table, use first empty row */
+		if (!row) {
+			row = [...tblPurchaseOrderDetails.rows].find((r) => !r.dataset.productId);
+		}
 
-    /*** if focus is outside the details table, use first empty row */
-    if (!row) {
-      row = [...tblPurchaseOrderDetails.rows].find(r => !r.dataset.productId);
-    }
+		/*** if no empty row exists, add one */
+		if (!row) {
+			addDetailRow();
+			row = tblPurchaseOrderDetails.lastElementChild;
+		}
 
-    /*** if no empty row exists, add one */
-    if (!row) {
-      addDetailRow();
-      row = tblPurchaseOrderDetails.lastElementChild;
-    }
+		Atlas.productFinder.show(row);
+	});
 
-    Atlas.productFinder.show(row);
-  });
+	/*** scanner barcode event */
+	document.addEventListener("keydown", async (e) => {
+		if (!e.target.classList.contains("atlas-barcode")) {
+			return;
+		}
 
-  /*** scanner barcode event */
-  document.addEventListener('keydown', async (e) => {
-    if (!e.target.classList.contains('atlas-barcode')) {
-      return;
-    }
+		if (e.key !== "Enter") {
+			return;
+		}
 
-    if (e.key !== 'Enter') {
-      return;
-    }
+		e.preventDefault();
+		const row = e.target.closest("tr");
+		await Atlas.productFinder.lookup(row, e.target.value);
+		markDirty();
+	});
 
-    e.preventDefault();
-    const row = e.target.closest('tr');
-    await Atlas.productFinder.lookup(row, e.target.value);
-    markDirty();
-  });
+	/*** details table on change event */
+	document.addEventListener("input", (e) => {
+		if (
+			e.target.classList.contains("po-qty") ||
+			e.target.classList.contains("po-price") ||
+			e.target.classList.contains("po-discount")
+		) {
+			const row = e.target.closest("tr");
+			calculateRowTotal(row);
 
-  /*** details table on change event */
-  document.addEventListener('input', (e) => {
-    if (
-      e.target.classList.contains('po-qty') ||
-      e.target.classList.contains('po-price') ||
-      e.target.classList.contains('po-discount')
-    ) {
-      const row = e.target.closest('tr');
-      calculateRowTotal(row);
+			markDirty();
+		}
+	});
 
-      markDirty();
-    }
-  });
+	/*** enter key after editing PO line */
+	document.addEventListener("keydown", (e) => {
+		if (
+			!e.target.matches(".po-qty, .po-price, .po-discount") ||
+			e.key !== "Enter"
+		) {
+			return;
+		}
 
-  /*** enter key after editing PO line */
-  document.addEventListener('keydown', (e) => {
-    if (!e.target.matches('.po-qty, .po-price, .po-discount') || e.key !== 'Enter') {
-      return;
-    }
+		e.preventDefault();
 
-    e.preventDefault();
+		const row = e.target.closest("tr");
+		if (!row.dataset.productId) {
+			Atlas.toast.warning("Please select a product.");
+			row.querySelector(".po-barcode").focus();
+			return;
+		}
 
-    const row = e.target.closest('tr');
-    if (!row.dataset.productId) {
-      Atlas.toast.warning('Please select a product.');
-      row.querySelector('.po-barcode').focus();
-      return;
-    }
+		const nextRow = row.nextElementSibling;
+		if (nextRow && !nextRow.dataset.productId) {
+			nextRow.querySelector(".po-barcode").focus();
+			return;
+		}
 
-    const nextRow = row.nextElementSibling;
-    if (nextRow && !nextRow.dataset.productId) {
-      nextRow.querySelector('.po-barcode').focus();
-      return;
-    }
+		addDetailRow();
+	});
 
-    addDetailRow();
-  });
+	/*** delete row */
+	document.addEventListener("click", (e) => {
+		const btn = e.target.closest(".btn-delete-row");
 
-  /*** delete row */
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-delete-row');
+		if (!btn) {
+			return;
+		}
 
-    if (!btn) {
-      return;
-    }
+		const row = btn.closest("tr");
+		row.remove();
+		calculateGrandTotal();
 
-    const row = btn.closest('tr');
-    row.remove();
-    calculateGrandTotal();
+		markDirty();
 
-    markDirty();
+		const tbody = document.getElementById("tblPurchaseOrderDetails");
+		if (!tbody.children.length) {
+			addDetailRow();
+		}
+		renumberRows();
+	});
 
-    const tbody = document.getElementById('tblPurchaseOrderDetails');
-    if (!tbody.children.length) {
-      addDetailRow();
-    }
-    renumberRows();
-  });
+	/*** save */
+	btnSavePurchaseOrder?.addEventListener("click", async () => {
+		if (!validatePurchaseOrder()) {
+			return;
+		}
 
-  /*** save */
-  btnSavePurchaseOrder?.addEventListener('click', async () => {
-    if (!validatePurchaseOrder()) {
-      return;
-    }
+		btnSavePurchaseOrder.disabled = true;
 
-    btnSavePurchaseOrder.disabled = true;
+		try {
+			const po = {
+				id: purchaseOrderId,
+				po_no: txtPONo.value,
+				po_date: txtPODate.value,
+				supplier_id: selSupplier.value,
+				terms_id: Atlas.format.parseNumber(selTerms.value),
+				remarks: txtRemarks.value,
+				total_amount: Atlas.format.parseNumber(lblTotal.textContent),
+				details: [],
+			};
 
-    try {
-      const po = {
-        id: purchaseOrderId,
-        po_no: txtPONo.value,
-        po_date: txtPODate.value,
-        supplier_id: selSupplier.value,
-        terms_id: Atlas.format.parseNumber(selTerms.value),
-        remarks: txtRemarks.value,
-        total_amount: Atlas.format.parseNumber(lblTotal.textContent),
-        details: []
-      };
+			const rows = document.querySelectorAll("#tblPurchaseOrderDetails tr");
+			for (const row of rows) {
+				if (!row.dataset.productId) {
+					continue;
+				}
 
-      const rows = document.querySelectorAll('#tblPurchaseOrderDetails tr');
-      for (const row of rows) {
-        if (!row.dataset.productId) {
-          continue;
-        }
+				const uomId = row.querySelector(".po-uom").value;
+				if (!uomId) {
+					Atlas.toast.error("Please select a UOM for all products.");
+					row.querySelector(".po-uom").focus();
+					return;
+				}
+				po.details.push({
+					product_id: Atlas.format.parseNumber(row.dataset.productId),
+					qty: Atlas.format.parseNumber(row.querySelector(".po-qty").value),
+					price: Atlas.format.parseNumber(row.querySelector(".po-price").value),
+					discount: Atlas.format.parseNumber(
+						row.querySelector(".po-discount").value,
+					),
+					amount: Atlas.format.parseNumber(
+						row.querySelector(".po-total").textContent,
+					),
+					uom_id: Atlas.format.parseNumber(uomId),
+				});
+			}
 
-        const uomId = row.querySelector('.po-uom').value;
-        if (!uomId) {
-          Atlas.toast.error('Please select a UOM for all products.');
-          row.querySelector('.po-uom').focus();
-          return;
-        }
-        po.details.push({
-          product_id: Atlas.format.parseNumber(row.dataset.productId),
-          qty: Atlas.format.parseNumber(row.querySelector('.po-qty').value),
-          price: Atlas.format.parseNumber(row.querySelector('.po-price').value),
-          discount: Atlas.format.parseNumber(row.querySelector('.po-discount').value),
-          amount: Atlas.format.parseNumber(row.querySelector('.po-total').textContent),
-          uom_id: Atlas.format.parseNumber(uomId),
-        });
-      }
+			const url = isEditMode
+				? "purchase-orders/update"
+				: "purchase-orders/save";
 
-      const url = isEditMode
-        ? 'purchase-orders/update'
-        : 'purchase-orders/save';
+			const result = await Atlas.ajax.post(url, po);
 
-      const result = await Atlas.ajax.post(url, po);
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
 
-      if (!result.success) {
-        Atlas.toast.error(result.message);
-        return;
-      }
+			txtPONo.value = result.data.po_no;
+			tdRefNo.innerHTML = result.data.po_no;
+			purchaseOrderId = result.data.purchase_order_id;
 
-      txtPONo.value = result.data.po_no;
-      tdRefNo.innerHTML = result.data.po_no;
-      purchaseOrderId = result.data.purchase_order_id;
+			Atlas.toast.success(result.message);
+			setTimeout(
+				() =>
+					Atlas.page.redirect(
+						`purchase-orders/new?id=${Atlas.id.encode(result.data.purchase_order_id)}`,
+					),
+				1200,
+			);
+			isEditMode = true;
+			isDirty = false;
+		} finally {
+			btnSavePurchaseOrder.disabled = false;
+		}
+	});
 
-      Atlas.toast.success(result.message);
-      setTimeout(() => Atlas.page.redirect(`purchase-orders/new?id=${Atlas.id.encode(result.data.purchase_order_id)}`), 1200);
-      isEditMode = true;
-      isDirty = false;
+	/*** print */
+	btnPrintPurchaseOrder.addEventListener("click", () => {
+		if (window.purchaseOrderId > 0) {
+			ids = [];
+			ids.push(window.purchaseOrderId);
 
-    } finally {
-      btnSavePurchaseOrder.disabled = false;
-    }
-  });
+			Atlas.print.post("purchase-orders/print", ids);
+		} else {
+			Atlas.toast.warning(`Create a Purchase Order first.`);
+		}
+	});
 
-  /*** print */
-  btnPrintPurchaseOrder.addEventListener('click', () => {
-    if (window.purchaseOrderId > 0) {
-      ids = []
-      ids.push(window.purchaseOrderId)
+	/*** receive goods */
+	btnReceiveGoods?.addEventListener("click", () => {
+		if (window.purchaseOrderId > 0)
+			Atlas.page.redirect("goods-receipts/create", {
+				po: Atlas.id.encode(window.purchaseOrderId),
+			});
+		else Atlas.toast.warning(`Create a Purchase Order first.`);
+	});
 
-      Atlas.print.post('purchase-orders/print', ids);
-    } else {
-      Atlas.toast.warning(`Create a Purchase Order first.`)
-    }
-  });
+	/*** cancel purchase order */
+	btnCancelPurchaseOrder?.addEventListener("click", async () => {
+		if (window.purchaseOrderId === 0) {
+			Atlas.toast.warning(`Create a Purchase Order first.`);
+			return;
+		}
 
-  /*** receive goods */
-  btnReceiveGoods?.addEventListener('click', () => {
-    if (window.purchaseOrderId > 0)
-      Atlas.page.redirect('goods-receipts/create', { po: Atlas.id.encode(window.purchaseOrderId) })
-    else Atlas.toast.warning(`Create a Purchase Order first.`);
-  });
+		if (btnCancelPurchaseOrder.dataset.status !== "OPEN") {
+			Atlas.toast.warning("Only OPEN Purchase Orders can be CANCELLED.");
+			return;
+		}
 
-  /*** cancel purchase order */
-  btnCancelPurchaseOrder?.addEventListener('click', async () => {
-    if (window.purchaseOrderId === 0) {
-      Atlas.toast.warning(`Create a Purchase Order first.`);
-      return;
-    }
+		const reason = await Atlas.dialog.textarea({
+			icon: "warning",
+			title: `Cancel Purchase Order?`,
+			text: "Please provide the reason for cancellation.",
+			// inputLabel: 'Cancellation Reason',
+			inputPlaceholder: "Enter cancellation reason...",
+			required: false /*** set to true if you want this to be required */,
+			requiredMessage: "Cancellation reason is required.",
+			confirmText: "Confirm Cancellation",
+		});
 
-    if (btnCancelPurchaseOrder.dataset.status !== 'OPEN') {
-      Atlas.toast.warning(
-        'Only OPEN Purchase Orders can be CANCELLED.'
-      );
-      return;
-    }
+		if (reason === null) {
+			return;
+		}
 
-    const reason = await Atlas.dialog.textarea({
-      icon: 'warning',
-      title: `Cancel Purchase Order?`,
-      text: 'Please provide the reason for cancellation.',
-      // inputLabel: 'Cancellation Reason',
-      inputPlaceholder: 'Enter cancellation reason...',
-      required: false, /*** set to true if you want this to be required */
-      requiredMessage: 'Cancellation reason is required.',
-      confirmText: 'Confirm Cancellation'
-    });
+		const formData = new FormData();
+		formData.append("ids[]", window.purchaseOrderId);
+		formData.append("cancel_reason", reason);
 
-    if (reason === null) {
-      return;
-    }
+		const result = await Atlas.ajax.post("purchase-orders/cancel", formData);
 
-    const formData = new FormData();
-    formData.append('ids[]', window.purchaseOrderId);
-    formData.append('cancel_reason', reason);
+		if (!result.success) {
+			Atlas.toast.error(result.message);
+			return;
+		}
 
-    const result = await Atlas.ajax.post(
-      'purchase-orders/cancel',
-      formData
-    );
+		Atlas.toast.success(result.message);
+		setTimeout(() => Atlas.page.refresh(), 2000);
+	});
 
-    if (!result.success) {
-      Atlas.toast.error(result.message);
-      return;
-    }
+	/*** close purchase order */
+	btnClosePurchaseOrder?.addEventListener("click", async () => {
+		if (window.purchaseOrderId === 0) {
+			Atlas.toast.warning("Create a Purchase Order first.");
+			return;
+		}
 
-    Atlas.toast.success(result.message);
-    setTimeout(() => Atlas.page.refresh(), 2000);
-  });
+		if (btnClosePurchaseOrder.dataset.status !== "PARTIAL") {
+			Atlas.toast.warning("Only PARTIAL Purchase Orders can be CLOSED.");
+			return;
+		}
 
-  /*** view as pdf */
-  btnViewPDF.addEventListener('click', () => {
-    if (window.purchaseOrderId > 0) {
-      const ids = [window.purchaseOrderId];
+		const reason = await Atlas.dialog.textarea({
+			icon: "warning",
+			title: "Close Purchase Order?",
+			html: "The remaining quantity will no longer be received.",
+			inputLabel: "Reason for closing",
+			inputPlaceholder: "Enter reason, for audit purposes, this is required...",
+			required: true,
+			requiredMessage: "Please enter a reason for closing the Purchase Order.",
+			confirmText: "Close PO",
+		});
 
-      Atlas.print.post('purchase-orders/pdf', ids);
-    } else {
-      Atlas.toast.warning('Create a Purchase Order first.');
-    }
-  });
+		if (reason === null) {
+			return;
+		}
 
-  if (window.purchaseOrderId > 0) {
-    await loadPurchaseOrder(window.purchaseOrderId);
-  }
+		const formData = new FormData();
+		formData.append("id", window.purchaseOrderId);
+		formData.append("close_reason", reason);
+
+		const result = await Atlas.ajax.post("purchase-orders/close", formData);
+
+		if (!result.success) {
+			Atlas.toast.error(result.message);
+			return;
+		}
+
+		Atlas.toast.success(result.message);
+		setTimeout(() => Atlas.page.refresh(), 2000);
+	});
+
+	/*** view as pdf */
+	btnViewPDF.addEventListener("click", () => {
+		if (window.purchaseOrderId > 0) {
+			const ids = [window.purchaseOrderId];
+
+			Atlas.print.post("purchase-orders/pdf", ids);
+		} else {
+			Atlas.toast.warning("Create a Purchase Order first.");
+		}
+	});
+
+	if (window.purchaseOrderId > 0) {
+		await loadPurchaseOrder(window.purchaseOrderId);
+	}
 });
 
 /*** for markDirty */
-window.addEventListener('beforeunload', (e) => {
-  if (!isDirty) {
-    return;
-  }
-  e.preventDefault();
-  e.returnValue = '';
+window.addEventListener("beforeunload", (e) => {
+	if (!isDirty) {
+		return;
+	}
+	e.preventDefault();
+	e.returnValue = "";
 });
 
 const populateProductRow = (row, product) => {
-  row.dataset.productId = product.id;
-  row.querySelector('.po-barcode').value = product.barcode;
-  row.querySelector('.po-supplier').textContent = product.supplier_name;
-  row.querySelector('.po-description').textContent = product.description;
-  row.querySelector('.po-uom').value = product.uom_id;
+	row.dataset.productId = product.id;
+	row.querySelector(".po-barcode").value = product.barcode;
+	row.querySelector(".po-supplier").textContent = product.supplier_name;
+	row.querySelector(".po-description").textContent = product.description;
+	row.querySelector(".po-uom").value = product.uom_id;
 
-  row.querySelector('.po-price').value = Number(product.srp).toFixed(2);
+	row.querySelector(".po-price").value = Number(product.srp).toFixed(2);
 
-  calculateRowTotal(row);
-  row.querySelector('.po-qty').focus();
-  markDirty();
-}
+	calculateRowTotal(row);
+	row.querySelector(".po-qty").focus();
+	markDirty();
+};
 
 const calculateRowTotal = (row) => {
-  const qty = Number(row.querySelector('.po-qty').value || 0);
-  const price = Number(row.querySelector('.po-price').value || 0);
-  const discount = Number(row.querySelector('.po-discount').value || 0);
+	const qty = Number(row.querySelector(".po-qty").value || 0);
+	const price = Number(row.querySelector(".po-price").value || 0);
+	const discount = Number(row.querySelector(".po-discount").value || 0);
 
-  const gross = qty * price;
-  const discountAmount = gross * (discount / 100);
-  const amount = gross - discountAmount;
+	const gross = qty * price;
+	const discountAmount = gross * (discount / 100);
+	const amount = gross - discountAmount;
 
-  row.querySelector('.po-total').textContent = Atlas.format.amount(amount);
-  calculateGrandTotal();
-}
+	row.querySelector(".po-total").textContent = Atlas.format.amount(amount);
+	calculateGrandTotal();
+};
 
 const calculateGrandTotal = () => {
-  let grandTotal = 0;
-  document.querySelectorAll('#tblPurchaseOrderDetails tr').forEach(row => {
-    grandTotal += Atlas.format.parseNumber(
-      row.querySelector('.po-total').textContent || 0
-    );
-  });
-  document.getElementById('lblTotal').textContent = Atlas.format.amount(grandTotal);//grandTotal.toFixed(2);
-}
+	let grandTotal = 0;
+	document.querySelectorAll("#tblPurchaseOrderDetails tr").forEach((row) => {
+		grandTotal += Atlas.format.parseNumber(
+			row.querySelector(".po-total").textContent || 0,
+		);
+	});
+	document.getElementById("lblTotal").textContent =
+		Atlas.format.amount(grandTotal); //grandTotal.toFixed(2);
+};
 
 const buildUomOptions = () => {
-  const uoms = Array.isArray(window.atlasUoms) ? window.atlasUoms : [];
+	const uoms = Array.isArray(window.atlasUoms) ? window.atlasUoms : [];
 
-  return `
+	return `
     <option value="">Select...</option>
-    ${uoms.map(uom => `
+    ${uoms
+			.map(
+				(uom) => `
       <option value="${uom.id}">
         ${uom.uom}
       </option>
-    `).join('')}
+    `,
+			)
+			.join("")}
   `;
 };
 
 const createDetailRow = () => {
-  return `
+	return `
     <tr>
       <td class="po-index text-center"></td>
       <td>
@@ -409,212 +470,224 @@ const createDetailRow = () => {
       </td>
     </tr>
   `;
-}
+};
 
 const addDetailRow = () => {
-  const tbody = document.getElementById('tblPurchaseOrderDetails');
-  tbody.insertAdjacentHTML(
-    'beforeend',
-    createDetailRow()
-  );
-  renumberRows();
+	const tbody = document.getElementById("tblPurchaseOrderDetails");
+	tbody.insertAdjacentHTML("beforeend", createDetailRow());
+	renumberRows();
 
-  const row = tbody.lastElementChild;
-  row.querySelector('.po-barcode').focus();
-  calculateGrandTotal();
+	const row = tbody.lastElementChild;
+	row.querySelector(".po-barcode").focus();
+	calculateGrandTotal();
 
-  markDirty();
-}
+	markDirty();
+};
 
 const resetPurchaseOrder = async () => {
-  isEditMode = false;
-  purchaseOrderId = null;
+	isEditMode = false;
+	purchaseOrderId = null;
 
-  btnSavePurchaseOrder.innerHTML = 'Save Purchase Order';
+	btnSavePurchaseOrder.innerHTML = "Save Purchase Order";
 
-  txtPONo.value = '';
-  txtPODate.valueAsDate = new Date();
+	txtPONo.value = "";
+	txtPODate.valueAsDate = new Date();
 
-  $('#selSupplier').val('').trigger('change');
+	$("#selSupplier").val("").trigger("change");
 
-  txtRemarks.value = '';
-  lblTotal.textContent = '0.00';
+	txtRemarks.value = "";
+	lblTotal.textContent = "0.00";
 
-  const tbody = document.getElementById('tblPurchaseOrderDetails');
-  tbody.innerHTML = createDetailRow();
-  renumberRows();
-  tbody.querySelector('.po-barcode').focus();
-  isDirty = false;
-}
+	const tbody = document.getElementById("tblPurchaseOrderDetails");
+	tbody.innerHTML = createDetailRow();
+	renumberRows();
+	tbody.querySelector(".po-barcode").focus();
+	isDirty = false;
+};
 
 const validatePurchaseOrder = () => {
+	if (!selSupplier.value) {
+		Atlas.toast.warning("Please select a supplier.");
+		$("#selSupplier").select2("open");
+		return false;
+	}
 
-  if (!selSupplier.value) {
-    Atlas.toast.warning('Please select a supplier.');
-    $('#selSupplier').select2('open');
-    return false;
-  }
+	const rows = document.querySelectorAll("#tblPurchaseOrderDetails tr");
+	let hasProduct = false;
 
-  const rows = document.querySelectorAll('#tblPurchaseOrderDetails tr');
-  let hasProduct = false;
+	for (let i = 0; i < rows.length; i++) {
+		const row = rows[i];
+		if (!row.dataset.productId) {
+			continue;
+		}
+		hasProduct = true;
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
-    if (!row.dataset.productId) {
-      continue;
-    }
-    hasProduct = true;
+		const qty = Atlas.format.parseNumber(row.querySelector(".po-qty").value);
+		const price = Atlas.format.parseNumber(
+			row.querySelector(".po-price").value,
+		);
+		const discount = Atlas.format.parseNumber(
+			row.querySelector(".po-discount").value,
+		);
+		console.log(qty, price, discount);
 
-    const qty = Atlas.format.parseNumber(row.querySelector('.po-qty').value);
-    const price = Atlas.format.parseNumber(row.querySelector('.po-price').value);
-    const discount = Atlas.format.parseNumber(row.querySelector('.po-discount').value);
-    console.log(qty, price, discount)
+		if (qty <= 0) {
+			Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
+			row.querySelector(".po-qty").focus();
+			return false;
+		}
 
-    if (qty <= 0) {
-      Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
-      row.querySelector('.po-qty').focus();
-      return false;
-    }
+		if (price < 0) {
+			Atlas.toast.warning(`Invalid price on row ${i + 1}.`);
+			row.querySelector(".po-price").focus();
+			return false;
+		}
 
-    if (price < 0) {
-      Atlas.toast.warning(`Invalid price on row ${i + 1}.`);
-      row.querySelector('.po-price').focus();
-      return false;
-    }
+		if (discount < 0 || discount > 100) {
+			Atlas.toast.warning(`Invalid discount percentage on row ${i + 1}.`);
+			row.querySelector(".po-discount").focus();
+			return false;
+		}
+	}
 
-    if (discount < 0 || discount > 100) {
-      Atlas.toast.warning(`Invalid discount percentage on row ${i + 1}.`);
-      row.querySelector('.po-discount').focus();
-      return false;
-    }
-  }
+	if (!hasProduct) {
+		Atlas.toast.warning("Please add at least one product.");
+		document.querySelector(".po-barcode").focus();
+		return false;
+	}
 
-  if (!hasProduct) {
-    Atlas.toast.warning('Please add at least one product.');
-    document.querySelector('.po-barcode').focus();
-    return false;
-  }
-
-  return true;
-}
+	return true;
+};
 
 const loadPurchaseOrder = async (id) => {
-  isLoading = true;
+	isLoading = true;
 
-  const result = await Atlas.ajax.get(
-    `purchase-orders/get/${id}`
-  );
+	const result = await Atlas.ajax.get(`purchase-orders/get/${id}`);
 
-  if (!result.success) {
-    Atlas.toast.error(result.message);
-    return;
-  }
+	if (!result.success) {
+		Atlas.toast.error(result.message);
+		return;
+	}
 
-  populateHeader(result.data.header);
-  populateDetails(result.data.details);
-  renumberRows();
-  calculateGrandTotal();
+	populateHeader(result.data.header);
+	populateDetails(result.data.details);
+	renumberRows();
+	calculateGrandTotal();
 
-  enableEditMode(result.data.header);
+	enableEditMode(result.data.header);
 
-  isLoading = false;
-  isDirty = false;
-}
+	isLoading = false;
+	isDirty = false;
+};
 
 const populateHeader = (header) => {
-  txtPONo.value = header.po_no;
-  tdRefNo.innerHTML = header.po_no;
-  txtPODate.value = header.po_date;
+	txtPONo.value = header.po_no;
+	tdRefNo.innerHTML = header.po_no;
+	txtPODate.value = header.po_date;
 
-  $('#selSupplier').val(header.supplier_id).trigger('change');
+	$("#selSupplier").val(header.supplier_id).trigger("change");
 
-  $('#selTerms').val(header.terms_id).trigger('change');
-  txtRemarks.value = header.remarks ?? '';
+	$("#selTerms").val(header.terms_id).trigger("change");
+	txtRemarks.value = header.remarks ?? "";
 
-  let statusClass = ``;
-  switch (header.status) {
-    case 'COMPLETED':
-      statusClass = 'text-success';
-      break;
-    case 'OPEN':
-      statusClass = 'text-secondary';
-      break;
-    case 'PARTIAL':
-      statusClass = 'text-warning';
-      break;
-    case 'COMPLETED':
-      statusClass = 'text-primary';
-      break;
-    case 'CLOSED':
-      statusClass = 'text-secondary';
-      break;
-    default: /*** CANCELLED */
-      statusClass = 'text-danger';
-      break;
-  }
-  document.querySelector('.ls-wider').innerHTML = `[${header.status}]`;
-  document.querySelector('.ls-wider').classList.add(statusClass);
-  document.getElementById('btnCancelPurchaseOrder').setAttribute('data-status', header.status)
-}
+	let statusClass = ``;
+	switch (header.status) {
+		case "COMPLETED":
+			statusClass = "text-success";
+			break;
+		case "OPEN":
+			statusClass = "text-secondary";
+			break;
+		case "PARTIAL":
+			statusClass = "text-warning";
+			break;
+		case "COMPLETED":
+			statusClass = "text-primary";
+			break;
+		case "CLOSED":
+			statusClass = "text-secondary";
+			break;
+		default: /*** CANCELLED */
+			statusClass = "text-danger";
+			break;
+	}
+	document.querySelector(".ls-wider").innerHTML = `[${header.status}]`;
+	document.querySelector(".ls-wider").classList.add(statusClass);
+	document
+		.getElementById("btnCancelPurchaseOrder")
+		.setAttribute("data-status", header.status);
+	document
+		.getElementById("btnClosePurchaseOrder")
+		?.setAttribute("data-status", header.status);
+};
 
 const populateDetails = (details) => {
-  const tbody = document.getElementById('tblPurchaseOrderDetails');
-  tbody.innerHTML = '';
+	const tbody = document.getElementById("tblPurchaseOrderDetails");
+	tbody.innerHTML = "";
 
-  details.forEach(detail => {
-    const row = createDetailRow();
-    tbody.insertAdjacentHTML('beforeend', row);
-    const tr = tbody.lastElementChild;
+	details.forEach((detail) => {
+		const row = createDetailRow();
+		tbody.insertAdjacentHTML("beforeend", row);
+		const tr = tbody.lastElementChild;
 
-    const description = detail.description;
-    const descriptionName = description.length > 30 ? description.substring(0, 30) + "..." : description;
-    const supplierName = detail.supplier_name;
-    const supplierShort = supplierName.length > 30 ? supplierName.substring(0, 30) + "..." : supplierName;
+		const description = detail.description;
+		const descriptionName =
+			description.length > 30
+				? description.substring(0, 30) + "..."
+				: description;
+		const supplierName = detail.supplier_name;
+		const supplierShort =
+			supplierName.length > 30
+				? supplierName.substring(0, 30) + "..."
+				: supplierName;
 
-    tr.dataset.productId = detail.product_id;
-    tr.querySelector('.po-barcode').value = detail.barcode;
+		tr.dataset.productId = detail.product_id;
+		tr.querySelector(".po-barcode").value = detail.barcode;
 
-    const supplierTd = tr.querySelector('.po-supplier');
-    supplierTd.textContent = supplierShort;
-    if (supplierName.length > 30) {
-      supplierTd.setAttribute('data-toggle', 'tooltip');
-      supplierTd.setAttribute('title', supplierName);
-    }
+		const supplierTd = tr.querySelector(".po-supplier");
+		supplierTd.textContent = supplierShort;
+		if (supplierName.length > 30) {
+			supplierTd.setAttribute("data-toggle", "tooltip");
+			supplierTd.setAttribute("title", supplierName);
+		}
 
-    const descTd = tr.querySelector('.po-description');
-    descTd.textContent = descriptionName;
-    if (description.length > 30) {
-      descTd.setAttribute('data-toggle', 'tooltip');
-      descTd.setAttribute('title', description);
-    }
+		const descTd = tr.querySelector(".po-description");
+		descTd.textContent = descriptionName;
+		if (description.length > 30) {
+			descTd.setAttribute("data-toggle", "tooltip");
+			descTd.setAttribute("title", description);
+		}
 
-    tr.querySelector('.po-uom').value = detail.uom_id;
-    tr.querySelector('.po-qty').value = Number(detail.qty);
-    tr.querySelector('.po-price').value = Number(detail.price).toFixed(2);
-    tr.querySelector('.po-discount').value = Number(detail.discount).toFixed(2);
+		tr.querySelector(".po-uom").value = detail.uom_id;
+		tr.querySelector(".po-qty").value = Number(detail.qty);
+		tr.querySelector(".po-price").value = Number(detail.price).toFixed(2);
+		tr.querySelector(".po-discount").value = Number(detail.discount).toFixed(2);
 
-    renumberRows();
-    calculateRowTotal(tr);
-    Atlas.ui.init(); /*** tooltips */
-  });
-}
+		renumberRows();
+		calculateRowTotal(tr);
+		Atlas.ui.init(); /*** tooltips */
+	});
+};
 
 const renumberRows = () => {
-  const rows = document.querySelectorAll('#tblPurchaseOrderDetails tr');
-  rows.forEach((tr, index) => {
-    tr.querySelector('.po-index').textContent = (index + 1) + '.';
-  });
+	const rows = document.querySelectorAll("#tblPurchaseOrderDetails tr");
+	rows.forEach((tr, index) => {
+		tr.querySelector(".po-index").textContent = index + 1 + ".";
+	});
 };
 
 const enableEditMode = (header) => {
-  isEditMode = true;
-  purchaseOrderId = header.id;
+	isEditMode = true;
+	purchaseOrderId = header.id;
 
-  btnSavePurchaseOrder.disabled = header.status !== 'OPEN';
-  txtPONo.value = header.po_no;
-}
+	btnSavePurchaseOrder.disabled = header.status !== "OPEN";
+	btnClosePurchaseOrder.disabled = header.status !== "PARTIAL";
+	btnReceiveGoods.disabled = !["OPEN", "PARTIAL"].includes(header.status);
+
+	txtPONo.value = header.po_no;
+};
 
 const markDirty = () => {
-  if (isLoading) return;
-  isDirty = true;
-}
+	if (isLoading) return;
+	isDirty = true;
+};

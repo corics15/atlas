@@ -1,422 +1,459 @@
-const btnSaveSalesInvoice = document.getElementById('btnSaveSalesInvoice');
-const btnPostSalesInvoice = document.getElementById('btnPostSalesInvoice');
-const btnEditSalesInvoice = document.getElementById('btnEditSalesInvoice');
-const btnRefreshSalesInvoice = document.getElementById('btnRefreshSalesInvoice');
-const btnCancelSalesInvoice = document.getElementById('btnCancelSalesInvoice');
-const btnPrintSalesInvoice = document.getElementById('btnPrintSalesInvoice');
+const btnSaveSalesInvoice = document.getElementById("btnSaveSalesInvoice");
+const btnPostSalesInvoice = document.getElementById("btnPostSalesInvoice");
+const btnEditSalesInvoice = document.getElementById("btnEditSalesInvoice");
+const btnRefreshSalesInvoice = document.getElementById(
+	"btnRefreshSalesInvoice",
+);
+const btnCancelSalesInvoice = document.getElementById("btnCancelSalesInvoice");
+const btnPrintSalesInvoice = document.getElementById("btnPrintSalesInvoice");
+const btnViewSIPDF = document.getElementById("btnViewSIPDF");
 
-const txtCreditLimit = document.getElementById('txtCreditLimit');
+const txtCreditLimit = document.getElementById("txtCreditLimit");
 
-const hidSalesOrderId = document.getElementById('hidSalesOrderId');
-const hidSalesInvoiceId = document.getElementById('hidSalesInvoiceId');
-const hidSalemanId = document.getElementById('hidSalemanId');
-const hidCustomerId = document.getElementById('hidCustomerId');
-const hidSalesmanId = document.getElementById('hidSalesmanId');
-const hidTermsId = document.getElementById('hidTermsId');
-const hidCreditLimit = document.getElementById('hidCreditLimit');
+const hidSalesOrderId = document.getElementById("hidSalesOrderId");
+const hidSalesInvoiceId = document.getElementById("hidSalesInvoiceId");
+const hidSalemanId = document.getElementById("hidSalemanId");
+const hidCustomerId = document.getElementById("hidCustomerId");
+const hidSalesmanId = document.getElementById("hidSalesmanId");
+const hidTermsId = document.getElementById("hidTermsId");
+const hidCreditLimit = document.getElementById("hidCreditLimit");
 
 let isDirty = false;
 let isLoading = true;
-let isEditMode = (hidSalesOrderId?.value) ? true : false;
+let isEditMode = hidSalesOrderId?.value ? true : false;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
+	Atlas.table.init({
+		checkbox: ".chkSalesInvoice",
+		selectAll: "#chkSelectAllSalesInvoice",
+	});
 
-  Atlas.table.init({
-    checkbox: '.chkSalesInvoice',
-    selectAll: '#chkSelectAllSalesInvoice',
-  });
+	/*** dirty tracking */
+	document.addEventListener("input", (e) => {
+		if (
+			e.target.classList.contains("so-qty") ||
+			e.target.id === `txtSalesOrderRemarks`
+		) {
+			markDirty();
+		}
+	});
 
-  /*** dirty tracking */
-  document.addEventListener('input', (e) => {
-    if (
-      e.target.classList.contains('so-qty') ||
-      e.target.id === `txtSalesOrderRemarks`
-    ) {
-      markDirty();
-    }
-  });
+	/*** edit */
+	btnEditSalesInvoice?.addEventListener("click", () => {
+		const id = getSelectedId();
 
-  /*** edit */
-  btnEditSalesInvoice?.addEventListener('click', () => {
-    const id = getSelectedId();
+		if (!id) {
+			return;
+		}
 
-    if (!id) {
-      return;
-    }
+		Atlas.page.redirect(`sales-invoices/edit/${Atlas.id.encode(id)}`);
+	});
 
-    Atlas.page.redirect(`sales-invoices/edit/${Atlas.id.encode(id)}`);
-  });
+	/*** save */
+	btnSaveSalesInvoice?.addEventListener("click", async () => {
+		if (!validateSalesInvoice()) {
+			return;
+		}
 
-  /*** save */
-  btnSaveSalesInvoice?.addEventListener('click', async () => {
+		btnSaveSalesInvoice.disabled = true;
 
-    if (!validateSalesInvoice()) {
-      return;
-    }
+		try {
+			const salesInvoice = {
+				id: hidSalesInvoiceId?.value ?? "",
+				sales_order_id: Atlas.format.parseNumber(hidSalesOrderId.value),
+				delivery_receipt_id: Atlas.format.parseNumber(
+					hidDeliveryReceiptId.value,
+				),
+				invoice_date: dtInvoiceDate.value,
+				customer_id: Atlas.format.parseNumber(hidCustomerId.value),
+				salesman_id: Atlas.format.parseNumber(hidSalesmanId.value),
+				terms_id: Atlas.format.parseNumber(hidTermsId.value),
+				credit_limit: Atlas.format.parseNumber(hidCreditLimit.value),
+				remarks: txtSalesInvoiceRemarks.value,
+				details: [],
+			};
 
-    btnSaveSalesInvoice.disabled = true;
+			document.querySelectorAll("#tblSalesOrderDetails tr").forEach((row) => {
+				if (!row.dataset.productId) {
+					return;
+				}
 
-    try {
-      const salesInvoice = {
-        id: hidSalesInvoiceId?.value ?? '',
-        sales_order_id: Atlas.format.parseNumber(hidSalesOrderId.value),
-        delivery_receipt_id: Atlas.format.parseNumber(hidDeliveryReceiptId.value),
-        invoice_date: dtInvoiceDate.value,
-        customer_id: Atlas.format.parseNumber(hidCustomerId.value),
-        salesman_id: Atlas.format.parseNumber(hidSalesmanId.value),
-        terms_id: Atlas.format.parseNumber(hidTermsId.value),
-        credit_limit: Atlas.format.parseNumber(hidCreditLimit.value),
-        remarks: txtSalesInvoiceRemarks.value,
-        details: []
-      };
+				/*** only push rows whose quantity is greater than zero */
+				const qty = Atlas.format.parseNumber(
+					row.querySelector(".so-qty").value,
+				);
+				if (qty > 0) {
+					salesInvoice.details.push({
+						product_id: Atlas.format.parseNumber(row.dataset.productId),
+						uom_id: Atlas.format.parseNumber(row.dataset.uomId),
+						conversion_factor: Atlas.format.parseNumber(
+							row.dataset.conversionFactor,
+						),
+						sales_order_detail_id: Atlas.format.parseNumber(
+							row.dataset.salesOrderDetailId,
+						),
+						qty: qty,
+					});
+				}
+			});
 
-      document.querySelectorAll('#tblSalesOrderDetails tr').forEach(row => {
+			const result = await Atlas.ajax.post("sales-invoices/save", salesInvoice);
 
-        if (!row.dataset.productId) {
-          return;
-        }
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
 
-        /*** only push rows whose quantity is greater than zero */
-        const qty = Atlas.format.parseNumber(row.querySelector('.so-qty').value);
-        if (qty > 0) {
-          salesInvoice.details.push({
-            product_id: Atlas.format.parseNumber(row.dataset.productId),
-            uom_id: Atlas.format.parseNumber(row.dataset.uomId),
-            conversion_factor: Atlas.format.parseNumber(row.dataset.conversionFactor),
-            sales_order_detail_id: Atlas.format.parseNumber(row.dataset.salesOrderDetailId),
-            qty: qty
-          });
-        }
-      });
+			Atlas.toast.success(result.message);
+			hidSalesInvoiceId.value = result.data.sales_invoice_id;
+			isEditMode = true;
+			isDirty = false;
+			setTimeout(
+				() =>
+					Atlas.page.redirect(
+						`sales-invoices/edit/${Atlas.id.encode(result.data.sales_invoice_id)}`,
+					),
+				1500,
+			);
+		} finally {
+			btnSaveSalesInvoice.disabled = false;
+		}
+	});
 
-      const result = await Atlas.ajax.post(
-        'sales-invoices/save',
-        salesInvoice
-      );
+	/*** post */
+	btnPostSalesInvoice?.addEventListener("click", async () => {
+		let ids = Atlas.table.selectedIds();
 
-      if (!result.success) {
-        Atlas.toast.error(result.message);
-        return;
-      }
+		if (!ids || ids.length === 0) {
+			if (window.salesInvoiceId === 0) {
+				Atlas.toast.warning("New Sales Invoice, not saved yet.");
+				return false;
+			} else if (window.salesInvoiceId) {
+				ids = [window.salesInvoiceId];
+			} else {
+				Atlas.toast.warning("Please select at least one Sales Invoice");
+				return false;
+			}
+		}
 
-      Atlas.toast.success(result.message);
-      hidSalesInvoiceId.value = result.data.sales_invoice_id;
-      isEditMode = true;
-      isDirty = false;
-      setTimeout(() => Atlas.page.redirect(`sales-invoices/edit/${Atlas.id.encode(result.data.sales_invoice_id)}`), 1500);
-    }
-    finally {
-      btnSaveSalesInvoice.disabled = false;
-    }
-  });
+		const result = await Atlas.dialog.confirm(
+			"Confirm Action",
+			"Post Sales Invoice?",
+		);
 
-  /*** post */
-  btnPostSalesInvoice?.addEventListener('click', async () => {
-    let ids = Atlas.table.selectedIds();
+		if (!result) {
+			return;
+		}
 
-    if (!ids || ids.length === 0) {
-      if (window.salesInvoiceId === 0) {
-        Atlas.toast.warning('New Sales Invoice, not saved yet.');
-        return false;
-      } else if (window.salesInvoiceId) {
-        ids = [window.salesInvoiceId];
-      } else {
-        Atlas.toast.warning('Please select at least one Sales Invoice');
-        return false;
-      }
-    }
+		btnPostSalesInvoice.disabled = true;
 
-    const result = await Atlas.dialog.confirm(
-      'Confirm Action',
-      'Post Sales Invoice?'
-    );
+		try {
+			const response = await Atlas.ajax.post("sales-invoices/post", {
+				ids: ids,
+			});
 
-    if (!result) {
-      return;
-    }
+			if (!response.success) {
+				Atlas.toast.error(response.message);
+				return;
+			}
 
-    btnPostSalesInvoice.disabled = true;
+			Atlas.toast.success(response.message);
+			setTimeout(() => Atlas.page.refresh(), 1500);
+		} finally {
+			btnPostSalesInvoice.disabled = false;
+		}
+	});
 
-    try {
-      const response = await Atlas.ajax.post(
-        'sales-invoices/post',
-        {
-          ids: ids
-        }
-      );
+	/*** cancel */
+	btnCancelSalesInvoice?.addEventListener("click", async () => {
+		let ids = Atlas.table.selectedIds();
 
-      if (!response.success) {
-        Atlas.toast.error(response.message);
-        return;
-      }
+		if (!ids || ids.length === 0) {
+			if (window.salesInvoiceId === 0) {
+				Atlas.toast.warning("New Sales Invoice, not saved yet.");
+				return false;
+			} else if (window.salesInvoiceId) {
+				ids = [window.salesInvoiceId];
+			} else {
+				Atlas.toast.warning("Please select at least one Sales Invoice");
+				return false;
+			}
+		}
 
-      Atlas.toast.success(response.message);
-      setTimeout(() => Atlas.page.refresh(), 1500);
+		const reason = await Atlas.dialog.textarea({
+			icon: "warning",
+			title: `Cancel ${ids.length} Sales Invoice(s)?`,
+			text: "Please provide the reason for cancellation.",
+			inputPlaceholder: "Enter cancellation reason...",
+			required: false,
+			confirmText: "Confirm Cancellation",
+		});
 
-    } finally {
-      btnPostSalesInvoice.disabled = false;
-    }
-  });
+		if (reason === null) {
+			return;
+		}
 
-  /*** cancel */
-  btnCancelSalesInvoice?.addEventListener('click', async () => {
-    let ids = Atlas.table.selectedIds();
+		const result = await Atlas.ajax.post("sales-invoices/cancel", {
+			ids: ids,
+			cancel_reason: reason,
+		});
 
-    if (!ids || ids.length === 0) {
-      if (window.salesInvoiceId === 0) {
-        Atlas.toast.warning('New Sales Invoice, not saved yet.');
-        return false;
-      } else if (window.salesInvoiceId) {
-        ids = [window.salesInvoiceId];
-      } else {
-        Atlas.toast.warning('Please select at least one Sales Invoice');
-        return false;
-      }
-    }
+		if (!result.success) {
+			Atlas.toast.error(result.message);
+			return;
+		}
 
-    const reason = await Atlas.dialog.textarea({
-      icon: 'warning',
-      title: `Cancel ${ids.length} Sales Invoice(s)?`,
-      text: 'Please provide the reason for cancellation.',
-      inputPlaceholder: 'Enter cancellation reason...',
-      required: false,
-      confirmText: 'Confirm Cancellation'
-    });
+		Atlas.toast.success(result.message);
+		setTimeout(() => Atlas.page.refresh(), 1200);
+	});
 
-    if (reason === null) {
-      return;
-    }
+	/*** print */
+	btnPrintSalesInvoice?.addEventListener("click", printSalesInvoice);
 
-    const result = await Atlas.ajax.post(
-      'sales-invoices/cancel',
-      {
-        ids: ids,
-        cancel_reason: reason
-      }
-    );
+	/*** view as PDF */
+	btnViewSIPDF?.addEventListener("click", viewSalesInvoicePDF);
 
-    if (!result.success) {
-      Atlas.toast.error(result.message);
-      return;
-    }
+	/*** create sales return */
+	document
+		.getElementById("btnCreateSalesReturn")
+		?.addEventListener("click", () => {
+			let ids = Atlas.table.selectedIds();
 
-    Atlas.toast.success(result.message);
-    setTimeout(() => Atlas.page.refresh(), 1200);
-  });
+			if (!ids || ids.length !== 1) {
+				if (window.salesInvoiceId === 0) {
+					Atlas.toast.warning("New Sales Invoice, not saved yet.");
+					return;
+				}
 
-  /*** print */
-  btnPrintSalesInvoice?.addEventListener('click', printSalesInvoice);
+				if (!window.salesInvoiceId) {
+					Atlas.toast.warning("Please select one Sales Invoice.");
+					return;
+				}
 
-  /*** create sales return */
-  document.getElementById('btnCreateSalesReturn')?.addEventListener('click', () => {
-    let ids = Atlas.table.selectedIds();
+				Atlas.page.redirect(
+					`sales-returns/create/${Atlas.id.encode(window.salesInvoiceId)}`,
+				);
+				return;
+			}
+			Atlas.page.redirect(`sales-returns/create/${Atlas.id.encode(ids[0])}`);
+		});
 
-    if (!ids || ids.length !== 1) {
-      if (window.salesInvoiceId === 0) {
-        Atlas.toast.warning('New Sales Invoice, not saved yet.');
-        return;
-      }
+	/*** refresh */
+	btnRefreshSalesInvoice?.addEventListener("click", () =>
+		Atlas.page.redirect(`sales-invoices`),
+	);
 
-      if (!window.salesInvoiceId) {
-        Atlas.toast.warning('Please select one Sales Invoice.');
-        return;
-      }
+	document.addEventListener("input", (e) => {
+		if (e.target.classList.contains("so-qty")) {
+			const row = e.target.closest("tr");
 
-      Atlas.page.redirect(`sales-returns/create/${Atlas.id.encode(window.salesInvoiceId)}`);
-      return;
-    }
-    Atlas.page.redirect(`sales-returns/create/${Atlas.id.encode(ids[0])}`)
-  });
+			if (row?.dataset.productId) {
+				calculateSalesInvoiceRow(row);
+				calculateSalesInvoiceTotals();
+			}
 
-  /*** refresh */
-  btnRefreshSalesInvoice?.addEventListener('click', () => Atlas.page.redirect(`sales-invoices`));
+			markDirty();
+			return;
+		}
 
-  document.addEventListener('input', (e) => {
-    if (e.target.classList.contains('so-qty')) {
+		if (e.target.id === "txtSalesOrderRemarks") {
+			markDirty();
+		}
+	});
 
-      const row = e.target.closest('tr');
-
-      if (row?.dataset.productId) {
-        calculateSalesInvoiceRow(row);
-        calculateSalesInvoiceTotals();
-      }
-
-      markDirty();
-      return;
-    }
-
-    if (e.target.id === 'txtSalesOrderRemarks') {
-      markDirty();
-    }
-  });
-
-  document.querySelectorAll('#tblSalesOrderDetails tr[data-product-id]').forEach(row => {
-    calculateSalesInvoiceRow(row);
-  });
-  calculateSalesInvoiceTotals();
-
+	document
+		.querySelectorAll("#tblSalesOrderDetails tr[data-product-id]")
+		.forEach((row) => {
+			calculateSalesInvoiceRow(row);
+		});
+	calculateSalesInvoiceTotals();
 });
 
-window.addEventListener('beforeunload', e => {
-  if (!isDirty) {
-    return;
-  }
+window.addEventListener("beforeunload", (e) => {
+	if (!isDirty) {
+		return;
+	}
 
-  e.preventDefault();
-  e.returnValue = '';
+	e.preventDefault();
+	e.returnValue = "";
 });
 
 const getSelectedId = () => {
-  const checked = Atlas.table.selected();
+	const checked = Atlas.table.selected();
 
-  if (checked.length === 0) {
-    Atlas.toast.warning(
-      'Please select a Sales Invoice.'
-    );
-    return null;
-  }
+	if (checked.length === 0) {
+		Atlas.toast.warning("Please select a Sales Invoice.");
+		return null;
+	}
 
-  if (checked.length > 1) {
-    Atlas.toast.warning(
-      'Please select only one Sales Invoice.'
-    );
+	if (checked.length > 1) {
+		Atlas.toast.warning("Please select only one Sales Invoice.");
 
-    return null;
-  }
+		return null;
+	}
 
-  return checked[0].value;
+	return checked[0].value;
 };
 
 const validateSalesInvoice = () => {
-  const rows = document.querySelectorAll('#tblSalesOrderDetails tr');
+	const rows = document.querySelectorAll("#tblSalesOrderDetails tr");
 
-  let hasProduct = false;
-  let hasQty = false;
+	let hasProduct = false;
+	let hasQty = false;
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
+	for (let i = 0; i < rows.length; i++) {
+		const row = rows[i];
 
-    if (!row.dataset.productId) {
-      continue;
-    }
+		if (!row.dataset.productId) {
+			continue;
+		}
 
-    hasProduct = true;
+		hasProduct = true;
 
-    const qty = Atlas.format.integer(row.querySelector('.so-qty').value || 0);
-    if (qty < 0) {
-      Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
-      setTimeout(() => row.querySelector('.so-qty').focus(), 500);
-      return false;
-    }
+		const qty = Atlas.format.integer(row.querySelector(".so-qty").value || 0);
+		if (qty < 0) {
+			Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
+			setTimeout(() => row.querySelector(".so-qty").focus(), 500);
+			return false;
+		}
 
-    if (qty > 0) {
-      hasQty = true;
-    }
-  }
+		if (qty > 0) {
+			hasQty = true;
+		}
+	}
 
-  if (!hasProduct) {
-    Atlas.toast.warning('Please add at least one product.');
-    return false;
-  }
+	if (!hasProduct) {
+		Atlas.toast.warning("Please add at least one product.");
+		return false;
+	}
 
-  if (!hasQty) {
-    Atlas.toast.warning('Please enter a quantity for at least one item.');
-    return false;
-  }
+	if (!hasQty) {
+		Atlas.toast.warning("Please enter a quantity for at least one item.");
+		return false;
+	}
 
-  return true;
+	return true;
 };
 
 const printSalesInvoice = () => {
-  let ids = Atlas.table.selectedIds();
+	let ids = Atlas.table.selectedIds();
 
-  if (!ids || ids.length === 0) {
-    if (window.salesInvoiceId === 0) {
-      Atlas.toast.warning('New Sales Invoice, not saved yet.');
-      return;
-    } else if (window.salesInvoiceId) {
-      ids = [window.salesInvoiceId];
-    } else {
-      Atlas.toast.warning('Please select at least one Sales Invoice');
-      return;
-    }
-  }
+	if (!ids || ids.length === 0) {
+		if (window.salesInvoiceId === 0) {
+			Atlas.toast.warning("New Sales Invoice, not saved yet.");
+			return;
+		} else if (window.salesInvoiceId) {
+			ids = [window.salesInvoiceId];
+		} else {
+			Atlas.toast.warning("Please select at least one Sales Invoice");
+			return;
+		}
+	}
 
-  Atlas.print.post(
-    'sales-invoices/print',
-    ids
-  );
+	Atlas.print.post("sales-invoices/print", ids);
+};
+
+const viewSalesInvoicePDF = () => {
+	let ids = Atlas.table.selectedIds();
+
+	if (!ids || ids.length === 0) {
+		if (window.salesInvoiceId === 0) {
+			Atlas.toast.warning("New Sales Invoice, not saved yet.");
+			return;
+		} else if (window.salesInvoiceId) {
+			ids = [window.salesInvoiceId];
+		} else {
+			Atlas.toast.warning("Please select at least one Sales Invoice");
+			return;
+		}
+	}
+
+	Atlas.print.post("sales-invoices/pdf", ids);
 };
 
 const calculateSalesInvoiceRow = (row) => {
-  const qty = Atlas.format.parseNumber(row.querySelector('.so-qty')?.value || 0);
-  const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
-  const discountAmount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
-  const grossAmount = qty * unitPrice;
-  const netAmount = Math.max(0, grossAmount - discountAmount);
-  const netCell = row.querySelector('.so-net-amount');
+	const qty = Atlas.format.parseNumber(
+		row.querySelector(".so-qty")?.value || 0,
+	);
+	const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
+	const discountAmount = Atlas.format.parseNumber(
+		row.dataset.discountAmount || 0,
+	);
+	const grossAmount = qty * unitPrice;
+	const netAmount = Math.max(0, grossAmount - discountAmount);
+	const netCell = row.querySelector(".so-net-amount");
 
-  if (netCell) {
-    netCell.textContent = Atlas.format.amount(netAmount);
-  }
+	if (netCell) {
+		netCell.textContent = Atlas.format.amount(netAmount);
+	}
 };
 
 const calculateSalesInvoiceTotals = () => {
-  let grossAmount = 0;
-  let discountAmount = 0;
+	let grossAmount = 0;
+	let discountAmount = 0;
 
-  document.querySelectorAll('#tblSalesOrderDetails tr[data-product-id]').forEach(row => {
+	document
+		.querySelectorAll("#tblSalesOrderDetails tr[data-product-id]")
+		.forEach((row) => {
+			const qty = Atlas.format.parseNumber(
+				row.querySelector(".so-qty")?.value || 0,
+			);
+			const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
+			const rowDiscount = Atlas.format.parseNumber(
+				row.dataset.discountAmount || 0,
+			);
 
-    const qty = Atlas.format.parseNumber(row.querySelector('.so-qty')?.value || 0);
-    const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
-    const rowDiscount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
+			grossAmount += qty * unitPrice;
+			discountAmount += rowDiscount;
+		});
 
-    grossAmount += qty * unitPrice;
-    discountAmount += rowDiscount;
-  });
+	const discountedAmount = Math.max(0, grossAmount - discountAmount);
+	const vatMode = window.salesInvoiceVatMode || "";
+	const vatRate = window.salesInvoiceVatRate || 0;
+	const vatDecimal = vatRate / 100;
 
-  const discountedAmount = Math.max(0, grossAmount - discountAmount);
-  const vatMode = window.salesInvoiceVatMode || '';
-  const vatRate = window.salesInvoiceVatRate || 0;
-  const vatDecimal = vatRate / 100;
+	let subtotal = 0;
+	let vatAmount = 0;
+	let totalAmount = 0;
 
-  let subtotal = 0;
-  let vatAmount = 0;
-  let totalAmount = 0;
+	/*** VAT inclusive */
+	if (vatMode === "INCLUSIVE") {
+		totalAmount = discountedAmount;
 
-  /*** VAT inclusive */
-  if (vatMode === 'INCLUSIVE') {
-    totalAmount = discountedAmount;
+		if (vatDecimal > 0) {
+			subtotal = totalAmount / (1 + vatDecimal);
+			vatAmount = totalAmount - subtotal;
+		} else {
+			subtotal = totalAmount;
+		}
+	} else if (vatMode === "EXCLUSIVE") {
 
-    if (vatDecimal > 0) {
-      subtotal = totalAmount / (1 + vatDecimal);
-      vatAmount = totalAmount - subtotal;
-    } else {
-      subtotal = totalAmount;
-    }
-  }
+	/*** VAT exclusive */
+		subtotal = discountedAmount;
+		vatAmount = subtotal * vatDecimal;
+		totalAmount = subtotal + vatAmount;
+	}
 
-  /*** VAT exclusive */
-  else if (vatMode === 'EXCLUSIVE') {
-    subtotal = discountedAmount;
-    vatAmount = subtotal * vatDecimal;
-    totalAmount = subtotal + vatAmount;
-  }
-
-  if (btnSaveSalesInvoice) {
-    document.getElementById('siGrossAmount').textContent = Atlas.format.amount(grossAmount);
-    document.getElementById('siDiscountAmount').textContent = Atlas.format.amount(discountAmount);
-    document.getElementById('siSubtotal').textContent = Atlas.format.amount(subtotal);
-    document.getElementById('siVatRateLabel').textContent = `${vatRate.toFixed(2)}%`;
-    document.getElementById('siVatAmount').textContent = Atlas.format.amount(vatAmount);
-    document.getElementById('siTotalAmount').textContent = Atlas.format.amount(totalAmount);
-  }
+	if (btnSaveSalesInvoice) {
+		document.getElementById("siGrossAmount").textContent =
+			Atlas.format.amount(grossAmount);
+		document.getElementById("siDiscountAmount").textContent =
+			Atlas.format.amount(discountAmount);
+		document.getElementById("siSubtotal").textContent =
+			Atlas.format.amount(subtotal);
+		document.getElementById("siVatRateLabel").textContent =
+			`${vatRate.toFixed(2)}%`;
+		document.getElementById("siVatAmount").textContent =
+			Atlas.format.amount(vatAmount);
+		document.getElementById("siTotalAmount").textContent =
+			Atlas.format.amount(totalAmount);
+	}
 };
 
 const markDirty = () => {
-  if (isLoading) {
-    return;
-  }
+	if (isLoading) {
+		return;
+	}
 
-  isDirty = true;
+	isDirty = true;
 };

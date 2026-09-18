@@ -291,4 +291,49 @@ class Sales_invoices extends MY_Controller
     );
   }
 
+  /*** view as PDF */
+  public function pdf()
+  {
+    $ids = $this->input->post('ids');
+
+    if (!$ids) {
+      show_404();
+    }
+
+    $documents = [];
+
+    foreach ($ids as $id) {
+      $header = $this->Sales_invoice_model->get($id);
+
+      if (!$header) {
+        continue;
+      }
+
+      $documents[] = (object)[
+        'header'  => $header,
+        'details' => $this->Sales_invoice_model->getDetails($id)
+      ];
+    }
+
+    $preparedBy = $this->User_model->get(
+      $this->session->userdata('user_id')
+    );
+
+    $html = $this->load->view(
+      'sales_invoices/pdf_print',
+      [
+        'documents'  => $documents,
+        'preparedBy' => $preparedBy
+      ],
+      TRUE
+    );
+
+    $this->load->library('atlas_pdf');
+
+    $this->atlas_pdf->render(
+      $html,
+      'sales-invoice.pdf'
+    );
+  }
+
 }
