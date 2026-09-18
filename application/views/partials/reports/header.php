@@ -49,7 +49,7 @@
           <img src="<?= atlas_asset($company->logo); ?>" alt="<?= htmlspecialchars($company->company_name); ?>" style="height:75px;max-width:120px;object-fit:contain;">
         <?php endif; ?>
       </td>
-      <td width="40%" style="border-left:5px solid #37474f">
+      <td width="40%" style="border-left:4px solid #37474f">
         <table style="line-height:10px">
           <tbody>
             <tr>
@@ -60,7 +60,7 @@
             </tr>
             <tr>
               <td><?= 'TIN: '.htmlspecialchars($company->tin_no ?? ''); ?></td>
-            </tr>              
+            </tr>
             <tr>
               <td><?= htmlspecialchars($company->contact_no ?? ''); ?></td>
             </tr>
@@ -68,7 +68,7 @@
         </table>
       </td>
       <td width="25%"><?php /*** filler element */ ?></td>
-      <td class="report-title" width="15%" style="text-align:left;border-left:5px solid #37474f"><?= ucwords($title); ?></td>
+      <td class="report-title" width="15%" ><div style="text-align:left;border-left:4px solid #37474f;padding-left:5px;font-size:14px"><?= ucwords($title); ?></div></td>
     </tr>
   </table>
   <hr style="margin:12px 0 10px;">

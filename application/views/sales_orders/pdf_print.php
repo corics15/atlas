@@ -26,13 +26,13 @@
   <table style="line-height:12px">
     <tr>
       <td width="12%"><strong>SO No.</strong></td>
-      <td width="48%"><?= htmlspecialchars($header->so_no) ?></td>
+      <td width="48%"><strong><?= htmlspecialchars($header->so_no) ?></strong></td>
       <td width="15%"><strong>Order Date</strong></td>
       <td width="25%"><?= date('m/d/Y', strtotime($header->order_date)) ?></td>
     </tr>
     <tr>
       <td><strong>Customer</strong></td>
-      <td><?= htmlspecialchars($header->customer_name) ?></td>
+      <td><strong><?= htmlspecialchars($header->customer_name) ?></strong></td>
       <td><strong>Status</strong></td>
       <td><?= htmlspecialchars($header->status) ?></td>
     </tr>
@@ -51,16 +51,17 @@
   <br><br>
 
   <?php /*** details */ ?>
-  <table style="line-height:15px" style="font-size:8px;">
+  <table style="line-height:15px;font-size:8px;">
     <thead style="border:1px solid #000">
       <tr>
         <th width="4%" class="text-center border-left-end">#</th>
         <th width="13%" class="text-center border-top-bottom">Barcode</th>
-        <th width="25%" class="border-top-bottom">Description</th>
-        <th width="8%" class="text-right border-top-bottom">Qty</th>
+        <th width="22%" class="border-top-bottom">Description</th>
+        <th width="8%" class="text-center border-top-bottom">Pkg</th>
+        <th width="8%" class="text-center border-top-bottom">Qty</th>
         <th width="8%" class="text-center border-top-bottom">UOM</th>
-        <th width="12%" class="text-right border-top-bottom">Unit Price</th>
-        <th width="10%" class="text-center border-top-bottom">Discount</th>
+        <th width="10%" class="text-right border-top-bottom">Unit Price</th>
+        <th width="7%" class="text-center border-top-bottom">Disc.</th>
         <th width="10%" class="text-right border-top-bottom">Disc. Amt</th>
         <th width="10%" class="text-right border-right-end">Net Amt</th>
       </tr>
@@ -78,11 +79,12 @@
         <tr>
           <td width="4%" class="text-center border-left-bottom-right"><?= $index + 1 ?>.</td>
           <td width="13%" class="text-center border-bottom-right"><?= htmlspecialchars($detail->barcode) ?></td>
-          <td width="25%" class="border-bottom-right"><?= htmlspecialchars($detail->description) ?></td>
-          <td width="8%" class="text-right border-bottom-right"><?= number_format((float)$detail->qty, 2) ?></td>
+          <td width="22%" class="border-bottom-right"><?= htmlspecialchars($detail->description) ?></td>
+          <td width="8%" class="border-bottom-right"><?= htmlspecialchars($detail->pkg ?? '') ?></td>
+          <td width="8%" class="text-center border-bottom-right"><?= number_format((float)$detail->qty, 0) ?></td>
           <td width="8%" class="text-center border-bottom-right"><?= htmlspecialchars($detail->uom) ?></td>
-          <td width="12%" class="text-right border-bottom-right"><?= number_format((float)$detail->unit_price, 2) ?></td>
-          <td width="10%" class="text-center border-bottom-right">
+          <td width="10%" class="text-right border-bottom-right"><?= number_format((float)$detail->unit_price, 2) ?></td>
+          <td width="7%" class="text-center border-bottom-right">
             <?php if ($discountType === 'PERCENT'): ?>
               <?= number_format((float)$detail->discount_percent, 2) ?>%
             <?php elseif ($discountType === 'AMOUNT'): ?>

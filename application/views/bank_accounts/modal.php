@@ -48,7 +48,7 @@
           <div class="form-row">
             <div class="form-group col-md-6">
               <label for="selBankBranchId">Branch</label>
-              <select id="selBankBranchId" name="branch_id" class="form-control form-control-sm">
+              <select id="selBankBranchId" name="branch_id" class="form-control form-control-sm custom-select">
                 <option value="">Shared / All Branches</option>
                 <?php foreach ($branches as $branch): ?>
                   <option value="<?= (int) $branch->id ?>">
@@ -59,7 +59,7 @@
             </div>
             <div class="form-group col-md-6">
               <label for="selCoaAccountId">COA Account</label>
-              <select id="selCoaAccountId" name="coa_account_id" class="form-control form-control-sm">
+              <select id="selCoaAccountId" name="coa_account_id" class="form-control form-control-sm custom-select">
                 <option value="">Select Account</option>
                 <?php foreach ($coa_accounts as $coa): ?>
                   <option value="<?= (int) $coa->id ?>">

@@ -42,6 +42,12 @@
   .font-8 {
 		font-size: 8px;
 	}
+  .font-10 {
+		font-size: 10px;
+	}
+  .font-11 {
+		font-size: 11px;
+	}
   .font-12 {
 		font-size: 12px;
 	}

@@ -22,7 +22,7 @@
     <table class="report-borderless" style="table-layout:auto;line-height:8px">
       <tr>
         <td><strong>SI No.</strong></td>
-        <td><?= htmlspecialchars($header->si_no) ?></td>
+        <td><strong><?= htmlspecialchars($header->si_no) ?></strong></td>
         <td><strong>Invoice Date</strong></td>
         <td><?= date('m/d/Y', strtotime($header->invoice_date)) ?></td>
       </tr>
@@ -34,7 +34,7 @@
       </tr>
       <tr>
         <td><strong>Customer</strong></td>
-        <td><?= htmlspecialchars($header->customer_name) ?></td>
+        <td><strong><?= htmlspecialchars($header->customer_name) ?></strong></td>
         <td><strong>Terms</strong></td>
         <td><?= htmlspecialchars($header->terms_name ?? '') ?></td>
       </tr>
@@ -57,10 +57,11 @@
           <th class="text-center">#</th>
           <th class="text-center">Barcode</th>
           <th>Description</th>
-          <th class="text-right">Qty</th>
+          <th class="text-center">Pkg</th>
+          <th class="text-center">Qty</th>
           <th class="text-center">UOM</th>
           <th class="text-right">Unit Price</th>
-          <th class="text-center">Discount</th>
+          <th class="text-center">Disc</th>
           <th class="text-right">Disc. Amt</th>
           <th class="text-right">Net Amt</th>
         </tr>
@@ -77,6 +78,7 @@
             <td class="text-center"><?= $index + 1 ?>.</td>
             <td class="text-center"><?= htmlspecialchars($detail->barcode) ?></td>
             <td><?= htmlspecialchars($detail->description) ?></td>
+            <td class="text-center"><?= htmlspecialchars($detail->pkg ?? '') ?></td>
             <td class="text-center"><?= number_format((float)$detail->qty, 0) ?></td>
             <td class="text-center"><?= htmlspecialchars($detail->uom) ?></td>
             <td class="text-right"><?= number_format((float)$detail->unit_price, 2) ?></td>
@@ -131,41 +133,32 @@
     </table>
     <?php /*** end totals */ ?>
 
-    <br><br>
+    <?php if (empty($preparedBy->signature)): ?>
+      <br><br><?php /*** filler */ ?>
+    <?php endif; ?>
 
-    <?php /*** signatures */ ?>
-    <table class="table report-borderless">
-
+    <?php /*** signatories */ ?>
+    <table class="report-borderless" style="line-height:8px;">
       <tr>
+        <td class="font-10 text-center" width="25%">
 
-        <td
-          width="33%"
-          class="text-center">
-
-          _______________________________
-          <br>
-
-          Prepared By
+          <?php if (!empty($preparedBy->signature)): ?>
+            <img src="<?= base_url($preparedBy->signature) ?>" alt="Signature" style="height:35px;max-width:120px;object-fit:contain;"><br>
+          <?php endif; ?>
+          <strong><?= htmlspecialchars($preparedBy->first_name.' '.$preparedBy->last_name) ?></strong>
 
         </td>
-
-        <td width="34%"></td>
-
-        <td
-          width="33%"
-          class="text-center">
-
-          _______________________________
-          <br>
-
-          Approved By
-
-        </td>
-
+        <td width="25%"></td>
+        <td width="25%"></td>
+        <td width="25%"></td>
       </tr>
-
+      <tr>
+        <td class="font-10 text-center">Prepared By</td>
+        <td class="font-10 font-10 text-center"></td>
+        <td class="font-10 font-10 text-center"></td>
+        <td class="font-10 font-10 text-center">Approved By</td>
+      </tr>
     </table>
-    <?php /*** end signatures */ ?>
 
   </div>
 

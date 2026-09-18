@@ -161,6 +161,7 @@ class Sales_invoice_model extends CI_Model
             p.uom_id AS base_uom_id,
             p.barcode,
             p.description,
+            p.pkg,
             COALESCE(bi.qty_on_hand, 0) AS qty_available,
             u.uom
         ")

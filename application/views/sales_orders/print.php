@@ -20,13 +20,13 @@
     <table class="report-borderless" style="table-layout:auto;line-height:8px">
       <tr>
         <td><strong>SO No.</strong></td>
-        <td><?= htmlspecialchars($header->so_no) ?></td>
+        <td><strong><?= htmlspecialchars($header->so_no) ?></strong></td>
         <td><strong>Order Date</strong></td>
         <td><?= date('m/d/Y', strtotime($header->order_date)) ?></td>
       </tr>
       <tr>
         <td><strong>Customer</strong></td>
-        <td><?= htmlspecialchars($header->customer_name) ?></td>
+        <td><strong><?= htmlspecialchars($header->customer_name) ?></strong></td>
         <td><strong>Status</strong></td>
         <td><?= htmlspecialchars($header->status) ?></td>
       </tr>
@@ -53,10 +53,11 @@
           <th class="text-center">#</th>
           <th class="text-center">Barcode</th>
           <th>Description</th>
-          <th class="text-right">Qty</th>
+          <th class="text-center">Pkg</th>
+          <th class="text-center">Qty</th>
           <th class="text-center">UOM</th>
           <th class="text-right">Unit Price</th>
-          <th class="text-center">Discount</th>
+          <th class="text-center">Disc</th>
           <th class="text-right">Disc. Amt</th>
           <th class="text-right">Net Amt</th>
         </tr>
@@ -73,7 +74,8 @@
             <td class="text-center"><?= $index + 1 ?>.</td>
             <td class="text-center"><?= htmlspecialchars($detail->barcode) ?></td>
             <td><?= htmlspecialchars($detail->description) ?></td>
-            <td class="text-right"><?= number_format((float)$detail->qty, 2) ?></td>
+            <td class="text-center"><?= htmlspecialchars($detail->pkg ?? '') ?></td>
+            <td class="text-center"><?= number_format((float)$detail->qty, 0) ?></td>
             <td class="text-center"><?= htmlspecialchars($detail->uom) ?></td>
             <td class="text-right"><?= number_format((float)$detail->unit_price, 2) ?></td>
             <td class="text-center">

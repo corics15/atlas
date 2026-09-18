@@ -279,11 +279,14 @@ class Sales_invoices extends MY_Controller
       ];
     }
 
+    $preparedBy = $this->User_model->get($this->session->userdata('user_id'));
+
     $this->load->view(
       'sales_invoices/print',
       [
         'documents' => $documents,
-        'title'     => 'Sales Invoice'
+        'title'     => 'Sales Invoice',
+        'preparedBy' => $preparedBy,
       ]
     );
   }

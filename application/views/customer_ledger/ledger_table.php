@@ -3,6 +3,7 @@
     <th width="120" class="text-center">Date</th>
     <th width="180" class="text-center">Reference</th>
     <th class="text-center">Transaction</th>
+    <th>Remarks / Description</th>
     <th width="140" class="text-right">Debit</th>
     <th width="140" class="text-right">Credit</th>
     <th width="140" class="text-right">Balance</th>
@@ -12,7 +13,7 @@
 <tbody>
   <?php if (empty($ledger)): ?>
     <tr>
-      <td colspan="6" class="text-center text-muted py-3">
+      <td colspan="7" class="text-center text-muted py-3">
         No ledger transactions found.
       </td>
     </tr>
@@ -51,6 +52,7 @@
           <?php endif; ?>
         </td>
         <td class="text-center"><?= htmlspecialchars($row->transaction_type) ?></td>
+        <td><?= nl2br(htmlspecialchars($row->remarks ?? '')) ?></td>
         <td class="text-right"><?= (float)$row->debit > 0 ? number_format((float)$row->debit, 2) : '' ?></td>
         <td class="text-right"><?= (float)$row->credit > 0 ? number_format((float)$row->credit, 2) : '' ?></td>
         <td class="text-right font-weight-500"><?= number_format((float)$row->balance, 2) ?></td>
