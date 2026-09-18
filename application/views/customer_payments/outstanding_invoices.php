@@ -229,6 +229,19 @@
 
               <div>
                 <span class="font-weight-500">5.</span>
+                If the invoice has a non-cash adjustment such as withholding tax, shortage, damaged items,
+                rebate, allowance, bank charge, discount, or similar deduction, click
+                <span class="font-weight-500 text-brown">Add Deduction</span> under
+                <span class="font-weight-500 text-indigo-2">Other Deductions</span>.
+                Select the affected <span class="font-weight-500">Sales Invoice</span>,
+                enter the <span class="font-weight-500">Particulars / Type</span> and
+                <span class="font-weight-500">Amount</span>.
+                Other Deductions reduce the invoice balance but are
+                <span class="font-weight-500 text-danger">not part of the actual Amount Received</span>.
+              </div>
+
+              <div>
+                <span class="font-weight-500">6.</span>
                 The total <span class="font-weight-500">Apply Amount</span> does not have to use the entire
                 <span class="font-weight-500">Amount Received</span>.
                 If part of the customer's payment is not applied to an invoice, the unused amount becomes
@@ -237,7 +250,7 @@
               </div>
 
               <div>
-                <span class="font-weight-500">6.</span>
+                <span class="font-weight-500">7.</span>
                 Review all payment information carefully, then click
                 <span class="font-weight-500 text-brown">Save Customer Payment</span>.
                 Saving keeps the transaction as a
@@ -246,14 +259,14 @@
               </div>
 
               <div>
-                <span class="font-weight-500">7.</span>
+                <span class="font-weight-500">8.</span>
                 When the payment details and invoice applications are correct, click
                 <span class="font-weight-500 text-orange">Post</span>.
                 Posting finalizes the payment and updates the customer's outstanding balances.
               </div>
 
               <div>
-                <span class="font-weight-500">8.</span>
+                <span class="font-weight-500">9.</span>
                 If the customer has an amount listed under
                 <span class="font-weight-500 text-indigo-2">Available Customer Credit</span>,
                 the credit may be applied to an outstanding invoice using
@@ -262,7 +275,7 @@
               </div>
 
               <div>
-                <span class="font-weight-500">9.</span>
+                <span class="font-weight-500">10.</span>
                 After Customer Payment credit is applied to an invoice, the transaction will appear under
                 <span class="font-weight-500 text-indigo-2">Credit Applications</span>.
                 This section shows when the credit was applied, which Sales Invoice received it, the amount applied,
@@ -270,7 +283,7 @@
               </div>
 
               <div>
-                <span class="font-weight-500">10.</span>
+                <span class="font-weight-500">11.</span>
                 Customer credit with source
                 <span class="font-weight-500 text-success">CP</span>
                 came from an actual Customer Payment that was previously received but not fully applied.
@@ -280,7 +293,7 @@
               </div>
 
               <div>
-                <span class="font-weight-500">11.</span>
+                <span class="font-weight-500">12.</span>
                 Customer credit with source
                 <span class="font-weight-500 text-info">CM</span>
                 came from a <span class="font-weight-500">Credit Memo</span>, usually created from a Sales Return.
@@ -289,14 +302,14 @@
               </div>
 
               <div>
-                <span class="font-weight-500">12.</span>
+                <span class="font-weight-500">13.</span>
                 If a Customer Payment credit is refunded, the transaction will appear under
                 <span class="font-weight-500 text-indigo-2">Customer Credit Refunds</span>.
                 A refund should only be made when money is actually being returned to the customer.
               </div>
 
               <div>
-                <span class="font-weight-500">13.</span>
+                <span class="font-weight-500">14.</span>
                 Before leaving the transaction, always verify the
                 <span class="font-weight-500">Amount Received</span>,
                 <span class="font-weight-500">Apply Amount</span>,
