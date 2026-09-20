@@ -42,7 +42,7 @@
         <div class="card-body p-0">
           <div class="table-responsive">
 
-            <table class="table table-sm table-bordered table-hover" id="tblPurchaseReturnDetails">
+            <table class="table table-sm table-bordered table-hover atlas-entry-table" id="tblPurchaseReturnDetails">
 
               <?php $this->load->view('purchase_returns/details_table'); ?>
 

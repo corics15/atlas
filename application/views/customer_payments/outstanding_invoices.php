@@ -16,7 +16,7 @@
       <?php /*** outstanding invoice list */ ?>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-sm table-bordered table-hover mb-0" id="tblOutstandingInvoices">
+          <table class="table table-sm table-bordered table-hover mb-0 atlas-entry-table" id="tblOutstandingInvoices">
 
             <thead class="thead-orange">
               <tr>
@@ -54,7 +54,7 @@
 
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-sm table-bordered table-hover mb-0" id="tblCustomerPaymentDeductions">
+          <table class="table table-sm table-bordered table-hover mb-0 atlas-entry-table" id="tblCustomerPaymentDeductions">
             <thead class="thead-orange">
               <tr>
                 <th width="220" class="text-center">Sales Invoice</th>
@@ -80,7 +80,7 @@
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-sm table-bordered table-hover mb-0" id="tblAvailableCredits">
+          <table class="table table-sm table-bordered table-hover mb-0 atlas-entry-table" id="tblAvailableCredits">
             <thead class="thead-orange">
               <tr>
                 <th class="text-center">Source No.</th>
@@ -116,7 +116,7 @@
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-sm table-bordered table-hover mb-0">
+            <table class="table table-sm table-bordered table-hover mb-0 atlas-entry-table">
               <thead class="thead-orange">
                 <tr>
                   <th class="text-center">Applied On</th>
@@ -158,7 +158,7 @@
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-sm table-bordered table-hover mb-0" id="tblCustomerCreditRefunds">
+          <table class="table table-sm table-bordered table-hover mb-0 atlas-entry-table" id="tblCustomerCreditRefunds">
             <thead class="thead-orange">
               <tr>
                 <th class="text-center">Refund Date</th>

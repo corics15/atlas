@@ -45,7 +45,7 @@
 
   <div class="card-body p-0">
     <div class="table-responsive accounts-table">
-      <table class="table table-bordered table-sm mb-0" id="accountingDetailsTable">
+      <table class="table table-bordered table-sm mb-0 atlas-entry-table" id="accountingDetailsTable">
         <thead class="thead-orange">
           <tr>
             <th style="width:15%;" class="text-center">Account Code</th>

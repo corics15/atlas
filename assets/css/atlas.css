@@ -264,6 +264,12 @@ div.table-responsive table div.custom-checkbox {
 }
 
 /** custom css */
+@media (max-width: 767.98px) {
+  .atlas-entry-table {
+    min-width: 1050px;
+  }
+}
+
 .content-header h1 {
   color: rgba(91, 91, 85) !important;
 }

@@ -18,7 +18,7 @@
 
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-sm table-hover mb-0" id="tblDeliveryReceiptDetails">
+          <table class="table table-sm table-hover mb-0 atlas-entry-table" id="tblDeliveryReceiptDetails">
             <thead class="thead-orange">
               <tr>
                 <th class="text-center">#</th>
