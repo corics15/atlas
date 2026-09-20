@@ -464,7 +464,7 @@ class Sales_invoice_model extends CI_Model
                               'sid.sales_order_detail_id',
                               $detail->sales_order_detail_id
                             )
-                            ->where('si.status <>', 'CANCELLED')
+                            ->where_in('si.status', ['OPEN', 'POSTED'])
                             ->get()
                             ->row();
 
