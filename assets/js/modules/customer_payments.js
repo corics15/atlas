@@ -899,13 +899,13 @@ const loadAvailableCredits = async () => {
         <input type="number" step="0.01" min="0" class="form-control form-control-sm text-right txtCreditApplyAmount" placeholder="0.00">
       </td>
       <td class="text-center text-nowrap">
-        <button type="button" class="btn btn-sm btn-link btnApplyCustomerCredit font-sm" data-toggle="tooltip" title="Apply Credit to SI">
+        <button type="button" class="btn btn-sm btn-link btnApplyCustomerCredit font-sm" title="Apply Credit to SI">
           <i class="fas fa-check-circle mr-1"></i>Apply
         </button>
         ${
 					credit.type === "CP"
 						? `
-          <button type="button" class="btn btn-sm btn-link text-danger btnRefundCustomerCredit font-sm" data-toggle="tooltip" title="Refund available credit back to Customer">
+          <button type="button" class="btn btn-sm btn-link text-danger btnRefundCustomerCredit font-sm" title="Refund available credit back to Customer">
             <i class="fas fa-undo-alt mr-1"></i>Refund
           </button>
         `
@@ -1004,7 +1004,7 @@ const loadPaymentCreditRefunds = async () => {
 						cancelled
 							? ""
 							: `
-            <button type="button" class="btn btn-sm btn-link font-sm btnCancelCreditRefund" title="Cancel refund amount" data-toggle="tooltip">
+            <button type="button" class="btn btn-sm btn-link font-sm btnCancelCreditRefund" title="Cancel refund amount">
               <i class="fas fa-ban mr-1"></i>Cancel
             </button>
           `
