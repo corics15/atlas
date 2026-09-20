@@ -8,6 +8,9 @@ const btnPostCustomerPayment = document.getElementById(
 const btnCancelCustomerPayment = document.getElementById(
 	"btnCancelCustomerPayment",
 );
+const btnReverseCustomerPayment = document.getElementById(
+	"btnReverseCustomerPayment",
+);
 const btnRefreshCustomerPayment = document.getElementById(
 	"btnRefreshCustomerPayment",
 );
@@ -312,6 +315,58 @@ document.addEventListener("DOMContentLoaded", async () => {
 			setTimeout(() => Atlas.page.refresh(), 1200);
 		} finally {
 			btnCancelCustomerPayment.disabled = false;
+		}
+	});
+
+	/*** reverse */
+	btnReverseCustomerPayment?.addEventListener("click", async () => {
+		let ids = Atlas.table.selectedIds();
+
+		if (!ids || ids.length === 0) {
+			if (window.customerPaymentId === 0) {
+				Atlas.toast.warning("New Customer Payment, not saved yet.");
+				return;
+			} else if (window.customerPaymentId) {
+				ids = [window.customerPaymentId];
+			} else {
+				Atlas.toast.warning("Please select at least one Customer Payment.");
+				return;
+			}
+		}
+
+		const reason = await Atlas.dialog.textarea({
+			icon: "warning",
+			title: `Reverse ${ids.length} Customer Payment(s)?`,
+			text: "Please provide the reason for reversing this posted Customer Payment.",
+			inputPlaceholder:
+				"Enter reversal reason, for audit purposes, this field is required...",
+			required: true,
+			confirmText: "Confirm Reversal",
+		});
+
+		if (reason === null) {
+			return;
+		}
+
+		btnReverseCustomerPayment.disabled = true;
+
+		try {
+			const response = await Atlas.ajax.post("customer-payments/reverse", {
+				ids: ids,
+				reverse_reason: reason,
+			});
+
+			if (!response.success) {
+				Atlas.toast.error(response.message);
+				return;
+			}
+
+			Atlas.toast.success(response.message);
+			isDirty = false;
+
+			setTimeout(() => Atlas.page.refresh(), 1200);
+		} finally {
+			btnReverseCustomerPayment.disabled = false;
 		}
 	});
 

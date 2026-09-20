@@ -680,6 +680,27 @@ class Delivery_receipt_model extends CI_Model
           );
         }
 
+        /***
+         * protect downstream history.
+         * a DR cannot be cancelled while an active Sales Invoice
+         * still exists for the delivery.
+         */
+        $salesInvoice = $this->db
+            ->select('id, si_no, status')
+            ->where('delivery_receipt_id', $id)
+            ->where('status <>', 'CANCELLED')
+            ->get('t_sales_invoices')
+            ->row();
+
+        if ($salesInvoice) {
+          throw new Exception(
+            "Delivery Receipt {$header->dr_no} cannot be cancelled because "
+            . "Sales Invoice {$salesInvoice->si_no} has already been created from it. "
+            . "Cancel the related Sales Invoice first before cancelling "
+            . "Delivery Receipt {$header->dr_no}."
+          );
+        }
+
         /*
         * Restore inventory
         * Reverse stock ledger

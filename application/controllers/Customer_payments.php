@@ -31,6 +31,7 @@ class Customer_payments extends MY_Controller
       'OPEN',
       'POSTED',
       'CANCELLED',
+      'REVERSED',
     ];
     $this->data['payment_methods'] = [
       'CASH',
@@ -228,6 +229,33 @@ class Customer_payments extends MY_Controller
       $result['message'],
       $result['data']
     );
+  }
+
+  /*** reverse POSTED Customer Payment */
+  public function reverse()
+  {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
+    $request = json_decode(
+      $this->input->raw_input_stream,
+      TRUE
+    );
+
+    $ids = $request['ids'] ?? [];
+    $reverseReason = trim(
+      $request['reverse_reason'] ?? ''
+    );
+
+    $result = $this->Customer_payment_model->reverse(
+      $ids,
+      $reverseReason
+    );
+
+    echo json_encode($result);
   }
 
   public function cancel()

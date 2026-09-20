@@ -21,6 +21,13 @@
           </div>
 
           <button type="button" class="btn btn-sm btn-link" id="btnCancelSalesInvoice" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
+
+          <?php if ($isEdit && ($header->status ?? '') === 'POSTED'): ?>
+            <button type="button" class="btn btn-sm btn-link text-danger" id="btnReverseSalesInvoice">
+              <i class="fas fa-undo-alt mr-2"></i>Reverse
+            </button>
+          <?php endif; ?>
+
         </div>
       </div>
 
@@ -188,6 +195,50 @@
                 After posting, click <span class="font-weight-500 text-olive">Create Sales Return</span> if invoiced items
                 need to be returned by the customer.
               </div>
+
+              <hr class="my-2">
+
+              <div class="text-danger font-weight-500 mb-1">
+                <i class="fas fa-exclamation-triangle mr-1"></i>
+                Important
+              </div>
+
+              <div class="mb-1">
+                <span class="font-weight-500">Posting a Sales Invoice</span> finalizes the document
+                and makes it part of the customer's Accounts Receivable.
+              </div>
+
+              <div class="mb-1">
+                Once <span class="font-weight-500 text-orange">POSTED</span>, the Sales Invoice
+                can no longer be edited or cancelled.
+              </div>
+
+              <div class="mb-1">
+                If a posted Sales Invoice was created incorrectly, use
+                <span class="font-weight-500 text-danger">Reverse</span>.
+                Reversing removes the invoice from active Accounts Receivable and makes its
+                Delivery Receipt quantities available for invoicing again.
+              </div>
+
+              <div class="mb-1">
+                A reversed Sales Invoice remains permanently in transaction history together
+                with the user, date, and reason for the reversal.
+              </div>
+
+              <div class="mb-1">
+                <span class="font-weight-500 text-danger">Reverse is not allowed</span>
+                when the Sales Invoice already has dependent transactions such as a posted
+                <span class="font-weight-500 text-info">Customer Payment</span>, <span class="font-weight-500 text-info">Other Deduction</span>, <span class="font-weight-500 text-info">Sales Return</span>,
+                  <span class="font-weight-500 text-info">or Credit Memo</span>.
+                These transactions must be resolved first.
+              </div>
+
+              <div>
+                <span class="font-weight-500 text-olive">Create Sales Return</span> should only
+                be used when goods were actually returned by the customer.
+                <span class="font-weight-500 text-danger">Do not use Sales Return to correct an incorrectly posted Sales Invoice</span>.
+              </div>
+
             </div>
 
           </div>

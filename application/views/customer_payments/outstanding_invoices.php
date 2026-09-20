@@ -7,9 +7,34 @@
         </h3>
         <div class="ml-auto">
           <a href="<?= base_url('customer-payments') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
+          <?php if (false) : ?>
           <button type="button" class="btn btn-sm btn-link" id="btnPostCustomerPayment" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
           <button type="button" class="btn btn-sm btn-link" id="btnPrintCustomerPayment"><i class="fa fa-print mr-2"></i>Print</button>
           <button type="button" class="btn btn-sm btn-link" id="btnCancelCustomerPayment"><i class="fas fa-ban mr-2"></i>Cancel</button>
+          <?php endif; ?>
+
+          <?php if (($customerPayment->status ?? '') === 'OPEN'): ?>
+            <button type="button" class="btn btn-sm btn-link" id="btnPostCustomerPayment">
+              <i class="fa fa-check mr-2"></i>Post
+            </button>
+          <?php endif; ?>
+
+          <button type="button" class="btn btn-sm btn-link" id="btnPrintCustomerPayment">
+            <i class="fa fa-print mr-2"></i>Print
+          </button>
+
+          <?php if (($customerPayment->status ?? '') === 'OPEN'): ?>
+            <button type="button" class="btn btn-sm btn-link" id="btnCancelCustomerPayment">
+              <i class="fas fa-ban mr-2"></i>Cancel
+            </button>
+          <?php endif; ?>
+
+          <?php if (($customerPayment->status ?? '') === 'POSTED'): ?>
+            <button type="button" class="btn btn-sm btn-link text-danger" id="btnReverseCustomerPayment">
+              <i class="fas fa-undo-alt mr-2"></i>Reverse
+            </button>
+          <?php endif; ?>
+
         </div>
       </div>
 
@@ -317,6 +342,54 @@
                 <span class="font-weight-500">Available Customer Credit</span>
                 to make sure the customer's account is correct.
               </div>
+
+              <div class="mt-2 pt-2 border-top">
+                <div class="font-weight-500 text-danger mb-1">
+                  Important: Posting, Cancellation and Reversal
+                </div>
+
+                <div>
+                  Once a Customer Payment is
+                  <span class="font-weight-500 text-success">POSTED</span>,
+                  it becomes part of the customer's financial history and can no longer be edited or cancelled.
+                </div>
+
+                <div>
+                  If an <span class="font-weight-500">OPEN</span> Customer Payment is incorrect,
+                  use <span class="font-weight-500 text-danger">Cancel</span>
+                  and create a new Customer Payment when necessary.
+                </div>
+
+                <div>
+                  If a <span class="font-weight-500 text-success">POSTED</span> Customer Payment
+                  was entered incorrectly, use
+                  <span class="font-weight-500 text-danger">Reverse</span>.
+                  Reversal removes the payment and its Other Deductions from the customer's
+                  active account balances while preserving the original transaction for audit history.
+                </div>
+
+                <div>
+                  A reversed Customer Payment remains in the system together with its original
+                  payment applications, deductions, posting information, reversal user, reversal date,
+                  and reversal reason.
+                </div>
+
+                <div>
+                  A Customer Payment cannot be reversed if its unused customer credit has already
+                  been <span class="font-weight-500">applied to another Sales Invoice</span>
+                  or has already been
+                  <span class="font-weight-500">refunded to the customer</span>.
+                  Resolve those transactions first before reversing the Customer Payment.
+                </div>
+
+                <div>
+                  <span class="font-weight-500 text-danger">Do not use Reverse to represent an actual refund.</span>
+                  If money is actually being returned to the customer, use the
+                  <span class="font-weight-500">Customer Credit Refund</span>
+                  process instead.
+                </div>
+              </div>
+
             </div>
 
           </div>

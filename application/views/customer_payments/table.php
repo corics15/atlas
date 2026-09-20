@@ -41,8 +41,11 @@
           case 'POSTED':
             $status = '<span class="badge badge-success">POSTED</span>';
           break;
-          default:
+          case 'CANCELLED':
             $status = '<span class="badge badge-danger">CANCELLED</span>';
+          break;
+          default;
+            $status = '<span class="badge badge-burnt-orange">REVERSED</span>';
           break;
         }
       ?>

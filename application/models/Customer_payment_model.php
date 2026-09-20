@@ -1050,6 +1050,171 @@ class Customer_payment_model extends CI_Model
     }
   }
 
+  /*** validate if POSTED Customer Payment can be reversed */
+  public function canReverse($id)
+  {
+    try {
+      $customerPayment = $this->db
+          ->where('id', (int)$id)
+          ->get('t_customer_payments')
+          ->row();
+
+      if (!$customerPayment) {
+        throw new Exception('Customer Payment not found.');
+      }
+
+      if ($customerPayment->status !== 'POSTED') {
+        throw new Exception(
+          "Only POSTED Customer Payments can be reversed."
+        );
+      }
+
+      /*** unapplied payment credit already used */
+      $creditAllocation = $this->db
+          ->select('si.si_no')
+          ->from('t_customer_payment_allocations cpa')
+          ->join(
+            't_sales_invoices si',
+            'si.id = cpa.sales_invoice_id'
+          )
+          ->where('cpa.customer_payment_id', (int)$id)
+          ->where('cpa.allocation_type', 'CREDIT')
+          ->limit(1)
+          ->get()
+          ->row();
+
+      if ($creditAllocation) {
+        throw new Exception(
+          "Customer Payment {$customerPayment->payment_no} cannot be reversed because "
+          . "its unapplied credit has already been applied to Sales Invoice "
+          . "{$creditAllocation->si_no}. Resolve the credit application first."
+        );
+      }
+
+      /*** unapplied payment credit already refunded */
+      $refund = $this->db
+          ->select('id')
+          ->where('customer_payment_id', (int)$id)
+          ->where('status', 'POSTED')
+          ->limit(1)
+          ->get('t_customer_payment_refunds')
+          ->row();
+
+      if ($refund) {
+        throw new Exception(
+          "Customer Payment {$customerPayment->payment_no} cannot be reversed because "
+          . "its unapplied credit has already been refunded. "
+          . "Resolve the Customer Credit Refund first."
+        );
+      }
+
+      return [
+        'success' => TRUE,
+        'message' => "Customer Payment {$customerPayment->payment_no} can be reversed.",
+        'data'    => []
+      ];
+
+    } catch (Exception $ex) {
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data'    => []
+      ];
+    }
+  }
+
+  /*** reverse POSTED Customer Payment */
+  public function reverse($ids, $reverseReason)
+  {
+    try {
+      if (empty($ids)) {
+        throw new Exception(
+          'Please select at least one Customer Payment.'
+        );
+      }
+
+      if (trim($reverseReason) === '') {
+        throw new Exception(
+          'Reverse reason is required.'
+        );
+      }
+
+      $this->db->trans_begin();
+
+      foreach ($ids as $id) {
+        /*** validate downstream dependencies */
+        $validation = $this->canReverse($id);
+
+        if (!$validation['success']) {
+          throw new Exception(
+            $validation['message']
+          );
+        }
+
+        /*** authoritative Customer Payment */
+        $customerPayment = $this->db
+            ->where('id', (int)$id)
+            ->get('t_customer_payments')
+            ->row();
+
+        if (!$customerPayment) {
+          throw new Exception(
+            'Customer Payment not found.'
+          );
+        }
+
+        /***
+         * a reversed Customer Payment remains in history.
+         * never delete or rewrite the original posted payment,
+         * allocations, or deductions.
+         */
+        $this->db
+            ->where('id', (int)$id)
+            ->where('status', 'POSTED')
+            ->update(
+              't_customer_payments',
+              [
+                'status'         => 'REVERSED',
+                'reverse_reason' => trim($reverseReason),
+                'reversed_by'    => $this->session->userdata('user_id'),
+                'reversed_on'    => date('Y-m-d H:i:s'),
+                'updated_by'     => $this->session->userdata('user_id'),
+                'updated_on'     => date('Y-m-d H:i:s')
+              ]
+            );
+
+        if (!$this->db->affected_rows()) {
+          throw new Exception(
+            "Unable to reverse {$customerPayment->payment_no}."
+          );
+        }
+      }
+
+      if ($this->db->trans_status() === FALSE) {
+        throw new Exception(
+          'Unable to reverse Customer Payment.'
+        );
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Customer Payment(s) reversed successfully.',
+        'data'    => []
+      ];
+
+    } catch (Exception $ex) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data'    => []
+      ];
+    }
+  }
+
   public function cancel($ids, $cancelReason = null)
   {
     try {
@@ -1073,43 +1238,16 @@ class Customer_payment_model extends CI_Model
           throw new Exception("{$customerPayment->payment_no} is already CANCELLED.");
         }
 
-        if ($customerPayment->status === 'POSTED') {
-          $usage = $this->db->query(
-            "SELECT
-              EXISTS(
-                SELECT 1
-                FROM t_customer_payment_allocations
-                WHERE customer_payment_id = ?
-                AND allocation_type = 'CREDIT'
-              ) AS has_credit_allocations,
-              EXISTS(
-                SELECT 1
-                FROM t_customer_payment_refunds
-                WHERE customer_payment_id = ?
-                AND status = 'POSTED'
-              ) AS has_refunds",
-            [
-              $customerPayment->id,
-              $customerPayment->id
-            ]
-          )->row();
-
-          if ($usage->has_credit_allocations === 't' || $usage->has_refunds === 't') {
-            throw new Exception(
-              "{$customerPayment->payment_no} cannot be cancelled because its unapplied credit has already been used or refunded."
-            );
-          }
+        if ($customerPayment->status !== 'OPEN') {
+          throw new Exception(
+            "Only OPEN Customer Payments can be cancelled. "
+            . "{$customerPayment->payment_no} is {$customerPayment->status}."
+          );
         }
 
         $this->db
             ->where('id', (int)$customerPayment->id)
-            ->where_in(
-              'status',
-              [
-                'OPEN',
-                'POSTED'
-              ]
-            )
+            ->where('status', 'OPEN')
             ->update(
               't_customer_payments',
               [

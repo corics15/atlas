@@ -5,6 +5,9 @@ const btnRefreshSalesInvoice = document.getElementById(
 	"btnRefreshSalesInvoice",
 );
 const btnCancelSalesInvoice = document.getElementById("btnCancelSalesInvoice");
+const btnReverseSalesInvoice = document.getElementById(
+	"btnReverseSalesInvoice",
+);
 const btnPrintSalesInvoice = document.getElementById("btnPrintSalesInvoice");
 const btnViewSIPDF = document.getElementById("btnViewSIPDF");
 
@@ -205,6 +208,47 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		Atlas.toast.success(result.message);
 		setTimeout(() => Atlas.page.refresh(), 1200);
+	});
+
+	/*** reverse */
+	btnReverseSalesInvoice?.addEventListener("click", async () => {
+		if (!window.salesInvoiceId) {
+			Atlas.toast.warning("Sales Invoice not found.");
+			return;
+		}
+
+		const reason = await Atlas.dialog.textarea({
+			icon: "warning",
+			title: "Reverse Sales Invoice?",
+			text: "Please provide the reason for reversing this posted Sales Invoice.",
+			inputPlaceholder:
+				"Enter reversal reason, for audit purposes, this field is required...",
+			required: true,
+			confirmText: "Confirm Reversal",
+		});
+
+		if (reason === null) {
+			return;
+		}
+
+		btnReverseSalesInvoice.disabled = true;
+
+		try {
+			const result = await Atlas.ajax.post("sales-invoices/reverse", {
+				ids: [window.salesInvoiceId],
+				reverse_reason: reason,
+			});
+
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
+
+			Atlas.toast.success(result.message);
+			setTimeout(() => Atlas.page.refresh(), 1200);
+		} finally {
+			btnReverseSalesInvoice.disabled = false;
+		}
 	});
 
 	/*** print */
@@ -427,8 +471,7 @@ const calculateSalesInvoiceTotals = () => {
 			subtotal = totalAmount;
 		}
 	} else if (vatMode === "EXCLUSIVE") {
-
-	/*** VAT exclusive */
+		/*** VAT exclusive */
 		subtotal = discountedAmount;
 		vatAmount = subtotal * vatDecimal;
 		totalAmount = subtotal + vatAmount;

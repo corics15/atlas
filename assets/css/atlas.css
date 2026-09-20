@@ -270,6 +270,10 @@ div.table-responsive table div.custom-checkbox {
   }
 }
 
+.btn-link {
+  font-size: small !important;
+}
+
 .content-header h1 {
   color: rgba(91, 91, 85) !important;
 }
@@ -455,6 +459,10 @@ span.badge {
 
 .badge-avocado-green {
   background-color: #99a125 !important;
+}
+
+.badge-burnt-orange {
+  background-color: #a14325 !important;
 }
 
 .badge-dark-olive-brown {

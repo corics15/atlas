@@ -25,6 +25,7 @@ class Sales_invoices extends MY_Controller
       'OPEN',
       'POSTED',
       'CANCELLED',
+      'REVERSED',
     ];
 
     $filter = $this->decodeFilter($this->input->get('filter'));
@@ -235,6 +236,39 @@ class Sales_invoices extends MY_Controller
       $result['message'],
       $result['data']
     );
+  }
+
+  /*** validate if POSTED Sales Invoice can be reversed */
+  public function can_reverse()
+  {
+    $id = (int)$this->getJsonRequest('id');
+
+    if (!$id) {
+      echo json_encode([
+        'success' => FALSE,
+        'message' => 'Sales Invoice is required.',
+        'data'    => []
+      ]);
+      return;
+    }
+
+    $result = $this->Sales_invoice_model->canReverse($id);
+
+    echo json_encode($result);
+  }
+
+  /*** reverse POSTED Sales Invoice */
+  public function reverse()
+  {
+    $ids = $this->getJsonRequest('ids');
+    $reverseReason = trim($this->getJsonRequest('reverse_reason'));
+
+    $result = $this->Sales_invoice_model->reverse(
+      $ids,
+      $reverseReason
+    );
+
+    echo json_encode($result);
   }
 
   public function cancel()

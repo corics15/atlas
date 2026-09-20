@@ -78,6 +78,9 @@
             case 'CANCELLED':
               $badge = 'danger';
               break;
+            case 'REVERSED':
+              $badge = 'burnt-orange';
+              break;
           }
           ?>
         <span class="badge badge-<?= $badge ?>">
