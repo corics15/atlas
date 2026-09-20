@@ -248,7 +248,7 @@ class Sales_invoice_model extends CI_Model
                   SUM(sid.qty) qty_invoiced
                 FROM t_sales_invoice_details sid
                 INNER JOIN t_sales_invoices si ON si.id = sid.sales_invoice_id
-                WHERE si.status <> 'CANCELLED'
+                WHERE si.status IN ('OPEN', 'POSTED')
                 GROUP BY sid.sales_order_detail_id
               ) inv
               ON inv.sales_order_detail_id = sod.id
@@ -706,6 +706,204 @@ class Sales_invoice_model extends CI_Model
     }
   }
 
+  /*** validate if POSTED Sales Invoice can be reversed */
+  public function canReverse($id)
+  {
+    try {
+      $salesInvoice = $this->db
+          ->where('id', (int)$id)
+          ->get('t_sales_invoices')
+          ->row();
+
+      if (!$salesInvoice) {
+        throw new Exception(
+          'Sales Invoice not found.'
+        );
+      }
+
+      if ($salesInvoice->status !== 'POSTED') {
+        throw new Exception(
+          "Only POSTED Sales Invoices can be reversed."
+        );
+      }
+
+      /*** posted customer payment allocation */
+      $payment = $this->db
+          ->select('cp.payment_no')
+          ->from('t_customer_payment_allocations cpa')
+          ->join(
+            't_customer_payments cp',
+            'cp.id = cpa.customer_payment_id'
+          )
+          ->where('cpa.sales_invoice_id', (int)$id)
+          ->where('cp.status', 'POSTED')
+          ->limit(1)
+          ->get()
+          ->row();
+
+      if ($payment) {
+        throw new Exception(
+          "Sales Invoice {$salesInvoice->si_no} cannot be reversed because "
+          . "Customer Payment {$payment->payment_no} has already been applied to it. "
+          . "Resolve the Customer Payment first."
+        );
+      }
+
+      /*** posted other deduction */
+      $deduction = $this->db
+          ->select('cp.payment_no')
+          ->from('t_customer_payment_deductions cpd')
+          ->join(
+            't_customer_payments cp',
+            'cp.id = cpd.customer_payment_id'
+          )
+          ->where('cpd.sales_invoice_id', (int)$id)
+          ->where('cp.status', 'POSTED')
+          ->limit(1)
+          ->get()
+          ->row();
+
+      if ($deduction) {
+        throw new Exception(
+          "Sales Invoice {$salesInvoice->si_no} cannot be reversed because "
+          . "Customer Payment {$deduction->payment_no} contains an Other Deduction "
+          . "applied to it. Resolve the Customer Payment first."
+        );
+      }
+
+      /*** active Sales Return */
+      $salesReturn = $this->db
+          ->select('sr_no, status')
+          ->where('sales_invoice_id', (int)$id)
+          ->where('status <>', 'CANCELLED')
+          ->limit(1)
+          ->get('t_sales_returns')
+          ->row();
+
+      if ($salesReturn) {
+        throw new Exception(
+          "Sales Invoice {$salesInvoice->si_no} cannot be reversed because "
+          . "Sales Return {$salesReturn->sr_no} already exists for it. "
+          . "Resolve the Sales Return first."
+        );
+      }
+
+      /*** posted Credit Memo */
+      $creditMemo = $this->db
+          ->select('cm_no')
+          ->where('sales_invoice_id', (int)$id)
+          ->where('status', 'POSTED')
+          ->limit(1)
+          ->get('t_credit_memos')
+          ->row();
+
+      if ($creditMemo) {
+        throw new Exception(
+          "Sales Invoice {$salesInvoice->si_no} cannot be reversed because "
+          . "Credit Memo {$creditMemo->cm_no} already exists for it. "
+          . "Resolve the Credit Memo first."
+        );
+      }
+
+      return [
+        'success' => TRUE,
+        'message' => "Sales Invoice {$salesInvoice->si_no} can be reversed.",
+        'data'    => []
+      ];
+
+    } catch (Exception $ex) {
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data'    => []
+      ];
+    }
+  }
+
+  /*** reverse POSTED Sales Invoice */
+  public function reverse($ids, $reverseReason)
+  {
+    try {
+      if (empty($ids)) {
+        throw new Exception(
+          'Please select at least one Sales Invoice.'
+        );
+      }
+
+      if (trim($reverseReason) === '') {
+        throw new Exception(
+          'Reverse reason is required.'
+        );
+      }
+
+      $this->db->trans_begin();
+
+      foreach ($ids as $id) {
+        /*** validate downstream dependencies */
+        $validation = $this->canReverse($id);
+
+        if (!$validation['success']) {
+          throw new Exception(
+            $validation['message']
+          );
+        }
+
+        /*** authoritative Sales Invoice */
+        $salesInvoice = $this->db
+            ->where('id', (int)$id)
+            ->get('t_sales_invoices')
+            ->row();
+
+        if (!$salesInvoice) {
+          throw new Exception(
+            'Sales Invoice not found.'
+          );
+        }
+
+        /***
+         * A reversed SI remains in history.
+         * Never delete or rewrite the original posted document.
+         */
+        $this->db
+            ->where('id', (int)$id)
+            ->update(
+              't_sales_invoices',
+              [
+                'status'         => 'REVERSED',
+                'reverse_reason' => trim($reverseReason),
+                'reversed_by'    => $this->session->userdata('user_id'),
+                'reversed_on'    => date('Y-m-d H:i:s'),
+                'updated_by'     => $this->session->userdata('user_id'),
+                'updated_on'     => date('Y-m-d H:i:s')
+              ]
+            );
+      }
+
+      if (!$this->db->trans_status()) {
+        throw new Exception(
+          'Unable to reverse Sales Invoice.'
+        );
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Sales Invoice(s) reversed successfully.',
+        'data'    => []
+      ];
+
+    } catch (Exception $ex) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data'    => []
+      ];
+    }
+  }
+
   public function cancel($ids, $cancelReason)
   {
     try {
@@ -787,7 +985,7 @@ class Sales_invoice_model extends CI_Model
                       SUM(sid.qty) qty_invoiced
                     FROM t_sales_invoice_details sid
                     INNER JOIN t_sales_invoices si ON si.id = sid.sales_invoice_id
-                    WHERE si.status <> 'CANCELLED'
+                    WHERE si.status IN ('OPEN', 'POSTED')
                     GROUP BY sid.sales_order_detail_id
                   ) inv
                   ON inv.sales_order_detail_id = sod.id
@@ -879,7 +1077,7 @@ class Sales_invoice_model extends CI_Model
                                       SUM(sid.qty) AS qty_invoiced
                                   FROM t_sales_invoice_details sid
                                   INNER JOIN t_sales_invoices si ON si.id = sid.sales_invoice_id
-                                  WHERE si.status <> 'CANCELLED'
+                                  WHERE si.status IN ('OPEN', 'POSTED')
                                     AND si.delivery_receipt_id = ?
                                   GROUP BY sid.sales_order_detail_id
                               ) inv
