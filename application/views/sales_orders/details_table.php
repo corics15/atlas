@@ -38,7 +38,7 @@
                 <th class="text-right">Remaining</th>
                 <th class="text-right">Qty</th>
 
-                <th class="text-right">Unit Price</th>
+                <th class="text-right">SRP</th>
                 <th class="text-center">Discount Type</th>
                 <th class="text-right">Discount</th>
                 <th class="text-right">Net Amt</th>

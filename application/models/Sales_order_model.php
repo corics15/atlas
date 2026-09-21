@@ -387,7 +387,22 @@ class Sales_order_model extends CI_Model
               );
             }
 
-            /*** validate selling price */
+            /***
+             * SALES ORDER PRICE SNAPSHOT:
+             *
+             * unit_price is the selling price/SRP already resolved by the Sales
+             * Order UI for the selected product + UOM.
+             *
+             * Current master-price sources:
+             * - Primary product UOM: m_products.srp
+             * - UOM-specific price: m_product_uom.selling_price
+             *
+             * m_products.selling_price is legacy and must NOT be used for new logic.
+             *
+             * Do NOT recalculate unit_price from the current product master here.
+             * The value saved in t_sales_order_details.unit_price is a transaction
+             * snapshot so future SRP changes do not alter historical Sales Orders.
+             */
             $unitPrice = (float)($detail->unit_price ?? 0);
 
             if ($unitPrice < 0) {

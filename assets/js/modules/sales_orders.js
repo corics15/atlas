@@ -473,9 +473,39 @@ document.addEventListener("DOMContentLoaded", async () => {
 			return;
 		}
 
-		/*** base UOM always has conversion 1 */
+		/***
+		 * BASE UOM PRICING RULE:
+		 * m_products.srp is the authoritative SRP for the product base UOM.
+		 * m_products.selling_price is legacy and must not be used.
+		 *
+		 * When returning from another UOM to the base UOM, reload the SRP
+		 * so the previously selected UOM-specific price is not retained.
+		 */
 		if (uomId === baseUomId) {
+			const result = await Atlas.ajax.post("sales-orders/get-uom-conversion", {
+				product_id: productId,
+				uom_id: uomId,
+				base_uom_id: baseUomId,
+			});
+
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
+
 			row.dataset.conversionFactor = 1;
+
+			row.querySelector(".so-unit-price").value =
+				result.data.selling_price || 0;
+
+			const baseQtyAvailable = Atlas.format.parseNumber(
+				row.dataset.baseQtyAvailable || 0,
+			);
+
+			row.querySelector(".so-available").textContent =
+				Atlas.format.amount(baseQtyAvailable);
+
+			calculateSalesOrderRow(row);
 			markDirty();
 			return;
 		}
@@ -491,14 +521,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 			return;
 		}
 
-		/*** prompt conversion */
+		/*** known non-base UOM */
 		if (result.data.is_known) {
 			row.dataset.conversionFactor = result.data.conversion_factor;
 
-			/*** load default selling price for selected UOM */
+			/***
+			 * UOM PRICING RULE:
+			 * m_product_uom.selling_price stores the SRP for this specific UOM.
+			 * The database column retains its historical name "selling_price",
+			 * but its business meaning in Sales Order is UOM-specific SRP.
+			 */
 			row.querySelector(".so-unit-price").value = Atlas.format
 				.parseNumber(result.data.selling_price || 0)
 				.toFixed(2);
+
 			calculateSalesOrderRow(row);
 
 			const baseQtyAvailable = Atlas.format.parseNumber(
@@ -507,6 +543,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			const qtyAvailable =
 				baseQtyAvailable /
 				Atlas.format.parseNumber(row.dataset.conversionFactor);
+
 			row.querySelector(".so-available").textContent =
 				Atlas.format.amount(qtyAvailable);
 
@@ -520,46 +557,74 @@ document.addEventListener("DOMContentLoaded", async () => {
 			(option) => Atlas.format.parseNumber(option.value) === baseUomId,
 		);
 		const baseUom = baseUomOption ? baseUomOption.text.trim() : "BASE UOM";
+
 		const unitsPerBase = await Atlas.dialog.number({
 			title: "UOM Conversion",
 			html: `<div class="text-center">
-          <p>
-            ATLAS does not yet have a<br>conversion defined for
-            <span class="font-weight-500 text-danger">${selectedUom}</span>.
-          </p>
-          <p>
-            The base UOM for this product is
-            <span class="font-weight-500 text-info">${baseUom}</span>.
-          </p>
-          <p>
-            How many <span class="font-weight-500 text-danger">${selectedUom}</span>
-            are in <span class="font-weight-500 text-info">1 ${baseUom}</span>?
-          </p>
-        </div>`,
+      <p>
+        ATLAS does not yet have a<br>conversion defined for
+        <span class="font-weight-500 text-danger">${selectedUom}</span>.
+      </p>
+      <p>
+        The base UOM for this product is
+        <span class="font-weight-500 text-info">${baseUom}</span>.
+      </p>
+      <p>
+        How many <span class="font-weight-500 text-danger">${selectedUom}</span>
+        are in <span class="font-weight-500 text-info">1 ${baseUom}</span>?
+      </p>
+    </div>`,
 			inputPlaceholder: `1 ${baseUom} = ? ${selectedUom}`,
 			min: 0.0001,
 			confirmText: "Use Conversion",
 		});
 
 		if (unitsPerBase === null) {
-			/*** return to base UOM */
+			/***
+			 * User cancelled the unknown-UOM conversion.
+			 * Return to the base UOM and restore its authoritative SRP.
+			 */
 			e.target.value = baseUomId;
 			row.dataset.conversionFactor = 1;
+
+			const baseResult = await Atlas.ajax.post(
+				"sales-orders/get-uom-conversion",
+				{
+					product_id: productId,
+					uom_id: baseUomId,
+					base_uom_id: baseUomId,
+				},
+			);
+
+			if (!baseResult.success) {
+				Atlas.toast.error(baseResult.message);
+				return;
+			}
+
+			row.querySelector(".so-unit-price").value = Atlas.format
+				.parseNumber(baseResult.data.selling_price || 0)
+				.toFixed(2);
+
 			const baseQtyAvailable = Atlas.format.parseNumber(
 				row.dataset.baseQtyAvailable || 0,
 			);
+
 			row.querySelector(".so-available").textContent =
 				Atlas.format.amount(baseQtyAvailable);
+
+			calculateSalesOrderRow(row);
 			return;
 		}
 
 		/*** convert human-friendly relationship to ATLAS base factor */
 		const conversionFactor = 1 / unitsPerBase;
 		row.dataset.conversionFactor = conversionFactor;
+
 		const baseQtyAvailable = Atlas.format.parseNumber(
 			row.dataset.baseQtyAvailable || 0,
 		);
 		const qtyAvailable = baseQtyAvailable / conversionFactor;
+
 		row.querySelector(".so-available").textContent =
 			Atlas.format.amount(qtyAvailable);
 

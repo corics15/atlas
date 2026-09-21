@@ -253,8 +253,17 @@ class Sales_orders extends MY_Controller
     /*** selected UOM is already the product base UOM */
     if ($uomId === $baseUomId) {
 
+      /***
+       * PRICING RULE:
+       * m_products.srp is the authoritative selling price for the BASE UOM.
+       * m_products.selling_price is a legacy field and must not be used here.
+       *
+       * Keep the response key as "selling_price" for compatibility with the
+       * existing Sales Order JS. Non-base UOM pricing comes from
+       * m_product_uom.selling_price, which represents that UOM's SRP.
+       */
       $product = $this->db
-          ->select('selling_price')
+          ->select('srp')
           ->where('id', $productId)
           ->get('m_products')
           ->row();
@@ -272,7 +281,7 @@ class Sales_orders extends MY_Controller
         '',
         [
           'conversion_factor' => 1,
-          'selling_price' => (float) $product->selling_price,
+          'selling_price' => (float) $product->srp,
           'is_known' => true
         ]
       );

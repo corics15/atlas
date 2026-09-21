@@ -13,6 +13,18 @@ class Product_finder_model extends CI_Model
     $search = "%{$keyword}%";
     $branchId = (int) $this->session->userdata('branch_id');
 
+    /***
+     * PRODUCT FINDER DEFAULT PRICE:
+     *
+     * Product Finder initially returns the product BASE UOM defined by
+     * m_products.uom_id. Its authoritative SRP is m_products.srp.
+     *
+     * Do NOT use m_products.selling_price; it is a legacy field.
+     * Do NOT prefer m_product_uom.selling_price here. That field stores
+     * UOM-specific SRP and is resolved only when the user selects another
+     * UOM on the transaction screen.
+     */
+
     return $this->db
       ->select("
         p.id,
@@ -21,7 +33,7 @@ class Product_finder_model extends CI_Model
         p.description,
         p.uom_id,
         u.uom,
-        COALESCE(pu.selling_price, p.selling_price, p.srp, 0) AS srp,
+        p.srp,
         COALESCE(bi.qty_on_hand, 0) AS qty_on_hand
       ")
       ->from('m_products p')

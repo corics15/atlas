@@ -697,7 +697,7 @@ class Sales_return_model extends CI_Model
               'sales_return_id'  => $return->id,
               'amount'           => $creditMemoAmount,
               'available_credit' => $availableCredit,
-              'remarks'          => "SALES RETURN {$return->sr_no}",
+              'remarks'          => "SALES RETURN {$return->sr_no}" . (!empty(trim($return->remarks ?? '')) ? ' - ' . trim(strtoupper($return->remarks)) : ''),
               'status'           => 'POSTED',
               'entered_by'       => $this->session->userdata('user_id'),
               'entered_on'       => date('Y-m-d H:i:s'),
