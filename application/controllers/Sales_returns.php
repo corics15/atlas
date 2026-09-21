@@ -25,6 +25,7 @@ class Sales_returns extends MY_Controller
       'OPEN',
       'POSTED',
       'CANCELLED',
+      'REVERSED',
     ];
 
     $filter = $this->decodeFilter($this->input->get('filter'));
@@ -217,6 +218,29 @@ class Sales_returns extends MY_Controller
 
     $request = $this->getJsonRequest();
     $result = $this->Sales_return_model->post($request['ids']);
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message'],
+      $result['data']
+    );
+  }
+
+  public function reverse()
+  {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
+    $ids = $this->getJsonRequest('ids');
+    $reverseReason = $this->getJsonRequest('reverse_reason');
+
+    $result = $this->Sales_return_model->reverse(
+      $ids,
+      $reverseReason
+    );
 
     return $this->jsonResponse(
       $result['success'],

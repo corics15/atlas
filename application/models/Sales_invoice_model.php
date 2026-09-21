@@ -775,7 +775,7 @@ class Sales_invoice_model extends CI_Model
       $salesReturn = $this->db
           ->select('sr_no, status')
           ->where('sales_invoice_id', (int)$id)
-          ->where('status <>', 'CANCELLED')
+          ->where_in('status', ['OPEN', 'POSTED'])
           ->limit(1)
           ->get('t_sales_returns')
           ->row();
@@ -870,7 +870,7 @@ class Sales_invoice_model extends CI_Model
               't_sales_invoices',
               [
                 'status'         => 'REVERSED',
-                'reverse_reason' => trim($reverseReason),
+                'reverse_reason' => trim(strtoupper($reverseReason)),
                 'reversed_by'    => $this->session->userdata('user_id'),
                 'reversed_on'    => date('Y-m-d H:i:s'),
                 'updated_by'     => $this->session->userdata('user_id'),

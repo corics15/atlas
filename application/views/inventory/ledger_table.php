@@ -39,6 +39,7 @@
               'DR'         => 'badge-avocado-green',
               'DR-CANCEL'  => 'badge-danger',
               'OPENING INVENTORY' => 'badge-dark-olive-brown',
+              'SR-REVERSAL' => 'badge-burnt-orange',
             ];
           ?>
 
@@ -48,22 +49,14 @@
         </td>
 
         <td class="text-center">
-          <a
-            href="<?= htmlspecialchars($row->reference_url) ?>"
-            class="font-weight-500 text-olive"
-            data-toggle="tooltip" title="Open Transaction" target="_blank">
+          <a href="<?= htmlspecialchars($row->reference_url) ?>" class="font-weight-500 text-olive" data-toggle="tooltip" title="Open Transaction" target="_blank">
             <i class="fas fa-external-link-alt fa-xs mr-1"></i>
             <?= htmlspecialchars($row->reference_no); ?>
           </a>
         </td>
 
-        <td class="text-right">
-          <?= $row->qty_in > 0 ? number_format($row->qty_in) : ''; ?>
-        </td>
-
-        <td class="text-right">
-          <?= $row->qty_out > 0 ? number_format($row->qty_out) : ''; ?>
-        </td>
+        <td class="text-right"><?= $row->qty_in > 0 ? number_format($row->qty_in) : ''; ?></td>
+        <td class="text-right"><?= $row->qty_out > 0 ? number_format($row->qty_out) : ''; ?></td>
 
         <?php
             $balanceClass = '';
@@ -81,9 +74,7 @@
             }
             $previousBalance = $row->balance_after;
           ?>
-        <td class="text-right <?= $balanceClass; ?>">
-          <?= $trend .' '.number_format($row->balance_after); ?>
-        </td>
+        <td class="text-right <?= $balanceClass; ?>"><?= $trend .' '.number_format($row->balance_after); ?></td>
 
       </tr>
       <?php

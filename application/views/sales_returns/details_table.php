@@ -8,10 +8,31 @@
             Sales Return Details
           </h3>
           <div class="ml-auto">
-            <a href="<?= base_url('sales-returns') ?>" type="button" class="btn btn-sm btn-link"><i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List</a>
-            <button type="button" class="btn btn-sm btn-link" id="btnPostSalesReturn" <?= !$isEditable ? 'disabled' : '' ?>><i class="fa fa-check mr-2"></i>Post</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnPrintSalesReturn"><i class="fa fa-print mr-2"></i>Print</button>
-            <button type="button" class="btn btn-sm btn-link" id="btnCancelSalesReturn" <?= !$isEditable ? 'disabled' : '' ?>><i class="fas fa-ban mr-2"></i>Cancel</button>
+            <a href="<?= base_url('sales-returns') ?>" type="button" class="btn btn-sm btn-link">
+              <i class="fa fa-arrow-alt-circle-left mr-2"></i>Back To List
+            </a>
+
+            <?php if (!$isEdit || $header->status === 'OPEN'): ?>
+              <button type="button" class="btn btn-sm btn-link" id="btnPostSalesReturn">
+                <i class="fa fa-check mr-2"></i>Post
+              </button>
+            <?php endif; ?>
+
+            <button type="button" class="btn btn-sm btn-link" id="btnPrintSalesReturn">
+              <i class="fa fa-print mr-2"></i>Print
+            </button>
+
+            <?php if (!$isEdit || $header->status === 'OPEN'): ?>
+              <button type="button" class="btn btn-sm btn-link" id="btnCancelSalesReturn">
+                <i class="fas fa-ban mr-2"></i>Cancel
+              </button>
+            <?php endif; ?>
+
+            <?php if ($isEdit && $header->status === 'POSTED'): ?>
+              <button type="button" class="btn btn-sm btn-link" id="btnReverseSalesReturn">
+                <i class="fas fa-undo-alt mr-2"></i>Reverse
+              </button>
+            <?php endif; ?>
           </div>
         </div>
 
@@ -68,9 +89,7 @@
                       </td>
 
                       <?php /*** barcode */ ?>
-                      <td>
-                        <input id="bc-<?= $index + 1 ?>" type="text" class="form-control form-control-sm so-barcode text-center" placeholder="Barcode" value="<?= htmlspecialchars($detail->barcode) ?>" readonly>
-                      </td>
+                      <td><input id="bc-<?= $index + 1 ?>" type="text" class="form-control form-control-sm so-barcode text-center" placeholder="Barcode" value="<?= htmlspecialchars($detail->barcode) ?>" readonly></td>
 
                       <?php /*** description */ ?>
                       <td class="so-description" <?= mb_strlen($detail->description) > 30 ? 'data-toggle="tooltip" title="'.htmlspecialchars($detail->description).'"' : '' ?>>
@@ -88,24 +107,16 @@
                       ?>
 
                       <?php /*** qty invoiced */ ?>
-                      <td class="text-right">
-                        <?= number_format($qtyInvoiced, 0) ?>
-                      </td>
+                      <td class="text-right"><?= number_format($qtyInvoiced, 0) ?></td>
 
                       <?php /*** qty returnable */ ?>
-                      <td class="so-available text-right">
-                        <?= number_format($qtyReturnable, 0) ?>
-                      </td>
+                      <td class="so-available text-right"><?= number_format($qtyReturnable, 0) ?></td>
 
                       <?php /*** qty to return */ ?>
-                      <td class="text-right">
-                        <input type="number" step="any" min="0" max="<?= $qtyReturnable ?>" class="form-control form-control-sm text-right so-qty" value="<?= $isEdit ? number_format($detail->qty, 0) : '' ?>" placeholder="<?= number_format($qtyReturnable, 0) ?>">
-                      </td>
+                      <td class="text-right"><input type="number" step="any" min="0" max="<?= $qtyReturnable ?>" class="form-control form-control-sm text-right so-qty" value="<?= $isEdit ? number_format($detail->qty, 0) : '' ?>" placeholder="<?= number_format($qtyReturnable, 0) ?>"></td>
 
                       <?php /*** uom */ ?>
-                      <td class="so-uom text-center">
-                        <?= htmlspecialchars($detail->uom) ?>
-                      </td>
+                      <td class="so-uom text-center"><?= htmlspecialchars($detail->uom) ?></td>
 
                       <?php
                         /*** unit price */
@@ -134,9 +145,7 @@
                         $netAmount = $grossAmount - $discountAmount;
                       ?>
 
-                      <td class="text-right">
-                        <?= number_format($unitPrice, 2) ?>
-                      </td>
+                      <td class="text-right"><?= number_format($unitPrice, 2) ?></td>
 
                       <?php /*** discount type */ ?>
                       <td class="text-center">
@@ -219,33 +228,57 @@
 
                 <div>
                   <span class="font-weight-500">1.</span>
-                  Review the products from the selected <span class="font-weight-500 text-success">Sales Invoice</span>.
+                  Use a Sales Return only when goods are <span class="font-weight-500 text-danger">actually returned by the customer</span>.
+                  Do not use a Sales Return only to correct an incorrectly entered transaction.
                 </div>
 
                 <div>
                   <span class="font-weight-500">2.</span>
-                  Check the <span class="font-weight-500 text-danger">Available to Return</span> quantity for each item.
+                  Review the products from the selected <span class="font-weight-500 text-success">Sales Invoice</span>
+                  and check the <span class="font-weight-500 text-danger">Available to Return</span> quantity.
                 </div>
 
                 <div>
                   <span class="font-weight-500">3.</span>
-                  Enter the actual quantity being returned under <span class="font-weight-500 text-danger">Return Qty</span>.
+                  Enter the actual quantity received back from the customer under
+                  <span class="font-weight-500 text-danger">Return Qty</span>.
                   Only items from the original Sales Invoice may be returned.
                 </div>
 
                 <div>
                   <span class="font-weight-500">4.</span>
-                  Review the Unit Price, Discount, Net Amount, VAT, and total Sales Return amount.
+                  Review the Unit Price, Discount, Net Amount, VAT, and total Sales Return amount before saving.
                 </div>
 
                 <div>
                   <span class="font-weight-500">5.</span>
-                  Click <span class="font-weight-500 text-brown">Save Sales Return</span> after verifying the returned items and quantities.
+                  While the Sales Return is <span class="font-weight-500 text-secondary">OPEN</span>,
+                  it may still be edited or cancelled.
                 </div>
 
                 <div>
                   <span class="font-weight-500">6.</span>
-                  Once verified, <span class="font-weight-500 text-orange">Post</span> the Sales Return to update inventory.
+                  Once verified, <span class="font-weight-500 text-orange">Post</span> the Sales Return.
+                  Posting returns the items to inventory and creates the corresponding Credit Memo.
+                </div>
+
+                <div>
+                  <span class="font-weight-500">7.</span>
+                  A <span class="font-weight-500 text-success">POSTED</span> Sales Return can no longer be edited or cancelled.
+                  If it was posted incorrectly, use <span class="font-weight-500 text-danger">Reverse</span> instead.
+                </div>
+
+                <div>
+                  <span class="font-weight-500">8.</span>
+                  Reversing a Sales Return removes its inventory effect and reverses its generated Credit Memo.
+                  The original Sales Return remains in the system as <span class="font-weight-500 text-danger">REVERSED</span>
+                  for historical reference.
+                </div>
+
+                <div>
+                  <span class="font-weight-500">9.</span>
+                  A Sales Return cannot be reversed if its Credit Memo has already been applied to another Sales Invoice.
+                  Resolve the Credit Memo allocation first.
                 </div>
               </div>
 

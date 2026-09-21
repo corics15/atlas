@@ -101,6 +101,8 @@ class Inventory extends MY_Controller
       'PR',
       'SI',
       'SR',
+      'SALE',
+      'SR-REVERSAL',
       'TRANSFER',
     ];
 
@@ -141,6 +143,9 @@ class Inventory extends MY_Controller
         case 'DR':
         case 'DR-CANCEL':
           $url = 'delivery-receipts/edit/';
+          break;
+        case 'SR-REVERSAL':
+          $url = 'sales-returns/edit/';
           break;
         case 'ADJUSTMENT':
         default:

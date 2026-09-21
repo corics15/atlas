@@ -65,8 +65,8 @@ class Sales_return_model extends CI_Model
             COALESCE((
               SELECT SUM(sd.qty)
               FROM t_sales_return_details sd
-              WHERE sd.sales_return_id  = sr.id 
-            ), 0) AS item_count            
+              WHERE sd.sales_return_id  = sr.id
+            ), 0) AS item_count
         ")
         ->from('t_sales_returns sr')
         ->join(
@@ -156,7 +156,7 @@ class Sales_return_model extends CI_Model
                                   SUM(srd2.qty) AS qty_returned
                                 FROM t_sales_return_details srd2
                                 INNER JOIN t_sales_returns sr2 ON sr2.id = srd2.sales_return_id
-                                WHERE sr2.status <> 'CANCELLED' AND sr2.id <> ?
+                                WHERE sr2.status IN ('OPEN', 'POSTED') AND sr2.id <> ?
                                 GROUP BY srd2.sales_invoice_detail_id
                               ) prev
                                 ON prev.sales_invoice_detail_id = srd.sales_invoice_detail_id
@@ -230,7 +230,7 @@ class Sales_return_model extends CI_Model
                   SUM(srd.qty) qty_returned
               FROM t_sales_return_details srd
               INNER JOIN t_sales_returns sr ON sr.id = srd.sales_return_id
-              WHERE sr.status <> 'CANCELLED'
+              WHERE sr.status IN ('OPEN', 'POSTED')
               GROUP BY srd.sales_invoice_detail_id
           ) sr
           ON sr.sales_invoice_detail_id = sid.id
@@ -462,7 +462,7 @@ class Sales_return_model extends CI_Model
                   'srd.sales_invoice_detail_id',
                   $detail->sales_invoice_detail_id
                 )
-                ->where('sr.status <>', 'CANCELLED')
+                ->where_in('sr.status', ['OPEN', 'POSTED'])
                 ->get()
                 ->row();
 
@@ -751,6 +751,203 @@ class Sales_return_model extends CI_Model
           'message' => $ex->getMessage(),
           'data'    => []
         ];
+    }
+  }
+
+  public function canReverse($id)
+  {
+    $salesReturn = $this->db
+      ->select('id, sr_no, status')
+      ->where('id', (int)$id)
+      ->get('t_sales_returns')
+      ->row();
+
+    if (!$salesReturn) {
+      return [
+        'success' => FALSE,
+        'message' => 'Sales Return not found.'
+      ];
+    }
+
+    if ($salesReturn->status !== 'POSTED') {
+      return [
+        'success' => FALSE,
+        'message' => "Only POSTED Sales Returns can be reversed. {$salesReturn->sr_no} is {$salesReturn->status}."
+      ];
+    }
+
+    /*** generated Credit Memo must still be POSTED */
+    $creditMemo = $this->db
+      ->select('id, cm_no, status')
+      ->where('sales_return_id', (int)$salesReturn->id)
+      ->get('t_credit_memos')
+      ->row();
+
+    if (!$creditMemo) {
+      return [
+        'success' => FALSE,
+        'message' => "Sales Return {$salesReturn->sr_no} cannot be reversed because its Credit Memo was not found."
+      ];
+    }
+
+    if ($creditMemo->status !== 'POSTED') {
+      return [
+        'success' => FALSE,
+        'message' => "Sales Return {$salesReturn->sr_no} cannot be reversed because Credit Memo {$creditMemo->cm_no} is {$creditMemo->status}."
+      ];
+    }
+
+    /***
+     * once reusable Credit Memo value has been applied to another invoice,
+     * the Sales Return can no longer be reversed directly. Resolve that
+     * downstream financial transaction first so historical AR stays intact.
+     */
+    $allocation = $this->db
+      ->select('
+        cma.id,
+        cma.amount_applied,
+        si.si_no
+      ')
+      ->from('t_credit_memo_allocations cma')
+      ->join(
+        't_sales_invoices si',
+        'si.id = cma.sales_invoice_id',
+        'left'
+      )
+      ->where('cma.credit_memo_id', (int)$creditMemo->id)
+      ->order_by('cma.id', 'ASC')
+      ->get()
+      ->row();
+
+    if ($allocation) {
+      return [
+        'success' => FALSE,
+        'message' =>
+          "Sales Return {$salesReturn->sr_no} cannot be reversed because " .
+          "Credit Memo {$creditMemo->cm_no} has already been applied to " .
+          "Sales Invoice {$allocation->si_no}. Resolve the Credit Memo allocation first."
+      ];
+    }
+
+    return [
+      'success' => TRUE,
+      'message' => '',
+      'data' => [
+        'sales_return_id' => (int)$salesReturn->id,
+        'sr_no' => $salesReturn->sr_no,
+        'credit_memo_id' => (int)$creditMemo->id,
+        'cm_no' => $creditMemo->cm_no
+      ]
+    ];
+  }
+
+  public function reverse($ids, $reverseReason)
+  {
+    try {
+      if (empty($ids)) {
+        throw new Exception('No Sales Return selected.');
+      }
+
+      $reverseReason = trim($reverseReason);
+
+      if ($reverseReason === '') {
+        throw new Exception('Reverse reason is required.');
+      }
+
+      $this->db->trans_begin();
+
+      foreach ($ids as $id) {
+        $id = (int)$id;
+
+        /***
+         * A posted Sales Return may only be reversed while its generated
+         * Credit Memo has not been used by another Sales Invoice.
+         */
+        $canReverse = $this->canReverse($id);
+
+        if (!$canReverse['success']) {
+          throw new Exception($canReverse['message']);
+        }
+
+        $creditMemoId = (int)$canReverse['data']['credit_memo_id'];
+        $now = date('Y-m-d H:i:s');
+        $userId = $this->session->userdata('user_id');
+
+        /***
+         * Undo the inventory originally returned by this Sales Return.
+         * The original SR stock-ledger entries remain untouched; a separate
+         * SR-REVERSAL movement records the correction.
+         */
+        $inventoryResult = $this->Inventory_model
+          ->reverseSalesReturn($id);
+
+        if (!$inventoryResult['success']) {
+          throw new Exception($inventoryResult['message']);
+        }
+
+        /***
+         * The Credit Memo is the financial consequence of the Sales Return.
+         * Reverse it together with the originating Sales Return so inventory
+         * and Accounts Receivable remain synchronized.
+         */
+        $this->db
+          ->where('id', $creditMemoId)
+          ->where('status', 'POSTED')
+          ->update('t_credit_memos', [
+            'status' => 'REVERSED',
+            'reversed_by' => $userId,
+            'reversed_on' => $now,
+            'reverse_reason' => trim(strtoupper($reverseReason))
+          ]);
+
+        if ($this->db->affected_rows() !== 1) {
+          throw new Exception(
+            'Unable to reverse the generated Credit Memo.'
+          );
+        }
+
+        /*** finally mark the originating Sales Return as reversed */
+        $this->db
+          ->where('id', $id)
+          ->where('status', 'POSTED')
+          ->update('t_sales_returns', [
+            'status' => 'REVERSED',
+            'reversed_by' => $userId,
+            'reversed_on' => $now,
+            'reverse_reason' => trim(strtoupper($reverseReason)),
+            'updated_by' => $userId,
+            'updated_on' => $now
+          ]);
+
+        if ($this->db->affected_rows() !== 1) {
+          throw new Exception(
+            'Unable to reverse Sales Return.'
+          );
+        }
+      }
+
+      if (!$this->db->trans_status()) {
+        throw new Exception(
+          'Unable to reverse Sales Return.'
+        );
+      }
+
+      $this->db->trans_commit();
+
+      return [
+        'success' => TRUE,
+        'message' => 'Sales Return(s) reversed successfully.',
+        'data' => []
+      ];
+
+    } catch (Exception $ex) {
+      $this->db->trans_rollback();
+
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage(),
+        'data' => []
+      ];
     }
   }
 

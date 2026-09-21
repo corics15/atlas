@@ -1175,7 +1175,7 @@ class Customer_payment_model extends CI_Model
               't_customer_payments',
               [
                 'status'         => 'REVERSED',
-                'reverse_reason' => trim($reverseReason),
+                'reverse_reason' => trim(strtoupper($reverseReason)),
                 'reversed_by'    => $this->session->userdata('user_id'),
                 'reversed_on'    => date('Y-m-d H:i:s'),
                 'updated_by'     => $this->session->userdata('user_id'),

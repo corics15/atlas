@@ -1,395 +1,452 @@
-const btnSaveSalesReturn = document.getElementById('btnSaveSalesReturn');
-const btnPostSalesReturn = document.getElementById('btnPostSalesReturn');
-const btnEditSalesReturn = document.getElementById('btnEditSalesReturn');
-const btnRefreshSalesReturn = document.getElementById('btnRefreshSalesReturn');
-const btnCancelSalesReturn = document.getElementById('btnCancelSalesReturn');
-const btnPrintSalesReturn = document.getElementById('btnPrintSalesReturn');
+const btnSaveSalesReturn = document.getElementById("btnSaveSalesReturn");
+const btnPostSalesReturn = document.getElementById("btnPostSalesReturn");
+const btnEditSalesReturn = document.getElementById("btnEditSalesReturn");
+const btnRefreshSalesReturn = document.getElementById("btnRefreshSalesReturn");
+const btnCancelSalesReturn = document.getElementById("btnCancelSalesReturn");
+const btnReverseSalesReturn = document.getElementById("btnReverseSalesReturn");
+const btnPrintSalesReturn = document.getElementById("btnPrintSalesReturn");
 
-const txtCreditLimit = document.getElementById('txtCreditLimit');
+const txtCreditLimit = document.getElementById("txtCreditLimit");
 
-const hidSalesReturnId = document.getElementById('hidSalesReturnId');
-const hidSalesInvoiceId = document.getElementById('hidSalesInvoiceId');
+const hidSalesReturnId = document.getElementById("hidSalesReturnId");
+const hidSalesInvoiceId = document.getElementById("hidSalesInvoiceId");
 
 let isDirty = false;
 let isLoading = true;
 let isEditMode = hidSalesReturnId?.value ? true : false;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
+	Atlas.table.init({
+		checkbox: ".chkSalesReturn",
+		selectAll: "#chkSelectAllSalesReturn",
+	});
 
-  Atlas.table.init({
-    checkbox: '.chkSalesReturn',
-    selectAll: '#chkSelectAllSalesReturn',
-  });
+	/*** dirty tracking + live totals */
+	document.addEventListener("input", (e) => {
+		if (e.target.classList.contains("so-qty")) {
+			calculateSalesReturnTotals();
+			markDirty();
+			return;
+		}
+		if (e.target.id === "txtSalesReturnRemarks") {
+			markDirty();
+		}
+	});
 
-  /*** dirty tracking + live totals */
-  document.addEventListener('input', (e) => {
-    if (e.target.classList.contains('so-qty')) {
-      calculateSalesReturnTotals();
-      markDirty();
-      return;
-    }
-    if (e.target.id === 'txtSalesReturnRemarks') {
-      markDirty();
-    }
+	/*** edit */
+	btnEditSalesReturn?.addEventListener("click", () => {
+		const id = getSelectedId();
 
-  });
+		if (!id) {
+			return;
+		}
 
-  /*** edit */
-  btnEditSalesReturn?.addEventListener('click', () => {
-    const id = getSelectedId();
+		Atlas.page.redirect(`sales-returns/edit/${Atlas.id.encode(id)}`);
+	});
 
-    if (!id) {
-      return;
-    }
+	/*** save */
+	btnSaveSalesReturn?.addEventListener("click", async () => {
+		if (!validateSalesReturn()) {
+			return;
+		}
 
-    Atlas.page.redirect(`sales-returns/edit/${Atlas.id.encode(id)}`);
-  });
+		btnSaveSalesReturn.disabled = true;
 
-  /*** save */
-  btnSaveSalesReturn?.addEventListener('click', async () => {
+		try {
+			const salesReturn = {
+				id: Atlas.format.parseNumber(
+					document.getElementById("hidSalesReturnId").value,
+				),
+				sales_invoice_id: Atlas.format.parseNumber(
+					document.getElementById("hidSalesInvoiceId").value,
+				),
+				return_date: document.getElementById("dtSalesReturnDate").value,
+				customer_id: Atlas.format.parseNumber(
+					document.getElementById("selCustomer").value,
+				),
+				salesman_id: Atlas.format.parseNumber(
+					document.getElementById("selSalesman").value,
+				),
+				terms_id: Atlas.format.parseNumber(
+					document.getElementById("selTerms").value,
+				),
+				credit_limit: Atlas.format.parseNumber(
+					document.getElementById("txtCreditLimit").value,
+				),
+				remarks: document.getElementById("txtSalesReturnRemarks").value,
+				details: [],
+			};
 
-    if (!validateSalesReturn()) {
-      return;
-    }
+			document.querySelectorAll("#tblSalesReturnDetails tr").forEach((row) => {
+				if (!row.dataset.productId) {
+					return;
+				}
 
-    btnSaveSalesReturn.disabled = true;
+				const qty = Atlas.format.parseNumber(
+					row.querySelector(".so-qty").value,
+				);
 
-    try {
+				if (qty <= 0) {
+					return;
+				}
 
-      const salesReturn = {
-        id: Atlas.format.parseNumber(document.getElementById('hidSalesReturnId').value),
-        sales_invoice_id: Atlas.format.parseNumber(document.getElementById('hidSalesInvoiceId').value),
-        return_date: document.getElementById('dtSalesReturnDate').value,
-        customer_id: Atlas.format.parseNumber(document.getElementById('selCustomer').value),
-        salesman_id: Atlas.format.parseNumber(document.getElementById('selSalesman').value),
-        terms_id: Atlas.format.parseNumber(document.getElementById('selTerms').value),
-        credit_limit: Atlas.format.parseNumber(document.getElementById('txtCreditLimit').value),
-        remarks: document.getElementById('txtSalesReturnRemarks').value,
-        details: []
-      };
+				salesReturn.details.push({
+					sales_invoice_detail_id: Atlas.format.parseNumber(
+						row.dataset.salesInvoiceDetailId,
+					),
+					product_id: Atlas.format.parseNumber(row.dataset.productId),
+					uom_id: Atlas.format.parseNumber(row.dataset.uomId),
+					conversion_factor: Atlas.format.parseNumber(
+						row.dataset.conversionFactor,
+					),
+					qty: qty,
+				});
+			});
 
-      document.querySelectorAll('#tblSalesReturnDetails tr').forEach(row => {
+			const result = await Atlas.ajax.post("sales-returns/save", salesReturn);
 
-        if (!row.dataset.productId) {
-          return;
-        }
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
 
-        const qty = Atlas.format.parseNumber(row.querySelector('.so-qty').value);
+			Atlas.toast.success(result.message);
+			document.getElementById("hidSalesReturnId").value =
+				result.data.sales_return_id;
+			setTimeout(
+				() =>
+					Atlas.page.redirect(
+						`sales-returns/edit/${Atlas.id.encode(result.data.sales_return_id)}`,
+					),
+				1500,
+			);
+			isEditMode = true;
+			isDirty = false;
+		} finally {
+			btnSaveSalesReturn.disabled = false;
+		}
+	});
 
-        if (qty <= 0) {
-          return;
-        }
+	/*** post */
+	btnPostSalesReturn?.addEventListener("click", async () => {
+		let ids = Atlas.table.selectedIds();
 
-        salesReturn.details.push({
-          sales_invoice_detail_id: Atlas.format.parseNumber(row.dataset.salesInvoiceDetailId),
-          product_id: Atlas.format.parseNumber(row.dataset.productId),
-          uom_id: Atlas.format.parseNumber(row.dataset.uomId),
-          conversion_factor: Atlas.format.parseNumber(row.dataset.conversionFactor),
-          qty: qty
-        });
+		if (!ids || ids.length === 0) {
+			if (window.salesReturnId === 0) {
+				Atlas.toast.warning("New Sales Return, not saved yet.");
+				return false;
+			} else if (window.salesReturnId) {
+				ids = [window.salesReturnId];
+			} else {
+				Atlas.toast.warning("Please select at least one Sales Return");
+				return false;
+			}
+		}
 
-      });
-
-      const result = await Atlas.ajax.post(
-        'sales-returns/save',
-        salesReturn
-      );
-
-      if (!result.success) {
-        Atlas.toast.error(result.message);
-        return;
-      }
-
-      Atlas.toast.success(result.message);
-      document.getElementById('hidSalesReturnId').value = result.data.sales_return_id;
-      setTimeout(() => Atlas.page.redirect(`sales-returns/edit/${Atlas.id.encode(result.data.sales_return_id)}`), 1500);
-      isEditMode = true;
-      isDirty = false;
-
-    }
-    finally {
-      btnSaveSalesReturn.disabled = false;
-    }
-
-  });
-
-  /*** post */
-  btnPostSalesReturn?.addEventListener('click', async () => {
-    let ids = Atlas.table.selectedIds();
-
-    if (!ids || ids.length === 0) {
-      if (window.salesReturnId === 0) {
-        Atlas.toast.warning('New Sales Return, not saved yet.');
-        return false;
-      } else if (window.salesReturnId) {
-        ids = [window.salesReturnId];
-      } else {
-        Atlas.toast.warning('Please select at least one Sales Return');
-        return false;
-      }
-    }
-
-    const result = await Atlas.dialog.confirm(
-      'Confirm Action',
-      `<div class="text-brown text-center">
+		const result = await Atlas.dialog.confirm(
+			"Confirm Action",
+			`<div class="text-brown text-center">
         <p>Inventory quantities will be updated.<br>
         This action cannot be undone.</p>
         <p class="font-weight-500 text-danger">Post Sales Return?</p>
-      </div>`
-    );
+      </div>`,
+		);
 
-    if (!result) {
-      return;
-    }
+		if (!result) {
+			return;
+		}
 
-    btnPostSalesReturn.disabled = true;
+		btnPostSalesReturn.disabled = true;
 
-    try {
-      const response = await Atlas.ajax.post(
-        'sales-returns/post',
-        {
-          ids: ids
-        }
-      );
+		try {
+			const response = await Atlas.ajax.post("sales-returns/post", {
+				ids: ids,
+			});
 
-      if (!response.success) {
-        Atlas.toast.error(response.message);
-        return;
-      }
+			if (!response.success) {
+				Atlas.toast.error(response.message);
+				return;
+			}
 
-      Atlas.toast.success(response.message);
-      setTimeout(() => Atlas.page.refresh(), 1500);
+			Atlas.toast.success(response.message);
+			setTimeout(() => Atlas.page.refresh(), 1500);
+		} finally {
+			btnPostSalesReturn.disabled = false;
+		}
+	});
 
-    } finally {
-      btnPostSalesReturn.disabled = false;
-    }
-  });
+	/*** cancel */
+	btnCancelSalesReturn?.addEventListener("click", async () => {
+		let ids = Atlas.table.selectedIds();
 
-  /*** cancel */
-  btnCancelSalesReturn?.addEventListener('click', async () => {
-    let ids = Atlas.table.selectedIds();
+		if (!ids || ids.length === 0) {
+			if (window.salesReturnId === 0) {
+				Atlas.toast.warning("New Sales Return, not saved yet.");
+				return false;
+			} else if (window.salesReturnId) {
+				ids = [window.salesReturnId];
+			} else {
+				Atlas.toast.warning("Please select at least one Sales Return");
+				return false;
+			}
+		}
 
-    if (!ids || ids.length === 0) {
-      if (window.salesReturnId === 0) {
-        Atlas.toast.warning('New Sales Return, not saved yet.');
-        return false;
-      } else if (window.salesReturnId) {
-        ids = [window.salesReturnId];
-      } else {
-        Atlas.toast.warning('Please select at least one Sales Return');
-        return false;
-      }
-    }
+		const reason = await Atlas.dialog.textarea({
+			icon: "warning",
+			title: `Cancel ${ids.length} Sales Return(s)?`,
+			text: "Please provide the reason for cancellation.",
+			inputPlaceholder: "Enter cancellation reason...",
+			required: false,
+			confirmText: "Confirm Cancellation",
+		});
 
-    const reason = await Atlas.dialog.textarea({
-      icon: 'warning',
-      title: `Cancel ${ids.length} Sales Return(s)?`,
-      text: 'Please provide the reason for cancellation.',
-      inputPlaceholder: 'Enter cancellation reason...',
-      required: false,
-      confirmText: 'Confirm Cancellation'
-    });
+		if (reason === null) {
+			return;
+		}
 
-    if (reason === null) {
-      return;
-    }
+		const result = await Atlas.ajax.post("sales-returns/cancel", {
+			ids: ids,
+			cancel_reason: reason,
+		});
 
-    const result = await Atlas.ajax.post(
-      'sales-returns/cancel',
-      {
-        ids: ids,
-        cancel_reason: reason
-      }
-    );
+		if (!result.success) {
+			Atlas.toast.error(result.message);
+			return;
+		}
 
-    if (!result.success) {
-      Atlas.toast.error(result.message);
-      return;
-    }
+		Atlas.toast.success(result.message);
+		setTimeout(() => Atlas.page.refresh(), 1200);
+	});
 
-    Atlas.toast.success(result.message);
-    setTimeout(() => Atlas.page.refresh(), 1200);
-  });
+	/*** reverse */
+	btnReverseSalesReturn?.addEventListener("click", async () => {
+		let ids = Atlas.table.selectedIds();
 
-  /*** print */
-  btnPrintSalesReturn?.addEventListener('click', printSalesReturn);
+		if (!ids || ids.length === 0) {
+			if (window.salesReturnId) {
+				ids = [window.salesReturnId];
+			} else {
+				Atlas.toast.warning("Please select at least one Sales Return");
+				return;
+			}
+		}
 
-  /*** refresh */
-  btnRefreshSalesReturn?.addEventListener('click', () => Atlas.page.redirect(`sales-returns`));
+		const reason = await Atlas.dialog.textarea({
+			icon: "warning",
+			title: `Reverse ${ids.length} Sales Return(s)?`,
+			text: "Please provide the reason for reversal.",
+			inputPlaceholder:
+				"Enter reversal reason, for audit purposes, this field is required...",
+			required: true,
+			confirmText: "Confirm Reversal",
+		});
 
-  /*** initialize Sales Return totals */
-  calculateSalesReturnTotals();
+		if (reason === null) {
+			return;
+		}
 
-  isDirty = false;
-  isLoading = false;
+		btnReverseSalesReturn.disabled = true;
 
+		try {
+			const result = await Atlas.ajax.post("sales-returns/reverse", {
+				ids: ids,
+				reverse_reason: reason,
+			});
+
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
+
+			Atlas.toast.success(result.message);
+			setTimeout(() => Atlas.page.refresh(), 1200);
+		} finally {
+			btnReverseSalesReturn.disabled = false;
+		}
+	});
+
+	/*** print */
+	btnPrintSalesReturn?.addEventListener("click", printSalesReturn);
+
+	/*** refresh */
+	btnRefreshSalesReturn?.addEventListener("click", () =>
+		Atlas.page.redirect(`sales-returns`),
+	);
+
+	/*** initialize Sales Return totals */
+	calculateSalesReturnTotals();
+
+	isDirty = false;
+	isLoading = false;
 });
 
-window.addEventListener('beforeunload', e => {
-  if (!isDirty) {
-    return;
-  }
+window.addEventListener("beforeunload", (e) => {
+	if (!isDirty) {
+		return;
+	}
 
-  e.preventDefault();
-  e.returnValue = '';
+	e.preventDefault();
+	e.returnValue = "";
 });
 
 const calculateSalesReturnTotals = () => {
-  let grossAmount = 0;
-  let discountAmount = 0;
+	let grossAmount = 0;
+	let discountAmount = 0;
 
-  document.querySelectorAll('#tblSalesReturnDetails tr[data-product-id]').forEach(row => {
+	document
+		.querySelectorAll("#tblSalesReturnDetails tr[data-product-id]")
+		.forEach((row) => {
+			const qty = Atlas.format.parseNumber(
+				row.querySelector(".so-qty")?.value || 0,
+			);
+			const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
 
-    const qty = Atlas.format.parseNumber(row.querySelector('.so-qty')?.value || 0);
-    const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
-    // const rowDiscount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
+			const discountType = (row.dataset.discountType || "").toUpperCase();
+			const discountPercent = Atlas.format.parseNumber(
+				row.dataset.discountPercent || 0,
+			);
+			const invoiceQty = Atlas.format.parseNumber(row.dataset.siQty || 0);
+			const invoiceDiscount = Atlas.format.parseNumber(
+				row.dataset.discountAmount || 0,
+			);
 
-    // grossAmount += qty * unitPrice;
-    // discountAmount += rowDiscount;
+			const rowGross = qty * unitPrice;
+			let rowDiscount = 0;
 
-    const discountType = (row.dataset.discountType || '').toUpperCase();
-    const discountPercent = Atlas.format.parseNumber(row.dataset.discountPercent || 0);
-    const invoiceQty = Atlas.format.parseNumber(row.dataset.siQty || 0);
-    const invoiceDiscount = Atlas.format.parseNumber(row.dataset.discountAmount || 0);
+			if (qty > 0) {
+				if (discountType === "PERCENT") {
+					rowDiscount = rowGross * (discountPercent / 100);
+				} else if (discountType === "AMOUNT" && invoiceQty > 0) {
+					rowDiscount = invoiceDiscount * (qty / invoiceQty);
+				}
+			}
 
-    const rowGross = qty * unitPrice;
-    let rowDiscount = 0;
+			grossAmount += rowGross;
+			discountAmount += rowDiscount;
+		});
 
-    if (qty > 0) {
-      if (discountType === 'PERCENT') {
-        rowDiscount = rowGross * (discountPercent / 100);
-      } else if (discountType === 'AMOUNT' && invoiceQty > 0) {
-        rowDiscount = invoiceDiscount * (qty / invoiceQty);
-      }
-    }
+	const discountedAmount = Math.max(0, grossAmount - discountAmount);
+	const vatMode = window.salesReturnVatMode || "";
+	const vatRate = window.salesReturnVatRate || 0;
 
-    grossAmount += rowGross;
-    discountAmount += rowDiscount;
-  });
+	const vatDecimal = vatRate / 100;
 
-  const discountedAmount = Math.max(0, grossAmount - discountAmount);
-  const vatMode = window.salesReturnVatMode || '';
-  const vatRate = window.salesReturnVatRate || 0;
+	let subtotal = 0;
+	let vatAmount = 0;
+	let totalAmount = 0;
 
-  const vatDecimal = vatRate / 100;
+	/*** VAT inclusive */
+	if (vatMode === "INCLUSIVE") {
+		totalAmount = discountedAmount;
 
-  let subtotal = 0;
-  let vatAmount = 0;
-  let totalAmount = 0;
+		if (vatDecimal > 0) {
+			subtotal = totalAmount / (1 + vatDecimal);
+			vatAmount = totalAmount - subtotal;
+		} else {
+			subtotal = totalAmount;
+		}
+	} else if (vatMode === "EXCLUSIVE") {
+		/*** VAT exclusive */
+		subtotal = discountedAmount;
+		vatAmount = subtotal * vatDecimal;
+		totalAmount = subtotal + vatAmount;
+	}
 
-  /*** VAT inclusive */
-  if (vatMode === 'INCLUSIVE') {
-    totalAmount = discountedAmount;
-
-    if (vatDecimal > 0) {
-      subtotal = totalAmount / (1 + vatDecimal);
-      vatAmount = totalAmount - subtotal;
-    } else {
-      subtotal = totalAmount;
-    }
-  }
-
-  /*** VAT exclusive */
-  else if (vatMode === 'EXCLUSIVE') {
-    subtotal = discountedAmount;
-    vatAmount = subtotal * vatDecimal;
-    totalAmount = subtotal + vatAmount;
-  }
-
-  document.getElementById('srGrossAmount').textContent = Atlas.format.amount(grossAmount);
-  document.getElementById('srDiscountAmount').textContent = Atlas.format.amount(discountAmount);
-  document.getElementById('srSubtotal').textContent = Atlas.format.amount(subtotal);
-  document.getElementById('srVatRateLabel').textContent = `${vatRate.toFixed(2)}%`;
-  document.getElementById('srVatAmount').textContent = Atlas.format.amount(vatAmount);
-  document.getElementById('srTotalAmount').textContent = Atlas.format.amount(totalAmount);
+	if (document.getElementById("srGrossAmount")) {
+		document.getElementById("srGrossAmount").textContent =
+			Atlas.format.amount(grossAmount);
+		document.getElementById("srDiscountAmount").textContent =
+			Atlas.format.amount(discountAmount);
+		document.getElementById("srSubtotal").textContent =
+			Atlas.format.amount(subtotal);
+		document.getElementById("srVatRateLabel").textContent =
+			`${vatRate.toFixed(2)}%`;
+		document.getElementById("srVatAmount").textContent =
+			Atlas.format.amount(vatAmount);
+		document.getElementById("srTotalAmount").textContent =
+			Atlas.format.amount(totalAmount);
+	}
 };
 
 const getSelectedId = () => {
-  const checked = Atlas.table.selected();
+	const checked = Atlas.table.selected();
 
-  if (checked.length === 0) {
-    Atlas.toast.warning(
-      'Please select a Sales Invoice.'
-    );
-    return null;
-  }
+	if (checked.length === 0) {
+		Atlas.toast.warning("Please select a Sales Invoice.");
+		return null;
+	}
 
-  if (checked.length > 1) {
-    Atlas.toast.warning(
-      'Please select only one Sales Invoice.'
-    );
+	if (checked.length > 1) {
+		Atlas.toast.warning("Please select only one Sales Invoice.");
 
-    return null;
-  }
+		return null;
+	}
 
-  return checked[0].value;
+	return checked[0].value;
 };
 
 const validateSalesReturn = () => {
-  const rows = document.querySelectorAll('#tblSalesReturnDetails tr');
+	const rows = document.querySelectorAll("#tblSalesReturnDetails tr");
 
-  let hasProduct = false;
-  let hasQty = false;
+	let hasProduct = false;
+	let hasQty = false;
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
+	for (let i = 0; i < rows.length; i++) {
+		const row = rows[i];
 
-    if (!row.dataset.productId) {
-      continue;
-    }
+		if (!row.dataset.productId) {
+			continue;
+		}
 
-    hasProduct = true;
+		hasProduct = true;
 
-    const qty = Atlas.format.integer(row.querySelector('.so-qty').value || 0);
-    if (qty < 0) {
-      Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
-      setTimeout(() => row.querySelector('.so-qty').focus(), 500);
-      return false;
-    }
+		const qty = Atlas.format.integer(row.querySelector(".so-qty").value || 0);
+		if (qty < 0) {
+			Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
+			setTimeout(() => row.querySelector(".so-qty").focus(), 500);
+			return false;
+		}
 
-    if (qty > 0) {
-      hasQty = true;
-    }
-  }
+		if (qty > 0) {
+			hasQty = true;
+		}
+	}
 
-  if (!hasProduct) {
-    Atlas.toast.warning('Please add at least one product.');
-    return false;
-  }
+	if (!hasProduct) {
+		Atlas.toast.warning("Please add at least one product.");
+		return false;
+	}
 
-  if (!hasQty) {
-    Atlas.toast.warning('Please enter a quantity for at least one item.');
-    return false;
-  }
+	if (!hasQty) {
+		Atlas.toast.warning("Please enter a quantity for at least one item.");
+		return false;
+	}
 
-  return true;
+	return true;
 };
 
 const printSalesReturn = () => {
-  let ids = Atlas.table.selectedIds();
+	let ids = Atlas.table.selectedIds();
 
-  if (!ids || ids.length === 0) {
-    if (window.salesReturnId === 0) {
-      Atlas.toast.warning('New Sales Return, not saved yet.');
-      return;
-    } else if (window.salesReturnId) {
-      ids = [window.salesReturnId];
-    } else {
-      Atlas.toast.warning('Please select at least one Sales Return');
-      return;
-    }
-  }
+	if (!ids || ids.length === 0) {
+		if (window.salesReturnId === 0) {
+			Atlas.toast.warning("New Sales Return, not saved yet.");
+			return;
+		} else if (window.salesReturnId) {
+			ids = [window.salesReturnId];
+		} else {
+			Atlas.toast.warning("Please select at least one Sales Return");
+			return;
+		}
+	}
 
-  Atlas.print.post(
-    'sales-returns/print',
-    ids
-  );
+	Atlas.print.post("sales-returns/print", ids);
 };
 
 const markDirty = () => {
-  if (isLoading) {
-    return;
-  }
+	if (isLoading) {
+		return;
+	}
 
-  isDirty = true;
+	isDirty = true;
 };

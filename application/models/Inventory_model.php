@@ -89,7 +89,7 @@ class Inventory_model extends CI_Model
         ->result();
   }
 
-/*** post goods receipt */
+  /*** post goods receipt */
   public function postGoodsReceipt($grn, $details)
   {
     $this->validateGoodsReceiptPosting($grn);
@@ -133,11 +133,6 @@ class Inventory_model extends CI_Model
     );
 
     $this->markGoodsReceiptAsPosted($grn);
-  }
-
-  public function postInventoryAdjustment($adjustmentId)
-  {
-
   }
 
   /*** post stock transfer */
@@ -391,6 +386,119 @@ class Inventory_model extends CI_Model
 
       $this->db->trans_rollback();
 
+      return [
+        'success' => FALSE,
+        'message' => $ex->getMessage()
+      ];
+    }
+  }
+
+  /*** reverse posted sales return inventory */
+  public function reverseSalesReturn($salesReturnId)
+  {
+    try {
+      $header = $this->Sales_return_model->get($salesReturnId);
+
+      if (!$header) {
+        throw new Exception('Sales Return not found.');
+      }
+
+      if ($header->status !== 'POSTED') {
+        throw new Exception(
+          "Only POSTED Sales Returns can be reversed. " .
+          "{$header->sr_no} is {$header->status}."
+        );
+      }
+
+      /***
+       * Reverse inventory from the same branch where the original
+       * Sales Return was posted. Never rely on the current user's branch
+       * when reversing historical inventory.
+       */
+      $ledger = $this->db
+        ->select('branch_id')
+        ->where('transaction_type', 'SR')
+        ->where('reference_id', (int)$salesReturnId)
+        ->order_by('id', 'ASC')
+        ->get('t_stock_ledger')
+        ->row();
+
+      if (!$ledger) {
+        throw new Exception(
+          "Original inventory posting for {$header->sr_no} was not found."
+        );
+      }
+
+      $branchId = (int)$ledger->branch_id;
+
+      $details = $this->Sales_return_model->getDetails($salesReturnId);
+
+      /*** validate stock before removing returned inventory */
+      foreach ($details as $detail) {
+        $conversionFactor = (float)$detail->conversion_factor;
+
+        if ($conversionFactor <= 0) {
+          throw new Exception(
+            'Invalid UOM conversion on Sales Return.'
+          );
+        }
+
+        $detail->base_qty =
+          (float)$detail->qty * $conversionFactor;
+
+        $inventory = $this->Branch_inventory_model->getBalance(
+          $branchId,
+          $detail->product_id
+        );
+
+        $available = $inventory
+          ? (float)$inventory->qty_on_hand
+          : 0;
+
+        if ($available < $detail->base_qty) {
+          throw new Exception(
+            "{$detail->description} has insufficient stock. " .
+            "Available: {$available}. " .
+            "Required: {$detail->base_qty}."
+          );
+        }
+      }
+
+      /*** remove inventory originally added by the Sales Return */
+      foreach ($details as $detail) {
+        $this->Branch_inventory_model->adjustBalance(
+          $branchId,
+          $detail->product_id,
+          -$detail->base_qty
+        );
+
+        /***
+         * Preserve the original SR ledger entry and record a separate
+         * inventory movement explaining the historical reversal.
+         */
+        $this->writeStockLedger(
+          $branchId,
+          'SR-REVERSAL',
+          $header->id,
+          $header->sr_no,
+          [$detail],
+          NULL,
+          'base_qty'
+        );
+      }
+
+      if (!$this->db->trans_status()) {
+        throw new Exception(
+          'Unable to reverse Sales Return inventory.'
+        );
+      }
+
+      return [
+        'success' => TRUE,
+        'message' => ''
+      ];
+
+    } catch (Exception $ex) {
       return [
         'success' => FALSE,
         'message' => $ex->getMessage()
