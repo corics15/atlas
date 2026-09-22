@@ -712,6 +712,7 @@ const createDetailRow = () => {
             </td>
 
             <td class="so-description" data-toggle="tooltip"></td>
+						<td class="so-pkg text-center"></td>
 
             <td class="text-right">
               <select class="form-control form-control-sm so-uom custom-select w-auto">
@@ -809,6 +810,7 @@ const populateProductRow = (row, product) => {
 			.querySelector(".so-description")
 			.setAttribute("title", product.description);
 	}
+	row.querySelector(".so-pkg").textContent = product.pkg ?? "";
 	row.querySelector(".so-uom").value = product.uom_id;
 	row.querySelector(".so-available").textContent = Atlas.format.integer(
 		product.qty_on_hand,
@@ -1045,6 +1047,7 @@ const removeDetailRow = (row) => {
 		row.dataset.productId = "";
 		row.querySelector(".so-barcode").value = "";
 		row.querySelector(".so-description").textContent = "";
+		row.querySelector(".so-pkg").textContent = "";
 		row.querySelector(".so-available").textContent = "-";
 		row.querySelector(".so-qty").value = "";
 		row.querySelector(".so-uom").textContent = "";

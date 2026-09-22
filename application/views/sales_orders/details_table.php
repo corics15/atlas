@@ -32,6 +32,7 @@
                 <th class="text-center">#</th>
                 <th class="text-center">Scan/Input Barcode</th>
                 <th width="15%">Description</th>
+                <th class="text-center">Pkg</th>
                 <th class="text-center">UOM</th>
                 <th class="text-right">Available</th>
                 <th class="text-right">Fulfilled</th>
@@ -64,12 +65,9 @@
                     <?php /*** barcode */ ?>
                     <td>
                       <div class="input-group">
-                        <input type="text" class="form-control form-control-sm so-barcode atlas-barcode text-center" placeholder="Barcode"
-                          value="<?= htmlspecialchars($detail->barcode) ?>">
+                        <input type="text" class="form-control form-control-sm so-barcode atlas-barcode text-center" placeholder="Barcode" value="<?= htmlspecialchars($detail->barcode) ?>">
                         <div class="input-group-append">
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-outline-warning btn-product-finder">
+                          <button type="button" class="btn btn-sm btn-outline-warning btn-product-finder">
                           <i class="fas fa-search font-smr"></i>
                           </button>
                         </div>
@@ -85,6 +83,8 @@
                           : $description;
                       ?>
                     </td>
+
+                    <td class="text-center"><?= htmlspecialchars($detail->pkg ?? '') ?></td>
 
                     <?php /*** UOM */ ?>
                     <td class="text-right">
@@ -184,6 +184,8 @@
 
                   <?php /*** description */ ?>
                   <td class="so-description" data-toggle="tooltip"></td>
+                  <?php /*** pkg */ ?>
+                  <td class="so-pkg text-center"></td>
 
                   <?php /*** UOM */ ?>
                   <td class="text-right">
