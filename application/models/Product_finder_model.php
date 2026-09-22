@@ -56,6 +56,7 @@ class Product_finder_model extends CI_Model
         'm_uom u',
         'u.id = p.uom_id'
       )
+      ->where("p.is_active", TRUE)
       ->group_start()
         ->where("p.barcode ILIKE", $search)
         ->or_where("p.description ILIKE", $search)
@@ -97,6 +98,7 @@ class Product_finder_model extends CI_Model
             'm_uom u',
             'u.id = p.uom_id'
         )
+        ->where("p.is_active", TRUE)
         ->group_start()
             ->where('p.barcode', $keyword) /*** exact barcode */
             ->or_where('p.description ILIKE', "%{$keyword}%")

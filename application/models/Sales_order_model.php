@@ -72,6 +72,7 @@ class Sales_order_model extends CI_Model
                               p.uom_id AS base_uom_id,
                               p.barcode,
                               p.description,
+                              p.pkg,
                               COALESCE(bi.qty_on_hand, 0) AS qty_available,
                               sod.qty,
                               sod.unit_price,
