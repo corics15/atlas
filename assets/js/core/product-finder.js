@@ -1,284 +1,286 @@
 class AtlasProductFinder {
+	constructor() {
+		this.currentRow = null;
+		this.selectedIndex = -1;
+		this.onSelect = null;
+	}
 
-  constructor() {
-    this.currentRow = null;
-    this.selectedIndex = -1;
-    this.onSelect = null;
-  }
+	async load() {
+		const result = await Atlas.ajax.get("product_finder/list");
 
-  async load() {
-    const result = await Atlas.ajax.get('product_finder/list');
+		const tbody = document.getElementById("tblProductFinder");
 
-    const tbody = document.getElementById('tblProductFinder');
+		tbody.innerHTML = "";
 
-    tbody.innerHTML = '';
-
-    result.data.forEach(product => {
-      tbody.insertAdjacentHTML('beforeend', `
+		result.data.forEach((product) => {
+			tbody.insertAdjacentHTML(
+				"beforeend",
+				`
         <tr class="pf-row" data-id="${product.id}"
-          data-barcode="${product.barcode ?? ''}"
-          data-supplier="${product.supplier_name ?? ''}"
-          data-description="${product.description ?? ''}"
-          data-uom="${product.uom ?? ''}"
+          data-barcode="${product.barcode ?? ""}"
+          data-supplier="${product.supplier_name ?? ""}"
+          data-description="${product.description ?? ""}"
+          data-pkg="${product.pkg ?? ""}"
+          data-uom="${product.uom ?? ""}"
           data-price="${product.srp}">
-            <td class="text-center">${product.barcode ?? ''}</td>
-            <td>${product.supplier_name ?? ''}</td>
-            <td>${product.description ?? ''}</td>
-            <td class="text-center">${product.uom ?? ''}</td>
+            <td class="text-center">${product.barcode ?? ""}</td>
+            <td>${product.supplier_name ?? ""}</td>
+            <td>${product.description ?? ""}</td>
+            <td class="text-center">${product.pkg ?? ""}</td>
+            <td class="text-center">${product.uom ?? ""}</td>
             <td class="text-right">${Atlas.format.amount(product.srp)}</td>
         </tr>
-      `);
-    });
-  }
+      `,
+			);
+		});
+	}
 
-  async show(row) {
-    this.currentRow = row;
+	async show(row) {
+		this.currentRow = row;
 
-    const search = document.getElementById('searchInput');
-    const tbody = document.getElementById('tblProductFinder');
+		const search = document.getElementById("searchInput");
+		const tbody = document.getElementById("tblProductFinder");
 
-    search.value = '';
-    tbody.innerHTML = `<tr>
-                          <td colspan="5" class="text-center text-muted font-sm py-3">
+		search.value = "";
+		tbody.innerHTML = `<tr>
+                          <td colspan="6" class="text-center text-muted font-sm py-3">
                             Start typing to search products...
                           </td>
                         </tr>
                       `;
 
-    $('#mdlProductFinder').modal('show');
-    setTimeout(() => search.focus(), 1000);
-  }
+		$("#mdlProductFinder").modal("show");
+		setTimeout(() => search.focus(), 1000);
+	}
 
-  async select(callback) {
-    this.currentRow = null;
-    this.onSelect = callback;
+	async select(callback) {
+		this.currentRow = null;
+		this.onSelect = callback;
 
-    const search = document.getElementById('searchInput');
-    const tbody = document.getElementById('tblProductFinder');
+		const search = document.getElementById("searchInput");
+		const tbody = document.getElementById("tblProductFinder");
 
-    search.value = '';
-    tbody.innerHTML = `
+		search.value = "";
+		tbody.innerHTML = `
         <tr>
-          <td colspan="5" class="text-center text-muted font-sm py-3">
+          <td colspan="6" class="text-center text-muted font-sm py-3">
             Start typing to search products...
           </td>
         </tr>
     `;
 
-    $('#mdlProductFinder').modal('show');
+		$("#mdlProductFinder").modal("show");
 
-    setTimeout(() => search.focus(), 1000);
-  }
+		setTimeout(() => search.focus(), 1000);
+	}
 
-  async search(keyword) {
-    const tbody = document.getElementById('tblProductFinder');
-    const lblRecordCount = document.getElementById('pfRecordCount');
+	async search(keyword) {
+		const tbody = document.getElementById("tblProductFinder");
+		const lblRecordCount = document.getElementById("pfRecordCount");
 
-    if (keyword.trim().length < 2) {
-      lblRecordCount.textContent = '';
+		if (keyword.trim().length < 2) {
+			lblRecordCount.textContent = "";
 
-      tbody.innerHTML = `<tr>
-                            <td colspan="5" class="text-center text-muted font-sm py-3">
+			tbody.innerHTML = `<tr>
+                            <td colspan="6" class="text-center text-muted font-sm py-3">
                               Type at least 2 characters...
                             </td>
                           </tr>
                         `;
-      return;
-    }
+			return;
+		}
 
-    const result = await Atlas.ajax.get(
-      `product-finder/search?q=${encodeURIComponent(keyword)}`
-    );
+		const result = await Atlas.ajax.get(
+			`product-finder/search?q=${encodeURIComponent(keyword)}`,
+		);
 
-    tbody.innerHTML = '';
+		tbody.innerHTML = "";
 
-    if (!result.data.length) {
-      lblRecordCount.textContent = '0 product found.';
+		if (!result.data.length) {
+			lblRecordCount.textContent = "0 product found.";
 
-      tbody.innerHTML = `<tr>
-                            <td colspan="5" class="text-center text-muted font-sm py-3">
+			tbody.innerHTML = `<tr>
+                            <td colspan="6" class="text-center text-muted font-sm py-3">
                               No products found.
                             </td>
                           </tr>
                         `;
-      return;
-    }
+			return;
+		}
 
-    lblRecordCount.textContent =
-      `${result.data.length.toLocaleString()} ${result.data.length === 1
-        ? 'record'
-        : 'records'
-      } found.`;
+		lblRecordCount.textContent = `${result.data.length.toLocaleString()} ${
+			result.data.length === 1 ? "record" : "records"
+		} found.`;
 
-    result.data.forEach(product => {
-      tbody.insertAdjacentHTML('beforeend', `
+		result.data.forEach((product) => {
+			tbody.insertAdjacentHTML(
+				"beforeend",
+				`
                                   <tr class="pf-row"
                                       data-id="${product.id}"
-                                      data-barcode="${product.barcode ?? ''}"
-                                      data-supplier="${product.supplier_name ?? ''}"
-                                      data-description="${product.description ?? ''}"
-                                      data-uom="${product.uom ?? ''}"
+                                      data-barcode="${product.barcode ?? ""}"
+                                      data-supplier="${product.supplier_name ?? ""}"
+                                      data-description="${product.description ?? ""}"
+                                      data-pkg="${product.pkg ?? ""}"
+                                      data-uom="${product.uom ?? ""}"
                                       data-uom-id="${product.uom_id}"
                                       data-price="${product.srp}"
                                       data-qty-on-hand="${product.qty_on_hand}">
-                                    <td class="text-center">${product.barcode ?? ''}</td>
-                                    <td>${product.supplier_name ?? ''}</td>
-                                    <td>${product.description ?? ''}</td>
+                                    <td class="text-center">${product.barcode ?? ""}</td>
+                                    <td>${product.supplier_name ?? ""}</td>
+                                    <td>${product.description ?? ""}</td>
+                                    <td class="text-center">${product.pkg ?? ""}</td>
                                     <td class="text-center">${product.uom}</td>
                                     <td class="text-right">${Atlas.format.amount(product.srp)}</td>
                                   </tr>
-                                `);
-    });
+                                `,
+			);
+		});
 
-    this.highlight(0);
-  }
+		this.highlight(0);
+	}
 
-  async lookup(row, lookupValue) {
-    lookupValue = lookupValue.trim();
+	async lookup(row, lookupValue) {
+		lookupValue = lookupValue.trim();
 
-    if (!lookupValue.length) {
-      return false;
-    }
+		if (!lookupValue.length) {
+			return false;
+		}
 
-    const result = await Atlas.ajax.get(
-      `product-finder/lookup?q=${encodeURIComponent(lookupValue)}`
-    );
+		const result = await Atlas.ajax.get(
+			`product-finder/lookup?q=${encodeURIComponent(lookupValue)}`,
+		);
 
-    switch (result.data.length) {
-      case 0:
-        Atlas.toast.warning(result.message);
-        return false;
+		switch (result.data.length) {
+			case 0:
+				Atlas.toast.warning(result.message);
+				return false;
 
-      case 1:
-        populateProductRow(row, result.data[0]);
-        row.querySelector('.po-qty, .so-qty')?.focus();
-        return true;
+			case 1:
+				populateProductRow(row, result.data[0]);
+				row.querySelector(".po-qty, .so-qty")?.focus();
+				return true;
 
-      default:
-        this.currentRow = row;
-        $('#mdlProductFinder').modal('show');
-        const search = document.getElementById('searchInput');
-        search.value = lookupValue;
+			default:
+				this.currentRow = row;
+				$("#mdlProductFinder").modal("show");
+				const search = document.getElementById("searchInput");
+				search.value = lookupValue;
 
-        await this.search(lookupValue);
-        setTimeout(() => search.focus(), 300);
-        return true;
-    }
-  }
+				await this.search(lookupValue);
+				setTimeout(() => search.focus(), 300);
+				return true;
+		}
+	}
 
-  hide() {
-    this.currentRow = null;
-    this.selectedIndex = -1;
+	hide() {
+		this.currentRow = null;
+		this.selectedIndex = -1;
 
-    document.getElementById('searchInput').value = '';
-    document.getElementById('tblProductFinder').innerHTML = `<tr>
-                                                                <td colspan="5" class="text-center text-muted font-sm py-3">
+		document.getElementById("searchInput").value = "";
+		document.getElementById("tblProductFinder").innerHTML = `<tr>
+                                                                <td colspan="6" class="text-center text-muted font-sm py-3">
                                                                   Start typing to search products...
                                                                 </td>
                                                               </tr>
                                                             `;
 
-    document.getElementById('pfRecordCount').textContent = '';
+		document.getElementById("pfRecordCount").textContent = "";
 
-    $('#mdlProductFinder').modal('hide');
-  }
+		$("#mdlProductFinder").modal("hide");
+	}
 
-  highlight(index) {
-    const rows = document.querySelectorAll('.pf-row');
+	highlight(index) {
+		const rows = document.querySelectorAll(".pf-row");
 
-    rows.forEach(r => r.classList.remove('tr-highlighter'));
+		rows.forEach((r) => r.classList.remove("tr-highlighter"));
 
-    if (!rows.length) {
-      this.selectedIndex = -1;
-      return;
-    }
+		if (!rows.length) {
+			this.selectedIndex = -1;
+			return;
+		}
 
-    if (index < 0) index = 0;
-    if (index >= rows.length) index = rows.length - 1;
-    rows[index].classList.add('tr-highlighter');
+		if (index < 0) index = 0;
+		if (index >= rows.length) index = rows.length - 1;
+		rows[index].classList.add("tr-highlighter");
 
-    rows[index].scrollIntoView({
-      block: 'nearest'
-    });
+		rows[index].scrollIntoView({
+			block: "nearest",
+		});
 
-    this.selectedIndex = index;
-  }
+		this.selectedIndex = index;
+	}
 }
 
 window.Atlas = window.Atlas || {};
 Atlas.productFinder = new AtlasProductFinder();
 
 /*** navigation after product search */
-document.getElementById('searchInput').addEventListener('keydown', e => {
-  const rows = document.querySelectorAll('.pf-row');
+document.getElementById("searchInput").addEventListener("keydown", (e) => {
+	const rows = document.querySelectorAll(".pf-row");
 
-  if (!rows.length) return;
+	if (!rows.length) return;
 
-  switch (e.key) {
-    case 'ArrowDown':
-      e.preventDefault();
-      Atlas.productFinder.highlight(
-        Atlas.productFinder.selectedIndex + 1
-      );
-      break;
+	switch (e.key) {
+		case "ArrowDown":
+			e.preventDefault();
+			Atlas.productFinder.highlight(Atlas.productFinder.selectedIndex + 1);
+			break;
 
-    case 'ArrowUp':
-      e.preventDefault();
-      Atlas.productFinder.highlight(
-        Atlas.productFinder.selectedIndex - 1
-      );
-      break;
+		case "ArrowUp":
+			e.preventDefault();
+			Atlas.productFinder.highlight(Atlas.productFinder.selectedIndex - 1);
+			break;
 
-    case 'Enter':
-      e.preventDefault();
-      rows[
-        Atlas.productFinder.selectedIndex
-      ]?.click();
-      break;
-  }
+		case "Enter":
+			e.preventDefault();
+			rows[Atlas.productFinder.selectedIndex]?.click();
+			break;
+	}
 });
 
 /*** event after product has been selected */
-document.addEventListener('click', (e) => {
-  const tr = e.target.closest('.pf-row');
+document.addEventListener("click", (e) => {
+	const tr = e.target.closest(".pf-row");
 
-  if (!tr) {
-    return;
-  }
+	if (!tr) {
+		return;
+	}
 
-  const product = {
-    id: tr.dataset.id,
-    barcode: tr.dataset.barcode,
-    supplier_name: tr.dataset.supplier,
-    description: tr.dataset.description,
-    uom_id: tr.dataset.uomId,
-    uom: tr.dataset.uom,
-    srp: tr.dataset.price,
-    qty_on_hand: tr.dataset.qtyOnHand
-  };
+	const product = {
+		id: tr.dataset.id,
+		barcode: tr.dataset.barcode,
+		supplier_name: tr.dataset.supplier,
+		description: tr.dataset.description,
+		pkg: tr.dataset.pkg,
+		uom_id: tr.dataset.uomId,
+		uom: tr.dataset.uom,
+		srp: tr.dataset.price,
+		qty_on_hand: tr.dataset.qtyOnHand,
+	};
 
-  /*** inventory adjustment event flow */
-  if (typeof Atlas.productFinder.onSelect === 'function') {
-    Atlas.productFinder.onSelect(product);
-    Atlas.productFinder.hide();
-    return;
-  }
+	/*** inventory adjustment event flow */
+	if (typeof Atlas.productFinder.onSelect === "function") {
+		Atlas.productFinder.onSelect(product);
+		Atlas.productFinder.hide();
+		return;
+	}
 
-  /*** purchase order event flow */
-  const row = Atlas.productFinder.currentRow;
-  populateProductRow(row, product);
-  Atlas.productFinder.hide();
-  // row.querySelector('.po-qty')?.focus();
-  /*** focus whichever element exists in the row */
-  const qtyInput = row.querySelector('.po-qty, .so-qty, .st-qty');
-  qtyInput?.focus();
+	/*** purchase order event flow */
+	const row = Atlas.productFinder.currentRow;
+	populateProductRow(row, product);
+	Atlas.productFinder.hide();
+	// row.querySelector('.po-qty')?.focus();
+	/*** focus whichever element exists in the row */
+	const qtyInput = row.querySelector(".po-qty, .so-qty, .st-qty");
+	qtyInput?.focus();
 });
 
 let productFinderTimer = null;
-document.getElementById('searchInput').addEventListener('input', (e) => {
-  clearTimeout(productFinderTimer);
+document.getElementById("searchInput").addEventListener("input", (e) => {
+	clearTimeout(productFinderTimer);
 
-  productFinderTimer = setTimeout(() => {
-    Atlas.productFinder.search(e.target.value);
-  }, 250);
+	productFinderTimer = setTimeout(() => {
+		Atlas.productFinder.search(e.target.value);
+	}, 250);
 });

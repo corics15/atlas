@@ -33,13 +33,14 @@
                 <th class="text-center">Barcode</th>
                 <th>Supplier</th>
                 <th>Description</th>
+                <th class="text-center">Pkg</th>
                 <th class="text-center">UOM</th>
-                <th class="text-right">Price</th>
+                <th class="text-right">SRP</th>
               </tr>
             </thead>
             <tbody id="tblProductFinder">
               <tr>
-                <td colspan="5" class="text-center py-3">No records found.</td>
+                <td colspan="6" class="text-center py-3">No records found.</td>
               </tr>
             </tbody>
           </table>
