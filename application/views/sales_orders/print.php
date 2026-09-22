@@ -74,7 +74,7 @@
             <td class="text-center"><?= $index + 1 ?>.</td>
             <td class="text-center"><?= htmlspecialchars($detail->barcode) ?></td>
             <td><?= htmlspecialchars($detail->description) ?></td>
-            <td><?= htmlspecialchars($detail->pkg) ?></td>
+            <td class="text-center"><?= htmlspecialchars($detail->pkg) ?></td>
             <td class="text-center"><?= number_format((float)$detail->qty, 0) ?></td>
             <td class="text-center"><?= htmlspecialchars($detail->uom) ?></td>
             <td class="text-right"><?= number_format((float)$detail->unit_price, 2) ?></td>

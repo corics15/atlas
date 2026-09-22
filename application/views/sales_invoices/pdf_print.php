@@ -60,7 +60,8 @@
       <tr>
         <th width="4%" class="text-center border-left-end">#</th>
         <th width="13%" class="text-center border-top-bottom">Barcode</th>
-        <th width="31%" class="border-top-bottom">Description</th>
+        <th width="26%" class="border-top-bottom">Description</th>
+        <th width="5%" class="border-top-bottom">Pkg</th>
         <th width="7%" class="text-center border-top-bottom">Qty</th>
         <th width="8%" class="text-center border-top-bottom">UOM</th>
         <th width="10%" class="text-right border-top-bottom">Unit Price</th>
@@ -82,7 +83,8 @@
         <tr>
           <td width="4%" class="text-center border-left-bottom-right"><?= $index + 1 ?>.</td>
           <td width="13%" class="text-center border-bottom-right"><?= htmlspecialchars($detail->barcode) ?></td>
-          <td width="31%" class="border-bottom-right"><?= htmlspecialchars($detail->description) ?></td>
+          <td width="26%" class="border-bottom-right"><?= htmlspecialchars($detail->description) ?></td>
+          <td width="5%" class="border-bottom-right"><?= htmlspecialchars($detail->pkg) ?></td>
           <td width="7%" class="text-center border-bottom-right"><?= number_format((float)$detail->qty, 0) ?></td>
           <td width="8%" class="text-center border-bottom-right"><?= htmlspecialchars($detail->uom) ?></td>
           <td width="10%" class="text-right border-bottom-right"><?= number_format((float)$detail->unit_price, 2) ?></td>
