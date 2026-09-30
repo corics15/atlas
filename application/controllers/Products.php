@@ -7,6 +7,7 @@ class Products extends MY_Controller
   {
     parent::__construct();
     $this->load->model('Product_model');
+    $this->load->model('Product_uom_model');
     $this->load->model('Supplier_model');
     $this->load->model('Uom_model');
 
@@ -99,6 +100,92 @@ class Products extends MY_Controller
           '',
           $product
       );
+  }
+
+  public function getUoms($id)
+  {
+    $product = $this->Product_model->get($id);
+
+    if (!$product) {
+      return $this->jsonResponse(
+        false,
+        'Product not found.'
+      );
+    }
+
+    $uoms = $this->Product_uom_model->getByProduct($id);
+
+    return $this->jsonResponse(
+      true,
+      '',
+      $uoms
+    );
+  }
+
+  public function saveUom()
+  {
+    $request = $this->getJsonRequest();
+
+    $productId = (int)($request['product_id'] ?? 0);
+    $uomId = (int)($request['uom_id'] ?? 0);
+    $conversionFactor = (float)($request['conversion_factor'] ?? 0);
+    $sellingPrice = (float)($request['selling_price'] ?? 0);
+
+    $product = $this->Product_model->get($productId);
+
+    if (!$product) {
+      return $this->jsonResponse(
+        false,
+        'Product not found.'
+      );
+    }
+
+    if ($uomId <= 0) {
+      return $this->jsonResponse(
+        false,
+        'Please select a UOM.'
+      );
+    }
+
+    if ($uomId === (int)$product->uom_id) {
+      return $this->jsonResponse(
+        false,
+        'The Base UOM cannot be added as an Additional UOM.'
+      );
+    }
+
+    if ($conversionFactor <= 0) {
+      return $this->jsonResponse(
+        false,
+        'Units in Base UOM must be greater than zero.'
+      );
+    }
+
+    if ($sellingPrice < 0) {
+      return $this->jsonResponse(
+        false,
+        'SRP cannot be negative.'
+      );
+    }
+
+    $saved = $this->Product_uom_model->save(
+      $productId,
+      $uomId,
+      $conversionFactor,
+      $sellingPrice
+    );
+
+    if (!$saved) {
+      return $this->jsonResponse(
+        false,
+        'Unable to save the Additional UOM.'
+      );
+    }
+
+    return $this->jsonResponse(
+      true,
+      'Additional UOM saved successfully.'
+    );
   }
 
   public function save()
@@ -205,6 +292,30 @@ class Products extends MY_Controller
     return $this->jsonResponse(
       true,
       'Product deactivated successfully.'
+    );
+  }
+
+  public function deactivateUom($id)
+  {
+    $id = (int)$id;
+
+    if ($id <= 0) {
+      return $this->jsonResponse(
+        false,
+        'Invalid Product UOM.'
+      );
+    }
+
+    if (!$this->Product_uom_model->deactivate($id)) {
+      return $this->jsonResponse(
+        false,
+        'Unable to deactivate the Product UOM.'
+      );
+    }
+
+    return $this->jsonResponse(
+      true,
+      'Product UOM deactivated successfully.'
     );
   }
 

@@ -14,7 +14,33 @@ class Product_uom_model extends CI_Model
         ->row();
   }
 
-  public function save($productId, $uomId, $conversionFactor)
+  public function getByProduct($productId)
+  {
+    return $this->db
+        ->select('
+          pu.id,
+          pu.product_id,
+          pu.uom_id,
+          u.uom,
+          pu.conversion_factor,
+          pu.barcode,
+          pu.last_cost,
+          pu.selling_price,
+          p.srp,
+          pu.is_active
+        ')
+        ->from('m_product_uom pu')
+        ->join('m_products p', 'p.id = pu.product_id', 'inner')
+        ->join('m_uom u', 'u.id = pu.uom_id', 'left')
+        ->where('pu.product_id', $productId)
+        ->where('pu.uom_id != p.uom_id', NULL, FALSE)
+        ->where('pu.is_active', TRUE)
+        ->order_by('pu.conversion_factor', 'DESC')
+        ->get()
+        ->result();
+  }
+
+  public function save($productId, $uomId, $conversionFactor, $sellingPrice = null)
   {
     $existing = $this->db
         ->where('product_id', $productId)
@@ -29,6 +55,10 @@ class Product_uom_model extends CI_Model
       'updated_on' => date('Y-m-d H:i:s')
     ];
 
+    if ($sellingPrice !== null) {
+      $data['selling_price'] = $sellingPrice;
+    }
+
     if ($existing) {
       return $this->db
           ->where('id', $existing->id)
@@ -41,6 +71,17 @@ class Product_uom_model extends CI_Model
     $data['entered_on'] = date('Y-m-d H:i:s');
 
     return $this->db->insert('m_product_uom', $data);
+  }
+
+  public function deactivate($id)
+  {
+    return $this->db
+        ->where('id', $id)
+        ->update('m_product_uom', [
+          'is_active' => FALSE,
+          'updated_by' => $this->session->userdata('user_id'),
+          'updated_on' => date('Y-m-d H:i:s')
+        ]);
   }
 
 }

@@ -1,52 +1,60 @@
 class AtlasFormat {
+	/** format number with fixed decimals */
+	number(value, decimals = 2) {
+		return Number(value || 0).toLocaleString(undefined, {
+			minimumFractionDigits: decimals,
+			maximumFractionDigits: decimals,
+		});
+	}
 
-  /** format number with fixed decimals */
-  number(value, decimals = 2) {
-    return Number(value || 0).toLocaleString(undefined, {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    });
-  }
+	/** format as amount with 2 decimals */
+	amount(value) {
+		return this.number(value, 2);
+	}
 
-  /** format as amount with 2 decimals */
-  amount(value) {
-    return this.number(value, 2);
-  }
+	/** format as integer (no decimals) */
+	integer(value) {
+		return this.number(value, 0);
+	}
 
-  /** format as integer (no decimals) */
-  integer(value) {
-    return this.number(value, 0);
-  }
+	/** format as percentage string */
+	percent(value, decimals = 2) {
+		return `${this.number(value, decimals)}%`;
+	}
 
-  /** format as percentage string */
-  percent(value, decimals = 2) {
-    return `${this.number(value, decimals)}%`;
-  }
+	/*** convert formatted string back to number (with decimals) */
+	parseNumber(value) {
+		if (value === null || value === undefined || value === "") {
+			return 0;
+		}
 
-  /*** convert formatted string back to number (with decimals) */
-  parseNumber(str) {
-    if (!str) return 0;
-    return parseFloat(str.replace(/,/g, ''));
-  }
+		if (typeof value === "number") {
+			return Number.isFinite(value) ? value : 0;
+		}
 
-  /** convert text to formatted amount */
-  amountFromText(text) {
-    return this.amount(this.parseNumber(text || 0));
-  }
+		const number = parseFloat(String(value).replace(/,/g, ""));
 
-  /*** convert DB date (YYYY-MM-DD) to MM/DD/YYYY, optional with timestamp */
-  formatDate(dbDate, includeTime = false) {
-    if (!dbDate) return '';
+		return Number.isFinite(number) ? number : 0;
+	}
 
-    const [datePart, timePart] = dbDate.split(' ');
-    const [year, month, day] = datePart.split('-');
+	/** convert text to formatted amount */
+	amountFromText(text) {
+		return this.amount(this.parseNumber(text || 0));
+	}
 
-    let formatted = `${month}/${day}/${year}`;
-    if (includeTime && timePart) {
-      formatted += ` ${timePart}`;
-    }
-    return formatted;
-  }
+	/*** convert DB date (YYYY-MM-DD) to MM/DD/YYYY, optional with timestamp */
+	formatDate(dbDate, includeTime = false) {
+		if (!dbDate) return "";
+
+		const [datePart, timePart] = dbDate.split(" ");
+		const [year, month, day] = datePart.split("-");
+
+		let formatted = `${month}/${day}/${year}`;
+		if (includeTime && timePart) {
+			formatted += ` ${timePart}`;
+		}
+		return formatted;
+	}
 }
 
 window.Atlas = window.Atlas || {};

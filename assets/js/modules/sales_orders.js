@@ -531,9 +531,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 			 * The database column retains its historical name "selling_price",
 			 * but its business meaning in Sales Order is UOM-specific SRP.
 			 */
-			row.querySelector(".so-unit-price").value = Atlas.format
-				.parseNumber(result.data.selling_price || 0)
-				.toFixed(2);
+			const storedSrp = Atlas.format.parseNumber(
+				result.data.selling_price || 0,
+			);
+
+			if (storedSrp > 0) {
+				/*** use authoritative UOM-specific SRP */
+				row.querySelector(".so-unit-price").value = storedSrp.toFixed(2);
+			} else {
+				/*** no UOM-specific SRP yet: suggest from base SRP */
+				const baseResult = await Atlas.ajax.post(
+					`sales-orders/get-uom-conversion`,
+					{
+						product_id: productId,
+						uom_id: baseUomId,
+						base_uom_id: baseUomId,
+					},
+				);
+
+				if (!baseResult.success) {
+					Atlas.toast.error(baseResult.message);
+					return;
+				}
+
+				const baseSrp = Atlas.format.parseNumber(
+					baseResult.data.selling_price || 0,
+				);
+
+				const conversionFactor = Atlas.format.parseNumber(
+					result.data.conversion_factor,
+				);
+
+				row.querySelector(".so-unit-price").value = (
+					baseSrp * conversionFactor
+				).toFixed(2);
+			}
 
 			calculateSalesOrderRow(row);
 
@@ -558,7 +590,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		);
 		const baseUom = baseUomOption ? baseUomOption.text.trim() : "BASE UOM";
 
-		const unitsPerBase = await Atlas.dialog.number({
+		const baseUnitsPerSelectedUom = await Atlas.dialog.number({
 			title: "UOM Conversion",
 			html: `<div class="text-center">
       <p>
@@ -570,16 +602,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         <span class="font-weight-500 text-info">${baseUom}</span>.
       </p>
       <p>
-        How many <span class="font-weight-500 text-danger">${selectedUom}</span>
-        are in <span class="font-weight-500 text-info">1 ${baseUom}</span>?
+        How many <span class="font-weight-500 text-info">${baseUom}</span>
+        are in <span class="font-weight-500 text-danger">1 ${selectedUom}</span>?
       </p>
     </div>`,
-			inputPlaceholder: `1 ${baseUom} = ? ${selectedUom}`,
+			inputPlaceholder: `1 ${selectedUom} = ? ${baseUom}`,
 			min: 0.0001,
 			confirmText: "Use Conversion",
 		});
 
-		if (unitsPerBase === null) {
+		if (baseUnitsPerSelectedUom === null) {
 			/***
 			 * User cancelled the unknown-UOM conversion.
 			 * Return to the base UOM and restore its authoritative SRP.
@@ -601,11 +633,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 				return;
 			}
 
-			row.querySelector(".so-unit-price").value = Atlas.format
-				.parseNumber(baseResult.data.selling_price || 0)
-				.toFixed(2);
+			row.querySelector(".so-unit-price").value = Atlas.format.amount(
+				baseResult.data.selling_price || 0,
+			);
 
-			const baseQtyAvailable = Atlas.format.parseNumber(
+			const baseQtyAvailable = Atlas.format.amount(
 				row.dataset.baseQtyAvailable || 0,
 			);
 
@@ -617,10 +649,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 
 		/*** convert human-friendly relationship to ATLAS base factor */
-		const conversionFactor = 1 / unitsPerBase;
+		const conversionFactor = baseUnitsPerSelectedUom;
 		row.dataset.conversionFactor = conversionFactor;
 
-		const baseQtyAvailable = Atlas.format.parseNumber(
+		/*** suggest SRP from base UOM price */
+		const baseResult = await Atlas.ajax.post(
+			`sales-orders/get-uom-conversion`,
+			{
+				product_id: productId,
+				uom_id: baseUomId,
+				base_uom_id: baseUomId,
+			},
+		);
+
+		if (!baseResult.success) {
+			Atlas.toast.error(baseResult.message);
+			return;
+		}
+
+		const baseSrp = Atlas.format.amount(baseResult.data.selling_price || 0);
+
+		row.querySelector(".so-unit-price").value = (
+			baseSrp * conversionFactor
+		).toFixed(2);
+
+		calculateSalesOrderRow(row);
+
+		const baseQtyAvailable = Atlas.format.amount(
 			row.dataset.baseQtyAvailable || 0,
 		);
 		const qtyAvailable = baseQtyAvailable / conversionFactor;
