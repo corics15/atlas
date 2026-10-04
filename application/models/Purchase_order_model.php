@@ -13,11 +13,11 @@ class Purchase_order_model extends CI_Model
 
   public function save($po)
   {
-    $this->validate($po);
-
     $this->db->trans_begin();
 
     try {
+      $this->validate($po);
+
       $header = $this->insertHeader($po);
       $this->insertDetails(
         $header['id'],
@@ -48,7 +48,6 @@ class Purchase_order_model extends CI_Model
 
   public function update($po)
   {
-    $this->validate($po);
 
     /*** verify before updating anything */
     $status = $this->db
@@ -70,6 +69,8 @@ class Purchase_order_model extends CI_Model
     $this->db->trans_begin();
 
     try {
+      $this->validate($po);
+
       $this->updateHeader($po);
       $this->replaceDetails(
         $po->id,
@@ -164,7 +165,7 @@ class Purchase_order_model extends CI_Model
   public function getAll($filters = [])
   {
     $this->db
-        ->select("p.id, p.po_no, p.po_date, s.supplier_name, p.status, COALESCE(SUM((d.qty * d.price) - d.discount), 0) AS total, p.remarks, COUNT(d.*) AS item_count")
+        ->select("p.id, p.po_no, p.po_date, s.supplier_name, p.status, COALESCE(SUM((d.qty * d.price) * (1 - (COALESCE(d.discount, 0) / 100.0))), 0) AS total, p.remarks,COUNT(d.*) AS item_count", FALSE)
         ->from('t_purchase_orders p')
         ->join(
           'm_suppliers s',

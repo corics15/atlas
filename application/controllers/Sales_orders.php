@@ -234,6 +234,28 @@ class Sales_orders extends MY_Controller
     );
   }
 
+  public function get_sales_uoms()
+  {
+    $request = $this->getJsonRequest();
+    $productId = (int) ($request['product_id'] ?? 0);
+
+    if ($productId <= 0) {
+      return $this->jsonResponse(
+        false,
+        'Invalid product.',
+        []
+      );
+    }
+
+    $uoms = $this->Product_uom_model->getSalesUoms($productId);
+
+    return $this->jsonResponse(
+      true,
+      '',
+      $uoms
+    );
+  }
+
   public function get_uom_conversion()
   {
     $request = $this->getJsonRequest();
@@ -250,45 +272,17 @@ class Sales_orders extends MY_Controller
       );
     }
 
-    /*** selected UOM is already the product base UOM */
-    if ($uomId === $baseUomId) {
-
-      /***
-       * PRICING RULE:
-       * m_products.srp is the authoritative selling price for the BASE UOM.
-       * m_products.selling_price is a legacy field and must not be used here.
-       *
-       * Keep the response key as "selling_price" for compatibility with the
-       * existing Sales Order JS. Non-base UOM pricing comes from
-       * m_product_uom.selling_price, which represents that UOM's SRP.
-       */
-      $product = $this->db
-          ->select('srp')
-          ->where('id', $productId)
-          ->get('m_products')
-          ->row();
-
-      if (!$product) {
-        return $this->jsonResponse(
-          false,
-          'Product not found.',
-          null
-        );
-      }
-
-      return $this->jsonResponse(
-        true,
-        '',
-        [
-          'conversion_factor' => 1,
-          'selling_price' => (float) $product->srp,
-          'is_known' => true
-        ]
-      );
-    }
-    /*** end selected UOM */
-
-    $productUom = $this->Product_uom_model->get(
+    /***
+     * SALES UOM RULE:
+     * Sales Order UOMs are defined by m_product_uom.is_sales_uom.
+     *
+     * Do not assume m_products.uom_id is the Sales UOM. The product base UOM
+     * may differ from the UOM used for selling (e.g. purchasing/inventory UOM).
+     *
+     * Each Sales UOM owns its conversion_factor and authoritative SRP through
+     * m_product_uom.selling_price.
+     */
+    $productUom = $this->Product_uom_model->getSalesUom(
       $productId,
       $uomId
     );

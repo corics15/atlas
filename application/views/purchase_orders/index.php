@@ -12,7 +12,7 @@
             Order Information
           </h3>
 
-          <?php /*** status class set in purchase_orders.js */ ?>
+          <?php /*** status class set in purchase_orders.js (populateHeader) */ ?>
           <div class="ls-wider" style="font-weight:500"></div>
         </div>
       </div>

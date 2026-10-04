@@ -535,44 +535,46 @@ class Inventory_model extends CI_Model
 
       foreach ($details as $detail) {
 
-        /*** validate available stock */
-        $inventory = $this->Branch_inventory_model->getBalance(
-            $branchId,
-            $detail->product_id
-        );
-
-        $qtyOnHand = $inventory ? $inventory->qty_on_hand : 0;
-
-        if ($qtyOnHand < $detail->qty) {
-          throw new Exception(
-            "{$detail->description} has insufficient stock."
-          );
-        }
-
         /*** convert Purchase Return qty to product base UOM */
         $conversionFactor = (float)$detail->conversion_factor;
         if ($conversionFactor <= 0) {
           throw new Exception('Invalid UOM conversion on Purchase Return.');
         }
+
         $detail->base_qty = (float)$detail->qty * $conversionFactor;
         /*** end convert */
 
+        /*** validate available stock in product base UOM */
+        $inventory = $this->Branch_inventory_model->getBalance(
+          $branchId,
+          $detail->product_id
+        );
+
+        $qtyOnHand = $inventory ? (float)$inventory->qty_on_hand : 0;
+
+        if ($qtyOnHand < $detail->base_qty) {
+          throw new Exception(
+            "{$detail->description} has insufficient stock."
+          );
+        }
+
         /*** deduct branch inventory */
         $this->Branch_inventory_model->adjustBalance(
-            $branchId,
-            $detail->product_id,
-            -$detail->base_qty
+          $branchId,
+          $detail->product_id,
+          -$detail->base_qty
         );
 
         /*** stock ledger */
         $this->writeStockLedger(
-            $branchId,
-            'PR',
-            $header->id,
-            $header->pr_no,
-            [$detail],
-            NULL,
-            'base_qty'
+          $branchId,
+          'PR',
+          $header->id,
+          $header->pr_no,
+          [$detail],
+          NULL,
+          'base_qty',
+          'base_unit_cost'
         );
       }
 

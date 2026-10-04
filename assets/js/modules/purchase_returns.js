@@ -1,335 +1,342 @@
-const btnSavePurchaseReturn = document.getElementById('btnSavePurchaseReturn');
-const btnPostPurchaseReturn = document.getElementById('btnPostPurchaseReturn');
-const btnEditPurchaseReturn = document.getElementById('btnEditPurchaseReturn');
-const btnRefreshPurchaseReturn = document.getElementById('btnRefreshPurchaseReturn');
-const btnCancelPurchaseReturn = document.getElementById('btnCancelPurchaseReturn');
-const btnPrintPurchaseReturn = document.getElementById('btnPrintPurchaseReturn');
+const btnSavePurchaseReturn = document.getElementById("btnSavePurchaseReturn");
+const btnPostPurchaseReturn = document.getElementById("btnPostPurchaseReturn");
+const btnEditPurchaseReturn = document.getElementById("btnEditPurchaseReturn");
+const btnRefreshPurchaseReturn = document.getElementById(
+	"btnRefreshPurchaseReturn",
+);
+const btnCancelPurchaseReturn = document.getElementById(
+	"btnCancelPurchaseReturn",
+);
+const btnPrintPurchaseReturn = document.getElementById(
+	"btnPrintPurchaseReturn",
+);
 
-const txtPurchaseReturnRemarks = document.getElementById('txtPurchaseReturnRemarks');
+const txtPurchaseReturnRemarks = document.getElementById(
+	"txtPurchaseReturnRemarks",
+);
 
-const hidPurchaseReturnId = document.getElementById('hidPurchaseReturnId');
-const hidGoodsReceiptId = document.getElementById('hidGoodsReceiptId');
+const hidPurchaseReturnId = document.getElementById("hidPurchaseReturnId");
+const hidGoodsReceiptId = document.getElementById("hidGoodsReceiptId");
 
 let isDirty = false;
 let isLoading = true;
 let isEditMode = hidPurchaseReturnId?.value ? true : false;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener("DOMContentLoaded", async () => {
+	Atlas.table.init({
+		checkbox: ".chkPurchaseReturn",
+		selectAll: "#chkSelectAllPurchaseReturn",
+	});
 
-  Atlas.table.init({
-    checkbox: '.chkPurchaseReturn',
-    selectAll: '#chkSelectAllPurchaseReturn',
-  });
+	Atlas.select.init("#selSupplierFilter");
 
-  Atlas.select.init('#selSupplierFilter');
+	/*** dirty tracking */
+	document.addEventListener("input", (e) => {
+		if (
+			e.target.classList.contains("pr-return-qty") ||
+			e.target.id === `txtPurchaseReturnRemarks`
+		) {
+			markDirty();
+		}
+	});
 
-  /*** dirty tracking */
-  document.addEventListener('input', (e) => {
-    if (
-      e.target.classList.contains('pr-return-qty') ||
-      e.target.id === `txtPurchaseReturnRemarks`
-    ) {
-      markDirty();
-    }
-  });
+	/*** edit */
+	btnEditPurchaseReturn?.addEventListener("click", () => {
+		const id = getSelectedId();
 
-  /*** edit */
-  btnEditPurchaseReturn?.addEventListener('click', () => {
-    const id = getSelectedId();
+		if (!id) {
+			return;
+		}
 
-    if (!id) {
-      return;
-    }
+		Atlas.page.redirect(`purchase-returns/edit/${id}`);
+	});
 
-    Atlas.page.redirect(`purchase-returns/edit/${id}`);
-  });
+	/*** save */
+	btnSavePurchaseReturn?.addEventListener("click", async () => {
+		if (!validatePurchaseReturn()) {
+			return;
+		}
 
-  /*** save */
-  btnSavePurchaseReturn?.addEventListener('click', async () => {
+		btnSavePurchaseReturn.disabled = true;
 
-    if (!validatePurchaseReturn()) {
-      return;
-    }
+		try {
+			const purchaseReturn = {
+				id: Atlas.format.integer(hidPurchaseReturnId.value),
+				goods_receipt_id: Atlas.format.parseNumber(hidGoodsReceiptId.value),
+				return_date: document.getElementById("dtReturnDate").value,
+				supplier_id: Atlas.format.parseNumber(
+					document.getElementById("hidSupplierId").value,
+				),
+				remarks: txtPurchaseReturnRemarks.value,
+				details: [],
+			};
 
-    btnSavePurchaseReturn.disabled = true;
+			document
+				.querySelectorAll("#tblPurchaseReturnDetails tbody tr")
+				.forEach((row) => {
+					if (!row.dataset.productId) {
+						return;
+					}
 
-    try {
+					const qty = Atlas.format.parseNumber(
+						row.querySelector(".pr-return-qty").value,
+					);
 
-      const purchaseReturn = {
-        id: Atlas.format.integer(hidPurchaseReturnId.value),
-        goods_receipt_id: Atlas.format.integer(hidGoodsReceiptId.value),
-        return_date: document.getElementById('dtReturnDate').value,
-        supplier_id: Atlas.format.integer(document.getElementById('hidSupplierId').value),
-        remarks: txtPurchaseReturnRemarks.value,
-        details: []
-      };
+					/***
+					 * above code commented out because:
+					 * an empty details[] has two possible meanings:
+					 *  1. user is only editing the header (remarks/date). - fine
+					 *  2. User intentionally removed every quantity. - sill fine but not good
+					 *  the server cannot distinguish those two cases.
+					 * so we always push, even with 0 quantities
+					 */
+					purchaseReturn.details.push({
+						goods_receipt_detail_id: Atlas.format.parseNumber(
+							row.dataset.goodsReceiptDetailId,
+						),
+						product_id: Atlas.format.parseNumber(row.dataset.productId),
+						uom_id: Atlas.format.parseNumber(row.dataset.uomId),
+						conversion_factor: Atlas.format.parseNumber(
+							row.dataset.conversionFactor,
+						),
+						qty: qty,
+					});
+				});
 
-      document.querySelectorAll('#tblPurchaseReturnDetails tbody tr').forEach(row => {
-        if (!row.dataset.productId) {
-          return;
-        }
-
-        const qty = Atlas.format.parseNumber(row.querySelector('.pr-return-qty').value);
-
-        // if (qty <= 0) {
-        //   return;
-        // }
-
-        /***
-          * above code commented out because:
-          * an empty details[] has two possible meanings:
-          *  1. user is only editing the header (remarks/date). - fine
-          *  2. User intentionally removed every quantity. - sill fine but not good
-          *  the server cannot distinguish those two cases.
-          * so we always push, even with 0 quantities
-        */
-        purchaseReturn.details.push({
-          goods_receipt_detail_id: Atlas.format.parseNumber(row.dataset.goodsReceiptDetailId),
-          product_id: Atlas.format.parseNumber(row.dataset.productId),
-          uom_id: Atlas.format.parseNumber(row.dataset.uomId),
-          conversion_factor: Atlas.format.parseNumber(row.dataset.conversionFactor),
-          qty: qty
-        });
-
-      });
-
-      if (!isEditMode) {
-
-        /*** final confirmation for user */
-        const confirmed = await Atlas.dialog.confirm(
-          'Confirm Action',
-          `<div class="text-brown text-center">
+			if (!isEditMode) {
+				/*** final confirmation for user */
+				const confirmed = await Atlas.dialog.confirm(
+					"Confirm Action",
+					`<div class="text-brown text-center">
           <p>This Purchase Return will be created.</p>
           <p>To preserve the integrity of inventory transactions,<br>
           RETURN QTY can no longer be modified after the document has been created.</p>
           <p>If changes to the returned items or quantities are required,<br>
           you will need to cancel this Purchase Return and create a new one.</p>
           <p class="font-weight-500 text-danger">Save and proceed?</p>
-        </div>`
-        );
+        </div>`,
+				);
 
-        if (!confirmed) {
-          return;
-        }
-      }
+				if (!confirmed) {
+					return;
+				}
+			}
 
-      const result = await Atlas.ajax.post(
-        'purchase-returns/save',
-        purchaseReturn
-      );
+			const result = await Atlas.ajax.post(
+				"purchase-returns/save",
+				purchaseReturn,
+			);
 
-      if (!result.success) {
-        Atlas.toast.error(result.message);
-        return;
-      }
+			if (!result.success) {
+				Atlas.toast.error(result.message);
+				return;
+			}
 
-      Atlas.toast.success(result.message);
-      document.getElementById('hidPurchaseReturnId').value = result.data.purchase_return_id;
-      setTimeout(() => Atlas.page.redirect(`purchase-returns/edit/${Atlas.id.encode(result.data.purchase_return_id)}`), 1200);
+			Atlas.toast.success(result.message);
+			document.getElementById("hidPurchaseReturnId").value =
+				result.data.purchase_return_id;
+			setTimeout(
+				() =>
+					Atlas.page.redirect(
+						`purchase-returns/edit/${Atlas.id.encode(result.data.purchase_return_id)}`,
+					),
+				1200,
+			);
 
-      isEditMode = true;
-      isDirty = false;
+			isEditMode = true;
+			isDirty = false;
+		} finally {
+			btnSavePurchaseReturn.disabled = false;
+		}
+	});
 
-    }
-    finally {
-      btnSavePurchaseReturn.disabled = false;
-    }
+	/*** post */
+	btnPostPurchaseReturn?.addEventListener("click", async () => {
+		let ids = Atlas.table.selectedIds();
 
-  });
+		if (!ids || ids.length === 0) {
+			if (window.purchaseReturnId === 0) {
+				Atlas.toast.warning("New Purchase Return, not yet saved");
+				return false;
+			} else if (window.purchaseReturnId) {
+				ids = [window.purchaseReturnId];
+			} else {
+				Atlas.toast.warning("Please select at least one Purchase Return");
+				return false;
+			}
+		}
 
-  /*** post */
-  btnPostPurchaseReturn?.addEventListener('click', async () => {
-    let ids = Atlas.table.selectedIds();
-
-    if (!ids || ids.length === 0) {
-      if (window.purchaseReturnId === 0) {
-        Atlas.toast.warning('New Purchase Return, not yet saved');
-        return false;
-      } else if (window.purchaseReturnId) {
-        ids = [window.purchaseReturnId];
-      } else {
-        Atlas.toast.warning('Please select at least one Purchase Return');
-        return false;
-      }
-    }
-
-    const result = await Atlas.dialog.confirm(
-      'Confirm Action',
-      `<div class="text-brown text-center">
+		const result = await Atlas.dialog.confirm(
+			"Confirm Action",
+			`<div class="text-brown text-center">
         <p>Inventory quantities will be updated.<br>
         This action cannot be undone.</p>
         <p class="font-weight-500 text-danger">Post Purchase Return?</p>
-      </div>`
-    );
+      </div>`,
+		);
 
-    if (!result) {
-      return;
-    }
+		if (!result) {
+			return;
+		}
 
-    btnPostPurchaseReturn.disabled = true;
+		btnPostPurchaseReturn.disabled = true;
 
-    try {
-      const response = await Atlas.ajax.post(
-        'purchase-returns/post',
-        {
-          ids: ids
-        }
-      );
+		try {
+			const response = await Atlas.ajax.post("purchase-returns/post", {
+				ids: ids,
+			});
 
-      if (!response.success) {
-        Atlas.toast.error(response.message);
-        return;
-      }
+			if (!response.success) {
+				Atlas.toast.error(response.message);
+				return;
+			}
 
-      Atlas.toast.success(response.message);
-      setTimeout(() => Atlas.page.refresh(), 1500);
+			Atlas.toast.success(response.message);
+			setTimeout(() => Atlas.page.refresh(), 1500);
+		} finally {
+			btnPostPurchaseReturn.disabled = false;
+		}
+	});
 
-    } finally {
-      btnPostPurchaseReturn.disabled = false;
-    }
-  });
+	/*** cancel */
+	btnCancelPurchaseReturn?.addEventListener("click", async () => {
+		let ids = Atlas.table.selectedIds();
 
-  /*** cancel */
-  btnCancelPurchaseReturn?.addEventListener('click', async () => {
-    let ids = Atlas.table.selectedIds();
+		if (!ids || ids.length === 0) {
+			if (window.purchaseReturnId === 0) {
+				Atlas.toast.warning("New Purchase Return, not yet saved");
+				return false;
+			} else if (window.purchaseReturnId) {
+				ids = [window.purchaseReturnId];
+			} else {
+				Atlas.toast.warning("Please select at least one Purchase Return");
+				return false;
+			}
+		}
 
-    if (!ids || ids.length === 0) {
-      if (window.purchaseReturnId === 0) {
-        Atlas.toast.warning('New Purchase Return, not yet saved');
-        return false;
-      } else if (window.purchaseReturnId) {
-        ids = [window.purchaseReturnId];
-      } else {
-        Atlas.toast.warning('Please select at least one Purchase Return');
-        return false;
-      }
-    }
+		const reason = await Atlas.dialog.textarea({
+			icon: "warning",
+			title: `Cancel ${ids.length} Purchase Return(s)?`,
+			text: "Please provide the reason for cancellation.",
+			inputPlaceholder: "Enter cancellation reason...",
+			required: false,
+			confirmText: "Confirm Cancellation",
+		});
 
-    const reason = await Atlas.dialog.textarea({
-      icon: 'warning',
-      title: `Cancel ${ids.length} Purchase Return(s)?`,
-      text: 'Please provide the reason for cancellation.',
-      inputPlaceholder: 'Enter cancellation reason...',
-      required: false,
-      confirmText: 'Confirm Cancellation'
-    });
+		if (reason === null) {
+			return;
+		}
 
-    if (reason === null) {
-      return;
-    }
+		const result = await Atlas.ajax.post("purchase-returns/cancel", {
+			ids: ids,
+			cancel_reason: reason,
+		});
 
-    const result = await Atlas.ajax.post(
-      'purchase-returns/cancel',
-      {
-        ids: ids,
-        cancel_reason: reason
-      }
-    );
+		if (!result.success) {
+			Atlas.toast.error(result.message);
+			return;
+		}
 
-    if (!result.success) {
-      Atlas.toast.error(result.message);
-      return;
-    }
+		Atlas.toast.success(result.message);
+		setTimeout(() => Atlas.page.refresh(), 1200);
+	});
 
-    Atlas.toast.success(result.message);
-    setTimeout(() => Atlas.page.refresh(), 1200);
-  });
+	/*** print */
+	btnPrintPurchaseReturn?.addEventListener("click", printPurchaseReturn);
 
-  /*** print */
-  btnPrintPurchaseReturn?.addEventListener('click', printPurchaseReturn);
-
-  /*** refresh */
-  btnRefreshPurchaseReturn?.addEventListener('click', () => Atlas.page.redirect(`purchase-returns`));
-
+	/*** refresh */
+	btnRefreshPurchaseReturn?.addEventListener("click", () =>
+		Atlas.page.redirect(`purchase-returns`),
+	);
 });
 
-window.addEventListener('beforeunload', e => {
-  if (!isDirty) {
-    return;
-  }
+window.addEventListener("beforeunload", (e) => {
+	if (!isDirty) {
+		return;
+	}
 
-  e.preventDefault();
-  e.returnValue = '';
+	e.preventDefault();
+	e.returnValue = "";
 });
 
 const getSelectedId = () => {
-  const checked = Atlas.table.selected();
+	const checked = Atlas.table.selected();
 
-  if (checked.length === 0) {
-    Atlas.toast.warning(
-      'Please select a Purchase Return.'
-    );
-    return null;
-  }
+	if (checked.length === 0) {
+		Atlas.toast.warning("Please select a Purchase Return.");
+		return null;
+	}
 
-  if (checked.length > 1) {
-    Atlas.toast.warning(
-      'Please select only one Purchase Return.'
-    );
+	if (checked.length > 1) {
+		Atlas.toast.warning("Please select only one Purchase Return.");
 
-    return null;
-  }
+		return null;
+	}
 
-  return checked[0].value;
+	return checked[0].value;
 };
 
 const validatePurchaseReturn = () => {
-  const rows = document.querySelectorAll('#tblPurchaseReturnDetails tr');
+	const rows = document.querySelectorAll("#tblPurchaseReturnDetails tr");
 
-  let hasProduct = false;
+	let hasProduct = false;
 
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i];
+	for (let i = 0; i < rows.length; i++) {
+		const row = rows[i];
 
-    if (!row.dataset.productId) {
-      continue;
-    }
+		if (!row.dataset.productId) {
+			continue;
+		}
 
-    hasProduct = true;
+		hasProduct = true;
 
-    const qty = Atlas.format.integer(row.querySelector('.pr-return-qty').value || 0);
-    if (qty < 0) {
-      Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
-      setTimeout(() => row.querySelector('.pr-return-qty').focus(), 500);
-      return false;
-    }
+		const qty = Atlas.format.integer(
+			row.querySelector(".pr-return-qty").value || 0,
+		);
+		if (qty < 0) {
+			Atlas.toast.warning(`Invalid quantity on row ${i + 1}.`);
+			setTimeout(() => row.querySelector(".pr-return-qty").focus(), 500);
+			return false;
+		}
 
-    if (qty > Atlas.format.parseNumber(row.dataset.availableQty)) {
-      Atlas.toast.error(`Return quantity cannot be more than the received quantity.`)
-      return false;
-    }
-  }
+		if (qty > Atlas.format.parseNumber(row.dataset.availableQty)) {
+			Atlas.toast.error(
+				`Return quantity cannot be more than the received quantity.`,
+			);
+			return false;
+		}
+	}
 
-  if (!hasProduct) {
-    Atlas.toast.warning('Please add at least one product.');
-    return false;
-  }
+	if (!hasProduct) {
+		Atlas.toast.warning("Please add at least one product.");
+		return false;
+	}
 
-  return true;
+	return true;
 };
 
 const printPurchaseReturn = () => {
-  let ids = Atlas.table.selectedIds();
+	let ids = Atlas.table.selectedIds();
 
-  if (!ids || ids.length === 0) {
-    if (window.purchaseReturnId === 0) {
-      Atlas.toast.warning('New Purchase Return, not yet saved');
-      return;
-    } else if (window.purchaseReturnId) {
-      ids = [window.purchaseReturnId];
-    } else {
-      Atlas.toast.warning('Please select at least one Purchase Return');
-      return;
-    }
-  }
+	if (!ids || ids.length === 0) {
+		if (window.purchaseReturnId === 0) {
+			Atlas.toast.warning("New Purchase Return, not yet saved");
+			return;
+		} else if (window.purchaseReturnId) {
+			ids = [window.purchaseReturnId];
+		} else {
+			Atlas.toast.warning("Please select at least one Purchase Return");
+			return;
+		}
+	}
 
-  Atlas.print.post('purchase-returns/print', ids);
+	Atlas.print.post("purchase-returns/print", ids);
 };
 
 const markDirty = () => {
-  if (isLoading) {
-    return;
-  }
+	if (isLoading) {
+		return;
+	}
 
-  isDirty = true;
+	isDirty = true;
 };

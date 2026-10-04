@@ -129,7 +129,10 @@ class Products extends MY_Controller
     $productId = (int)($request['product_id'] ?? 0);
     $uomId = (int)($request['uom_id'] ?? 0);
     $conversionFactor = (float)($request['conversion_factor'] ?? 0);
+    $lastCost = (float)($request['last_cost'] ?? 0);
     $sellingPrice = (float)($request['selling_price'] ?? 0);
+    $isSalesUom = !empty($request['is_sales_uom']);
+    $isPurchaseUom = !empty($request['is_purchase_uom']);
 
     $product = $this->Product_model->get($productId);
 
@@ -161,6 +164,13 @@ class Products extends MY_Controller
       );
     }
 
+    if ($lastCost < 0) {
+      return $this->jsonResponse(
+        false,
+        'Cost cannot be negative.'
+      );
+    }
+
     if ($sellingPrice < 0) {
       return $this->jsonResponse(
         false,
@@ -172,7 +182,10 @@ class Products extends MY_Controller
       $productId,
       $uomId,
       $conversionFactor,
-      $sellingPrice
+      $sellingPrice,
+      $lastCost,
+      $isSalesUom,
+      $isPurchaseUom
     );
 
     if (!$saved) {
@@ -193,6 +206,8 @@ class Products extends MY_Controller
     $postData = $this->input->post();
     $id = (int) $postData['id'];
 
+    $product = $id ? $this->Product_model->get($id) : NULL;
+
     $barcode = trim($postData['barcode']);
     if ($barcode !== '' && $this->Product_model->barcodeInUse($barcode, $id)) {
       return $this->jsonResponse(
@@ -210,14 +225,16 @@ class Products extends MY_Controller
       ]
     );
 
-    $this->form_validation->set_rules(
-      'uom_id',
-      'UOM',
-      'required|trim',
-      [
-        'required' => 'The %s field is mandatory.'
-      ]
-    );
+    if (empty($id)) {
+      $this->form_validation->set_rules(
+        'uom_id',
+        'UOM',
+        'required|trim',
+        [
+          'required' => 'The %s field is mandatory.'
+        ]
+      );
+    }
 
     $this->form_validation->set_rules(
       'description',
@@ -237,7 +254,7 @@ class Products extends MY_Controller
       'barcode' => $barcode !== '' ? $barcode : NULL,
       'case_barcode' => trim($postData['case_barcode']),
       'description' => trim($postData['description']) <> '' ? strtoupper(trim($postData['description'])) : NULL,
-      'uom_id' => $postData['uom_id'],
+      'uom_id' => empty($id) ? $postData['uom_id'] : $product->uom_id,
       'cost' => $postData['cost'],
       'srp' => $postData['srp'],
       'pkg' => trim($postData['pkg']) <> '' ? strtoupper(trim($postData['pkg'])) : NULL,

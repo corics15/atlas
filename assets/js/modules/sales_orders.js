@@ -835,7 +835,7 @@ const buildUomOptions = () => {
   `;
 };
 
-const populateProductRow = (row, product) => {
+const populateProductRow = async (row, product) => {
 	/*** check duplicate rows */
 	const duplicate = [...tblSalesOrderDetails.rows].find(
 		(r) =>
@@ -852,8 +852,36 @@ const populateProductRow = (row, product) => {
 
 	row.dataset.productId = product.id;
 	row.dataset.baseUomId = product.uom_id;
-	row.dataset.conversionFactor = 1;
 	row.dataset.baseQtyAvailable = Atlas.format.parseNumber(product.qty_on_hand);
+
+	/*** load UOMs allowed specifically for Sales Order */
+	const salesUomResult = await Atlas.ajax.post("sales-orders/get-sales-uoms", {
+		product_id: product.id,
+	});
+
+	if (!salesUomResult.success || !salesUomResult.data?.length) {
+		Atlas.toast.error("No Sales UOM configured for this product.");
+		row.dataset.productId = "";
+		return;
+	}
+
+	const salesUoms = salesUomResult.data;
+	const defaultUom = salesUoms[0];
+
+	const uomSelect = row.querySelector(".so-uom");
+
+	uomSelect.innerHTML = salesUoms
+		.map(
+			(item) => `
+      <option value="${item.uom_id}">
+        ${item.uom}
+      </option>
+    `,
+		)
+		.join("");
+
+	uomSelect.value = defaultUom.uom_id;
+	row.dataset.conversionFactor = defaultUom.conversion_factor;
 
 	row.querySelector(".so-barcode").value = product.barcode;
 	row.querySelector(".so-description").textContent =
@@ -866,15 +894,12 @@ const populateProductRow = (row, product) => {
 			.setAttribute("title", product.description);
 	}
 	row.querySelector(".so-pkg").textContent = product.pkg ?? "";
-	row.querySelector(".so-uom").value = product.uom_id;
 	row.querySelector(".so-available").textContent = Atlas.format.integer(
 		product.qty_on_hand,
 	);
 
-	/*** default selling price */
-	const unitPrice = Atlas.format.parseNumber(
-		product.selling_price ?? product.srp ?? 0,
-	);
+	/*** default SRP from selected Sales UOM */
+	const unitPrice = Atlas.format.parseNumber(defaultUom.selling_price || 0);
 	row.querySelector(".so-unit-price").value = unitPrice.toFixed(2);
 
 	/*** customer default discount */

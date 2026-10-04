@@ -12,6 +12,7 @@ class Purchase_orders extends MY_Controller
     $this->load->model('Purchase_order_model');
     $this->load->model('Term_model');
     $this->load->model('Uom_model');
+    $this->load->model('Product_uom_model');
 
     $this->load->library('form_validation');
   }
@@ -100,6 +101,26 @@ class Purchase_orders extends MY_Controller
       true,
       '',
       $data
+    );
+  }
+
+  public function get_purchase_uoms()
+  {
+    $productId = (int) $this->input->get('product_id');
+
+    if ($productId <= 0) {
+      return $this->jsonResponse(
+        FALSE,
+        'Invalid product.'
+      );
+    }
+
+    $uoms = $this->Product_uom_model->getPurchaseUoms($productId);
+
+    return $this->jsonResponse(
+      TRUE,
+      '',
+      $uoms
     );
   }
 

@@ -133,6 +133,7 @@ class Purchase_return_model extends CI_Model
         ->select("
             sid.*,
             grd.qty_received,
+            (grd.unit_cost / NULLIF(grd.conversion_factor, 0)) AS base_unit_cost,
             (
               SELECT COALESCE(SUM(prd.qty),0)
               FROM t_purchase_return_details prd

@@ -133,30 +133,42 @@
         </button>
       </div>
 
-      <div class="alert alert-light border small py-2 px-3 mb-3">
-        <div class="font-weight-500 mb-1">
-          <i class="fas fa-info-circle mr-1 text-info"></i>
-          Quick Guide
-        </div>
-        <div>
-          <span class="font-weight-500 text-red">Units in Base UOM</span> is the number of base units contained
-          in one selected UOM. <span class="text-brown">Example:</span> if the Base UOM is PACK and 1 BAG contains
-          20 PACKS, enter <span class="font-weight-500 text-indigo">20</span>.
-        </div>
-        <div class="mt-1">
-          SRP is <span class="font-weight-500">"suggested"</span> from <span class="font-weight-500 text-orange">Units in Base UOM x Base SRP</span>, but may be
-          changed to the actual selling price.
-        </div>
-        <div class="mt-1">
-          Click an existing UOM below to edit or deactivate it. To reactivate, simply select the deactivated UOM to reactivate.
-        </div>
-      </div>
+<div class="alert alert-light border small py-2 px-3 mb-3">
+  <div class="font-weight-500 mb-1">
+    <i class="fas fa-info-circle mr-1 text-info"></i>
+    Quick UOM Guide
+  </div>
+  <div>
+    <span class="font-weight-500 text-red">Units in Base UOM</span> is the number of base units contained
+    in one selected UOM. <span class="text-brown">Example:</span> if the Base UOM is PACK and 1 BAG contains
+    20 PACKS, enter <span class="font-weight-500 text-indigo">20</span>.
+  </div>
+  <div class="mt-1">
+    <span class="font-weight-500">Cost</span> is the current cost for the selected UOM.
+    SRP is <span class="font-weight-500">"suggested"</span> from
+    <span class="font-weight-500 text-orange">Units in Base UOM x Base SRP</span>, but may be changed
+    to the actual selling price.
+  </div>
+  <div class="mt-1">
+    Check <span class="font-weight-500 text-success">Sales UOM</span> if the UOM can be used in Sales Orders,
+    and <span class="font-weight-500 text-info">Purchase UOM</span> if it can be used in Purchase Orders.
+    A UOM may be used for <span class="font-weight-500">Sales, Purchase, or both</span>.
+  </div>
+  <div class="mt-1">
+    Click an existing UOM below to edit it. Its saved Sales/Purchase roles are loaded automatically,
+    so only change the checkboxes when you want to change how that UOM is used.
+  </div>
+  <div class="mt-1">
+    To deactivate a UOM, click its deactivate icon. To reactivate it, simply select the deactivated UOM
+    and save it again.
+  </div>
+</div>
 
       <div class="modal-body">
 
         <div class="form-row align-items-end mb-3">
 
-          <div class="form-group col-md-4 mb-0">
+          <div class="form-group col-md-3 mb-0">
             <label for="selProductUom">UOM</label>
             <select id="selProductUom" class="form-control form-control-sm custom-select">
               <option value="">Select UOM</option>
@@ -168,17 +180,22 @@
             </select>
           </div>
 
-          <div class="form-group col-md-3 mb-0">
+          <div class="form-group col-md-2 mb-0">
             <label for="txtProductUomConversion">Units in Base UOM</label>
             <input type="number" id="txtProductUomConversion" class="form-control form-control-sm" min="0.0001" step="any" placeholder="e.g. 20">
           </div>
 
-          <div class="form-group col-md-3 mb-0">
+          <div class="form-group col-md-2 mb-0">
+            <label for="txtProductUomCost">Cost</label>
+            <input type="number" id="txtProductUomCost" class="form-control form-control-sm" min="0" step="any">
+          </div>
+
+          <div class="form-group col-md-2 mb-0">
             <label for="txtProductUomSrp">SRP</label>
             <input type="number" id="txtProductUomSrp" class="form-control form-control-sm" min="0" step="any">
           </div>
 
-          <div class="form-group col-md-2 mb-0">
+          <div class="form-group col-md-3 mb-0">
             <button type="button" id="btnAddProductUom" class="btn btn-sm btn-link btn-block">
               <i class="fas fa-plus mr-1"></i>
               Add
@@ -187,19 +204,42 @@
 
         </div>
 
+<div class="form-row mt-2 mb-3">
+  <div class="form-group col-md-3 mb-0">
+    <div class="custom-control custom-checkbox">
+      <input type="checkbox" class="custom-control-input" id="chkProductUomSales">
+      <label class="custom-control-label" for="chkProductUomSales">
+        Sales UOM
+      </label>
+    </div>
+  </div>
+
+  <div class="form-group col-md-3 mb-0">
+    <div class="custom-control custom-checkbox">
+      <input type="checkbox" class="custom-control-input" id="chkProductUomPurchase">
+      <label class="custom-control-label" for="chkProductUomPurchase">
+        Purchase UOM
+      </label>
+    </div>
+  </div>
+</div>
+
         <div class="table-responsive">
           <table class="table table-sm table-bordered mb-0">
             <thead class="thead-orange">
               <tr>
                 <th>UOM</th>
                 <th class="text-right">Units in Base UOM</th>
+                <th class="text-right">Cost</th>
                 <th class="text-right">SRP</th>
+                <th class="text-center">Sales</th>
+                <th class="text-center">Purchase</th>
                 <th class="text-center"></th>
               </tr>
             </thead>
             <tbody id="tblProductUomsBody">
               <tr>
-                <td colspan="4" class="text-center text-muted">
+                <td colspan="7" class="text-center text-muted">
                   No additional UOMs.
                 </td>
               </tr>

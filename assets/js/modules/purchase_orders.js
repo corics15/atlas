@@ -112,6 +112,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 		}
 	});
 
+	/*** UOM change event */
+	document.addEventListener("change", (e) => {
+		if (!e.target.classList.contains("po-uom")) {
+			return;
+		}
+
+		const row = e.target.closest("tr");
+		const selected = e.target.options[e.target.selectedIndex];
+
+		row.querySelector(".po-price").value = Atlas.format
+			.parseNumber(selected.dataset.cost || 0)
+			.toFixed(2);
+
+		calculateRowTotal(row);
+		markDirty();
+	});
+
 	/*** enter key after editing PO line */
 	document.addEventListener("keydown", (e) => {
 		if (
@@ -366,14 +383,39 @@ window.addEventListener("beforeunload", (e) => {
 	e.returnValue = "";
 });
 
-const populateProductRow = (row, product) => {
+const populateProductRow = async (row, product) => {
 	row.dataset.productId = product.id;
 	row.querySelector(".po-barcode").value = product.barcode;
 	row.querySelector(".po-supplier").textContent = product.supplier_name;
 	row.querySelector(".po-description").textContent = product.description;
-	row.querySelector(".po-uom").value = product.uom_id;
 
-	row.querySelector(".po-price").value = Number(product.srp).toFixed(2);
+	const result = await Atlas.ajax.get(
+		`purchase-orders/get_purchase_uoms?product_id=${product.id}`,
+	);
+
+	const selUom = row.querySelector(".po-uom");
+	selUom.innerHTML = "";
+
+	if (!result.success || !result.data?.length) {
+		selUom.innerHTML = `<option value="">No Purchase UOM</option>`;
+		row.querySelector(".po-price").value = "0.00";
+		Atlas.toast.warning("No Purchase UOM configured for this product.");
+		return;
+	}
+
+	result.data.forEach((uom) => {
+		const option = document.createElement("option");
+		option.value = uom.uom_id;
+		option.textContent = uom.uom;
+		option.dataset.conversionFactor = uom.conversion_factor;
+		option.dataset.cost = uom.last_cost;
+		selUom.appendChild(option);
+	});
+
+	const selected = selUom.options[0];
+	row.querySelector(".po-price").value = Number(
+		selected.dataset.cost || 0,
+	).toFixed(2);
 
 	calculateRowTotal(row);
 	row.querySelector(".po-qty").focus();
@@ -570,7 +612,7 @@ const loadPurchaseOrder = async (id) => {
 	}
 
 	populateHeader(result.data.header);
-	populateDetails(result.data.details);
+	await populateDetails(result.data.details);
 	renumberRows();
 	calculateGrandTotal();
 
@@ -621,11 +663,11 @@ const populateHeader = (header) => {
 		?.setAttribute("data-status", header.status);
 };
 
-const populateDetails = (details) => {
+const populateDetails = async (details) => {
 	const tbody = document.getElementById("tblPurchaseOrderDetails");
 	tbody.innerHTML = "";
 
-	details.forEach((detail) => {
+	for (const detail of details) {
 		const row = createDetailRow();
 		tbody.insertAdjacentHTML("beforeend", row);
 		const tr = tbody.lastElementChild;
@@ -635,6 +677,7 @@ const populateDetails = (details) => {
 			description.length > 30
 				? description.substring(0, 30) + "..."
 				: description;
+
 		const supplierName = detail.supplier_name;
 		const supplierShort =
 			supplierName.length > 30
@@ -646,6 +689,7 @@ const populateDetails = (details) => {
 
 		const supplierTd = tr.querySelector(".po-supplier");
 		supplierTd.textContent = supplierShort;
+
 		if (supplierName.length > 30) {
 			supplierTd.setAttribute("data-toggle", "tooltip");
 			supplierTd.setAttribute("title", supplierName);
@@ -653,20 +697,52 @@ const populateDetails = (details) => {
 
 		const descTd = tr.querySelector(".po-description");
 		descTd.textContent = descriptionName;
+
 		if (description.length > 30) {
 			descTd.setAttribute("data-toggle", "tooltip");
 			descTd.setAttribute("title", description);
 		}
 
-		tr.querySelector(".po-uom").value = detail.uom_id;
+		const selUom = tr.querySelector(".po-uom");
+		selUom.innerHTML = "";
+
+		const result = await Atlas.ajax.get(
+			`purchase-orders/get_purchase_uoms?product_id=${detail.product_id}`,
+		);
+
+		if (result.success && result.data?.length) {
+			result.data.forEach((uom) => {
+				const option = document.createElement("option");
+				option.value = uom.uom_id;
+				option.textContent = uom.uom;
+				option.dataset.conversionFactor = uom.conversion_factor;
+				option.dataset.cost = uom.last_cost;
+				selUom.appendChild(option);
+			});
+		}
+
+		/*** preserve historical UOM if it is no longer a current Purchase UOM */
+		if (![...selUom.options].some((option) => option.value == detail.uom_id)) {
+			const option = document.createElement("option");
+			option.value = detail.uom_id;
+			option.textContent = detail.uom;
+			selUom.appendChild(option);
+		}
+
+		selUom.value = detail.uom_id;
+
+		/*** preserve saved PO snapshot */
 		tr.querySelector(".po-qty").value = Number(detail.qty);
 		tr.querySelector(".po-price").value = Number(detail.price).toFixed(2);
-		tr.querySelector(".po-discount").value = Number(detail.discount).toFixed(2);
+		tr.querySelector(".po-discount").value = Atlas.format
+			.parseNumber(detail.discount)
+			.toFixed(2);
 
-		renumberRows();
 		calculateRowTotal(tr);
-		Atlas.ui.init(); /*** tooltips */
-	});
+	}
+
+	renumberRows();
+	Atlas.ui.init(); /*** tooltips */
 };
 
 const renumberRows = () => {

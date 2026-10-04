@@ -5,6 +5,7 @@
     <th>Description</th>
     <th width="80" class="text-center">UOM</th>
     <th width="110" class="text-right">Conversion</th>
+    <th width="110" class="text-right">Unit Cost</th>
     <th width="90" class="text-right">Ordered</th>
     <th width="90" class="text-right">Received</th>
     <th width="100" class="text-right">Remaining</th>
@@ -47,6 +48,7 @@
         <?php endif; ?>
       </div>
     </td>
+    <td class="text-right"><?= number_format($item->price, 2) ?></td>
     <td class="text-right"><?= number_format($item->qty) ?></td>
     <td class="text-right"><?= number_format($item->qty_received) ?></td>
     <td class="text-right"><?= number_format($item->qty_remaining) ?></td>
