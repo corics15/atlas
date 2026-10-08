@@ -654,36 +654,64 @@ class Sales_return_model extends CI_Model
           );
         }
 
-          /*** calculate available customer credit */
-          $paymentRow = $this->db->query("SELECT COALESCE(SUM(a.amount_applied), 0) AS paid_amount
-                                            FROM t_customer_payment_allocations a
-                                            INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
-                                            WHERE a.sales_invoice_id = ?
-                                            AND cp.status = 'POSTED'",
-                                            [(int)$return->sales_invoice_id]
-                                          )->row();
+        /*** calculate available customer credit */
+        $paymentRow = $this->db->query("SELECT COALESCE(SUM(a.amount_applied), 0) AS paid_amount
+                                          FROM t_customer_payment_allocations a
+                                          INNER JOIN t_customer_payments cp ON cp.id = a.customer_payment_id
+                                          WHERE a.sales_invoice_id = ?
+                                          AND cp.status = 'POSTED'",
+                                          [(int)$return->sales_invoice_id]
+                                        )->row();
 
-          $previousCreditMemoRow = $this->db->query("SELECT
-                                                      COALESCE(
-                                                        SUM(amount - available_credit),
-                                                        0
-                                                      ) AS credited_amount
-                                                    FROM t_credit_memos
-                                                    WHERE sales_invoice_id = ?
-                                                    AND status = 'POSTED'",
-                                                    [(int)$return->sales_invoice_id]
-                                                  )->row();
+        $previousCreditMemoRow = $this->db->query("SELECT
+                                                    COALESCE(
+                                                      SUM(amount - available_credit),
+                                                      0
+                                                    ) AS credited_amount
+                                                  FROM t_credit_memos
+                                                  WHERE sales_invoice_id = ?
+                                                  AND status = 'POSTED'",
+                                                  [(int)$return->sales_invoice_id]
+                                                )->row();
 
-          $invoiceAmount = round((float)$salesInvoice->total_amount, 2);
-          $paidAmount = round((float)$paymentRow->paid_amount, 2);
-          $previousCreditAmount = round((float)$previousCreditMemoRow->credited_amount, 2);
-          $creditMemoAmount = round((float)$return->total_amount, 2);
+        $creditAllocationRow = $this->db->query("SELECT
+                                                  COALESCE(SUM(amount_applied), 0) AS credit_applied
+                                                FROM t_credit_memo_allocations
+                                                WHERE sales_invoice_id = ?",
+                                                [(int)$return->sales_invoice_id]
+                                              )->row();
 
-          $outstandingBeforeCredit = max(0, round($invoiceAmount - $paidAmount - $previousCreditAmount, 2));
-          $amountAppliedToSourceInvoice = min($creditMemoAmount, $outstandingBeforeCredit);
+        $deductionRow = $this->db->query("SELECT
+                                            COALESCE(SUM(cpd.amount), 0) AS amount_deducted
+                                          FROM t_customer_payment_deductions cpd
+                                          INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+                                          WHERE cpd.sales_invoice_id = ?
+                                          AND cp.status = 'POSTED'",
+                                          [(int)$return->sales_invoice_id]
+                                        )->row();
 
-          $availableCredit = max(0, round($creditMemoAmount - $amountAppliedToSourceInvoice, 2));
-          /*** end calculate available customer credit */
+        $invoiceAmount = round((float)$salesInvoice->total_amount, 2);
+        $paidAmount = round((float)$paymentRow->paid_amount, 2);
+        $previousCreditAmount = round((float)$previousCreditMemoRow->credited_amount, 2);
+        $creditApplied = round((float)$creditAllocationRow->credit_applied, 2);
+        $amountDeducted = round((float)$deductionRow->amount_deducted, 2);
+        $creditMemoAmount = round((float)$return->total_amount, 2);
+
+        $outstandingBeforeCredit = max(
+          0,
+          round(
+            $invoiceAmount
+            - $paidAmount
+            - $previousCreditAmount
+            - $creditApplied
+            - $amountDeducted,
+            2
+          )
+        );
+
+        $amountAppliedToSourceInvoice = min($creditMemoAmount, $outstandingBeforeCredit);
+        $availableCredit = max(0, round($creditMemoAmount - $amountAppliedToSourceInvoice, 2));
+        /*** end calculate available customer credit */
 
           $creditMemoNo = $this->Document_number_model->generate('CM');
 
