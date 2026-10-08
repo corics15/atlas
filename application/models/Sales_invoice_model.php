@@ -772,6 +772,27 @@ class Sales_invoice_model extends CI_Model
         );
       }
 
+      /*** incoming reusable Credit Memo allocation */
+      $creditAllocation = $this->db
+        ->select('cm.cm_no')
+        ->from('t_credit_memo_allocations cma')
+        ->join(
+          't_credit_memos cm',
+          'cm.id = cma.credit_memo_id'
+        )
+        ->where('cma.sales_invoice_id', (int)$id)
+        ->limit(1)
+        ->get()
+        ->row();
+
+      if ($creditAllocation) {
+        throw new Exception(
+          "Sales Invoice {$salesInvoice->si_no} cannot be reversed because "
+          . "Credit Memo {$creditAllocation->cm_no} has already been applied to it. "
+          . "Resolve the Credit Memo allocation first."
+        );
+      }
+
       /*** active Sales Return */
       $salesReturn = $this->db
           ->select('sr_no, status')
