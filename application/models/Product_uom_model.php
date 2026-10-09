@@ -63,6 +63,8 @@ class Product_uom_model extends CI_Model
    */
   public function getSalesUoms($productId)
   {
+    /*** base UOM is always sales-eligible when active; additional UOMs require the Sales UOM flag */
+    /*** base UOM uses Product Master SRP; additional UOMs retain their configured selling prices */
     return $this->db
       ->select('
         pu.uom_id,
@@ -77,8 +79,11 @@ class Product_uom_model extends CI_Model
       ->join('m_products p', 'p.id = pu.product_id')
       ->join('m_uom u', 'u.id = pu.uom_id')
       ->where('pu.product_id', $productId)
-      ->where('pu.is_sales_uom', TRUE)
       ->where('pu.is_active', TRUE)
+      ->group_start()
+        ->where('pu.uom_id = p.uom_id', NULL, FALSE)
+        ->or_where('pu.is_sales_uom', TRUE)
+      ->group_end()
       ->order_by('pu.conversion_factor', 'ASC')
       ->get()
       ->result();
@@ -86,6 +91,8 @@ class Product_uom_model extends CI_Model
 
   public function getPurchaseUoms($productId)
   {
+    /*** base UOM is always purchase-eligible when active; additional UOMs require the Purchase UOM flag */
+    /*** exclude inactive UOMs; preserve each UOM's configured last cost */
     return $this->db
       ->select('
         pu.uom_id,
@@ -94,9 +101,14 @@ class Product_uom_model extends CI_Model
         pu.last_cost
       ')
       ->from('m_product_uom pu')
+      ->join('m_products p', 'p.id = pu.product_id')
       ->join('m_uom u', 'u.id = pu.uom_id', 'left')
       ->where('pu.product_id', $productId)
-      ->where('pu.is_purchase_uom', TRUE)
+      ->where('pu.is_active', TRUE)
+      ->group_start()
+        ->where('pu.uom_id = p.uom_id', NULL, FALSE)
+        ->or_where('pu.is_purchase_uom', TRUE)
+      ->group_end()
       ->order_by('pu.conversion_factor', 'ASC')
       ->get()
       ->result();
