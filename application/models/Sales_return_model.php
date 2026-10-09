@@ -260,7 +260,7 @@ class Sales_return_model extends CI_Model
 
           /*** existing SR: source SI comes from saved SR */
           $existingReturn = $this->db
-              ->select('sales_invoice_id')
+              ->select('sales_invoice_id, customer_id')
               ->where('id', $salesReturn->id)
               ->get('t_sales_returns')
               ->row();
@@ -308,6 +308,16 @@ class Sales_return_model extends CI_Model
           );
         }
       /*** end resolve source Sales Invoice */
+
+      /*** validate Sales Return integrity before saving */
+      $customerId = empty($salesReturn->id) ? (int)$salesReturn->customer_id : (int)$existingReturn->customer_id;
+      $this->validateReturnIntegrity(
+        $salesInvoiceId,
+        $customerId,
+        $salesReturn->details,
+        !empty($salesReturn->id) ? (int)$salesReturn->id : 0
+      );
+      /*** end validate */
 
       if (empty($salesReturn->id)) {
         $header = [
@@ -448,28 +458,31 @@ class Sales_return_model extends CI_Model
             }
 
             /*** previous non-cancelled returns */
-            $previous = $this->db
-                ->select('
-                  COALESCE(SUM(srd.qty), 0) AS qty_returned,
-                  COALESCE(SUM(srd.discount_amount), 0) AS discount_returned
-                ', FALSE)
-                ->from('t_sales_return_details srd')
-                ->join(
-                  't_sales_returns sr',
-                  'sr.id = srd.sales_return_id'
-                )
-                ->where(
-                  'srd.sales_invoice_detail_id',
-                  $detail->sales_invoice_detail_id
-                )
-                ->where_in('sr.status', ['OPEN', 'POSTED'])
-                ->get()
-                ->row();
+            $previousQuery = $this->db
+              ->select('
+                COALESCE(SUM(srd.qty), 0) AS qty_returned,
+                COALESCE(SUM(srd.discount_amount), 0) AS discount_returned
+              ', FALSE)
+              ->from('t_sales_return_details srd')
+              ->join(
+                't_sales_returns sr',
+                'sr.id = srd.sales_return_id'
+              )
+              ->where(
+                'srd.sales_invoice_detail_id',
+                $detail->sales_invoice_detail_id
+              )
+              ->where_in('sr.status', ['OPEN', 'POSTED']);
 
+            if (!empty($salesReturn->id)) {
+              $previousQuery->where(
+                'sr.id <>',
+                (int)$salesReturn->id
+              );
+            }
+            $previous = $previousQuery->get()->row();
             $previousQty = (float)$previous->qty_returned;
-
             $previousDiscount = (float)$previous->discount_returned;
-
             $remainingDiscount = max(0, $invoiceDiscountAmount - $previousDiscount);
 
             /*** final returned quantity receives exact remaining discount */
@@ -633,6 +646,21 @@ class Sales_return_model extends CI_Model
             );
         }
         /*** end validate source sales invoice */
+
+        /*** revalidate persisted Sales Return before posting */
+        $returnDetails = $this->db
+          ->select('sales_invoice_detail_id, qty')
+          ->where('sales_return_id', (int)$return->id)
+          ->get('t_sales_return_details')
+          ->result();
+
+        $this->validateReturnIntegrity(
+          (int)$return->sales_invoice_id,
+          (int)$return->customer_id,
+          $returnDetails,
+          (int)$return->id
+        );
+        /*** end Sales Return integrity validation */
 
         /*** inventory update */
         $result = $this->Inventory_model->postSalesReturn($id);
@@ -1047,6 +1075,131 @@ class Sales_return_model extends CI_Model
           'data'    => []
         ];
     }
+  }
+
+  /*** validate Sales Return ownership and remaining quantities */
+  private function validateReturnIntegrity($salesInvoiceId, $customerId, $details, $excludeSalesReturnId = 0)
+  {
+    $salesInvoiceId = (int)$salesInvoiceId;
+    $customerId = (int)$customerId;
+    $excludeSalesReturnId = (int)$excludeSalesReturnId;
+
+    $invoice = $this->db
+      ->select('id, customer_id')
+      ->where('id', $salesInvoiceId)
+      ->get('t_sales_invoices')
+      ->row();
+
+    if (!$invoice) {
+      throw new Exception('Source Sales Invoice not found.');
+    }
+
+    if ((int)$invoice->customer_id !== $customerId) {
+      throw new Exception(
+        'Sales Return customer does not match the source Sales Invoice.'
+      );
+    }
+
+    if (!is_array($details) || empty($details)) {
+      throw new Exception('Sales Return must contain at least one detail.');
+    }
+
+    $seen = [];
+    $quantities = [];
+
+    foreach ($details as $detail) {
+      $detailId = (int)($detail->sales_invoice_detail_id ?? 0);
+      $rawQty = $detail->qty ?? NULL;
+
+      if ($detailId <= 0) {
+        throw new Exception('Invalid Sales Invoice detail.');
+      }
+
+      if (isset($seen[$detailId])) {
+        throw new Exception(
+          "This item appears more than once in the Sales Return."
+        );
+      }
+
+      $seen[$detailId] = TRUE;
+
+      if (
+        !is_scalar($rawQty) ||
+        !preg_match(
+          '/^\d+(?:\.\d{1,2})?$/',
+          trim((string)$rawQty)
+        )
+      ) {
+        throw new Exception(
+          "Please enter a valid return quantity for this item."
+        );
+      }
+
+      /*** match Sales Invoice NUMERIC(15,2) quantity range */
+      if (strlen(ltrim(explode('.', (string)$rawQty)[0], '0')) > 13) {
+        throw new Exception(
+          "The return quantity is too large for this item."
+        );
+      }
+
+      $qtyParts = explode('.', (string)$rawQty);
+      $qtyCents = ((int)$qtyParts[0] * 100) + (int)str_pad($qtyParts[1] ?? '', 2, '0');
+
+      if ($qtyCents <= 0) {
+        throw new Exception(
+          "The return quantity must be greater than zero."
+        );
+      }
+
+      $quantities[$detailId] = $qtyCents;
+    }
+
+    foreach ($quantities as $detailId => $qtyCents) {
+      $invoiceDetail = $this->db
+        ->select('id, sales_invoice_id, qty')
+        ->where('id', $detailId)
+        ->get('t_sales_invoice_details')
+        ->row();
+
+      if (
+        !$invoiceDetail ||
+        (int)$invoiceDetail->sales_invoice_id !== $salesInvoiceId
+      ) {
+        throw new Exception(
+          "This item does not belong to the selected Sales Invoice."
+        );
+      }
+
+      $previous = $this->db
+        ->select('COALESCE(SUM(srd.qty), 0) AS qty_returned', FALSE)
+        ->from('t_sales_return_details srd')
+        ->join(
+          't_sales_returns sr',
+          'sr.id = srd.sales_return_id'
+        )
+        ->where('srd.sales_invoice_detail_id', $detailId)
+        ->where_in('sr.status', ['OPEN', 'POSTED']);
+
+      if ($excludeSalesReturnId > 0) {
+        $previous->where('sr.id <>', $excludeSalesReturnId);
+      }
+
+      $previousRow = $previous->get()->row();
+
+      $invoiceParts = explode('.', (string)$invoiceDetail->qty);
+      $invoiceCents = ((int)$invoiceParts[0] * 100) + (int)str_pad($invoiceParts[1] ?? '', 2, '0');
+
+      $previousParts = explode('.', (string)$previousRow->qty_returned);
+      $previousCents = ((int)$previousParts[0] * 100) + (int)str_pad($previousParts[1] ?? '', 2, '0');
+
+      if ($qtyCents > ($invoiceCents - $previousCents)) {
+        throw new Exception(
+          "The return quantity exceeds the available quantity for this item. Please review the quantity and try again."
+        );
+      }
+    }
+
+    return TRUE;
   }
 
 }
