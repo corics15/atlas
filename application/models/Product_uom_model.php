@@ -51,6 +51,16 @@ class Product_uom_model extends CI_Model
       ->row();
   }
 
+  /**
+   * Sales UOM pricing and availability:
+   * Base UOM uses m_products.srp; additional UOMs use their own selling_price.
+   * Only active UOM configurations explicitly enabled for sales are selectable.
+   * Do not automatically recalculate or overwrite prices of other UOMs.
+   *
+   * Selected UOM	          Price source
+   * Base UOM (PACK)	      m_products.srp
+   * Additional UOM (CASE)	m_product_uom.selling_price
+   */
   public function getSalesUoms($productId)
   {
     return $this->db
@@ -58,12 +68,17 @@ class Product_uom_model extends CI_Model
         pu.uom_id,
         u.uom,
         pu.conversion_factor,
-        pu.selling_price
-      ')
+        CASE
+          WHEN pu.uom_id = p.uom_id THEN p.srp
+          ELSE pu.selling_price
+        END AS selling_price
+      ', FALSE)
       ->from('m_product_uom pu')
+      ->join('m_products p', 'p.id = pu.product_id')
       ->join('m_uom u', 'u.id = pu.uom_id')
       ->where('pu.product_id', $productId)
-      ->where('pu.is_sales_uom', true)
+      ->where('pu.is_sales_uom', TRUE)
+      ->where('pu.is_active', TRUE)
       ->order_by('pu.conversion_factor', 'ASC')
       ->get()
       ->result();

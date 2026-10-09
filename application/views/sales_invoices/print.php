@@ -154,8 +154,8 @@
       </tr>
       <tr>
         <td class="font-10 text-center">Prepared By</td>
-        <td class="font-10 font-10 text-center"></td>
-        <td class="font-10 font-10 text-center"></td>
+        <td class="font-10 font-10 text-center">Checked By</td>
+        <td class="font-10 font-10 text-center">Received By</td>
         <td class="font-10 font-10 text-center">Approved By</td>
       </tr>
     </table>

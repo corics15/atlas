@@ -146,14 +146,14 @@
           <?= htmlspecialchars($preparedBy->first_name . ' ' . $preparedBy->last_name) ?>
         </strong>
       </td>
-      <td class=""></td>
-      <td class=""></td>
+      <td class="border-bottom"></td>
+      <td class="border-bottom"></td>
       <td class="border-bottom"></td>
     </tr>
     <tr>
       <td class="font-7 text-center">Prepared By</td>
-      <td class="font-7 text-center"></td>
-      <td class="font-7 text-center"></td>
+      <td class="font-7 text-center">Checked By</td>
+      <td class="font-7 text-center">Received By</td>
       <td class="font-7 text-center">Approved By</td>
     </tr>
   </table>

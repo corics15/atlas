@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (!result.data.length) {
 			tblProductUomsBody.innerHTML = `
       <tr>
-        <td colspan="7" class="text-center text-muted">
+        <td colspan="8" class="text-center text-muted">
           No additional UOMs.
         </td>
       </tr>
@@ -175,6 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				row.dataset.sellingPrice = item.selling_price;
 				row.dataset.isSalesUom = item.is_sales_uom;
 				row.dataset.isPurchaseUom = item.is_purchase_uom;
+				row.dataset.isActive = item.is_active;
 				row.style.cursor = "pointer";
 
 				row.innerHTML = `
@@ -184,6 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <td class="text-right">${Atlas.format.parseNumber(item.selling_price)}</td>
 					<td class="text-center">${item.is_sales_uom === "t" ? '<i class="fas fa-check text-success"></i>' : ""}</td>
 					<td class="text-center">${item.is_purchase_uom === "t" ? '<i class="fas fa-check text-success"></i>' : ""}</td>
+					<td class="text-center">${item.is_active === "t" ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>'}</td>
           <td class="text-center">
             <button type="button" class="btn btn-sm btn-link text-danger btn-deactivate-uom p-0" title="Deactivate UOM" data-toggle="tooltip">
               <i class="fas fa-ban"></i>
@@ -266,17 +268,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		Atlas.toast.success(result.message);
-		row.remove();
 
-		if (!tblProductUomsBody.children.length) {
-			tblProductUomsBody.innerHTML = `
-        <tr>
-          <td colspan="7" class="text-center text-muted">
-            No additional UOMs.
-          </td>
-        </tr>
-      `;
-		}
+		/*** keep inactive UOM visible for maintenance and reactivation */
+		row.dataset.isActive = "f";
+		row.querySelector("td:nth-child(7)").innerHTML =
+			'<span class="badge badge-secondary">Inactive</span>';
+
+		button.disabled = true;
+		button.classList.add("text-muted");
+		button.classList.remove("text-danger");
+		button.title = "UOM already inactive";
 	});
 
 	/*** suggest additional UOM SRP */
@@ -360,7 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (!uomResult.data.length) {
 			tblProductUomsBody.innerHTML = `
       <tr>
-        <td colspan="7" class="text-center text-muted">
+        <td colspan="8" class="text-center text-muted">
           No additional UOMs.
         </td>
       </tr>
@@ -378,6 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			row.dataset.sellingPrice = item.selling_price;
 			row.dataset.isSalesUom = item.is_sales_uom;
 			row.dataset.isPurchaseUom = item.is_purchase_uom;
+			row.dataset.isActive = item.is_active;
 			row.style.cursor = "pointer";
 
 			row.innerHTML = `
@@ -387,6 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				<td class="text-right">${Atlas.format.parseNumber(item.selling_price)}</td>
 				<td class="text-center">${item.is_sales_uom === "t" ? '<i class="fas fa-check text-success"></i>' : ""}</td>
 				<td class="text-center">${item.is_purchase_uom === "t" ? '<i class="fas fa-check text-success"></i>' : ""}</td>
+				<td class="text-center">${item.is_active === "t" ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>'}</td>
 				<td class="text-center">
 					<button type="button" class="btn btn-sm btn-link text-danger btn-deactivate-uom p-0" title="Deactivate UOM" data-toggle="tooltip">
 						<i class="fas fa-ban"></i>

@@ -16,17 +16,10 @@
     <tr>
       <td></td>
       <td></td>
-
-      <td class="font-weight-500">
-        Previous Balance (Forwarded)
-      </td>
-
+      <td class="font-weight-500">Previous Balance (Forwarded)</td>
       <td></td>
       <td></td>
-
-      <td class="text-right font-weight-500">
-        <?= number_format((float)$openingBalance, 2) ?>
-      </td>
+      <td class="text-right font-weight-500"><?= number_format((float)$openingBalance, 2) ?></td>
     </tr>
 
   <?php endif; ?>
@@ -34,9 +27,7 @@
   <?php if (empty($transactions)): ?>
 
     <tr>
-      <td
-        colspan="6"
-        class="text-center text-muted py-3">
+      <td colspan="6" class="text-center text-muted py-3">
         No transactions found for the selected period.
       </td>
     </tr>
@@ -58,38 +49,12 @@
       ?>
 
       <tr>
-
-        <td class="text-center">
-          <?= date(
-            'm/d/Y',
-            strtotime($row->transaction_date)
-          ) ?>
-        </td>
-
-        <td class="text-center">
-          <?= htmlspecialchars($row->reference_no) ?>
-        </td>
-
-        <td>
-          <?= htmlspecialchars($description) ?>
-        </td>
-
-        <td class="text-right">
-          <?= (float)$row->debit > 0
-            ? number_format((float)$row->debit, 2)
-            : '' ?>
-        </td>
-
-        <td class="text-right">
-          <?= (float)$row->credit > 0
-            ? number_format((float)$row->credit, 2)
-            : '' ?>
-        </td>
-
-        <td class="text-right font-weight-500">
-          <?= number_format((float)$row->balance, 2) ?>
-        </td>
-
+        <td class="text-center"><?= date('m/d/Y', strtotime($row->transaction_date)) ?></td>
+        <td class="text-center"><?= htmlspecialchars($row->reference_no) ?></td>
+        <td><?= htmlspecialchars($description . (trim((string)($row->remarks ?? '')) !== '' ? ' - ' . trim($row->remarks) : '')) ?></td>
+        <td class="text-right"><?= (float)$row->debit > 0 ? number_format((float)$row->debit, 2) : '' ?></td>
+        <td class="text-right"><?= (float)$row->credit > 0 ? number_format((float)$row->credit, 2) : '' ?></td>
+        <td class="text-right font-weight-500"><?= number_format((float)$row->balance, 2) ?></td>
       </tr>
 
     <?php endforeach; ?>
