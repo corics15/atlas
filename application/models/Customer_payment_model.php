@@ -1414,45 +1414,6 @@ class Customer_payment_model extends CI_Model
     )->result();
   }
 
-  public function getAvailableCustomerCredits($customerId)
-  {
-    $customerId = (int)$customerId;
-
-    if ($customerId <= 0) {
-      return [];
-    }
-
-    return $this->db
-        ->select("
-          cm.id,
-          cm.cm_no,
-          cm.credit_memo_date,
-          cm.sales_invoice_id,
-          cm.sales_return_id,
-          cm.amount,
-          COALESCE(a.amount_applied, 0) AS amount_applied,
-          cm.amount - COALESCE(a.amount_applied, 0) AS available_credit
-        ", FALSE)
-        ->from('t_credit_memos cm')
-        ->join(
-          "(
-            SELECT credit_memo_id, SUM(amount_applied) AS amount_applied
-            FROM t_credit_memo_allocations
-            GROUP BY credit_memo_id
-          ) a",
-          'a.credit_memo_id = cm.id',
-          'left',
-          FALSE
-        )
-        ->where('cm.customer_id', $customerId)
-        ->where('cm.status', 'POSTED')
-        ->where('cm.amount - COALESCE(a.amount_applied, 0) > 0', NULL, FALSE)
-        ->order_by('cm.credit_memo_date', 'ASC')
-        ->order_by('cm.id', 'ASC')
-        ->get()
-        ->result();
-  }
-
   public function getAvailableCreditMemos($customerId)
   {
     $customerId = (int)$customerId;
