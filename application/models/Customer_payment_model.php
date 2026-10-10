@@ -822,9 +822,9 @@ class Customer_payment_model extends CI_Model
 
       foreach ($ids as $id) {
         $customerPayment = $this->db
-            ->where('id', (int)$id)
-            ->get('t_customer_payments')
-            ->row();
+          ->where('id', (int)$id)
+          ->get('t_customer_payments')
+          ->row();
 
         if (!$customerPayment) {
           throw new Exception('Customer Payment not found.');
@@ -834,66 +834,27 @@ class Customer_payment_model extends CI_Model
           throw new Exception("{$customerPayment->payment_no} is already {$customerPayment->status}.");
         }
 
-        /*** get allocations */
+        /*** collect current cash allocations by invoice */
         $allocations = $this->db
-            ->where('customer_payment_id', (int)$customerPayment->id)
-            ->get('t_customer_payment_allocations')
-            ->result();
+          ->where('customer_payment_id', (int)$customerPayment->id)
+          ->get('t_customer_payment_allocations')
+          ->result();
 
         $totalApplied = 0;
+        $affectedInvoices = [];
 
         foreach ($allocations as $allocation) {
-          $invoice = $this->db
-              ->select('id, si_no, customer_id, status, total_amount')
-              ->where('id', (int)$allocation->sales_invoice_id)
-              ->get('t_sales_invoices')
-              ->row();
-
-          if (!$invoice) {
-            throw new Exception('Sales Invoice not found.');
-          }
-
-          if ($invoice->status !== 'POSTED') {
-            throw new Exception("Sales Invoice {$invoice->si_no} is not POSTED."            );
-          }
-
-          if ((int)$invoice->customer_id !== (int)$customerPayment->customer_id) {
-            throw new Exception("Sales Invoice {$invoice->si_no} does not belong to the payment customer.");
-          }
-
-          /*** authoritative current invoice balance */
-          $previous = $this->db
-              ->query(
-                "SELECT
-                  COALESCE((
-                    SELECT SUM(cpa.amount_applied)
-                    FROM t_customer_payment_allocations cpa
-                    INNER JOIN t_customer_payments cp ON cp.id = cpa.customer_payment_id
-                    WHERE cpa.sales_invoice_id = ?
-                    AND cp.status = 'POSTED'
-                  ), 0) AS amount_paid,
-                  COALESCE((
-                    SELECT SUM(cm.amount - cm.available_credit)
-                    FROM t_credit_memos cm
-                    WHERE cm.sales_invoice_id = ?
-                    AND cm.status = 'POSTED'
-                  ), 0) AS amount_credited",
-                [
-                  (int)$invoice->id,
-                  (int)$invoice->id
-                ]
-              )
-              ->row();
-
-          $amountPaid = round((float)$previous->amount_paid, 2);
-          $amountCredited = round((float)$previous->amount_credited, 2);
-          $balance = round((float)$invoice->total_amount - $amountPaid - $amountCredited, 2);
+          $salesInvoiceId = (int)$allocation->sales_invoice_id;
           $amountApplied = round((float)$allocation->amount_applied, 2);
 
-          if ($amountApplied > $balance) {
-            throw new Exception("Applied amount for {$invoice->si_no} exceeds its current outstanding balance.");
+          if (!isset($affectedInvoices[$salesInvoiceId])) {
+            $affectedInvoices[$salesInvoiceId] = [
+              'payment' => 0,
+              'deduction' => 0
+            ];
           }
 
+          $affectedInvoices[$salesInvoiceId]['payment'] += $amountApplied;
           $totalApplied += $amountApplied;
         }
 
@@ -903,26 +864,28 @@ class Customer_payment_model extends CI_Model
           throw new Exception("Applied amount for {$customerPayment->payment_no} exceeds the amount received.");
         }
 
-        /*** validate deductions */
+        /*** collect current deductions by invoice */
         $deductions = $this->db
           ->where('customer_payment_id', (int)$customerPayment->id)
           ->get('t_customer_payment_deductions')
           ->result();
 
-        $deductionByInvoice = [];
-
         foreach ($deductions as $deduction) {
           $salesInvoiceId = (int)$deduction->sales_invoice_id;
           $amountDeducted = round((float)$deduction->amount, 2);
 
-          if (!isset($deductionByInvoice[$salesInvoiceId])) {
-            $deductionByInvoice[$salesInvoiceId] = 0;
+          if (!isset($affectedInvoices[$salesInvoiceId])) {
+            $affectedInvoices[$salesInvoiceId] = [
+              'payment' => 0,
+              'deduction' => 0
+            ];
           }
 
-          $deductionByInvoice[$salesInvoiceId] += $amountDeducted;
+          $affectedInvoices[$salesInvoiceId]['deduction'] += $amountDeducted;
         }
 
-        foreach ($deductionByInvoice as $salesInvoiceId => $amountDeducted) {
+        /*** validate complete outstanding balance for every affected invoice */
+        foreach ($affectedInvoices as $salesInvoiceId => $amounts) {
           $invoice = $this->db
             ->select('id, si_no, customer_id, status, total_amount')
             ->where('id', $salesInvoiceId)
@@ -930,7 +893,7 @@ class Customer_payment_model extends CI_Model
             ->row();
 
           if (!$invoice) {
-            throw new Exception('Sales Invoice for Other Deduction not found.');
+            throw new Exception('Sales Invoice not found.');
           }
 
           if ($invoice->status !== 'POSTED') {
@@ -950,20 +913,17 @@ class Customer_payment_model extends CI_Model
                 WHERE cpa.sales_invoice_id = ?
                 AND cp.status = 'POSTED'
               ), 0) AS amount_paid,
-
               COALESCE((
                 SELECT SUM(cm.amount - cm.available_credit)
                 FROM t_credit_memos cm
                 WHERE cm.sales_invoice_id = ?
                 AND cm.status = 'POSTED'
               ), 0) AS amount_credited,
-
               COALESCE((
                 SELECT SUM(cma.amount_applied)
                 FROM t_credit_memo_allocations cma
                 WHERE cma.sales_invoice_id = ?
               ), 0) AS credit_applied,
-
               COALESCE((
                 SELECT SUM(cpd.amount)
                 FROM t_customer_payment_deductions cpd
@@ -988,39 +948,38 @@ class Customer_payment_model extends CI_Model
             2
           );
 
-          $paymentForInvoice = 0;
+          $currentTotal = round(
+            $amounts['payment'] + $amounts['deduction'],
+            2
+          );
 
-          foreach ($allocations as $allocation) {
-            if ((int)$allocation->sales_invoice_id === $salesInvoiceId) {
-              $paymentForInvoice += round((float)$allocation->amount_applied, 2);
-            }
-          }
-
-          if (round($paymentForInvoice + $amountDeducted, 2) > $balance) {
+          if ($currentTotal > $balance) {
             throw new Exception(
               "Payment plus Other Deductions for {$invoice->si_no} exceed its current outstanding balance."
             );
           }
         }
-        /*** end validate deductions */
 
-        $availableCredit = round((float)$customerPayment->amount_received - $totalApplied,  2);
+        $availableCredit = round(
+          (float)$customerPayment->amount_received - $totalApplied,
+          2
+        );
 
         /*** post customer payment */
         $this->db
-            ->where('id', (int)$customerPayment->id)
-            ->where('status', 'OPEN')
-            ->update(
-              't_customer_payments',
-              [
-                'status' => 'POSTED',
-                'available_credit' => $availableCredit,
-                'posted_by' => $this->session->userdata('user_id'),
-                'posted_on' => date('Y-m-d H:i:s'),
-                'updated_by' => $this->session->userdata('user_id'),
-                'updated_on' => date('Y-m-d H:i:s'),
-              ]
-            );
+          ->where('id', (int)$customerPayment->id)
+          ->where('status', 'OPEN')
+          ->update(
+            't_customer_payments',
+            [
+              'status' => 'POSTED',
+              'available_credit' => $availableCredit,
+              'posted_by' => $this->session->userdata('user_id'),
+              'posted_on' => date('Y-m-d H:i:s'),
+              'updated_by' => $this->session->userdata('user_id'),
+              'updated_on' => date('Y-m-d H:i:s')
+            ]
+          );
 
         if (!$this->db->affected_rows()) {
           throw new Exception("Unable to post {$customerPayment->payment_no}.");
