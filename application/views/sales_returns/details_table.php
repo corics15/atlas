@@ -68,7 +68,9 @@
                       data-sales-invoice-detail-id="<?= $detail->sales_invoice_detail_id ?>"
                       data-unit-price="<?= (float)($detail->unit_price ?? 0) ?>"
                       data-si-qty="<?= (float)($detail->si_qty ?? 0) ?>"
-                      data-discount-type="<?= htmlspecialchars($detail->discount_type ?? '') ?>"
+                      data-saved-qty="<?= $isEdit ? (float)$detail->qty : 0 ?>"
+                      data-has-saved-discount="<?= $isEdit && isset($detail->discount_amount) ? '1' : '0' ?>"
+                      data-discount-type="<?= htmlspecialchars($detail->discount_type ?? '', ENT_QUOTES, 'UTF-8') ?>"
                       data-discount-percent="<?= (float)($detail->discount_percent ?? 0) ?>"
                       data-discount-amount="<?= (float)(
                         $detail->discount_amount

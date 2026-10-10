@@ -420,21 +420,48 @@ const calculateSalesInvoiceRow = (row) => {
 		row.querySelector(".so-qty")?.value || 0,
 	);
 	const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
-	const discountAmount = Atlas.format.parseNumber(
-		row.dataset.discountAmount || 0,
+	const discountType = (row.dataset.discountType || "").toUpperCase();
+	const discountPercent = Atlas.format.parseNumber(
+		row.dataset.discountPercent || 0,
 	);
 	const grossAmount = qty * unitPrice;
-	const netAmount = Math.max(0, grossAmount - discountAmount);
-	const netCell = row.querySelector(".so-net-amount");
+	const isNewInvoice = !window.salesInvoiceId;
+	const isDeferred =
+		isNewInvoice &&
+		discountType === "AMOUNT" &&
+		row.dataset.discountDeferred === "1" &&
+		qty > 0;
 
+	let discountAmount = 0;
+
+	if (qty > 0) {
+		if (isNewInvoice && discountType === "PERCENT") {
+			discountAmount =
+				Math.round(
+					((grossAmount * discountPercent) / 100 + Number.EPSILON) * 100,
+				) / 100;
+		} else if (!isDeferred) {
+			discountAmount = Atlas.format.parseNumber(
+				row.dataset.discountAmount || 0,
+			);
+		}
+	}
+
+	row.dataset.previewDiscount = discountAmount.toFixed(2);
+	row.dataset.previewDeferred = isDeferred ? "1" : "0";
+
+	const netCell = row.querySelector(".so-net-amount");
 	if (netCell) {
-		netCell.textContent = Atlas.format.amount(netAmount);
+		netCell.textContent = isDeferred
+			? "Calculated on Save"
+			: Atlas.format.amount(Math.max(0, grossAmount - discountAmount));
 	}
 };
 
 const calculateSalesInvoiceTotals = () => {
 	let grossAmount = 0;
 	let discountAmount = 0;
+	let hasDeferredDiscount = false;
 
 	document
 		.querySelectorAll("#tblSalesOrderDetails tr[data-product-id]")
@@ -443,24 +470,26 @@ const calculateSalesInvoiceTotals = () => {
 				row.querySelector(".so-qty")?.value || 0,
 			);
 			const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
-			const rowDiscount = Atlas.format.parseNumber(
-				row.dataset.discountAmount || 0,
-			);
 
 			grossAmount += qty * unitPrice;
-			discountAmount += rowDiscount;
+			discountAmount += Atlas.format.parseNumber(
+				row.dataset.previewDiscount || 0,
+			);
+
+			if (row.dataset.previewDeferred === "1") {
+				hasDeferredDiscount = true;
+			}
 		});
 
 	const discountedAmount = Math.max(0, grossAmount - discountAmount);
 	const vatMode = window.salesInvoiceVatMode || "";
-	const vatRate = window.salesInvoiceVatRate || 0;
+	const vatRate = Number(window.salesInvoiceVatRate || 0);
 	const vatDecimal = vatRate / 100;
 
 	let subtotal = 0;
 	let vatAmount = 0;
 	let totalAmount = 0;
 
-	/*** VAT inclusive */
 	if (vatMode === "INCLUSIVE") {
 		totalAmount = discountedAmount;
 
@@ -471,25 +500,29 @@ const calculateSalesInvoiceTotals = () => {
 			subtotal = totalAmount;
 		}
 	} else if (vatMode === "EXCLUSIVE") {
-		/*** VAT exclusive */
 		subtotal = discountedAmount;
 		vatAmount = subtotal * vatDecimal;
 		totalAmount = subtotal + vatAmount;
 	}
 
 	if (btnSaveSalesInvoice) {
+		const deferredText = "Calculated on Save";
+
 		document.getElementById("siGrossAmount").textContent =
 			Atlas.format.amount(grossAmount);
 		document.getElementById("siDiscountAmount").textContent =
-			Atlas.format.amount(discountAmount);
-		document.getElementById("siSubtotal").textContent =
-			Atlas.format.amount(subtotal);
+			hasDeferredDiscount ? deferredText : Atlas.format.amount(discountAmount);
+		document.getElementById("siSubtotal").textContent = hasDeferredDiscount
+			? deferredText
+			: Atlas.format.amount(subtotal);
 		document.getElementById("siVatRateLabel").textContent =
 			`${vatRate.toFixed(2)}%`;
-		document.getElementById("siVatAmount").textContent =
-			Atlas.format.amount(vatAmount);
-		document.getElementById("siTotalAmount").textContent =
-			Atlas.format.amount(totalAmount);
+		document.getElementById("siVatAmount").textContent = hasDeferredDiscount
+			? deferredText
+			: Atlas.format.amount(vatAmount);
+		document.getElementById("siTotalAmount").textContent = hasDeferredDiscount
+			? deferredText
+			: Atlas.format.amount(totalAmount);
 	}
 };
 

@@ -67,37 +67,27 @@
               </tr>
               <tr>
                 <th width="180">SI No.</th>
-                <td>
-                  <a href="<?= $salesInvoice->url ?>" class="text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($salesInvoice->si_no) ?></a>
+                <td><a href="<?= $salesInvoice->url ?>" class="text-olive" target="_blank"><i class="fa-external-link-alt fas font-smr mr-1"></i><?= htmlspecialchars($salesInvoice->si_no) ?></a></td>
               </tr>
               <tr>
                 <th>Customer</th>
-                <td>
-                  <?= htmlspecialchars($salesInvoice->customer_name); ?>
-                </td>
+                <td><?= htmlspecialchars($salesInvoice->customer_name); ?></td>
               </tr>
               <tr>
                 <th>Salesman</th>
-                <td>
-                  <?= htmlspecialchars($salesInvoice->salesman_name); ?>
-                </td>
+                <td><?= htmlspecialchars($salesInvoice->salesman_name); ?></td>
               </tr>
               <tr>
                 <th>Terms</th>
-                <td>
-                  <?= htmlspecialchars($salesInvoice->terms_name); ?>
-                </td>
+                <td><?= htmlspecialchars($salesInvoice->terms_name); ?></td>
               </tr>
               <tr>
                 <th>Credit Limit</th>
-                <td>
-                  <?= number_format($salesInvoice->credit_limit, 2); ?>
-                </td>
+                <td><?= number_format($salesInvoice->credit_limit, 2); ?></td>
               </tr>
               <tr>
                 <th>SI Remarks</th>
-                <td><?= htmlspecialchars($salesInvoice->remarks) ?>
-                </td>
+                <td><?= htmlspecialchars($salesInvoice->remarks) ?></td>
               </tr>
               <tr>
                 <th>SI Status</th>

@@ -292,6 +292,7 @@ window.addEventListener("beforeunload", (e) => {
 const calculateSalesReturnTotals = () => {
 	let grossAmount = 0;
 	let discountAmount = 0;
+	let hasDeferredDiscount = false;
 
 	document
 		.querySelectorAll("#tblSalesReturnDetails tr[data-product-id]")
@@ -300,42 +301,57 @@ const calculateSalesReturnTotals = () => {
 				row.querySelector(".so-qty")?.value || 0,
 			);
 			const unitPrice = Atlas.format.parseNumber(row.dataset.unitPrice || 0);
-
 			const discountType = (row.dataset.discountType || "").toUpperCase();
 			const discountPercent = Atlas.format.parseNumber(
 				row.dataset.discountPercent || 0,
 			);
-			const invoiceQty = Atlas.format.parseNumber(row.dataset.siQty || 0);
-			const invoiceDiscount = Atlas.format.parseNumber(
+			const savedQty = Atlas.format.parseNumber(row.dataset.savedQty || 0);
+			const savedDiscount = Atlas.format.parseNumber(
 				row.dataset.discountAmount || 0,
 			);
+			const hasSavedDiscount = row.dataset.hasSavedDiscount === "1";
 
 			const rowGross = qty * unitPrice;
 			let rowDiscount = 0;
+			let isDeferred = false;
 
 			if (qty > 0) {
-				if (discountType === "PERCENT") {
-					rowDiscount = rowGross * (discountPercent / 100);
-				} else if (discountType === "AMOUNT" && invoiceQty > 0) {
-					rowDiscount = invoiceDiscount * (qty / invoiceQty);
+				if (hasSavedDiscount && qty === savedQty) {
+					rowDiscount = savedDiscount;
+				} else if (discountType === "PERCENT") {
+					rowDiscount =
+						Math.round(
+							((rowGross * discountPercent) / 100 + Number.EPSILON) * 100,
+						) / 100;
+				} else if (discountType === "AMOUNT") {
+					isDeferred = true;
 				}
 			}
 
 			grossAmount += rowGross;
 			discountAmount += rowDiscount;
+
+			if (isDeferred) {
+				hasDeferredDiscount = true;
+			}
+
+			const netCell = row.querySelector(".sr-net-amount");
+			if (netCell) {
+				netCell.textContent = isDeferred
+					? "Calculated on Save"
+					: Atlas.format.amount(Math.max(0, rowGross - rowDiscount));
+			}
 		});
 
 	const discountedAmount = Math.max(0, grossAmount - discountAmount);
 	const vatMode = window.salesReturnVatMode || "";
-	const vatRate = window.salesReturnVatRate || 0;
-
+	const vatRate = Number(window.salesReturnVatRate || 0);
 	const vatDecimal = vatRate / 100;
 
 	let subtotal = 0;
 	let vatAmount = 0;
 	let totalAmount = 0;
 
-	/*** VAT inclusive */
 	if (vatMode === "INCLUSIVE") {
 		totalAmount = discountedAmount;
 
@@ -346,26 +362,31 @@ const calculateSalesReturnTotals = () => {
 			subtotal = totalAmount;
 		}
 	} else if (vatMode === "EXCLUSIVE") {
-		/*** VAT exclusive */
 		subtotal = discountedAmount;
 		vatAmount = subtotal * vatDecimal;
 		totalAmount = subtotal + vatAmount;
 	}
 
-	if (document.getElementById("srGrossAmount")) {
-		document.getElementById("srGrossAmount").textContent =
-			Atlas.format.amount(grossAmount);
-		document.getElementById("srDiscountAmount").textContent =
-			Atlas.format.amount(discountAmount);
-		document.getElementById("srSubtotal").textContent =
-			Atlas.format.amount(subtotal);
-		document.getElementById("srVatRateLabel").textContent =
-			`${vatRate.toFixed(2)}%`;
-		document.getElementById("srVatAmount").textContent =
-			Atlas.format.amount(vatAmount);
-		document.getElementById("srTotalAmount").textContent =
-			Atlas.format.amount(totalAmount);
-	}
+	const grossCell = document.getElementById("srGrossAmount");
+	if (!grossCell) return;
+
+	const deferredText = "Calculated on Save";
+
+	grossCell.textContent = Atlas.format.amount(grossAmount);
+	document.getElementById("srDiscountAmount").textContent = hasDeferredDiscount
+		? deferredText
+		: Atlas.format.amount(discountAmount);
+	document.getElementById("srSubtotal").textContent = hasDeferredDiscount
+		? deferredText
+		: Atlas.format.amount(subtotal);
+	document.getElementById("srVatRateLabel").textContent =
+		`${vatRate.toFixed(2)}%`;
+	document.getElementById("srVatAmount").textContent = hasDeferredDiscount
+		? deferredText
+		: Atlas.format.amount(vatAmount);
+	document.getElementById("srTotalAmount").textContent = hasDeferredDiscount
+		? deferredText
+		: Atlas.format.amount(totalAmount);
 };
 
 const getSelectedId = () => {
