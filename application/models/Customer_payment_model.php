@@ -627,6 +627,7 @@ class Customer_payment_model extends CI_Model
 
       /*** validate + insert allocations */
       $totalApplied = 0;
+      $affectedInvoices = [];
 
       foreach (($customerPayment->allocations ?? []) as $allocation) {
 
@@ -722,6 +723,14 @@ class Customer_payment_model extends CI_Model
           throw new Exception('Total applied amount cannot exceed the amount received.');
         }
 
+        if (!isset($affectedInvoices[$salesInvoiceId])) {
+          $affectedInvoices[$salesInvoiceId] = [
+            'payment' => 0,
+            'deduction' => 0
+          ];
+        }
+        $affectedInvoices[$salesInvoiceId]['payment'] += $amountApplied;
+
         $this->db->insert(
           't_customer_payment_allocations',
           [
@@ -770,6 +779,14 @@ class Customer_payment_model extends CI_Model
           throw new Exception("Sales Invoice {$invoice->si_no} does not belong to the selected customer.");
         }
 
+        if (!isset($affectedInvoices[$salesInvoiceId])) {
+          $affectedInvoices[$salesInvoiceId] = [
+            'payment' => 0,
+            'deduction' => 0
+          ];
+        }
+        $affectedInvoices[$salesInvoiceId]['deduction'] += $amount;
+
         $this->db->insert(
           't_customer_payment_deductions',
           [
@@ -783,6 +800,82 @@ class Customer_payment_model extends CI_Model
         );
       }
       /*** end validate + insert */
+
+      /*** validate combined payment + deductions per invoice */
+      foreach ($affectedInvoices as $salesInvoiceId => $amounts) {
+        $invoice = $this->db
+          ->select('id, si_no, customer_id, status, total_amount')
+          ->where('id', $salesInvoiceId)
+          ->get('t_sales_invoices')
+          ->row();
+
+        if (!$invoice) {
+          throw new Exception('Sales Invoice not found.');
+        }
+
+        if ($invoice->status !== 'POSTED') {
+          throw new Exception("Sales Invoice {$invoice->si_no} is not POSTED.");
+        }
+
+        if ((int)$invoice->customer_id !== $customerId) {
+          throw new Exception("Sales Invoice {$invoice->si_no} does not belong to the selected customer.");
+        }
+
+        $previous = $this->db->query(
+          "SELECT
+            COALESCE((
+              SELECT SUM(cpa.amount_applied)
+              FROM t_customer_payment_allocations cpa
+              INNER JOIN t_customer_payments cp ON cp.id = cpa.customer_payment_id
+              WHERE cpa.sales_invoice_id = ?
+              AND cp.status = 'POSTED'
+            ), 0) AS amount_paid,
+            COALESCE((
+              SELECT SUM(cm.amount - cm.available_credit)
+              FROM t_credit_memos cm
+              WHERE cm.sales_invoice_id = ?
+              AND cm.status = 'POSTED'
+            ), 0) AS amount_credited,
+            COALESCE((
+              SELECT SUM(cma.amount_applied)
+              FROM t_credit_memo_allocations cma
+              WHERE cma.sales_invoice_id = ?
+            ), 0) AS credit_applied,
+            COALESCE((
+              SELECT SUM(cpd.amount)
+              FROM t_customer_payment_deductions cpd
+              INNER JOIN t_customer_payments cp ON cp.id = cpd.customer_payment_id
+              WHERE cpd.sales_invoice_id = ?
+              AND cp.status = 'POSTED'
+            ), 0) AS amount_deducted",
+          [
+            $salesInvoiceId,
+            $salesInvoiceId,
+            $salesInvoiceId,
+            $salesInvoiceId
+          ]
+        )->row();
+
+        $balance = round(
+          (float)$invoice->total_amount
+          - (float)$previous->amount_paid
+          - (float)$previous->amount_credited
+          - (float)$previous->credit_applied
+          - (float)$previous->amount_deducted,
+          2
+        );
+
+        $currentTotal = round(
+          $amounts['payment'] + $amounts['deduction'],
+          2
+        );
+
+        if ($currentTotal > $balance) {
+          throw new Exception(
+            "Payment plus Other Deductions for {$invoice->si_no} exceed its current outstanding balance."
+          );
+        }
+      }
 
       if ($this->db->trans_status() === FALSE) {
         throw new Exception('Unable to save Customer Payment.');
