@@ -1567,18 +1567,52 @@ class Customer_payment_model extends CI_Model
 
       $this->db->trans_begin();
 
-      /*** validate Credit Memo */
-      $creditMemo = $this->db
-        ->select('id, cm_no, customer_id, sales_invoice_id, available_credit, status')
-        ->where('id', $creditMemoId)
-        ->get('t_credit_memos')
-        ->row();
+      /*** discover source invoice before acquiring locks */
+      $source = $this->db->query(
+        "SELECT sales_invoice_id FROM t_credit_memos WHERE id = ?",
+        [$creditMemoId]
+      )->row();
+
+      if (!$source) {
+        throw new Exception('Invalid or non-posted Credit Memo.');
+      }
+
+      $sourceInvoiceId = (int)$source->sales_invoice_id;
+      if ($sourceInvoiceId <= 0) {
+        throw new Exception('Invalid Credit Memo source Sales Invoice.');
+      }
+
+      /*** lock invoice rows first, in deterministic order */
+      $invoiceIds = array_values(array_unique([$sourceInvoiceId, $salesInvoiceId]));
+      sort($invoiceIds, SORT_NUMERIC);
+
+      foreach ($invoiceIds as $invoiceId) {
+        $lockedInvoice = $this->db->query(
+          "SELECT id FROM t_sales_invoices WHERE id = ? FOR NO KEY UPDATE",
+          [$invoiceId]
+        )->row();
+
+        if (!$lockedInvoice) {
+          throw new Exception('Sales Invoice not found.');
+        }
+      }
+
+      /*** lock Credit Memo after invoice locks */
+      $creditMemo = $this->db->query(
+        "SELECT id, cm_no, customer_id, sales_invoice_id, available_credit, status
+        FROM t_credit_memos WHERE id = ? FOR NO KEY UPDATE",
+        [$creditMemoId]
+      )->row();
 
       if (!$creditMemo || $creditMemo->status !== 'POSTED') {
         throw new Exception('Invalid or non-posted Credit Memo.');
       }
 
-      /*** validate target Sales Invoice */
+      if ((int)$creditMemo->sales_invoice_id !== $sourceInvoiceId) {
+        throw new Exception('Credit Memo source Sales Invoice changed. Please retry.');
+      }
+
+      /*** fresh target invoice read after all locks */
       $salesInvoice = $this->db
         ->select('id, si_no, customer_id, total_amount, status')
         ->where('id', $salesInvoiceId)
@@ -1588,6 +1622,7 @@ class Customer_payment_model extends CI_Model
       if (!$salesInvoice || $salesInvoice->status !== 'POSTED') {
         throw new Exception('Invalid or non-posted Sales Invoice.');
       }
+      /*** end discover source */
 
       if ((int)$creditMemo->customer_id !== (int)$salesInvoice->customer_id) {
         throw new Exception('Credit Memo and Sales Invoice must belong to the same Customer.');
