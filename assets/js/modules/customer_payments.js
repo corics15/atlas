@@ -33,6 +33,9 @@ const btnAddCustomerPaymentDeduction = document.getElementById(
 );
 
 const hidCustomerPaymentId = document.getElementById("hidCustomerPaymentId");
+const hidCustomerPaymentEditVersion = document.getElementById(
+	"hidCustomerPaymentEditVersion",
+);
 
 const selCustomer = document.getElementById("selCustomer");
 const selBranch = document.getElementById("selBranch");
@@ -140,6 +143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		const customerPayment = {
 			id: hidCustomerPaymentId?.value ?? "",
+			edit_version: hidCustomerPaymentEditVersion?.value ?? "",
 			payment_date: dtPaymentDate.value,
 			customer_id: Atlas.format.parseNumber(selCustomer.value),
 			branch_id: Atlas.format.parseNumber(selBranch.value),

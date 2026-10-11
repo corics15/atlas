@@ -586,6 +586,18 @@ class Customer_payment_model extends CI_Model
       /*** update */
       else {
 
+        /*** Require the version originally loaded by the browser */
+        $submittedVersion = $customerPayment->edit_version ?? NULL;
+        if (
+          !is_scalar($submittedVersion) ||
+          !ctype_digit((string)$submittedVersion) ||
+          (int)$submittedVersion < 1
+        ) {
+          throw new Exception('Invalid Customer Payment version. Please reload the payment.');
+        }
+        $submittedVersion = (int)$submittedVersion;
+        /*** end require version */
+
         $current = $this->db
             ->where('id', (int)$customerPayment->id)
             ->get('t_customer_payments')
@@ -603,22 +615,27 @@ class Customer_payment_model extends CI_Model
         $paymentNo = $current->payment_no;
 
         $this->db
+            ->set('payment_date', $customerPayment->payment_date)
+            ->set('customer_id', $customerId)
+            ->set('branch_id', $branchId)
+            ->set('amount_received', $amountReceived)
+            ->set('payment_method', $paymentMethod)
+            ->set('reference_no', trim($customerPayment->reference_no ?? '') !== '' ? strtoupper(trim($customerPayment->reference_no)) : NULL)
+            ->set('collected_by_salesman_id', (int)($customerPayment->collected_by_salesman_id ?? 0) > 0 ? (int)$customerPayment->collected_by_salesman_id : NULL)
+            ->set('remarks', trim($customerPayment->remarks ?? '') !== '' ? strtoupper(trim($customerPayment->remarks)) : NULL)
+            ->set('updated_by', $this->session->userdata('user_id'))
+            ->set('updated_on', date('Y-m-d H:i:s'))
+            ->set('edit_version', 'edit_version + 1', FALSE)
             ->where('id', $customerPaymentId)
-            ->update(
-              't_customer_payments',
-              [
-                'payment_date' => $customerPayment->payment_date,
-                'customer_id' => $customerId,
-                'branch_id' => $branchId,
-                'amount_received' => $amountReceived,
-                'payment_method' => $paymentMethod,
-                'reference_no' => trim($customerPayment->reference_no ?? '') !== '' ? strtoupper(trim($customerPayment->reference_no)) : NULL,
-                'collected_by_salesman_id' => (int)($customerPayment->collected_by_salesman_id ?? 0) > 0 ? (int)$customerPayment->collected_by_salesman_id : NULL,
-                'remarks' => trim($customerPayment->remarks ?? '') !== '' ? strtoupper(trim($customerPayment->remarks)) : NULL,
-                'updated_by' => $this->session->userdata('user_id'),
-                'updated_on' => date('Y-m-d H:i:s')
-              ]
-            );
+            ->where('status', 'OPEN')
+            ->where('edit_version', $submittedVersion)
+            ->update('t_customer_payments');
+
+        if ($this->db->affected_rows() !== 1) {
+          throw new Exception(
+            'This Customer Payment has been modified by another user or its status has changed. Please reload before editing again.'
+          );
+        }
 
         /*** replace OPEN allocations */
         $this->db->where('customer_payment_id', $customerPaymentId)->delete('t_customer_payment_allocations');
@@ -1060,19 +1077,16 @@ class Customer_payment_model extends CI_Model
 
         /*** post customer payment */
         $this->db
+          ->set('status', 'POSTED')
+          ->set('available_credit', $availableCredit)
+          ->set('posted_by', $this->session->userdata('user_id'))
+          ->set('posted_on', date('Y-m-d H:i:s'))
+          ->set('updated_by', $this->session->userdata('user_id'))
+          ->set('updated_on', date('Y-m-d H:i:s'))
+          ->set('edit_version', 'edit_version + 1', FALSE)
           ->where('id', (int)$customerPayment->id)
           ->where('status', 'OPEN')
-          ->update(
-            't_customer_payments',
-            [
-              'status' => 'POSTED',
-              'available_credit' => $availableCredit,
-              'posted_by' => $this->session->userdata('user_id'),
-              'posted_on' => date('Y-m-d H:i:s'),
-              'updated_by' => $this->session->userdata('user_id'),
-              'updated_on' => date('Y-m-d H:i:s')
-            ]
-          );
+          ->update('t_customer_payments');
 
         if (!$this->db->affected_rows()) {
           throw new Exception("Unable to post {$customerPayment->payment_no}.");
@@ -1221,19 +1235,16 @@ class Customer_payment_model extends CI_Model
          * allocations, or deductions.
          */
         $this->db
-            ->where('id', (int)$id)
-            ->where('status', 'POSTED')
-            ->update(
-              't_customer_payments',
-              [
-                'status'         => 'REVERSED',
-                'reverse_reason' => trim(strtoupper($reverseReason)),
-                'reversed_by'    => $this->session->userdata('user_id'),
-                'reversed_on'    => date('Y-m-d H:i:s'),
-                'updated_by'     => $this->session->userdata('user_id'),
-                'updated_on'     => date('Y-m-d H:i:s')
-              ]
-            );
+          ->set('status', 'REVERSED')
+          ->set('reverse_reason', trim(strtoupper($reverseReason)))
+          ->set('reversed_by', $this->session->userdata('user_id'))
+          ->set('reversed_on', date('Y-m-d H:i:s'))
+          ->set('updated_by', $this->session->userdata('user_id'))
+          ->set('updated_on', date('Y-m-d H:i:s'))
+          ->set('edit_version', 'edit_version + 1', FALSE)
+          ->where('id', (int)$id)
+          ->where('status', 'POSTED')
+          ->update('t_customer_payments');
 
         if (!$this->db->affected_rows()) {
           throw new Exception(
@@ -1298,19 +1309,16 @@ class Customer_payment_model extends CI_Model
         }
 
         $this->db
-            ->where('id', (int)$customerPayment->id)
-            ->where('status', 'OPEN')
-            ->update(
-              't_customer_payments',
-              [
-                'status' => 'CANCELLED',
-                'cancel_reason' => trim($cancelReason ?? '') !== '' ? strtoupper(trim($cancelReason)) : NULL,
-                'cancelled_by' => $this->session->userdata('user_id'),
-                'cancelled_on' => date('Y-m-d H:i:s'),
-                'updated_by' => $this->session->userdata('user_id'),
-                'updated_on' => date('Y-m-d H:i:s')
-              ]
-            );
+          ->set('status', 'CANCELLED')
+          ->set('cancel_reason', trim($cancelReason ?? '') !== '' ? strtoupper(trim($cancelReason)) : NULL)
+          ->set('cancelled_by', $this->session->userdata('user_id'))
+          ->set('cancelled_on', date('Y-m-d H:i:s'))
+          ->set('updated_by', $this->session->userdata('user_id'))
+          ->set('updated_on', date('Y-m-d H:i:s'))
+          ->set('edit_version', 'edit_version + 1', FALSE)
+          ->where('id', (int)$customerPayment->id)
+          ->where('status', 'OPEN')
+          ->update('t_customer_payments');
 
         if (!$this->db->affected_rows()) {
           throw new Exception("Unable to cancel {$customerPayment->payment_no}.");

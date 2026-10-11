@@ -109,3 +109,4 @@
   </div>
 </section>
 <input type="hidden" id="hidCustomerPaymentId" value="<?= isset($customerPayment) ? $customerPayment->id : ''; ?>">
+<input type="hidden" id="hidCustomerPaymentEditVersion" value="<?= isset($customerPayment) ? (int)$customerPayment->edit_version : ''; ?>">
