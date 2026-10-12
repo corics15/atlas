@@ -153,15 +153,49 @@ class Product_uom_model extends CI_Model
     return $this->db->insert('m_product_uom', $data);
   }
 
+  /*
+  * BASE UOM INTEGRITY (Deactivation)
+  * Never deactivate the UOM assigned as m_products.uom_id.
+  * Sales and Purchase UOM queries require an active m_product_uom
+  * record, so deactivating the base UOM can make a product unavailable
+  * during transaction entry.
+  *
+  * Additional UOMs may still be deactivated independently.
+  * This is an application-level safeguard; direct database changes
+  * and concurrent base UOM reassignment are not protected here.
+  */
   public function deactivate($id)
   {
-    return $this->db
-        ->where('id', $id)
-        ->update('m_product_uom', [
-          'is_active' => FALSE,
-          'updated_by' => $this->session->userdata('user_id'),
-          'updated_on' => date('Y-m-d H:i:s')
-        ]);
+    $this->db->trans_begin();
+
+    $uom = $this->db
+      ->select('pu.id, pu.uom_id, p.uom_id AS base_uom_id')
+      ->from('m_product_uom pu')
+      ->join('m_products p', 'p.id = pu.product_id')
+      ->where('pu.id', (int)$id)
+      ->get()
+      ->row();
+
+    if (!$uom || (int)$uom->uom_id === (int)$uom->base_uom_id) {
+      $this->db->trans_rollback();
+      return false;
+    }
+
+    $saved = $this->db
+      ->where('id', (int)$id)
+      ->update('m_product_uom', [
+        'is_active' => FALSE,
+        'updated_by' => $this->session->userdata('user_id'),
+        'updated_on' => date('Y-m-d H:i:s')
+      ]);
+
+    if (!$saved || $this->db->trans_status() === FALSE) {
+      $this->db->trans_rollback();
+      return false;
+    }
+
+    $this->db->trans_commit();
+    return true;
   }
 
 }

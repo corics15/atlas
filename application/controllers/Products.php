@@ -268,7 +268,33 @@ class Products extends MY_Controller
       $data['updated_on'] = date('Y-m-d H:i:s');
     }
 
-    $this->Product_model->save($data, $id);
+    if (!empty($id)) {
+      $baseUom = $this->db
+        ->where('product_id', $id)
+        ->where('uom_id', (int)$product->uom_id)
+        ->get('m_product_uom')
+        ->result();
+
+      $validBaseUom = count($baseUom) === 1
+        && in_array($baseUom[0]->is_active, [TRUE, 't'], TRUE)
+        && (float)$baseUom[0]->conversion_factor == 1;
+
+      if (!$validBaseUom) {
+        return $this->jsonResponse(
+          false,
+          'This product has an invalid base UOM configuration. Changes were not saved. Please verify the product UOM settings.'
+        );
+      }
+    }
+
+    $saved = $this->Product_model->save($data, $id);
+
+    if (!$saved) {
+      return $this->jsonResponse(
+        false,
+        'Unable to save the product. Please try again.'
+      );
+    }
 
     return $this->jsonResponse(
       true,
@@ -324,10 +350,19 @@ class Products extends MY_Controller
     }
 
     if (!$this->Product_uom_model->deactivate($id)) {
-      return $this->jsonResponse(
-        false,
-        'Unable to deactivate the Product UOM.'
-      );
+      $uom = $this->db
+        ->select('pu.uom_id, p.uom_id AS base_uom_id')
+        ->from('m_product_uom pu')
+        ->join('m_products p', 'p.id = pu.product_id')
+        ->where('pu.id', $id)
+        ->get()
+        ->row();
+
+      $message = $uom && (int)$uom->uom_id === (int)$uom->base_uom_id
+        ? 'This UOM cannot be deactivated because it is the product\'s assigned Base UOM.'
+        : 'Unable to deactivate the Product UOM. Please try again.';
+
+      return $this->jsonResponse(false, $message);
     }
 
     return $this->jsonResponse(

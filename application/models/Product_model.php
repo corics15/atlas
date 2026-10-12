@@ -66,13 +66,97 @@ class Product_model extends CI_Model
 
   public function save($data, $id = null)
   {
-    if (empty($id)) {
-      return $this->db->insert('m_products', $data);
-    }
+    /*
+    * BASE UOM INTEGRITY (Product Edit)
+    * The assigned base UOM must have exactly one active m_product_uom
+    * record with conversion_factor = 1.
+    * Reject inconsistent legacy records instead of silently repairing them.
+    * Additional UOM prices and Sales/Purchase flags remain independent.
+    */
+    if (!empty($id)) {
+      $baseUom = $this->db
+        ->where('product_id', (int)$id)
+        ->where('uom_id', (int)$data['uom_id'])
+        ->get('m_product_uom')
+        ->result();
 
-    return $this->db
+      if (count($baseUom) !== 1) {
+        return false;
+      }
+
+      if ($baseUom[0]->is_active !== 't' && $baseUom[0]->is_active !== true) {
+        return false;
+      }
+
+      if ((float)$baseUom[0]->conversion_factor != 1) {
+        return false;
+      }
+
+      return $this->db
         ->where('id', $id)
         ->update('m_products', $data);
+    }
+
+    /*
+    * BASE UOM INTEGRITY (Product Creation)
+    * Create m_products and its active base m_product_uom atomically.
+    * If either INSERT fails, roll back both records to avoid orphaned
+    * products that cannot be selected correctly in transactions.
+    *
+    * db_debug is temporarily disabled and INSERT warnings are suppressed
+    * locally because CI3's PostgreSQL driver emits native pg_query warnings.
+    * Database failures are still checked and logged; restore db_debug
+    * before returning.
+    *
+    * Base UOM conversion_factor = 1. Sales/Purchase eligibility flags
+    * remain FALSE by default and are not automatically enabled.
+    */
+    $originalDbDebug = $this->db->db_debug;
+    $this->db->db_debug = FALSE;
+
+    $this->db->trans_begin();
+
+    $saved = @$this->db->insert('m_products', $data);
+
+    if (!$saved || $this->db->trans_status() === FALSE) {
+      $dbError = $this->db->error();
+      log_message('error', 'Product creation failed: ' . $dbError['message']);
+
+      $this->db->trans_rollback();
+      $this->db->db_debug = $originalDbDebug;
+      return false;
+    }
+
+    $productId = $this->db->insert_id();
+
+    $baseUom = [
+      'product_id' => $productId,
+      'uom_id' => (int)$data['uom_id'],
+      'conversion_factor' => 1,
+      'last_cost' => $data['cost'],
+      'selling_price' => $data['srp'],
+      'is_active' => TRUE,
+      'is_sales_uom' => FALSE,
+      'is_purchase_uom' => FALSE,
+      'entered_by' => $data['entered_by'],
+      'entered_on' => $data['entered_on']
+    ];
+
+    $saved = @$this->db->insert('m_product_uom', $baseUom);
+
+    if (!$saved || $this->db->trans_status() === FALSE) {
+      $dbError = $this->db->error();
+      log_message('error', 'Base UOM creation failed: ' . $dbError['message']);
+
+      $this->db->trans_rollback();
+      $this->db->db_debug = $originalDbDebug;
+      return false;
+    }
+
+    $committed = $this->db->trans_commit();
+    $this->db->db_debug = $originalDbDebug;
+
+    return $committed !== FALSE;
   }
 
   public function activate($id)
