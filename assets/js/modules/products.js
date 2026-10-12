@@ -9,6 +9,8 @@ const btnDownloadProductExcel = document.getElementById(
 );
 
 const frmProduct = document.getElementById("frmProduct");
+const chkBaseUomSales = document.getElementById("chkBaseUomSales");
+const chkBaseUomPurchase = document.getElementById("chkBaseUomPurchase");
 
 const txtBarcode = document.getElementById("txtBarcode");
 const txtDescription = document.getElementById("txtDescription");
@@ -105,6 +107,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		txtCost.value = result.data.cost;
 		txtSRP.value = result.data.srp;
 		txtPkg.value = result.data.pkg;
+		chkBaseUomSales.checked =
+			result.data.is_sales_uom === "t" || result.data.is_sales_uom === true;
+		chkBaseUomPurchase.checked =
+			result.data.is_purchase_uom === "t" ||
+			result.data.is_purchase_uom === true;
 
 		$("#selSupplier").val(result.data.supplier_id).trigger("change");
 		$("#selUom").val(result.data.uom_id).trigger("change");

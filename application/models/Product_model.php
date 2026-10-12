@@ -59,12 +59,24 @@ class Product_model extends CI_Model
       );
 
       $product->qty_on_hand = $balance ? $balance->qty_on_hand : 0;
+
+      /*** load assigned Base UOM eligibility */
+      $baseUom = $this->db
+        ->select('is_sales_uom, is_purchase_uom')
+        ->where('product_id', (int)$id)
+        ->where('uom_id', (int)$product->uom_id)
+        ->get('m_product_uom')
+        ->row();
+
+      $product->is_sales_uom = $baseUom ? $baseUom->is_sales_uom : NULL;
+      $product->is_purchase_uom = $baseUom ? $baseUom->is_purchase_uom : NULL;
+
     }
 
     return $product;
   }
 
-  public function save($data, $id = null)
+  public function save($data, $id = null, $isSalesUom = FALSE, $isPurchaseUom = FALSE)
   {
     /*
     * BASE UOM INTEGRITY (Product Edit)
@@ -74,27 +86,52 @@ class Product_model extends CI_Model
     * Additional UOM prices and Sales/Purchase flags remain independent.
     */
     if (!empty($id)) {
-      $baseUom = $this->db
+      $originalDbDebug = $this->db->db_debug;
+      $this->db->db_debug = FALSE;
+      $this->db->trans_begin();
+
+      $baseUoms = $this->db
         ->where('product_id', (int)$id)
         ->where('uom_id', (int)$data['uom_id'])
         ->get('m_product_uom')
         ->result();
 
-      if (count($baseUom) !== 1) {
-        return false;
+      $validBaseUom = count($baseUoms) === 1
+        && in_array($baseUoms[0]->is_active, [TRUE, 't'], TRUE)
+        && (float)$baseUoms[0]->conversion_factor == 1;
+
+      if (!$validBaseUom) {
+        $this->db->trans_rollback();
+        $this->db->db_debug = $originalDbDebug;
+        return FALSE;
       }
 
-      if ($baseUom[0]->is_active !== 't' && $baseUom[0]->is_active !== true) {
-        return false;
-      }
-
-      if ((float)$baseUom[0]->conversion_factor != 1) {
-        return false;
-      }
-
-      return $this->db
-        ->where('id', $id)
+      $saved = @$this->db
+        ->where('id', (int)$id)
         ->update('m_products', $data);
+
+      if ($saved && $this->db->trans_status() !== FALSE) {
+        $saved = @$this->db
+          ->where('id', (int)$baseUoms[0]->id)
+          ->update('m_product_uom', [
+            'is_sales_uom' => $isSalesUom,
+            'is_purchase_uom' => $isPurchaseUom
+          ]);
+      }
+
+      if (!$saved || $this->db->trans_status() === FALSE) {
+        $dbError = $this->db->error();
+        log_message('error', 'Product edit failed: ' . $dbError['message']);
+
+        $this->db->trans_rollback();
+        $this->db->db_debug = $originalDbDebug;
+        return FALSE;
+      }
+
+      $committed = $this->db->trans_commit();
+      $this->db->db_debug = $originalDbDebug;
+
+      return $committed !== FALSE;
     }
 
     /*
@@ -136,8 +173,8 @@ class Product_model extends CI_Model
       'last_cost' => $data['cost'],
       'selling_price' => $data['srp'],
       'is_active' => TRUE,
-      'is_sales_uom' => FALSE,
-      'is_purchase_uom' => FALSE,
+      'is_sales_uom' => $isSalesUom,
+      'is_purchase_uom' => $isPurchaseUom,
       'entered_by' => $data['entered_by'],
       'entered_on' => $data['entered_on']
     ];

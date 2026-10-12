@@ -98,6 +98,29 @@
 
           </div>
 
+          <?php /*** Base UOM eligibility: independent Sales and Purchasing permissions */ ?>
+          <div class="form-row mb-3">
+            <div class="form-group col-md-6 mb-0">
+              <div class="custom-control custom-checkbox">
+                <input type="hidden" name="is_sales_uom" value="0">
+                <input type="checkbox" class="custom-control-input" id="chkBaseUomSales" name="is_sales_uom" value="1">
+                <label class="custom-control-label" for="chkBaseUomSales">
+                  Available for Sales
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group col-md-6 mb-0">
+              <div class="custom-control custom-checkbox">
+                <input type="hidden" name="is_purchase_uom" value="0">
+                <input type="checkbox" class="custom-control-input" id="chkBaseUomPurchase" name="is_purchase_uom" value="1">
+                <label class="custom-control-label" for="chkBaseUomPurchase">
+                  Available for Purchasing
+                </label>
+              </div>
+            </div>
+          </div>
+
           <div class="form-row">
             <div class="form-group col-12 mb-0">
               <button type="button" id="btnProductUoms" class="btn btn-sm btn-default" disabled>

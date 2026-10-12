@@ -287,7 +287,15 @@ class Products extends MY_Controller
       }
     }
 
-    $saved = $this->Product_model->save($data, $id);
+    $isSalesUom = (int)($postData['is_sales_uom'] ?? 0) === 1;
+    $isPurchaseUom = (int)($postData['is_purchase_uom'] ?? 0) === 1;
+
+    $saved = $this->Product_model->save(
+      $data,
+      $id,
+      $isSalesUom,
+      $isPurchaseUom
+    );
 
     if (!$saved) {
       return $this->jsonResponse(
