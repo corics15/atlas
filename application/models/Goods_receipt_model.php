@@ -221,23 +221,23 @@ class Goods_receipt_model extends CI_Model
           throw new Exception('Invalid UOM conversion.');
         }
 
-        $productUom = $this->Product_uom_model->get(
-          $detail->product_id,
-          $detail->uom_id
-        );
+        /*** include inactive configurations in the lookup */
+        $productUom = $this->db
+          ->where('product_id', $detail->product_id)
+          ->where('uom_id', $detail->uom_id)
+          ->get('m_product_uom')
+          ->row();
 
-        /*** unknown relationship: learn it on POST */
         if (!$productUom) {
-          if (!$this->Product_uom_model->save(
-            $detail->product_id,
-            $detail->uom_id,
-            $detail->conversion_factor
-          )) {
-            throw new Exception(
-              'Unable to save product UOM conversion.'
-            );
-          }
-          continue;
+          throw new Exception(
+            'Product UOM configuration is missing. Configure it in Product Master before posting.'
+          );
+        }
+
+        if (!in_array($productUom->is_active, [TRUE, 't', 'true', '1', 1], TRUE)) {
+          throw new Exception(
+            'Product UOM configuration is inactive. Review it in Product Master before posting.'
+          );
         }
 
         /*** conversion still matches current default */
@@ -282,7 +282,7 @@ class Goods_receipt_model extends CI_Model
         }
 
         /*** UPDATE DEFAULT */
-        if (!$this->Product_uom_model->save(
+        if (!$this->Product_uom_model->updateReceiptConversion(
           $detail->product_id,
           $detail->uom_id,
           $detail->conversion_factor

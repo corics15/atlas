@@ -161,7 +161,7 @@
                         <input type="number" class="form-control form-control-sm text-right grn-conversion" value="<?= (float)$item->conversion_factor ?>" min="0.0001" step="any" readonly>
                           <?php if ($goodsReceipt->status === 'DRAFT' && (int)$item->uom_id !== (int)$item->base_uom_id): ?>
                           <div class="input-group-append">
-                            <button type="button" class="btn btn-outline-warning btn-link btn-change-conversion" data-toggle="tooltip" title="Change Conversion">
+                            <button type="button" class="btn btn-outline-warning btn-link btn-change-conversion" title="Change Conversion">
                               <i class="fas fa-edit"></i>
                             </button>
                           </div>

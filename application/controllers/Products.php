@@ -208,6 +208,8 @@ class Products extends MY_Controller
 
   public function saveUom()
   {
+    $this->requireAccess(['ADMIN', 'MANAGER', 'STAFF']);
+
     $request = $this->getJsonRequest();
 
     $productId = (int)($request['product_id'] ?? 0);
@@ -432,6 +434,8 @@ class Products extends MY_Controller
 
   public function deactivateUom($id)
   {
+    $this->requireAccess(['ADMIN', 'MANAGER', 'STAFF']);
+
     $id = (int)$id;
 
     if ($id <= 0) {

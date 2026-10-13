@@ -114,6 +114,23 @@ class Product_uom_model extends CI_Model
       ->result();
   }
 
+  public function updateReceiptConversion($productId, $uomId, $conversionFactor)
+  {
+    if ((float)$conversionFactor <= 0) {
+      return FALSE;
+    }
+
+    return $this->db
+      ->where('product_id', $productId)
+      ->where('uom_id', $uomId)
+      ->where('is_active', TRUE)
+      ->update('m_product_uom', [
+        'conversion_factor' => $conversionFactor,
+        'updated_by' => $this->session->userdata('user_id'),
+        'updated_on' => date('Y-m-d H:i:s')
+      ]);
+  }
+
   public function save($productId, $uomId, $conversionFactor, $sellingPrice = null, $lastCost = null, $isSalesUom = false, $isPurchaseUom = false)
   {
     $existing = $this->db
