@@ -1,9 +1,22 @@
+<?php
+$atlas = [];
+
+if (defined('APPPATH') && is_file(APPPATH.'config/atlas.php')) {
+  $config = [];
+  require APPPATH.'config/atlas.php';
+  $atlas = $config['atlas'] ?? [];
+}
+
+$baseUrl = rtrim(config_item('base_url') ?: '/', '/').'/';
+$favicon = $atlas['shortcut_ico'] ?? 'assets/images/atlas.ico';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="<?= config_item('base_url').'assets/images/atlas.ico' ?>" type="image/x-icon">
+    <link rel="shortcut icon" href="<?= htmlspecialchars($baseUrl.ltrim($favicon, '/'), ENT_QUOTES, 'UTF-8') ?>" type="image/x-icon">
     <title>Page Not Found | ATLAS</title>
     <style>
       * {
@@ -91,7 +104,7 @@
   </head>
   <body>
     <div class="error-card">
-      <img src="<?= config_item('base_url').'assets/images/errors/404.png'; ?>" alt="Page not found" class="error-image">
+      <img src="<?= htmlspecialchars($baseUrl.'assets/images/errors/404.png', ENT_QUOTES, 'UTF-8') ?>" alt="Page not found" class="error-image">
       <div class="error-code">
         404
       </div>
@@ -102,7 +115,7 @@
         The page or record you requested
         could not be found.
       </p>
-      <a href="<?= base_url('dashboard') ?>" class="back-link">
+      <a href="<?= htmlspecialchars($baseUrl.'dashboard', ENT_QUOTES, 'UTF-8') ?>" class="back-link">
         Back to ATLAS
       </a>
     </div>

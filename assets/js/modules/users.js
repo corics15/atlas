@@ -1,217 +1,211 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
+	const btnNewUser = document.getElementById("btnNewUser");
+	const btnEditUser = document.getElementById("btnEditUser");
+	const btnSaveUser = document.getElementById("btnSaveUser");
+	const frmUser = document.getElementById("frmUser");
 
-  const btnNewUser = document.getElementById('btnNewUser');
-  const btnEditUser = document.getElementById('btnEditUser');
-  const btnSaveUser = document.getElementById('btnSaveUser');
-  const frmUser = document.getElementById('frmUser');
+	const txtUsername = document.getElementById("txtUsername");
+	const txtFirstName = document.getElementById("txtFirstName");
+	const txtLastName = document.getElementById("txtLastName");
+	const selBranch = document.getElementById("selBranch");
+	const selAccessLevel = document.getElementById("selAccessLevel");
 
-  const txtUsername = document.getElementById('txtUsername');
-  const txtFirstName = document.getElementById('txtFirstName');
-  const txtLastName = document.getElementById('txtLastName');
-  const selBranch = document.getElementById('selBranch');
-  const selAccessLevel = document.getElementById('selAccessLevel');
+	const hidUserId = document.getElementById("hidUserId");
 
-  const hidUserId = document.getElementById('hidUserId');
+	const btnDeactivateUser = document.getElementById("btnDeactivateUser");
+	const btnActivateUser = document.getElementById("btnActivateUser");
+	const btnRefreshUsers = document.getElementById("btnRefreshUsers");
+	const btnResetPassword = document.getElementById("btnResetPassword");
 
-  const btnDeactivateUser = document.getElementById('btnDeactivateUser');
-  const btnActivateUser = document.getElementById('btnActivateUser');
-  const btnRefreshUsers = document.getElementById('btnRefreshUsers');
-  const btnResetPassword = document.getElementById('btnResetPassword');
+	const chkSelectAllUsers = document.getElementById("chkSelectAllUsers");
 
-  const chkSelectAllUsers = document.getElementById('chkSelectAllUsers');
+	Atlas.table.init({
+		checkbox: ".chkUser",
+		selectAll: "#chkSelectAllUsers",
+		onChange: updateToolbarState,
+	});
 
-  Atlas.table.init({
-    checkbox: '.chkUser',
-    selectAll: '#chkSelectAllUsers',
-    onChange: updateToolbarState
-  });
+	Atlas.select.init("#selBranch", "#mdlUser");
 
-  Atlas.select.init('#selBranch', '#mdlUser');
+	updateToolbarState();
 
-  updateToolbarState();
+	/*** new */
+	btnNewUser.addEventListener("click", () => {
+		frmUser.reset();
+		hidUserId.value = "";
+		selAccessLevel.value = "STAFF";
 
-  /*** new */
-  btnNewUser.addEventListener('click', () => {
-    frmUser.reset();
-    hidUserId.value = '';
-    selAccessLevel.value = 'STAFF';
+		Atlas.validation.clear();
+		Atlas.modal.open({
+			id: "mdlUser",
+			title: "New User",
+		});
+		$("#selBranch").val("1").trigger("change");
+	});
 
-    Atlas.validation.clear();
-    Atlas.modal.open({
-      id: 'mdlUser',
-      title: 'New User'
-    });
-    $('#selBranch').val('1').trigger('change');
-  });
+	/*** save */
+	frmUser.addEventListener("submit", async (e) => {
+		e.preventDefault();
 
-  /*** save */
-  frmUser.addEventListener('submit', async (e) => {
-    e.preventDefault();
+		await Atlas.form.submit({
+			form: frmUser,
+			url: "users/save",
+			onSuccess: (result) => {
+				frmUser.reset();
+				hidUserId.value = "";
+				Atlas.validation.clear();
 
-    await Atlas.form.submit({
-      form: frmUser,
-      url: 'users/save',
-      onSuccess: (result) => {
-        frmUser.reset();
-        hidUserId.value = '';
-        Atlas.validation.clear();
+				Atlas.modal.close("mdlUser");
+				Atlas.toast.success(result.message);
+				setTimeout(() => Atlas.page.refresh(), 1500);
+			},
+			onError: (result) => {
+				Atlas.toast.error(result.message);
+				if (result.data.errors.branch_id)
+					document.getElementById("errBranch").innerHTML =
+						result.data.errors.branch_id;
+			},
+		});
+	});
 
-        Atlas.modal.close('mdlUser');
-        Atlas.toast.success(result.message);
-        setTimeout(() => Atlas.page.refresh(), 1500);
-      },
-      onError: (result) => {
-        Atlas.toast.error(result.message);
-        if (result.data.errors.branch_id)
-          document.getElementById('errBranch').innerHTML = result.data.errors.branch_id
-      }
-    });
-  });
+	/*** edit */
+	btnEditUser.addEventListener("click", async () => {
+		const id = getSelectedUserId();
+		if (!id) {
+			return;
+		}
+		const result = await Atlas.ajax.get(`users/get/${id}`);
+		if (!result.success) {
+			Atlas.toast.error(result.message);
+			return;
+		}
 
-  /*** edit */
-  btnEditUser.addEventListener('click', async () => {
-    const id = getSelectedUserId();
-    if (!id) {
-      return;
-    }
-    const result = await Atlas.ajax.get(`users/get/${id}`);
-    if (!result.success) {
-      Atlas.toast.error(result.message);
-      return;
-    }
+		frmUser.reset();
+		hidUserId.value = result.data.id;
 
-    frmUser.reset();
-    hidUserId.value = result.data.id;
+		txtUsername.value = result.data.username;
+		txtFirstName.value = result.data.first_name;
+		txtLastName.value = result.data.last_name;
+		$("#selBranch").val(result.data.branch_id).trigger("change");
+		selAccessLevel.value = result.data.access_level;
 
-    txtUsername.value = result.data.username;
-    txtFirstName.value = result.data.first_name;
-    txtLastName.value = result.data.last_name;
-    $('#selBranch').val(result.data.branch_id).trigger('change');
-    selAccessLevel.value = result.data.access_level;
+		Atlas.modal.open({
+			id: "mdlUser",
+			title: "Edit User",
+		});
+	});
 
-    Atlas.modal.open({
-      id: 'mdlUser',
-      title: 'Edit User'
-    });
-  });
+	/*** deactivate */
+	btnDeactivateUser.addEventListener("click", async () => {
+		const id = getSelectedUserId();
 
-  /*** deactivate */
-  btnDeactivateUser.addEventListener('click', async () => {
-    const id = getSelectedUserId();
+		if (!id) {
+			return;
+		}
 
-    if (!id) {
-      return;
-    }
+		const confirmed = await Atlas.dialog.confirm(
+			"Deactivate User",
+			"Are you sure you want to deactivate the selected user?",
+		);
 
-    const confirmed = await Atlas.dialog.confirm(
-      'Deactivate User',
-      'Are you sure you want to deactivate the selected user?'
-    );
+		if (!confirmed) {
+			return;
+		}
 
-    if (!confirmed) {
-      return;
-    }
+		const result = await Atlas.ajax.post(`users/deactivate/${id}`);
 
-    const result = await Atlas.ajax.post(
-      `users/deactivate/${id}`
-    );
+		if (result.success) {
+			Atlas.toast.success(result.message);
+			setTimeout(() => {
+				Atlas.page.refresh();
+			}, 500);
+		} else {
+			Atlas.toast.error(result.message);
+		}
+	});
 
-    if (result.success) {
-      Atlas.toast.success(result.message);
-      setTimeout(() => {
-        Atlas.page.refresh();
-      }, 500);
-    } else {
-      Atlas.toast.error(result.message);
-    }
-  });
+	/*** activate */
+	btnActivateUser.addEventListener("click", async () => {
+		const id = getSelectedUserId();
 
-  /*** activate */
-  btnActivateUser.addEventListener('click', async () => {
-    const id = getSelectedUserId();
+		if (!id) {
+			return;
+		}
 
-    if (!id) {
-      return;
-    }
+		const confirmed = await Atlas.dialog.confirm(
+			"Activate User",
+			"Are you sure you want to activate the selected user?",
+		);
 
-    const confirmed = await Atlas.dialog.confirm(
-      'Activate User',
-      'Are you sure you want to activate the selected user?'
-    );
+		if (!confirmed) {
+			return;
+		}
 
-    if (!confirmed) {
-      return;
-    }
+		const result = await Atlas.ajax.post(`users/activate/${id}`);
 
-    const result = await Atlas.ajax.post(
-      `users/activate${id}`
-    );
+		if (result.success) {
+			Atlas.toast.success(result.message);
+			setTimeout(() => {
+				Atlas.page.refresh();
+			}, 500);
+		} else {
+			Atlas.toast.error(result.message);
+		}
+	});
 
-    if (result.success) {
-      Atlas.toast.success(result.message);
-      setTimeout(() => {
-        Atlas.page.refresh();
-      }, 500);
-    } else {
-      Atlas.toast.error(result.message);
-    }
-  });
+	/*** reset password */
+	btnResetPassword.addEventListener("click", async () => {
+		const id = getSelectedUserId();
 
-  /*** reset password */
-  btnResetPassword.addEventListener('click', async () => {
-    const id = getSelectedUserId();
+		if (!id) {
+			return;
+		}
 
-    if (!id) {
-      return;
-    }
+		const confirmed = await Atlas.dialog.confirm(
+			"Reset Password",
+			"Reset this user's password to the default password?",
+		);
 
-    const confirmed = await Atlas.dialog.confirm(
-      'Reset Password',
-      'Reset this user\'s password to the default password?'
-    );
+		if (!confirmed) {
+			return;
+		}
 
-    if (!confirmed) {
-      return;
-    }
+		Atlas.loader.show();
 
-    Atlas.loader.show();
+		const result = await Atlas.ajax.post(`users/resetpassword/${id}`);
 
-    const result = await Atlas.ajax.post(
-      `users/resetpassword/${id}`
-    );
+		Atlas.loader.hide();
 
-    Atlas.loader.hide();
+		if (result.success) {
+			Atlas.toast.success(result.message);
+		} else {
+			Atlas.toast.error(result.message);
+		}
+	});
 
-    if (result.success) {
-      Atlas.toast.success(result.message);
-    } else {
-      Atlas.toast.error(result.message);
-    }
-  });
-
-  /*** refresh */
-  btnRefreshUsers.addEventListener('click', () => Atlas.page.redirect(`users`));
+	/*** refresh */
+	btnRefreshUsers.addEventListener("click", () => Atlas.page.redirect(`users`));
 });
 
 const getSelectedUserId = () => {
-  const checked = Atlas.table.selected();
-  if (checked.length === 0) {
-    Atlas.toast.warning('Please select a user.');
-    return null;
-  }
+	const checked = Atlas.table.selected();
+	if (checked.length === 0) {
+		Atlas.toast.warning("Please select a user.");
+		return null;
+	}
 
-  if (checked.length > 1) {
-    Atlas.toast.warning('Please select only one user.');
-    return null;
-  }
-  return checked[0].value;
-}
+	if (checked.length > 1) {
+		Atlas.toast.warning("Please select only one user.");
+		return null;
+	}
+	return checked[0].value;
+};
 
 const updateToolbarState = (selected = Atlas.table.selected()) => {
-  const checked = selected.length;
+	const checked = selected.length;
 
-  btnEditUser.disabled = (checked !== 1);
-  btnResetPassword.disabled = (checked !== 1);
-  btnActivateUser.disabled = (checked !== 1);
-  btnDeactivateUser.disabled = (checked !== 1);
-}
+	btnEditUser.disabled = checked !== 1;
+	btnResetPassword.disabled = checked !== 1;
+	btnActivateUser.disabled = checked !== 1;
+	btnDeactivateUser.disabled = checked !== 1;
+};
