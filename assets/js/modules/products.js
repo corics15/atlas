@@ -19,6 +19,15 @@ const txtSRP = document.getElementById("txtSRP");
 const btnGenerateBarcode = document.getElementById("btnGenerateBarcode");
 const tblProductUomsBody = document.getElementById("tblProductUomsBody");
 const btnProductUoms = document.getElementById("btnProductUoms");
+
+const btnRepairBaseUom = document.getElementById("btnRepairBaseUom");
+const txtBaseUomRepairMessage = document.getElementById(
+	"txtBaseUomRepairMessage",
+);
+const divBaseUomRepairFlags = document.getElementById("divBaseUomRepairFlags");
+const chkRepairSalesUom = document.getElementById("chkRepairSalesUom");
+const chkRepairPurchaseUom = document.getElementById("chkRepairPurchaseUom");
+
 const selProductUom = document.getElementById("selProductUom");
 const txtProductUomConversion = document.getElementById(
 	"txtProductUomConversion",
@@ -49,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		frmProduct.reset();
 		hidProductId.value = "";
 		btnProductUoms.disabled = true;
+		btnRepairBaseUom.classList.add("d-none");
 		$("#selUom").prop("disabled", false);
 
 		Atlas.validation.clear();
@@ -101,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		hidProductId.value = result.data.id;
 		btnProductUoms.disabled = false;
+		btnRepairBaseUom.classList.add("d-none");
 
 		txtBarcode.value = result.data.barcode;
 		txtDescription.value = result.data.description;
@@ -123,6 +134,135 @@ document.addEventListener("DOMContentLoaded", () => {
 			id: "mdlProduct",
 			title: "Edit Product",
 		});
+
+		/*** inspect assigned Base UOM (read-only) */
+		try {
+			const inspection = await Atlas.ajax.get(`products/inspectBaseUom/${id}`);
+
+			if (
+				inspection.success &&
+				inspection.data?.can_repair === true &&
+				String(hidProductId.value) === String(id)
+			) {
+				btnRepairBaseUom.classList.remove("d-none");
+			}
+		} catch (error) {
+			console.error("Base UOM inspection failed:", error);
+		}
+	});
+
+	/*** Base UOM repair dialog */
+	btnRepairBaseUom.addEventListener("click", async () => {
+		const productId = hidProductId.value;
+		if (!productId) return;
+
+		try {
+			const result = await Atlas.ajax.get(
+				`products/inspectBaseUom/${productId}`,
+			);
+
+			if (!result.success || result.data?.can_repair !== true) {
+				btnRepairBaseUom.classList.add("d-none");
+				Atlas.toast.warning(
+					result.message || "Base UOM repair is not available.",
+				);
+				return;
+			}
+
+			const status = result.data.status;
+			if (!["MISSING", "INACTIVE"].includes(status)) return;
+
+			chkRepairSalesUom.checked = false;
+			chkRepairPurchaseUom.checked = false;
+
+			divBaseUomRepairFlags.classList.toggle("d-none", status !== "MISSING");
+
+			txtBaseUomRepairMessage.textContent =
+				status === "INACTIVE"
+					? "This product's main unit of measure is currently disabled. Repairing it will enable the unit again. Existing prices, costs, and settings will remain unchanged."
+					: "This product's main unit of measure needs to be set up. Repairing it will create the missing unit configuration using the product's existing Cost and SRP. Your Product Master prices will remain unchanged. Please select below whether this unit can be used for Sales, Purchasing, or both.";
+
+			Atlas.modal.open({
+				id: "mdlBaseUomRepair",
+				title: "Repair Base UOM",
+			});
+		} catch (error) {
+			console.error("Base UOM inspection failed:", error);
+			Atlas.toast.error("Unable to inspect Base UOM configuration.");
+		}
+	});
+
+	/*** Confirm Base UOM repair */
+	btnConfirmBaseUomRepair.addEventListener("click", async () => {
+		const productId = hidProductId.value;
+		if (!productId) return;
+
+		try {
+			const result = await Atlas.ajax.get(
+				`products/inspectBaseUom/${productId}`,
+			);
+
+			if (!result.success || result.data?.can_repair !== true) {
+				Atlas.toast.warning("This unit no longer needs automatic repair.");
+				return;
+			}
+
+			const status = result.data.status;
+			if (!["MISSING", "INACTIVE"].includes(status)) return;
+
+			const sales = chkRepairSalesUom.checked;
+			const purchase = chkRepairPurchaseUom.checked;
+
+			const message =
+				status === "INACTIVE"
+					? "ATLAS will enable this product's main unit again. Its existing prices, costs, and settings will remain unchanged.<br><span class='text-red'>Would you like to continue</span>?"
+					: `ATLAS will set up the missing main unit with the following choices:<br><br>
+         <span class="font-weight-500">Allow for Sales:</span> ${sales ? "<span class='text-info'>Yes</span>" : "<span class='text-info'>No</span>"}<br>
+         <span class="font-weight-500">Allow for Purchasing:</span> ${purchase ? "<span class='text-info'>Yes</span>" : "<span class='text-info'>No</span>"}<br><br>
+				 The new unit will use the existing Product Master <span class="text-green">Cost</span> and <span class="text-green">SRP</span>.
+         Your Product Master prices will not be changed.<br><br>
+         <span class="text-danger">Would you like to continue</span>?`;
+
+			const confirmed = await Atlas.dialog.confirm(
+				"Confirm Unit Repair",
+				message,
+			);
+
+			if (!confirmed) return;
+
+			if (hidProductId.value !== productId) {
+				Atlas.toast.warning(
+					"The selected product has changed. Please try again.",
+				);
+				return;
+			}
+
+			const payload = new FormData();
+			payload.append("confirmed", "1");
+
+			if (status === "MISSING") {
+				payload.append("is_sales_uom", sales ? "1" : "0");
+				payload.append("is_purchase_uom", purchase ? "1" : "0");
+			}
+
+			const repair = await Atlas.ajax.post(
+				`products/repairBaseUom/${productId}`,
+				payload,
+			);
+
+			if (!repair.success) {
+				Atlas.toast.error(repair.message || "Unable to repair the Base UOM.");
+				return;
+			}
+
+			Atlas.toast.success(repair.message || "Base UOM repaired successfully.");
+
+			Atlas.modal.close("mdlBaseUomRepair");
+			Atlas.modal.close("mdlProduct");
+		} catch (error) {
+			console.error("Base UOM repair confirmation failed:", error);
+			Atlas.toast.error("Unable to verify the unit before repair.");
+		}
 	});
 
 	/*** additional UOMs */

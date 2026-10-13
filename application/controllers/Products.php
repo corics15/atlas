@@ -102,6 +102,90 @@ class Products extends MY_Controller
       );
   }
 
+  /*
+   * BASE UOM INTEGRITY
+   * Read-only inspection. No repair or database changes.
+   */
+  public function inspectBaseUom($id)
+  {
+    $id = (int)$id;
+
+    if ($id <= 0) {
+      return $this->jsonResponse(
+        false,
+        'Invalid Product ID.'
+      );
+    }
+
+    $inspection = $this->Product_model->inspectBaseUom($id);
+
+    if ($inspection['status'] === 'NOT_FOUND') {
+      return $this->jsonResponse(
+        false,
+        $inspection['message']
+      );
+    }
+
+    return $this->jsonResponse(
+      true,
+      $inspection['message'],
+      $inspection
+    );
+  }
+
+  /*
+   * BASE UOM INTEGRITY
+   * Explicit repair only. Never invoked by normal Product Save.
+   */
+  public function repairBaseUom($id)
+  {
+    $this->requireAccess([
+      'ADMIN',
+      'MANAGER',
+      'STAFF'
+    ]);
+
+    if (strtoupper($this->input->method()) !== 'POST') {
+      return $this->jsonResponse(FALSE, 'POST request required.');
+    }
+
+    $id = (int)$id;
+    if ($id <= 0) {
+      return $this->jsonResponse(FALSE, 'Invalid Product ID.');
+    }
+
+    $confirmed = $this->input->post('confirmed');
+    if ($confirmed !== '1') {
+      return $this->jsonResponse(FALSE, 'Explicit repair confirmation is required.');
+    }
+
+    $inspection = $this->Product_model->inspectBaseUom($id);
+    if (empty($inspection['can_repair'])) {
+      return $this->jsonResponse(FALSE, $inspection['message']);
+    }
+
+    $sales = $this->input->post('is_sales_uom');
+    $purchase = $this->input->post('is_purchase_uom');
+
+    if ($inspection['status'] === 'MISSING') {
+      if (!in_array($sales, ['0', '1'], TRUE) ||
+          !in_array($purchase, ['0', '1'], TRUE)) {
+        return $this->jsonResponse(FALSE, 'Explicit Sales and Purchasing eligibility choices are required.');
+      }
+    }
+
+    $result = $this->Product_model->repairBaseUom(
+      $id,
+      $sales === '1' ? TRUE : ($sales === '0' ? FALSE : NULL),
+      $purchase === '1' ? TRUE : ($purchase === '0' ? FALSE : NULL)
+    );
+
+    return $this->jsonResponse(
+      $result['success'],
+      $result['message']
+    );
+  }
+
   public function getUoms($id)
   {
     $product = $this->Product_model->get($id);

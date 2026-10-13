@@ -136,6 +136,7 @@
         </div>
 
         <div class="modal-footer">
+          <button type="button" class="btn btn-sm btn-default d-none" id="btnRepairBaseUom"><i class="fas fa-tools mr-1"></i>Repair Base UOM</button>
           <button type="submit" id="btnSaveProduct" class="btn btn-sm btn-default">Save Product</button>
         </div>
       </form>
@@ -274,6 +275,53 @@
 
       </div>
 
+    </div>
+  </div>
+</div>
+
+<?php /*** Base UOM Repair Modal */ ?>
+<div class="modal fade" id="mdlBaseUomRepair" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Repair Base UOM</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="txtBaseUomRepairMessage" class="font-sm mb-3 text-brown"></p>
+
+        <div id="divBaseUomRepairFlags" class="d-none">
+          <p class="font-sm font-weight-500 mb-2">Choose Base UOM eligibility:</p>
+
+          <div class="custom-control custom-checkbox mb-2">
+            <input type="checkbox" class="custom-control-input" id="chkRepairSalesUom">
+            <label class="custom-control-label" for="chkRepairSalesUom">
+              Allow for Sales
+            </label>
+          </div>
+
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="chkRepairPurchaseUom">
+            <label class="custom-control-label" for="chkRepairPurchaseUom">
+              Allow for Purchasing
+            </label>
+          </div>
+
+          <small class="form-text text-muted mt-3">
+            <span class="font-weight-500 text-muted">Note:</span>
+              The new unit will use the product's existing Cost and SRP.
+              Your current prices will not be changed.<br>
+              If you need to update them later, go to
+              <span class="text-brown">Products Master &rarr; Select Product &rarr; Edit Product</span>,
+              then update the Cost or SRP fields and save.
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-default" id="btnConfirmBaseUomRepair">Repair Unit</button>
+      </div>
     </div>
   </div>
 </div>

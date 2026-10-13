@@ -76,6 +76,179 @@ class Product_model extends CI_Model
     return $product;
   }
 
+  public function inspectBaseUom($productId)
+  {
+    $product = $this->db
+      ->select('id, uom_id')
+      ->where('id', (int)$productId)
+      ->get('m_products')
+      ->row();
+
+    if (!$product) {
+      return [
+        'status' => 'NOT_FOUND',
+        'can_repair' => FALSE,
+        'message' => 'Product not found.'
+      ];
+    }
+
+    $baseUoms = $this->db
+      ->where('product_id', (int)$productId)
+      ->where('uom_id', (int)$product->uom_id)
+      ->get('m_product_uom')
+      ->result();
+
+    if (count($baseUoms) > 1) {
+      return [
+        'status' => 'DUPLICATE',
+        'can_repair' => FALSE,
+        'message' => 'Multiple Base UOM configurations found. Manual investigation is required.'
+      ];
+    }
+
+    if (!$baseUoms) {
+      return [
+        'status' => 'MISSING',
+        'can_repair' => TRUE,
+        'message' => 'Base UOM configuration is missing. Explicit repair is required.'
+      ];
+    }
+
+    $baseUom = $baseUoms[0];
+
+    if ((float)$baseUom->conversion_factor != 1) {
+      return [
+        'status' => 'INVALID_FACTOR',
+        'can_repair' => FALSE,
+        'message' => 'Base UOM conversion factor is not 1. Manual review is required.'
+      ];
+    }
+
+    if (!in_array($baseUom->is_active, [TRUE, 't'], TRUE)) {
+      return [
+        'status' => 'INACTIVE',
+        'can_repair' => TRUE,
+        'message' => 'Base UOM is inactive and eligible for explicit reactivation.',
+        'config_id' => (int)$baseUom->id
+      ];
+    }
+
+    return [
+      'status' => 'VALID',
+      'can_repair' => FALSE,
+      'message' => 'Base UOM configuration is valid. No repair is necessary.'
+    ];
+  }
+
+  /*
+   * BASE UOM INTEGRITY
+   * Explicit, transactional repair only.
+   * Never called from normal Product Master Save.
+   */
+  public function repairBaseUom($productId, $isSalesUom = NULL, $isPurchaseUom = NULL)
+  {
+    $productId = (int)$productId;
+    $originalDbDebug = $this->db->db_debug;
+    $this->db->db_debug = FALSE;
+    $this->db->trans_begin();
+
+    // Serialize repairs for the same product.
+    $query = @$this->db->query(
+      'SELECT id, uom_id, cost, srp FROM m_products WHERE id = ? FOR UPDATE',
+      [$productId]
+    );
+
+    if (!$query || !$product = $query->row()) {
+      $this->db->trans_rollback();
+      $this->db->db_debug = $originalDbDebug;
+      return ['success' => FALSE, 'message' => 'Product not found or could not be locked.'];
+    }
+
+    $query = @$this->db
+      ->where('product_id', $productId)
+      ->where('uom_id', (int)$product->uom_id)
+      ->get('m_product_uom');
+
+    if (!$query) {
+      $this->db->trans_rollback();
+      $this->db->db_debug = $originalDbDebug;
+      return ['success' => FALSE, 'message' => 'Unable to inspect the Base UOM configuration.'];
+    }
+
+    $baseUoms = $query->result();
+
+    if (count($baseUoms) > 1) {
+      $this->db->trans_rollback();
+      $this->db->db_debug = $originalDbDebug;
+      return ['success' => FALSE, 'message' => 'Duplicate Base UOM configurations require manual investigation.'];
+    }
+
+    if (!$baseUoms) {
+      if (!is_bool($isSalesUom) || !is_bool($isPurchaseUom)) {
+        $this->db->trans_rollback();
+        $this->db->db_debug = $originalDbDebug;
+        return ['success' => FALSE, 'message' => 'Choose Sales and Purchasing eligibility before creating the Base UOM.'];
+      }
+
+      $saved = @$this->db->insert('m_product_uom', [
+        'product_id' => $productId,
+        'uom_id' => (int)$product->uom_id,
+        'conversion_factor' => 1,
+        'last_cost' => $product->cost,
+        'selling_price' => $product->srp,
+        'is_active' => TRUE,
+        'is_sales_uom' => $isSalesUom,
+        'is_purchase_uom' => $isPurchaseUom,
+        'entered_by' => $this->session->userdata('user_id'),
+        'entered_on' => date('Y-m-d H:i:s')
+      ]);
+
+      $message = 'Missing Base UOM configuration created successfully.';
+    } else {
+      $baseUom = $baseUoms[0];
+
+      if ((float)$baseUom->conversion_factor != 1) {
+        $this->db->trans_rollback();
+        $this->db->db_debug = $originalDbDebug;
+        return ['success' => FALSE, 'message' => 'Base UOM conversion factor is not 1. Manual review is required.'];
+      }
+
+      if (in_array($baseUom->is_active, [TRUE, 't'], TRUE)) {
+        $this->db->trans_rollback();
+        $this->db->db_debug = $originalDbDebug;
+        return ['success' => FALSE, 'message' => 'Base UOM is already active. No repair is necessary.'];
+      }
+
+      // Reactivate only; preserve factor, prices, and eligibility.
+      $saved = @$this->db
+        ->where('id', (int)$baseUom->id)
+        ->update('m_product_uom', [
+          'is_active' => TRUE,
+          'updated_by' => $this->session->userdata('user_id'),
+          'updated_on' => date('Y-m-d H:i:s')
+        ]);
+
+      $message = 'Base UOM reactivated successfully.';
+    }
+
+    if (!$saved || $this->db->trans_status() === FALSE) {
+      $error = $this->db->error();
+      log_message('error', 'Base UOM repair failed: ' . ($error['message'] ?? 'Unknown database error'));
+
+      $this->db->trans_rollback();
+      $this->db->db_debug = $originalDbDebug;
+      return ['success' => FALSE, 'message' => 'Base UOM repair failed. No changes were saved.'];
+    }
+
+    $committed = $this->db->trans_commit();
+    $this->db->db_debug = $originalDbDebug;
+
+    return [
+      'success' => $committed !== FALSE,
+      'message' => $committed !== FALSE ? $message : 'Unable to commit Base UOM repair.'
+    ];
+  }
+
   public function save($data, $id = null, $isSalesUom = FALSE, $isPurchaseUom = FALSE)
   {
     /*
