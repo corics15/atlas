@@ -997,7 +997,7 @@ const loadPaymentCreditRefunds = async () => {
         <td class="text-center">${escapeHtml(refund.source_no || "")}</td>
         <td class="text-center">${escapeHtml(refund.reference_no || "")}</td>
         <td class="text-right">${Atlas.format.amount(refund.amount)}</td>
-        <td>${escapeHtml(refund.remarks || "")}</td>
+        <td>${escapeHtml(refund.remarks.toUpperCase() || "")}</td>
         <td class="text-center">
           <span class="badge ${refund.status === "POSTED" ? "badge-success" : "badge-danger"}">
             ${escapeHtml(refund.status || "")}
