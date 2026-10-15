@@ -165,7 +165,7 @@
                       <?= number_format((float)$application->amount_applied, 2) ?>
                     </td>
                     <td>
-                      <?= html_escape($application->remarks ?? '') ?>
+                      <?= html_escape(strtoupper($application->remarks) ?? '') ?>
                     </td>
                   </tr>
                 <?php endforeach; ?>
