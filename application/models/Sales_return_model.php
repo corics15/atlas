@@ -606,9 +606,81 @@ class Sales_return_model extends CI_Model
         );
       }
 
-      $this->db->trans_begin();
+      $previousDbDebug = $this->db->db_debug;
+      $this->db->db_debug = FALSE;
+      if (!$this->db->trans_begin()) {
+        $this->db->db_debug = $previousDbDebug;
+        throw new Exception('Unable to start financial transaction.');
+      }
+      if ($this->db->query("SET LOCAL lock_timeout = '5s'") === FALSE) {
+        throw new Exception('Unable to configure financial transaction timeout.');
+      }
 
-      foreach ($ids as $id) {
+      /*** discover affected Sales Invoices before acquiring locks */
+      $returnIds = array_values(array_unique(array_map('intval', $ids)));
+      sort($returnIds, SORT_NUMERIC);
+
+      $invoiceIds = [];
+      $returnInvoices = [];
+
+      foreach ($returnIds as $returnId) {
+        if ($returnId <= 0) {
+          throw new Exception('Invalid Sales Return ID.');
+        }
+
+        $source = $this->db
+          ->select('sales_invoice_id')
+          ->where('id', $returnId)
+          ->get('t_sales_returns')
+          ->row();
+
+        if (!$source) {
+          throw new Exception('Sales Return not found.');
+        }
+
+        $invoiceId = (int)$source->sales_invoice_id;
+        $invoiceIds[] = $invoiceId;
+        $returnInvoices[$returnId] = $invoiceId;
+      }
+
+      $invoiceIds = array_values(array_unique($invoiceIds));
+      sort($invoiceIds, SORT_NUMERIC);
+
+      /*** lock Sales Invoices first, in ascending ID order */
+      foreach ($invoiceIds as $invoiceId) {
+        $invoice = $this->db->query(
+          "SELECT id FROM t_sales_invoices
+          WHERE id = ?
+          FOR NO KEY UPDATE",
+          [$invoiceId]
+        )->row();
+
+        if (!$invoice) {
+          throw new Exception('Source Sales Invoice not found.');
+        }
+      }
+
+      /*** lock Sales Returns second, in ascending ID order */
+      foreach ($returnIds as $returnId) {
+        $lockedReturn = $this->db->query(
+          "SELECT id, sales_invoice_id
+          FROM t_sales_returns
+          WHERE id = ?
+          FOR NO KEY UPDATE",
+          [$returnId]
+        )->row();
+
+        if (!$lockedReturn) {
+          throw new Exception('Sales Return not found.');
+        }
+
+        if ((int)$lockedReturn->sales_invoice_id !== $returnInvoices[$returnId]) {
+          throw new Exception('Sales Return source invoice changed. Please retry.');
+        }
+      }
+
+      /*** process authoritative records under acquired locks */
+      foreach ($returnIds as $id) {
         $return = $this->db
             ->where('id', $id)
             ->get('t_sales_returns')
@@ -799,14 +871,16 @@ class Sales_return_model extends CI_Model
         'data'    => []
       ];
 
-    } catch (Exception $ex) {
-        $this->db->trans_rollback();
+    } catch (\Throwable $ex) {
+        if ($this->db->trans_active()) $this->db->trans_rollback();
 
         return [
           'success' => FALSE,
-          'message' => $ex->getMessage(),
+          'message' => ($this->db->trans_status() === FALSE || !($ex instanceof \Exception)) ? 'Financial transaction failed or timed out. Please retry.' : $ex->getMessage(),
           'data'    => []
         ];
+    } finally {
+      if (isset($previousDbDebug)) $this->db->db_debug = $previousDbDebug;
     }
   }
 

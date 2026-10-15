@@ -928,9 +928,83 @@ class Customer_payment_model extends CI_Model
         throw new Exception('Please select at least one Customer Payment.');
       }
 
-      $this->db->trans_begin();
+      $previousDbDebug = $this->db->db_debug;
+      $this->db->db_debug = FALSE;
+      $errorHandlerInstalled = TRUE;
+      set_error_handler(function ($severity, $message, $file) {
+        if ($severity === E_WARNING
+          && strpos($message, 'pg_query(): Query failed:') === 0
+          && basename($file) === 'postgre_driver.php') {
+          log_message('error', 'Customer Payment POST: PostgreSQL query failed; transaction will be rolled back.');
+          return TRUE;
+        }
+        return FALSE;
+      });
+      if (!$this->db->trans_begin()) {
+        $this->db->db_debug = $previousDbDebug;
+        throw new Exception('Unable to start financial transaction.');
+      }
+      if ($this->db->query("SET LOCAL lock_timeout = '5s'") === FALSE) {
+        throw new Exception('Unable to configure financial transaction timeout.');
+      }
 
-      foreach ($ids as $id) {
+      /*** discover all affected records before acquiring locks */
+      $paymentIds = array_values(array_unique(array_map('intval', $ids)));
+      sort($paymentIds, SORT_NUMERIC);
+
+      $invoiceIds = [];
+
+      foreach ($paymentIds as $paymentId) {
+        if ($paymentId <= 0) {
+          throw new Exception('Invalid Customer Payment ID.');
+        }
+
+        $allocations = $this->db
+          ->select('sales_invoice_id')
+          ->where('customer_payment_id', $paymentId)
+          ->get('t_customer_payment_allocations')
+          ->result();
+
+        $deductions = $this->db
+          ->select('sales_invoice_id')
+          ->where('customer_payment_id', $paymentId)
+          ->get('t_customer_payment_deductions')
+          ->result();
+
+        foreach (array_merge($allocations, $deductions) as $row) {
+          $invoiceIds[] = (int)$row->sales_invoice_id;
+        }
+      }
+
+      $invoiceIds = array_values(array_unique($invoiceIds));
+      sort($invoiceIds, SORT_NUMERIC);
+
+      /*** lock Sales Invoices first, in ascending ID order */
+      foreach ($invoiceIds as $invoiceId) {
+        $invoice = $this->db->query(
+          "SELECT id FROM t_sales_invoices WHERE id = ? FOR NO KEY UPDATE",
+          [$invoiceId]
+        )->row();
+
+        if (!$invoice) {
+          throw new Exception('Sales Invoice not found.');
+        }
+      }
+
+      /*** lock Customer Payments second, in ascending ID order */
+      foreach ($paymentIds as $paymentId) {
+        $payment = $this->db->query(
+          "SELECT id FROM t_customer_payments WHERE id = ? FOR NO KEY UPDATE",
+          [$paymentId]
+        )->row();
+
+        if (!$payment) {
+          throw new Exception('Customer Payment not found.');
+        }
+      }
+
+      /*** revalidate authoritative data under acquired locks */
+      foreach ($paymentIds as $id) {
         $customerPayment = $this->db
           ->where('id', (int)$id)
           ->get('t_customer_payments')
@@ -1076,7 +1150,7 @@ class Customer_payment_model extends CI_Model
         );
 
         /*** post customer payment */
-        $this->db
+        $updated = $this->db
           ->set('status', 'POSTED')
           ->set('available_credit', $availableCredit)
           ->set('posted_by', $this->session->userdata('user_id'))
@@ -1088,6 +1162,9 @@ class Customer_payment_model extends CI_Model
           ->where('status', 'OPEN')
           ->update('t_customer_payments');
 
+        if ($updated === FALSE) {
+          throw new Exception('Financial transaction failed or timed out. Please retry.');
+        }
         if (!$this->db->affected_rows()) {
           throw new Exception("Unable to post {$customerPayment->payment_no}.");
         }
@@ -1105,14 +1182,17 @@ class Customer_payment_model extends CI_Model
         'data' => []
       ];
 
-    } catch (Exception $ex) {
-      $this->db->trans_rollback();
+    } catch (\Throwable $ex) {
+      if ($this->db->trans_active()) $this->db->trans_rollback();
 
       return [
         'success' => FALSE,
-        'message' => $ex->getMessage(),
+        'message' => ($this->db->trans_status() === FALSE || !($ex instanceof \Exception)) ? 'Financial transaction failed or timed out. Please retry.' : $ex->getMessage(),
         'data' => []
       ];
+    } finally {
+      if (isset($errorHandlerInstalled)) restore_error_handler();
+      if (isset($previousDbDebug)) $this->db->db_debug = $previousDbDebug;
     }
   }
 
@@ -1749,19 +1829,34 @@ class Customer_payment_model extends CI_Model
         throw new Exception('Invalid Customer Payment credit allocation.');
       }
 
-      $this->db->trans_begin();
+      $previousDbDebug = $this->db->db_debug;
+      $this->db->db_debug = FALSE;
+      if (!$this->db->trans_begin()) {
+        $this->db->db_debug = $previousDbDebug;
+        throw new Exception('Unable to start financial transaction.');
+      }
+      if ($this->db->query("SET LOCAL lock_timeout = '5s'") === FALSE) {
+        throw new Exception('Unable to configure financial transaction timeout.');
+      }
 
-      $payment = $this->db
-        ->select('id, payment_no, customer_id, amount_received, available_credit, status')
-        ->where('id', $customerPaymentId)
-        ->get('t_customer_payments')
-        ->row();
+      /*** lock destination Sales Invoice first */
+      $invoice = $this->db->query(
+        "SELECT id, si_no, customer_id, total_amount, status
+        FROM t_sales_invoices
+        WHERE id = ?
+        FOR NO KEY UPDATE",
+        [$salesInvoiceId]
+      )->row();
 
-      $invoice = $this->db
-        ->select('id, si_no, customer_id, total_amount, status')
-        ->where('id', $salesInvoiceId)
-        ->get('t_sales_invoices')
-        ->row();
+      /*** lock source Customer Payment second */
+      $payment = $this->db->query(
+        "SELECT id, payment_no, customer_id, amount_received,
+          available_credit, status
+        FROM t_customer_payments
+        WHERE id = ?
+        FOR NO KEY UPDATE",
+        [$customerPaymentId]
+      )->row();
 
       if (!$payment || $payment->status !== 'POSTED') {
         throw new Exception('Invalid or non-posted Customer Payment.');
@@ -1868,14 +1963,16 @@ class Customer_payment_model extends CI_Model
         'data' => []
       ];
 
-    } catch (Exception $ex) {
-      $this->db->trans_rollback();
+    } catch (\Throwable $ex) {
+      if ($this->db->trans_active()) $this->db->trans_rollback();
 
       return [
         'success' => FALSE,
-        'message' => $ex->getMessage(),
+        'message' => ($this->db->trans_status() === FALSE || !($ex instanceof \Exception)) ? 'Financial transaction failed or timed out. Please retry.' : $ex->getMessage(),
         'data' => []
       ];
+    } finally {
+      if (isset($previousDbDebug)) $this->db->db_debug = $previousDbDebug;
     }
   }
 
@@ -1966,30 +2063,23 @@ class Customer_payment_model extends CI_Model
       throw new Exception('Invalid refund request.');
     }
 
-    $this->db->trans_begin();
-
     try {
+      $previousDbDebug = $this->db->db_debug;
+      $this->db->db_debug = FALSE;
+      if (!$this->db->trans_begin()) {
+        $this->db->db_debug = $previousDbDebug;
+        throw new Exception('Unable to start financial transaction.');
+      }
+      if ($this->db->query("SET LOCAL lock_timeout = '5s'") === FALSE) {
+        throw new Exception('Unable to configure financial transaction timeout.');
+      }
+
+      /*** lock source payment before calculating refundable credit */
       $payment = $this->db->query(
-        "SELECT
-          cp.id,
-          cp.status,
-          cp.available_credit,
-          cp.available_credit
-            - COALESCE((
-              SELECT SUM(a.amount_applied)
-              FROM t_customer_payment_allocations a
-              WHERE a.customer_payment_id = cp.id
-              AND a.allocation_type = 'CREDIT'
-            ), 0)
-            - COALESCE((
-              SELECT SUM(r.amount)
-              FROM t_customer_payment_refunds r
-              WHERE r.customer_payment_id = cp.id
-              AND r.status = 'POSTED'
-            ), 0) AS balance
-        FROM t_customer_payments cp
-        WHERE cp.id = ?
-        FOR UPDATE",
+        "SELECT id, status, available_credit
+        FROM t_customer_payments
+        WHERE id = ?
+        FOR NO KEY UPDATE",
         [$customerPaymentId]
       )->row();
 
@@ -2001,7 +2091,28 @@ class Customer_payment_model extends CI_Model
         throw new Exception('Only POSTED Customer Payments can be refunded.');
       }
 
-      $balance = round((float)$payment->balance, 2);
+      /*** fresh balance calculation after payment lock */
+      $balanceRow = $this->db->query(
+        "SELECT
+          cp.available_credit
+          - COALESCE((
+            SELECT SUM(a.amount_applied)
+            FROM t_customer_payment_allocations a
+            WHERE a.customer_payment_id = cp.id
+            AND a.allocation_type = 'CREDIT'
+          ), 0)
+          - COALESCE((
+            SELECT SUM(r.amount)
+            FROM t_customer_payment_refunds r
+            WHERE r.customer_payment_id = cp.id
+            AND r.status = 'POSTED'
+          ), 0) AS balance
+        FROM t_customer_payments cp
+        WHERE cp.id = ?",
+        [$customerPaymentId]
+      )->row();
+
+      $balance = round((float)$balanceRow->balance, 2);
 
       if ($amount > $balance) {
         throw new Exception(
@@ -2026,9 +2137,14 @@ class Customer_payment_model extends CI_Model
       $this->db->trans_commit();
       return TRUE;
 
-    } catch (Exception $e) {
-      $this->db->trans_rollback();
+    } catch (\Throwable $e) {
+      if ($this->db->trans_active()) $this->db->trans_rollback();
+      if ($this->db->trans_status() === FALSE || !($e instanceof \Exception)) {
+        throw new Exception('Financial transaction failed or timed out. Please retry.');
+      }
       throw $e;
+    } finally {
+      if (isset($previousDbDebug)) $this->db->db_debug = $previousDbDebug;
     }
   }
 
@@ -2041,23 +2157,54 @@ class Customer_payment_model extends CI_Model
       throw new Exception('Invalid Customer Credit Refund.');
     }
 
-    $this->db->trans_begin();
-
     try {
-      $refund = $this->db->query(
-        "SELECT
-          id,
-          customer_payment_id,
-          amount,
-          status
+      $previousDbDebug = $this->db->db_debug;
+      $this->db->db_debug = FALSE;
+      if (!$this->db->trans_begin()) {
+        $this->db->db_debug = $previousDbDebug;
+        throw new Exception('Unable to start financial transaction.');
+      }
+      if ($this->db->query("SET LOCAL lock_timeout = '5s'") === FALSE) {
+        throw new Exception('Unable to configure financial transaction timeout.');
+      }
+
+      /*** discover source payment without acquiring refund lock */
+      $source = $this->db->query(
+        "SELECT customer_payment_id
         FROM t_customer_payment_refunds
-        WHERE id = ?
-        FOR UPDATE",
+        WHERE id = ?",
         [$refundId]
       )->row();
 
-      if (!$refund) {
+      if (!$source) {
         throw new Exception('Customer Credit Refund not found.');
+      }
+
+      $customerPaymentId = (int)$source->customer_payment_id;
+
+      /*** lock source payment first */
+      $payment = $this->db->query(
+        "SELECT id FROM t_customer_payments
+        WHERE id = ?
+        FOR NO KEY UPDATE",
+        [$customerPaymentId]
+      )->row();
+
+      if (!$payment) {
+        throw new Exception('Customer Payment not found.');
+      }
+
+      /*** lock refund second */
+      $refund = $this->db->query(
+        "SELECT id, customer_payment_id, amount, status
+        FROM t_customer_payment_refunds
+        WHERE id = ?
+        FOR NO KEY UPDATE",
+        [$refundId]
+      )->row();
+
+      if (!$refund || (int)$refund->customer_payment_id !== $customerPaymentId) {
+        throw new Exception('Customer Credit Refund changed. Please retry.');
       }
 
       if ($refund->status === 'CANCELLED') {
@@ -2089,9 +2236,14 @@ class Customer_payment_model extends CI_Model
       $this->db->trans_commit();
       return TRUE;
 
-    } catch (Exception $e) {
-      $this->db->trans_rollback();
+    } catch (\Throwable $e) {
+      if ($this->db->trans_active()) $this->db->trans_rollback();
+      if ($this->db->trans_status() === FALSE || !($e instanceof \Exception)) {
+        throw new Exception('Financial transaction failed or timed out. Please retry.');
+      }
       throw $e;
+    } finally {
+      if (isset($previousDbDebug)) $this->db->db_debug = $previousDbDebug;
     }
   }
 

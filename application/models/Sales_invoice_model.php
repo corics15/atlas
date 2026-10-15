@@ -858,9 +858,40 @@ class Sales_invoice_model extends CI_Model
         );
       }
 
-      $this->db->trans_begin();
+      $previousDbDebug = $this->db->db_debug;
+      $this->db->db_debug = FALSE;
+      if (!$this->db->trans_begin()) {
+        $this->db->db_debug = $previousDbDebug;
+        throw new Exception('Unable to start financial transaction.');
+      }
+      if ($this->db->query("SET LOCAL lock_timeout = '5s'") === FALSE) {
+        throw new Exception('Unable to configure financial transaction timeout.');
+      }
 
-      foreach ($ids as $id) {
+      /*** normalize invoice IDs for deterministic locking */
+      $invoiceIds = array_values(array_unique(array_map('intval', $ids)));
+      sort($invoiceIds, SORT_NUMERIC);
+
+      /*** lock all Sales Invoices before dependency validation */
+      foreach ($invoiceIds as $invoiceId) {
+        if ($invoiceId <= 0) {
+          throw new Exception('Invalid Sales Invoice ID.');
+        }
+
+        $invoice = $this->db->query(
+          "SELECT id FROM t_sales_invoices
+          WHERE id = ?
+          FOR NO KEY UPDATE",
+          [$invoiceId]
+        )->row();
+
+        if (!$invoice) {
+          throw new Exception('Sales Invoice not found.');
+        }
+      }
+
+      /*** validate and reverse under acquired locks */
+      foreach ($invoiceIds as $id) {
         /*** validate downstream dependencies */
         $validation = $this->canReverse($id);
 
@@ -915,14 +946,16 @@ class Sales_invoice_model extends CI_Model
         'data'    => []
       ];
 
-    } catch (Exception $ex) {
-      $this->db->trans_rollback();
+    } catch (\Throwable $ex) {
+      if ($this->db->trans_active()) $this->db->trans_rollback();
 
       return [
         'success' => FALSE,
-        'message' => $ex->getMessage(),
+        'message' => ($this->db->trans_status() === FALSE || !($ex instanceof \Exception)) ? 'Financial transaction failed or timed out. Please retry.' : $ex->getMessage(),
         'data'    => []
       ];
+    } finally {
+      if (isset($previousDbDebug)) $this->db->db_debug = $previousDbDebug;
     }
   }
 
