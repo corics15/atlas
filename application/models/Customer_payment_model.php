@@ -2122,11 +2122,10 @@ class Customer_payment_model extends CI_Model
 
       $this->db->insert('t_customer_payment_refunds', [
         'customer_payment_id' => $customerPaymentId,
-        // 'refund_date' => $refundDate,
         'refund_date' => date('Y-m-d'),
         'amount' => $amount,
         'reference_no' => $referenceNo ?: NULL,
-        'remarks' => $remarks ?: NULL,
+        'remarks' => trim($remarks ?? '') !== '' ? strtoupper(trim($remarks)) : NULL,
         'entered_by' => $userId ?: NULL
       ]);
 
